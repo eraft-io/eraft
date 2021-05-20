@@ -88,12 +88,12 @@ bool Logger::Init(unsigned int level, unsigned int dest, const char* pDir)
     return true;
 }
 
-bool Logger::_CheckChangeFile()
+bool Logger::CheckChangeFile()
 {
     return false;
 }
 
-const std::string& Logger::_MakeFileName()
+const std::string& Logger::MakeFileName()
 {
     char buf[50];
     time_t rawtime;
@@ -109,12 +109,12 @@ const std::string& Logger::_MakeFileName()
     return fileName_;
 }
     
-bool Logger::_OpenLogFile(const char* name)
+bool Logger::OpenLogFile(const char* name)
 {
     return false;
 }
 
-void Logger::_CloseLogFile()
+void Logger::CloseLogFile()
 {
 
 }
@@ -124,7 +124,7 @@ void Logger::Flush(LogLevel  level)
 
 }
 
-void Logger::_Color(unsigned int color)
+void Logger::Color(unsigned int color)
 {
 
 }
@@ -218,17 +218,17 @@ bool Logger::Update()
     return false;
 }
 
-void Logger::_Reset()
+void Logger::Reset()
 {
 
 }
 
-size_t Logger::_Log(const char* data, size_t dataLen)
+size_t Logger::Log(const char* data, size_t dataLen)
 {
     return 0;
 }
 
-void Logger::_WriteLog(int level, size_t nLen, const char* data)
+void Logger::WriteLog(int level, size_t nLen, const char* data)
 {
 
 }

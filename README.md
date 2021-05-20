@@ -1,4 +1,4 @@
-# EtcdRaftCpp
+# eraft
 基于 C++ 实现的 Raft 库 (Raft library implemented by C++)
 
 #### Overview
@@ -41,10 +41,10 @@ Raft is a protocol with which a cluster of nodes can maintain a replicated state
 ##### Build
 
 ```
-make  // In EtcdRaftCpp project home folder
+make  // In eraft project home folder
 ```
 
 #### Join Us on GoogleGroup
 
-https://groups.google.com/g/etcdraftcppdev
+https://groups.google.com/g/eraftio
 

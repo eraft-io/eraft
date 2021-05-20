@@ -62,7 +62,7 @@ public:
 
     bool   Update();
 
-    const std::string& _MakeFileName();
+    const std::string& MakeFileName();
     Logger();
    ~Logger();
 
@@ -84,14 +84,14 @@ public:
     uint64_t        lastLogSecond_;
     uint64_t        lastLogMSecond_;
     
-    std::size_t     _Log(const char* data, std::size_t len);
+    std::size_t     Log(const char* data, std::size_t len);
 
-    bool    _CheckChangeFile();
-    bool    _OpenLogFile(const char* name);
-    void    _CloseLogFile();
-    void    _WriteLog(int level, std::size_t nLen, const char* data);
-    void    _Color(unsigned int color);
-    void    _Reset();
+    bool    CheckChangeFile();
+    bool    OpenLogFile(const char* name);
+    void    CloseLogFile();
+    void    WriteLog(int level, std::size_t nLen, const char* data);
+    void    Color(unsigned int color);
+    void    Reset();
 };
 
 

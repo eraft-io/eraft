@@ -14,5 +14,5 @@
 TEST(LoggerTests, MakeLogFileName) {
     std::shared_ptr<Logger> testLog (new Logger);
     testLog->Init(logDEBUG, logConsole, "logout"); 
-    std::cout << testLog->_MakeFileName() << std::endl;
+    std::cout << testLog->MakeFileName() << std::endl;
 }
