@@ -72,6 +72,7 @@ if(ParentDirectory STREQUAL "")
     )
 
     add_subdirectory(Logger)
+    add_subdirectory(Protocol)
 
 endif(ParentDirectory STREQUAL "")
 

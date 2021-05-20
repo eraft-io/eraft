@@ -40,8 +40,12 @@ Raft is a protocol with which a cluster of nodes can maintain a replicated state
 
 ##### Build
 
+###### build image
+TODO:
+
+###### run in docker
 ```
-make  // In eraft project home folder
+cd ci; make build-dev
 ```
 
 #### Join Us on GoogleGroup

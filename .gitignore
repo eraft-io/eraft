@@ -1,3 +1,5 @@
 googletest
 build
+protobuf
 .vscode
+output
