@@ -4,7 +4,7 @@
 #include <string>
 #include <set>
 #include <memory>
-#include <time.h>
+#include <chrono>
 
 enum LogLevel
 {
@@ -71,7 +71,7 @@ public:
     char            tmpBuffer_[MAXLINE_LOG];
     std::size_t     pos_;
 
-    time_t t_;
+    std::time_t t_;
     
     unsigned int    level_;
     std::string     directory_;

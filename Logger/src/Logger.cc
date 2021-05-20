@@ -1,11 +1,13 @@
 #include <iostream>
+
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <cstdarg>
 #include <errno.h>
 #include <sys/stat.h>
-#include <Logger/Logger.h>
+
+#include "Logger/Logger.h"
 
 static const size_t DEFAULT_LOGFILESIZE = 32 * 1024 * 1024;
 static const size_t PREFIX_LEVEL_LEN    = 6;
@@ -53,9 +55,9 @@ static bool MakeDir(const char* pDir)
     return true;
 }
 
-__thread Logger*  g_log = nullptr;
-__thread unsigned g_logLevel;
-__thread unsigned g_logDest;
+thread_local Logger*  g_log = nullptr;
+thread_local unsigned g_logLevel;
+thread_local unsigned g_logDest;
 
 Logger::Logger() : level_(0),
                    dest_(0)
@@ -95,13 +97,13 @@ bool Logger::CheckChangeFile()
 
 const std::string& Logger::MakeFileName()
 {
-    char buf[50];
-    time_t rawtime;
-    struct tm * timeinfo;
+    char buf[50]={0};
 
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    strftime(buf, 50, "%F.%T", timeinfo);
+    std::time_t rawtime=std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    struct std::tm timeinfo;
+
+    ::localtime_r(&rawtime,&timeinfo);
+    ::strftime(buf, 50 , "%F.%T", &timeinfo);
 
     fileName_ = directory_ + "/" + std::string(buf);
     fileName_ += ".log";
