@@ -73,6 +73,7 @@ if(ParentDirectory STREQUAL "")
 
     add_subdirectory(Logger)
     add_subdirectory(Protocol)
+    add_subdirectory(RaftCore)
 
 endif(ParentDirectory STREQUAL "")
 
