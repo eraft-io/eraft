@@ -27,13 +27,13 @@ public:
 
     void SetHardState(eraftpb::HardState &st);
 
-    void ApplySnapshot(eraftpb::Snapshot &snap);
+    bool ApplySnapshot(eraftpb::Snapshot &snap);
 
-    eraftpb::Snapshot CreateSnapshot(uint64_t i, eraftpb::ConfState* cs, std::vector<uint8_t>& bytes);
+    eraftpb::Snapshot CreateSnapshot(uint64_t i, eraftpb::ConfState* cs, const char* bytes);
 
-    void Compact(uint64_t compactIndex);
+    bool Compact(uint64_t compactIndex);
 
-    void Append(std::vector<eraftpb::Entry> entries);
+    bool Append(std::vector<eraftpb::Entry> entries);
 
 private:
     std::mutex mutex_;
