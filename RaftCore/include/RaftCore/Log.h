@@ -1,5 +1,5 @@
-#ifndef ERAFT_LOG_H
-#define ERAFT_LOG_H
+#ifndef ERAFT_RAFTCORE_LOG_H_
+#define ERAFT_RAFTCORE_LOG_H_
 
 #include <RaftCore/MemoryStorage.h>
 
@@ -75,5 +75,4 @@ private:
 } // namespace eraft
 
 
-
-#endif
+#endif // ERAFT_RAFTCORE_LOG_H_

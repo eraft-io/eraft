@@ -58,5 +58,5 @@ namespace eraft
         // TODO:
     }
 
-    
+
 } // namespace eraft

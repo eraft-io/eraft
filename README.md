@@ -48,6 +48,9 @@ TODO:
 cd ci; make build-dev
 ```
 
+#### Code Style
+https://google.github.io/styleguide/cppguide.html
+
 #### Join Us on GoogleGroup
 
 https://groups.google.com/g/eraftio
