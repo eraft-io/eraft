@@ -10,6 +10,8 @@
 namespace eraft
 {
 
+constexpr uint8_t NONE = 0;
+
 class ESoftState
 {
 public:

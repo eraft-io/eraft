@@ -1,4 +1,5 @@
 #include <RaftCore/Raft.h>
+#include <RaftCore/Util.h>
 #include <assert.h>
 
 namespace eraft
@@ -32,10 +33,35 @@ namespace eraft
         this->electionTimeout_ = c->electionTick;
         this->raftLog_ = new RaftLog(*c->storage);
         std::tuple<eraftpb::HardState, eraftpb::ConfState> st(this->raftLog_->storage_->InitialState());
+        eraftpb::HardState hardSt = std::get<0>(st);
+        eraftpb::ConfState confSt = std::get<1>(st);
+        if(c->peers == nullptr) {
+            std::vector<uint64_t> *peersTp;
+            for(auto node: confSt.nodes()) {
+                peersTp->push_back(node);
+            }
+            c->peers = peersTp;
+        }
+        uint64_t lastIndex = this->raftLog_->LastIndex();
+        for(auto iter = c->peers->begin(); iter != c->peers->end(); iter++) {
+            if(*iter == this->id_) {
+                this->prs_[*iter] = new Progress{lastIndex + 1, lastIndex};
+            } else {
+                this->prs_[*iter] = new Progress{lastIndex + 1};
+            }
+        }
+        this->BecomeFollower(0, NONE);
+        this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
+        this->term_ = hardSt.term();
+        this->vote_ = hardSt.vote();
+        this->raftLog_->commited_ = hardSt.commit();
+        if(c->applied > 0) {
+            this->raftLog_->applied_ = c->applied;
+        }
     }
 
     void RaftContext::SendSnapshot(uint64_t to) {
-        // TODO:
+        
     }
 
     bool RaftContext::SendAppend(uint64_t to) {
@@ -84,7 +110,10 @@ namespace eraft
     }
 
     void RaftContext::BecomeFollower(uint64_t term, uint64_t lead) {
-        // TODO:
+        this->state_ = NodeState::StateFollower;
+        this->lead_ = lead;
+        this->term_ = term;
+        this->vote_ = 0;
     }
 
     void RaftContext::BecomeCandidate() {
