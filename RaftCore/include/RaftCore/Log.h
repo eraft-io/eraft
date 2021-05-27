@@ -24,6 +24,7 @@ enum class NodeState {
 class RaftLog {
 
 public:
+    friend class RaftContext;
 
     RaftLog(StorageInterface &st);
 

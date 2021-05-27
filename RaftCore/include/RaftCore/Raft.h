@@ -30,7 +30,7 @@ struct Config {
 	// should only be set when starting a new raft cluster. Restarting raft from
 	// previous configuration will panic if peers is set. peer is private and only
 	// used for testing right now.
-    std::vector<uint64_t> peers;
+    std::vector<uint64_t> *peers;
 
 	// ElectionTick is the number of Node.Tick invocations that must pass between
 	// elections. That is, if a follower does not receive any message from the
@@ -72,6 +72,7 @@ struct Progress {
 class RaftContext {
 
 public:
+    friend class RaftLog;
 
     RaftContext(Config *c);
 

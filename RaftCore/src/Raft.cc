@@ -1,14 +1,37 @@
 #include <RaftCore/Raft.h>
+#include <assert.h>
 
 namespace eraft
 {
     bool Config::Validate() {
-        // TODO:
+        if(this->id == 0) {
+            // TODO: log cannot use none as id
+            return false;
+        }
+        if(this->heartbeatTick <= 0) {
+            // TODO: log heartbeat tick must be greater than 0
+            return false;
+        }
+        if(this->electionTick <= this->heartbeatTick) {
+            // TODO: election tick must be greater than heartbeat tick
+            return false;
+        }
+        if(this->storage == nullptr) {
+            // TODO: log storage cannot be nil
+            return false;
+        }
         return true;
     }
 
     RaftContext::RaftContext(Config *c) {
-        // TODO:
+        assert(c->Validate()); // if Validate config is false, terminating the program execution.
+        this->id_ = c->id;
+        this->prs_ = std::map<uint64_t, Progress *> {};
+        this->votes_ = std::map<uint64_t, bool> {};
+        this->heartbeatTimeout_ = c->heartbeatTick;
+        this->electionTimeout_ = c->electionTick;
+        this->raftLog_ = new RaftLog(*c->storage);
+        std::tuple<eraftpb::HardState, eraftpb::ConfState> st(this->raftLog_->storage_->InitialState());
     }
 
     void RaftContext::SendSnapshot(uint64_t to) {
