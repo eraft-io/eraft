@@ -10,7 +10,7 @@
 namespace eraft
 {
 
-constexpr uint8_t NONE = 0;
+const static uint8_t NONE = 0;
 
 class ESoftState
 {
@@ -80,7 +80,7 @@ public:
 
     // Step the entrance of handle message, see `MessageType`
     // on `eraftpb.proto` for what msgs should be handled
-    void Step(eraftpb::Message m);
+    bool Step(eraftpb::Message m);
 
 private:
 
@@ -166,7 +166,7 @@ private:
 
     std::map<uint64_t, bool> votes_;
 
-    std::vector<eraftpb::Message> msg_;
+    std::vector<eraftpb::Message> msgs_;
 
     uint64_t lead_;
 
