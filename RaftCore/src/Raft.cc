@@ -1,5 +1,6 @@
 #include <RaftCore/Raft.h>
 #include <RaftCore/Util.h>
+#include <algorithm>
 #include <assert.h>
 
 namespace eraft
@@ -472,6 +473,7 @@ namespace eraft
             uint64_t logTerm = l->Term(m.index());
             if(logTerm != m.log_term()) {
                 uint64_t index = 0;
+                // TODO: need to change to binary search.
                 for(uint64_t i = 0; i < l->ToSliceIndex(m.index() + 1); i++) {
                     if(l->entries_[i].term() == logTerm) {
                         index = i;
@@ -510,43 +512,162 @@ namespace eraft
     }
 
     bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
-        // TODO:
+        if(m.term() != NONE && m.term() < this->term_) {
+            return false;
+        }
+        if(m.reject()) {
+            uint64_t index = m.index();
+            if(index == NONE) {
+                return false;
+            }
+            if(m.log_term() != NONE) {
+                uint64_t logTerm = m.log_term();
+                RaftLog* l = this->raftLog_;
+                uint64_t fIndex;
+                for(uint64_t i = 0; i < l->entries_.size(); i++) {
+                    if(l->entries_[i].term() > logTerm) {
+                        fIndex = i;
+                    }
+                }
+                if(fIndex > 0 && l->entries_[fIndex-1].term() == logTerm) {
+                    index = l->ToEntryIndex(fIndex);
+                }
+            }
+            this->prs_[m.from()]->next = index;
+            this->SendAppend(m.from());
+            return false;
+        }
+        if(m.index() > this->prs_[m.from()]->match) {
+            this->prs_[m.from()]->match = m.index();
+            this->prs_[m.from()]->next = m.index() + 1;
+            this->LeaderCommit();
+            if(m.from() == this->leadTransferee_ && m.index() == this->raftLog_->LastIndex()) {
+                this->SendTimeoutNow(m.from());
+                this->leadTransferee_ = NONE;
+            }
+        }
     }
 
     void RaftContext::LeaderCommit() {
-        // TODO:
+        std::vector<uint64_t> match;
+        match.reserve(this->prs_.size());
+        uint64_t i = 0;
+        for(auto prs : this->prs_) {
+            match[i] = prs.second->match;
+            i++;
+        }
+        std::sort(match.begin(), match.end());
+        uint64_t n = match[(this->prs_.size()-1)/2];
+        if(n > this->raftLog_->commited_) {
+            uint64_t logTerm = this->raftLog_->Term(n);
+            if(logTerm == this->term_) {
+                this->raftLog_->commited_ = n;
+                this->BcastAppend();
+            }
+        }
     }
 
-    void RaftContext::HandleHeartbeat(eraftpb::Message m) {
-        // TODO:
+    bool RaftContext::HandleHeartbeat(eraftpb::Message m) {
+        if(m.term() != NONE && m.term() < this->term_) {
+            this->SendHeartbeatResponse(m.from(), true);
+            return false;
+        }
+        this->lead_ = m.from();
+        this->electionElapsed_ = 0;
+        this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
+        this->SendHeartbeatResponse(m.from(), false);
     }
 
     void RaftContext::AppendEntries(std::vector<eraftpb::Entry* > entries) {
-        // TODO:
+        uint64_t lastIndex = this->raftLog_->LastIndex();
+        uint64_t i = 0;
+        for(auto entry : entries) {
+            entry->set_term(this->term_);
+            entry->set_index(lastIndex + i + 1);
+            if(entry->entry_type() == eraftpb::EntryConfChange) {
+                if(this->pendingConfIndex_ != NONE) {
+                    continue;
+                }
+                this->pendingConfIndex_ = entry->index();
+            }
+            this->raftLog_->entries_.push_back(*entry);
+            this->prs_[this->id_]->match = this->raftLog_->LastIndex();
+            this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
+            this->BcastAppend();
+            if(this->prs_.size() == 1) {
+                this->raftLog_->commited_ = this->prs_[this->id_]->match;
+            }
+        }
     }
 
     ESoftState* RaftContext::SoftState() {
-        // TODO:
+        return new ESoftState{this->lead_, this->state_};
     }
 
-    eraftpb::HardState RaftContext::HardState() {
-        // TODO:
+    eraftpb::HardState* RaftContext::HardState() {
+        eraftpb::HardState* hd = new eraftpb::HardState;
+        hd->set_term(this->term_);
+        hd->set_vote(this->vote_);
+        hd->set_commit(this->raftLog_->commited_);
+        return hd;
     }
 
-    void RaftContext::HandleSnapshot(eraftpb::Message m) {
-        // TODO:
+    bool RaftContext::HandleSnapshot(eraftpb::Message m) {
+        eraftpb::SnapshotMetadata meta = m.snapshot().metadata();
+        if(meta.index() <= this->raftLog_->commited_) {
+            this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->commited_);
+            return false;
+        }
+        this->BecomeFollower(std::max(this->term_, m.term()), m.from());
+        uint64_t first = meta.index() + 1;
+        if(this->raftLog_->entries_.size() > 0) {
+            this->raftLog_->entries_.clear();
+        }
+        this->raftLog_->firstIndex_ = first;
+        this->raftLog_->applied_ = meta.index();
+        this->raftLog_->commited_ = meta.index();
+        this->raftLog_->stabled_ = meta.index();
+        for(auto peer : meta.conf_state().nodes()) {
+            this->prs_[peer] = new Progress;
+        }
+        this->raftLog_->pendingSnapshot_ = m.mutable_snapshot();
+        this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->LastIndex());
     }
 
-    void RaftContext::HandleTransferLeader(eraftpb::Message m) {
-        // TODO:
+    bool RaftContext::HandleTransferLeader(eraftpb::Message m) {
+        if(m.from() == this->id_) {
+            return false;
+        }
+        if(this->leadTransferee_ != NONE && this->leadTransferee_ == m.from()) {
+            return false;
+        }
+        if(this->prs_[m.from()] == nullptr) {
+            return false;
+        }
+        this->leadTransferee_ = m.from();
+        this->transferElapsed_ = 0;
+        if(this->prs_[m.from()]->match == this->raftLog_->LastIndex()) {
+            this->SendTimeoutNow(m.from());
+        } else {
+            this->SendAppend(m.from());
+        }
     }
 
     void RaftContext::AddNode(uint64_t id) {
-        // TODO:
+        if(this->prs_[id] == nullptr) {
+            this->prs_[id] = new Progress{0, 1};
+        }
+        this->pendingConfIndex_ = NONE;
     }
 
     void RaftContext::RemoveNode(uint64_t id) {
-        // TODO:
+        if(this->prs_[id] != nullptr) {
+            this->prs_.erase(id);
+            if(this->state_ == NodeState::StateLeader) {
+                this->LeaderCommit();
+            }
+        }
+        this->pendingConfIndex_ = NONE;
     }
 
 } // namespace eraft

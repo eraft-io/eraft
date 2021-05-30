@@ -8,10 +8,14 @@
 namespace eraft
 {
 
-class Ready : ESoftState, eraftpb::HardState
+class Ready
 {
     public:
+
+    ESoftState* softSt;
     
+    eraftpb::HardState hardSt;
+
     Ready();
     // Entries specifies entries to be saved to stable storage BEFORE
     // Messages are sent.
@@ -37,11 +41,11 @@ public:
 
     void Campaign();
 
-    void Propose(std::vector<uint8_t> data);
+    void Propose(std::vector<uint8_t>* data);
 
     void ProposeConfChange(eraftpb::ConfChange cc);
 
-    eraftpb::ConfChange* ApplyConfChange(eraftpb::ConfChange cc);
+    eraftpb::ConfState* ApplyConfChange(eraftpb::ConfChange cc);
 
     void Step(eraftpb::Message m);
 

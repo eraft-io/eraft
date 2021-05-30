@@ -76,6 +76,8 @@ class RaftContext {
 public:
     friend class RaftLog;
 
+    friend class RawNode;
+
     RaftContext(Config *c);
 
     // Step the entrance of handle message, see `MessageType`
@@ -83,6 +85,15 @@ public:
     bool Step(eraftpb::Message m);
 
 private:
+
+    std::vector<uint64_t> Nodes(RaftContext* raft) {
+        std::vector<uint64_t> nodes;
+        for(auto pr : raft->prs_) {
+            nodes.push_back(pr.first);
+        }
+        std::sort(nodes.begin(), nodes.end());
+        return nodes;
+    }
 
     void SendSnapshot(uint64_t to);
 
@@ -136,17 +147,17 @@ private:
 
     void LeaderCommit();
 
-    void HandleHeartbeat(eraftpb::Message m);
+    bool HandleHeartbeat(eraftpb::Message m);
 
     void AppendEntries(std::vector<eraftpb::Entry* > entries);
 
     ESoftState* SoftState();
 
-    eraftpb::HardState HardState();
+    eraftpb::HardState* HardState();
 
-    void HandleSnapshot(eraftpb::Message m);
+    bool HandleSnapshot(eraftpb::Message m);
 
-    void HandleTransferLeader(eraftpb::Message m);
+    bool HandleTransferLeader(eraftpb::Message m);
 
     void AddNode(uint64_t id);
 

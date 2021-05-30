@@ -26,6 +26,8 @@ class RaftLog {
 public:
     friend class RaftContext;
 
+    friend class RawNode;
+
     RaftLog(StorageInterface &st);
 
     ~RaftLog();
