@@ -120,19 +120,19 @@ private:
 
     void StepLeader(eraftpb::Message m);
 
-    void DoElection();
+    bool DoElection();
 
     void BcastHeartbeat();
 
     void BcastAppend();
 
-    void HandleRequestVote(eraftpb::Message m);
+    bool HandleRequestVote(eraftpb::Message m);
 
-    void HandleRequestVoteResponse(eraftpb::Message m);
+    bool HandleRequestVoteResponse(eraftpb::Message m);
 
-    void HandleAppendEntries(eraftpb::Message m);
+    bool HandleAppendEntries(eraftpb::Message m);
 
-    void HandleAppendEntriesResponse(eraftpb::Message m);
+    bool HandleAppendEntriesResponse(eraftpb::Message m);
 
     void LeaderCommit();
 

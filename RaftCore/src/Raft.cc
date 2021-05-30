@@ -291,43 +291,225 @@ namespace eraft
                 }
             }
         case eraftpb::MsgTimeoutNow:
-            this->DoElection();    
+            this->DoElection();
+        default:
+            break;    
         }
     }
 
     void RaftContext::StepCandidate(eraftpb::Message m) {
-        // TODO:
+        switch (m.msg_type())
+        {
+        case eraftpb::MsgHup:
+            this->DoElection();
+        case eraftpb::MsgBeat:
+        case eraftpb::MsgPropose:
+        case eraftpb::MsgAppend:
+            {
+                if(m.term() == this->term_) {
+                    this->BecomeFollower(m.term(), m.from());
+                }
+                this->HandleAppendEntries(m);
+            }
+        case eraftpb::MsgAppendResponse:
+        case eraftpb::MsgRequestVote:
+            this->HandleRequestVote(m);
+        case eraftpb::MsgRequestVoteResponse:
+            this->HandleRequestVoteResponse(m);
+        case eraftpb::MsgSnapshot:
+            this->HandleSnapshot(m);
+        case eraftpb::MsgHeartbeat:
+            {
+                if(m.term() == this->term_) {
+                    this->BecomeFollower(m.term(), m.from());
+                }
+                this->HandleHeartbeat(m);
+            }
+        case eraftpb::MsgHeartbeatResponse:
+        case eraftpb::MsgTransferLeader:
+            {
+                if(this->lead_ != NONE) {
+                    m.set_to(this->lead_);
+                    this->msgs_.push_back(m);
+                }
+            }
+        case eraftpb::MsgTimeoutNow:
+        default:
+            break;
+        }
     }
 
     void RaftContext::StepLeader(eraftpb::Message m) {
-        // TODO:
+        switch (m.msg_type())
+        {
+        case eraftpb::MsgHup:
+        case eraftpb::MsgBeat:
+            this->BcastHeartbeat();
+        case eraftpb::MsgPropose:
+            {
+                if(this->leadTransferee_ == NONE) {
+                    std::vector<eraftpb::Entry*> ents;
+                    for(auto ent : m.entries()) {
+                        ents.push_back(&ent);
+                    }
+                    this->AppendEntries(ents);
+                }
+            }
+        case eraftpb::MsgAppend:
+            this->HandleAppendEntries(m);
+        case eraftpb::MsgAppendResponse:
+            this->HandleAppendEntriesResponse(m);
+        case eraftpb::MsgRequestVote:
+            this->HandleRequestVote(m);
+        case eraftpb::MsgRequestVoteResponse:
+        case eraftpb::MsgSnapshot:
+            this->HandleSnapshot(m);
+        case eraftpb::MsgHeartbeat:
+            this->HandleHeartbeat(m);
+        case eraftpb::MsgHeartbeatResponse:
+            this->SendAppend(m.from());
+        case eraftpb::MsgTransferLeader:
+            this->HandleTransferLeader(m);
+        case eraftpb::MsgTimeoutNow:
+        default:
+            break;
+        }
     }
 
-    void RaftContext::DoElection() {
-        // TODO:
+    bool RaftContext::DoElection() {
+        this->BecomeCandidate();
+        this->heartbeatElapsed_ = 0;
+        this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
+        if(this->prs_.size() == 1) {
+            this->BecomeLeader();
+            return true;
+        }
+        uint64_t lastIndex = this->raftLog_->LastIndex();
+        uint64_t lastLogTerm = this->raftLog_->Term(lastIndex);
+        for(auto peer : this->prs_) {
+            if(peer.first == this->id_) {
+                continue;
+            }
+            this->SendRequestVote(peer.first, lastIndex, lastLogTerm);
+        }
     }
 
     void RaftContext::BcastHeartbeat() {
-        // TODO:
+        for(auto peer: this->prs_) {
+            if(peer.first == this->id_) {
+                continue;
+            }
+            this->SendHeartbeat(peer.first);
+        }
     }
 
     void RaftContext::BcastAppend() {
-        // TODO:
+        for(auto peer: this->prs_) {
+            if(peer.first == this->id_) {
+                continue;
+            }
+            this->SendAppend(peer.first);
+        }
     }
 
-    void RaftContext::HandleRequestVote(eraftpb::Message m) {
-        // TODO:
+    bool RaftContext::HandleRequestVote(eraftpb::Message m) {
+        if(m.term() != NONE && m.term() < this->term_) {
+            this->SendRequestVoteResponse(m.from(), true);
+            return true;
+        }
+        if(this->vote_ != NONE && this->vote_ != m.from()) {
+            this->SendRequestVoteResponse(m.from(), true);
+            return true;
+        }
+        uint64_t lastIndex = this->raftLog_->LastIndex();
+        uint64_t lastLogTerm = this->raftLog_->Term(lastIndex);
+        if(lastLogTerm > m.log_term() || 
+            (lastLogTerm == m.log_term() && lastIndex > m.index())) {
+            this->SendRequestVoteResponse(m.from(), true);
+            return true;
+        }
+        this->vote_ = m.from();
+        this->electionElapsed_ = 0;
+        this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
+        this->SendRequestVoteResponse(m.from(), false);
     }
 
-    void RaftContext::HandleRequestVoteResponse(eraftpb::Message m) {
-        // TODO:
+    bool RaftContext::HandleRequestVoteResponse(eraftpb::Message m) {
+        if(m.term() != NONE && m.term() < this->term_) {
+            return true;
+        }
+        this->votes_[m.from()] = !m.reject();
+        uint8_t grant = 0;
+        uint8_t votes = this->votes_.size();
+        uint8_t threshold = this->prs_.size() / 2;
+        for(auto vote: this->votes_) {
+            if(vote.second) {
+                grant++;
+            }
+        }
+        if(grant > threshold) {
+            this->BecomeLeader();
+        } else if(votes - grant > threshold) {
+            this->BecomeFollower(this->term_, NONE);
+        }
     }
 
-    void RaftContext::HandleAppendEntries(eraftpb::Message m) {
-        // TODO:
+    bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
+        if(m.term() != NONE && m.term() < this->term_) {
+            this->SendAppendResponse(m.from(), true, NONE, NONE);
+            return false;
+        }
+        this->electionElapsed_ = 0;
+        this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
+        this->lead_ = m.from();
+        RaftLog* l = this->raftLog_;
+        uint64_t lastIndex = l->LastIndex();
+        if(m.index() > lastIndex) {
+            this->SendAppendResponse(m.from(), true, NONE, lastIndex+1);
+            return false;
+        }
+        if(m.index() >= l->firstIndex_) {
+            uint64_t logTerm = l->Term(m.index());
+            if(logTerm != m.log_term()) {
+                uint64_t index = 0;
+                for(uint64_t i = 0; i < l->ToSliceIndex(m.index() + 1); i++) {
+                    if(l->entries_[i].term() == logTerm) {
+                        index = i;
+                    }
+                }
+                this->SendAppendResponse(m.from(), true, logTerm, index);
+                return false;
+            }
+        }
+        uint64_t count = 0;
+        for(auto entry: m.entries()) {
+            if(entry.index() < l->firstIndex_) {
+                continue;
+            }
+            if(entry.index() <= l->LastIndex()) {
+                uint64_t logTerm = l->Term(entry.index());
+                if(logTerm != entry.term()) {
+                    uint64_t idx = l->ToSliceIndex(entry.index());
+                    l->entries_[idx] = entry;
+                    l->entries_.erase(l->entries_.begin(), l->entries_.begin() + idx + 1);
+                    l->stabled_ = std::min(l->stabled_, entry.index()-1);
+                }
+            } else {
+                uint64_t n = m.entries().size();
+                for(uint64_t j = count; j < n; j++) {
+                    l->entries_.push_back(m.entries()[j]);
+                }
+                break;
+            }
+            count++;
+        }
+        if(m.commit() > l->commited_) {
+            l->commited_ = std::min(m.commit(), m.index() + m.entries().size());
+        }
+        this->SendAppendResponse(m.from(), false, NONE, l->LastIndex());
     }
 
-    void RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
+    bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
         // TODO:
     }
 
