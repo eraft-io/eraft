@@ -1,3 +1,23 @@
+// Copyright 2015 The etcd Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// @file Log.h
+// @author Colin
+// This module declares the eraft::RaftLog class.
+//
+// Inspired by etcd golang version.
+ 
 #ifndef ERAFT_RAFTCORE_LOG_H_
 #define ERAFT_RAFTCORE_LOG_H_
 
@@ -32,16 +52,23 @@ public:
 
     ~RaftLog();
 
+    // LastIndex return the last index of the log entries
     uint64_t LastIndex();
 
+    // Term return the term of the entry in the given index
     uint64_t Term(uint64_t i);
 
 private:
 
+    // We need to compact the log entries in some point of time like
+    // storage compact stabled log entries prevent the log entries
+    // grow unlimitedly in memory
     void MaybeCompact();
 
+    // unstableEntries return all the unstable entries
     std::vector<eraftpb::Entry> UnstableEntries();
 
+    // nextEnts returns all the committed but not applied entries
     std::vector<eraftpb::Entry> NextEnts();
 
     uint64_t ToSliceIndex(uint64_t i);
