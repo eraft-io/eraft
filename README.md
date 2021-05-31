@@ -1,5 +1,5 @@
 # eraft
-基于 C++ 实现的 Raft 库 (Raft library implemented by C++)
+基于 C++ 实现的 Raft, Etcd Raft 的 c++ 实现版本 (Raft library implemented by C++, inspired by etcd golang version)
 
 #### Overview
 
@@ -9,11 +9,11 @@ Raft is a protocol with which a cluster of nodes can maintain a replicated state
 
 | Feature                       | Development Progress | Review |
 | ----------------------------- | -------------------- | ------ |
-| Leader election               |                      |        |
-| Log replication               |                      |        |
-| Log compaction                |                      |        |
-| Membership changes            |                      |        |
-| Leadership transfer extension |                      |        |
+| Leader election               |          done            |        |
+| Log replication               |          done            |        |
+| Log compaction                |          done            |        |
+| Membership changes            |          done            |        |
+| Leadership transfer extension |          done            |        |
 
 #### Advance Dev Schedule
 
