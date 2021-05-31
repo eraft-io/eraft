@@ -33,7 +33,7 @@ class Ready
 {
     public:
 
-    ESoftState* softSt;
+    std::shared_ptr<ESoftState> softSt;
     
     eraftpb::HardState hardSt;
 
@@ -54,9 +54,9 @@ class RawNode {
 
 public:
 
-    RaftContext* raft;
+    std::shared_ptr<RaftContext> raft;
 
-    RawNode(Config* config);
+    RawNode(Config& config);
 
     // Tick advances the internal logical clock by a single tick.
     void Tick();
@@ -95,9 +95,9 @@ public:
 
 private:
 
-    ESoftState* prevSoftSt;
+    std::shared_ptr<ESoftState> prevSoftSt;
 
-    eraftpb::HardState* prevHardSt;
+    std::shared_ptr<eraftpb::HardState> prevHardSt;
 };
 
 } // namespace eraft

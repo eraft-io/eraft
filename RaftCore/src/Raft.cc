@@ -25,30 +25,30 @@ namespace eraft
         return true;
     }
 
-    RaftContext::RaftContext(Config *c) {
-        assert(c->Validate()); // if Validate config is false, terminating the program execution.
-        this->id_ = c->id;
-        this->prs_ = std::map<uint64_t, Progress *> {};
+    RaftContext::RaftContext(Config &c) {
+        assert(c.Validate()); // if Validate config is false, terminating the program execution.
+        this->id_ = c.id;
+        this->prs_ = std::map<uint64_t, std::shared_ptr<Progress> > {};
         this->votes_ = std::map<uint64_t, bool> {};
-        this->heartbeatTimeout_ = c->heartbeatTick;
-        this->electionTimeout_ = c->electionTick;
-        this->raftLog_ = new RaftLog(*c->storage);
+        this->heartbeatTimeout_ = c.heartbeatTick;
+        this->electionTimeout_ = c.electionTick;
+        this->raftLog_ = std::make_shared<RaftLog>(*c.storage);
         std::tuple<eraftpb::HardState, eraftpb::ConfState> st(this->raftLog_->storage_->InitialState());
         eraftpb::HardState hardSt = std::get<0>(st);
         eraftpb::ConfState confSt = std::get<1>(st);
-        if(c->peers == nullptr) {
+        if(c.peers == nullptr) {
             std::vector<uint64_t> *peersTp;
             for(auto node: confSt.nodes()) {
                 peersTp->push_back(node);
             }
-            c->peers = peersTp;
+            c.peers = peersTp;
         }
         uint64_t lastIndex = this->raftLog_->LastIndex();
-        for(auto iter = c->peers->begin(); iter != c->peers->end(); iter++) {
+        for(auto iter = c.peers->begin(); iter != c.peers->end(); iter++) {
             if(*iter == this->id_) {
-                this->prs_[*iter] = new Progress{lastIndex + 1, lastIndex};
+                this->prs_[*iter] = std::make_shared<Progress>(lastIndex + 1, lastIndex);
             } else {
-                this->prs_[*iter] = new Progress{lastIndex + 1};
+                this->prs_[*iter] = std::make_shared<Progress>(lastIndex + 1);
             }
         }
         this->BecomeFollower(0, NONE);
@@ -56,8 +56,8 @@ namespace eraft
         this->term_ = hardSt.term();
         this->vote_ = hardSt.vote();
         this->raftLog_->commited_ = hardSt.commit();
-        if(c->applied > 0) {
-            this->raftLog_->applied_ = c->applied;
+        if(c.applied > 0) {
+            this->raftLog_->applied_ = c.applied;
         }
     }
 
@@ -463,19 +463,18 @@ namespace eraft
         this->electionElapsed_ = 0;
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
         this->lead_ = m.from();
-        RaftLog* l = this->raftLog_;
-        uint64_t lastIndex = l->LastIndex();
+        uint64_t lastIndex = this->raftLog_->LastIndex();
         if(m.index() > lastIndex) {
             this->SendAppendResponse(m.from(), true, NONE, lastIndex+1);
             return false;
         }
-        if(m.index() >= l->firstIndex_) {
-            uint64_t logTerm = l->Term(m.index());
+        if(m.index() >= this->raftLog_->firstIndex_) {
+            uint64_t logTerm = this->raftLog_->Term(m.index());
             if(logTerm != m.log_term()) {
                 uint64_t index = 0;
                 // TODO: need to change to binary search.
-                for(uint64_t i = 0; i < l->ToSliceIndex(m.index() + 1); i++) {
-                    if(l->entries_[i].term() == logTerm) {
+                for(uint64_t i = 0; i < this->raftLog_->ToSliceIndex(m.index() + 1); i++) {
+                    if(this->raftLog_->entries_[i].term() == logTerm) {
                         index = i;
                     }
                 }
@@ -485,30 +484,30 @@ namespace eraft
         }
         uint64_t count = 0;
         for(auto entry: m.entries()) {
-            if(entry.index() < l->firstIndex_) {
+            if(entry.index() < this->raftLog_->firstIndex_) {
                 continue;
             }
-            if(entry.index() <= l->LastIndex()) {
-                uint64_t logTerm = l->Term(entry.index());
+            if(entry.index() <= this->raftLog_->LastIndex()) {
+                uint64_t logTerm = this->raftLog_->Term(entry.index());
                 if(logTerm != entry.term()) {
-                    uint64_t idx = l->ToSliceIndex(entry.index());
-                    l->entries_[idx] = entry;
-                    l->entries_.erase(l->entries_.begin(), l->entries_.begin() + idx + 1);
-                    l->stabled_ = std::min(l->stabled_, entry.index()-1);
+                    uint64_t idx = this->raftLog_->ToSliceIndex(entry.index());
+                    this->raftLog_->entries_[idx] = entry;
+                    this->raftLog_->entries_.erase(this->raftLog_->entries_.begin(), this->raftLog_->entries_.begin() + idx + 1);
+                    this->raftLog_->stabled_ = std::min(this->raftLog_->stabled_, entry.index()-1);
                 }
             } else {
                 uint64_t n = m.entries().size();
                 for(uint64_t j = count; j < n; j++) {
-                    l->entries_.push_back(m.entries()[j]);
+                    this->raftLog_->entries_.push_back(m.entries()[j]);
                 }
                 break;
             }
             count++;
         }
-        if(m.commit() > l->commited_) {
-            l->commited_ = std::min(m.commit(), m.index() + m.entries().size());
+        if(m.commit() > this->raftLog_->commited_) {
+            this->raftLog_->commited_ = std::min(m.commit(), m.index() + m.entries().size());
         }
-        this->SendAppendResponse(m.from(), false, NONE, l->LastIndex());
+        this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->LastIndex());
     }
 
     bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
@@ -522,15 +521,14 @@ namespace eraft
             }
             if(m.log_term() != NONE) {
                 uint64_t logTerm = m.log_term();
-                RaftLog* l = this->raftLog_;
                 uint64_t fIndex;
-                for(uint64_t i = 0; i < l->entries_.size(); i++) {
-                    if(l->entries_[i].term() > logTerm) {
+                for(uint64_t i = 0; i < this->raftLog_->entries_.size(); i++) {
+                    if(this->raftLog_->entries_[i].term() > logTerm) {
                         fIndex = i;
                     }
                 }
-                if(fIndex > 0 && l->entries_[fIndex-1].term() == logTerm) {
-                    index = l->ToEntryIndex(fIndex);
+                if(fIndex > 0 && this->raftLog_->entries_[fIndex-1].term() == logTerm) {
+                    index = this->raftLog_->ToEntryIndex(fIndex);
                 }
             }
             this->prs_[m.from()]->next = index;
@@ -600,12 +598,12 @@ namespace eraft
         }
     }
 
-    ESoftState* RaftContext::SoftState() {
-        return new ESoftState{this->lead_, this->state_};
+    std::shared_ptr<ESoftState> RaftContext::SoftState() {
+        return std::make_shared<ESoftState>(this->lead_, this->state_);
     }
 
-    eraftpb::HardState* RaftContext::HardState() {
-        eraftpb::HardState* hd = new eraftpb::HardState;
+    std::shared_ptr<eraftpb::HardState> RaftContext::HardState() {
+        std::shared_ptr<eraftpb::HardState> hd = std::make_shared<eraftpb::HardState>();
         hd->set_term(this->term_);
         hd->set_vote(this->vote_);
         hd->set_commit(this->raftLog_->commited_);
@@ -628,7 +626,7 @@ namespace eraft
         this->raftLog_->commited_ = meta.index();
         this->raftLog_->stabled_ = meta.index();
         for(auto peer : meta.conf_state().nodes()) {
-            this->prs_[peer] = new Progress;
+            this->prs_[peer] = std::make_shared<Progress>();
         }
         this->raftLog_->pendingSnapshot_ = m.mutable_snapshot();
         this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->LastIndex());
@@ -655,7 +653,7 @@ namespace eraft
 
     void RaftContext::AddNode(uint64_t id) {
         if(this->prs_[id] == nullptr) {
-            this->prs_[id] = new Progress{0, 1};
+            this->prs_[id] = std::make_shared<Progress>(1);
         }
         this->pendingConfIndex_ = NONE;
     }

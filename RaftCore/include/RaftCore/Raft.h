@@ -25,6 +25,7 @@
 #include <eraftio/eraftpb.pb.h>
 #include <stdint.h>
 #include <string>
+#include <memory>
 #include <vector>
 #include <RaftCore/Log.h>
 
@@ -37,11 +38,16 @@ class ESoftState
 {
 public:
 
+    ESoftState(uint64_t lead_,  NodeState raftState) {
+        this->lead = lead_;
+        this->raftState = raftState;
+    }
+
     uint64_t lead;
 
-    NodeState& raftState;
+    NodeState raftState;
 
-    bool Equal(ESoftState* b);
+    bool Equal(std::shared_ptr<ESoftState> b);
 };
 
 struct Config {
@@ -86,6 +92,18 @@ struct Config {
 
 struct Progress {
     
+    Progress(uint64_t next, uint64_t match) {
+        this->next = next;
+        this->match = match;
+    }
+
+    Progress(uint64_t next) {
+        this->next = next;
+    }
+
+    Progress() {
+    }
+
     uint64_t match;
 
     uint64_t next;
@@ -99,7 +117,7 @@ public:
 
     friend class RawNode;
 
-    RaftContext(Config *c);
+    RaftContext(Config &c);
 
     // Step the entrance of handle message, see `MessageType`
     // on `eraftpb.proto` for what msgs should be handled
@@ -107,7 +125,7 @@ public:
 
 private:
 
-    std::vector<uint64_t> Nodes(RaftContext* raft) {
+    std::vector<uint64_t> Nodes(std::shared_ptr<RaftContext> raft) {
         std::vector<uint64_t> nodes;
         for(auto pr : raft->prs_) {
             nodes.push_back(pr.first);
@@ -118,10 +136,13 @@ private:
 
     void SendSnapshot(uint64_t to);
 
+    // sendAppend sends an append RPC with new entries (if any) and the
+    // current commit index to the given peer. Returns true if a message was sent.
     bool SendAppend(uint64_t to);
 
     void SendAppendResponse(uint64_t to, bool reject, uint64_t term, uint64_t index);
 
+    // sendHeartbeat sends a heartbeat RPC to the given peer.
     void SendHeartbeat(uint64_t to);
 
     void SendHeartbeatResponse(uint64_t to, bool reject);
@@ -132,6 +153,7 @@ private:
 
     void SendTimeoutNow(uint64_t to);
 
+    // tick advances the internal logical clock by a single tick.
     void Tick();
 
     void TickElection();
@@ -140,10 +162,13 @@ private:
 
     void TickTransfer();
 
+    // becomeFollower transform this peer's state to Follower
     void BecomeFollower(uint64_t term, uint64_t lead);
 
+    // becomeCandidate transform this peer's state to candidate
     void BecomeCandidate();
 
+    // becomeLeader transform this peer's state to leader
     void BecomeLeader();
 
     void StepFollower(eraftpb::Message m);
@@ -162,26 +187,31 @@ private:
 
     bool HandleRequestVoteResponse(eraftpb::Message m);
 
+    // handleAppendEntries handle AppendEntries RPC request
     bool HandleAppendEntries(eraftpb::Message m);
 
     bool HandleAppendEntriesResponse(eraftpb::Message m);
 
     void LeaderCommit();
 
+    // handleHeartbeat handle Heartbeat RPC request
     bool HandleHeartbeat(eraftpb::Message m);
 
     void AppendEntries(std::vector<eraftpb::Entry* > entries);
 
-    ESoftState* SoftState();
+    std::shared_ptr<ESoftState> SoftState();
 
-    eraftpb::HardState* HardState();
+    std::shared_ptr<eraftpb::HardState> HardState();
 
+    // handleSnapshot handle Snapshot RPC request
     bool HandleSnapshot(eraftpb::Message m);
 
     bool HandleTransferLeader(eraftpb::Message m);
 
+    // addNode add a new node to raft group
     void AddNode(uint64_t id);
 
+    // removeNode remove a node from raft group
     void RemoveNode(uint64_t id);
 
     uint64_t id_;
@@ -190,9 +220,9 @@ private:
 
     uint64_t vote_;
 
-    RaftLog *raftLog_;
+    std::shared_ptr<RaftLog> raftLog_;
 
-    std::map<uint64_t, Progress *> prs_;
+    std::map<uint64_t, std::shared_ptr<Progress> > prs_;
 
     NodeState state_;
 

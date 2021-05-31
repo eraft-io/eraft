@@ -4,11 +4,10 @@
 namespace eraft
 {
 
-    RawNode::RawNode(Config* config) {
-        RaftContext r = RaftContext(config);
-        this->raft = &r;
-        this->prevSoftSt = r.SoftState();
-        this->prevHardSt = r.HardState();
+    RawNode::RawNode(Config& config) {
+        this->raft = std::make_shared<RaftContext>(config);
+        this->prevSoftSt = this->raft->SoftState();
+        this->prevHardSt = this->raft->HardState();
     }
 
     void RawNode::Tick() {
@@ -70,20 +69,20 @@ namespace eraft
     }
 
     Ready RawNode::EReady() {
-        RaftContext* r = this->raft;
+        std::shared_ptr<RaftContext> r = this->raft;
         Ready rd;
         rd.entries = r->raftLog_->UnstableEntries();
         rd.committedEntries = r->raftLog_->NextEnts();
         rd.messages = r->msgs_;
         // TODO: check
-        ESoftState *softSt = r->SoftState();
-        eraftpb::HardState *hardSt = r->HardState();
-        if(!softSt->Equal(this->prevSoftSt)) {
-            this->prevSoftSt = softSt;
-            rd.softSt = softSt;
+        // ESoftState *softSt = r->SoftState();
+        // eraftpb::HardState *hardSt = r->HardState();
+        if(!r->SoftState()->Equal(this->prevSoftSt)) {
+            this->prevSoftSt = r->SoftState();
+            rd.softSt = r->SoftState();
         }
-        if(!IsHardStateEqual(*hardSt, *this->prevHardSt)) {
-            rd.hardSt = *hardSt;
+        if(!IsHardStateEqual(*r->HardState(), *this->prevHardSt)) {
+            rd.hardSt = *r->HardState();
         }
         this->raft->msgs_.clear();
         if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
@@ -94,15 +93,13 @@ namespace eraft
     }
 
     bool RawNode::HasReady() {
-        RaftContext* r = this->raft; 
-        eraftpb::HardState* hardSt = r->HardState();
-        if(!IsEmptyHardState(*hardSt) && !IsHardStateEqual(*hardSt, *this->prevHardSt)) {
+        if(!IsEmptyHardState(*this->raft->HardState()) && !IsHardStateEqual(*this->raft->HardState(), *this->prevHardSt)) {
             return true;
         }
-        if(r->raftLog_->UnstableEntries().size() > 0 || r->raftLog_->NextEnts().size() > 0 || r->msgs_.size() > 0) {
+        if(this->raft->raftLog_->UnstableEntries().size() > 0 || this->raft->raftLog_->NextEnts().size() > 0 || this->raft->msgs_.size() > 0) {
             return true;
         }
-        if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
+        if(!IsEmptySnap(this->raft->raftLog_->pendingSnapshot_)) {
             return true;
         }
         return false;
@@ -110,7 +107,7 @@ namespace eraft
 
     void RawNode::Advance(Ready rd) {
         if(!IsEmptyHardState(rd.hardSt)) {
-            this->prevHardSt = &rd.hardSt;
+            this->prevHardSt = std::make_shared<eraftpb::HardState>(rd.hardSt);
         }
         if(rd.entries.size() > 0) {
             this->raft->raftLog_->stabled_ = rd.entries[rd.entries.size()-1].index();
