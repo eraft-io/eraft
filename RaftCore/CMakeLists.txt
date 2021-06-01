@@ -11,6 +11,7 @@ set(Headers
     include/RaftCore/Raft.h
     include/RaftCore/RawNode.h
     include/RaftCore/Storage.h
+    include/RaftCore/Util.h
 )
 
 set(Sources
@@ -32,4 +33,4 @@ target_link_libraries(${This} PUBLIC
     gtest_main
 )
 
-# add_subdirectory(test)
+add_subdirectory(test)

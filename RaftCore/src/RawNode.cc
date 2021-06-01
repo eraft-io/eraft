@@ -40,12 +40,12 @@ namespace eraft
         this->raft->Step(msg);
     }
 
-    eraftpb::ConfState* RawNode::ApplyConfChange(eraftpb::ConfChange cc) {
-        eraftpb::ConfState *confState;
+    eraftpb::ConfState RawNode::ApplyConfChange(eraftpb::ConfChange cc) {
+        eraftpb::ConfState confState;
         if(cc.node_id() == NONE) {
             std::vector<uint64_t> nodes = this->raft->Nodes(this->raft);
             for(uint64_t i = 0; i < nodes.size(); i++) {
-                confState->set_nodes(i, nodes[i]);
+                confState.set_nodes(i, nodes[i]);
             }
         }
         switch (cc.change_type())
@@ -59,7 +59,7 @@ namespace eraft
         }
         std::vector<uint64_t> nodes = this->raft->Nodes(this->raft);
             for(uint64_t i = 0; i < nodes.size(); i++) {
-                confState->set_nodes(i, nodes[i]);
+                confState.set_nodes(i, nodes[i]);
             }
         return confState;
     }
@@ -86,8 +86,8 @@ namespace eraft
         }
         this->raft->msgs_.clear();
         if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
-            rd.snapshot = *r->raftLog_->pendingSnapshot_;
-            r->raftLog_->pendingSnapshot_ = nullptr;
+            rd.snapshot = r->raftLog_->pendingSnapshot_;
+            r->raftLog_->pendingSnapshot_.clear_data();
         }
         return rd;
     }

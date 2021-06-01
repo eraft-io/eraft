@@ -24,6 +24,8 @@ if [ ! -d "$SRCPATH/output" ]; then
 fi
 
 cp $build_dir/Logger/test/LoggerTests $SRCPATH/output
+cp $build_dir/RaftCore/test/RaftTests $SRCPATH/output
 
 # run test
 $build_dir/Logger/test/LoggerTests
+$build_dir/RaftCore/test/RaftTests

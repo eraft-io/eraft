@@ -18,13 +18,16 @@ namespace eraft
     RaftLog::RaftLog(StorageInterface &st) {
         uint64_t lo = st.FirstIndex();
         uint64_t hi = st.LastIndex();
+        // std::cout << "RaftLog::st.LastIndex() = " << st.LastIndex() << std::endl;
         std::vector<eraftpb::Entry> entries = st.Entries(lo, hi + 1);
         this->storage_ = &st;
-        this->entries_ = entries_;
+        this->entries_ = entries;
         this->applied_ = lo - 1;
         this->stabled_ = hi;
         this->firstIndex_ = lo;
     }
+
+    RaftLog::~RaftLog() {}
 
     // We need to compact the log entries in some point of time like
     // storage compact stabled log entries prevent the log entries
@@ -69,9 +72,9 @@ namespace eraft
     }
 
     uint64_t RaftLog::LastIndex() {
-        uint64_t index;
-        if(!IsEmptySnap(this->pendingSnapshot_)) {
-            index = this->pendingSnapshot_->metadata().index();
+        uint64_t index = 0;
+        if(!IsEmptySnap(pendingSnapshot_)) {
+            index = pendingSnapshot_.metadata().index();
         }
         if(this->entries_.size() > 0) {
             return std::max(this->entries_[this->entries_.size() - 1].index(), index);
@@ -86,9 +89,9 @@ namespace eraft
             return this->entries_[i-this->firstIndex_].term();
         }
         uint64_t term = this->storage_->Term(i);
-        if(term == 0 && !IsEmptySnap(this->pendingSnapshot_)) {
-            if (i == this->pendingSnapshot_->metadata().index()) {
-                term = this->pendingSnapshot_->metadata().index();
+        if(term == 0 && !IsEmptySnap(pendingSnapshot_)) {
+            if (i == pendingSnapshot_.metadata().index()) {
+                term = pendingSnapshot_.metadata().index();
             }
         }
         return term;

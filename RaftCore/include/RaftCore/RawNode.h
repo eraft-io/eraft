@@ -71,7 +71,7 @@ public:
     void ProposeConfChange(eraftpb::ConfChange cc);
 
     // ApplyConfChange applies a config change to the local node.
-    eraftpb::ConfState* ApplyConfChange(eraftpb::ConfChange cc);
+    eraftpb::ConfState ApplyConfChange(eraftpb::ConfChange cc);
 
     // Step advances the state machine using the given message.
     void Step(eraftpb::Message m);

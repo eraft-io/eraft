@@ -96,7 +96,7 @@ private:
     std::vector<eraftpb::Entry> entries_;
 
 	// the incoming unstable snapshot, if any.
-    eraftpb::Snapshot* pendingSnapshot_;
+    eraftpb::Snapshot pendingSnapshot_;
 
     uint64_t firstIndex_;
 

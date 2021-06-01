@@ -1,12 +1,18 @@
 #include <RaftCore/MemoryStorage.h>
 #include <tuple>
 #include <string.h>
+#include <iostream>
 
 namespace eraft
 {
 
     MemoryStorage::MemoryStorage() {
         this->ents_.reserve(1);
+        this->ents_.resize(1);
+        // eraftpb::Entry ent;
+        // ent.set_index(0);
+        // ent.set_term(0);
+        // this->ents_.push_back(ent);
     }
 
     std::tuple<eraftpb::HardState, eraftpb::ConfState> MemoryStorage::InitialState() {
@@ -19,19 +25,23 @@ namespace eraft
     }
 
     std::vector<eraftpb::Entry> MemoryStorage::Entries(uint64_t lo, uint64_t hi) {
-        std::lock_guard<std::mutex> lck (mutex_);
         std::vector<eraftpb::Entry> ents;
         uint64_t offset = this->ents_[0].index();
-        if (lo < offset) {
+        if (lo <= offset) {
             return ents;
         }
         if (hi > this->LastIndex() + 1) {
             // TODO: log panic ["entries' hi(%d) is out of bound lastindex(%d)", hi, ms.lastIndex()]
         }
-        ::memcpy(&ents[0], &(this->ents_[lo - offset]), (hi - lo) * sizeof(this->ents_[0]));
-        if (this->ents_.size() == 1 && ents.size() != 0) {
-            ents.clear();
-            return ents;
+        {
+            std::lock_guard<std::mutex> lck (mutex_);
+            std::vector<eraftpb::Entry> ents2;
+            ents2.insert(ents2.begin(), this->ents_.begin() + (lo - offset), this->ents_.begin() + (hi - offset));
+            ents = std::move(ents2);
+            if (this->ents_.size() == 1 && ents.size() != 0) {
+                ents.clear();
+                return ents;
+            }
         }
         return ents;
     }
@@ -50,6 +60,7 @@ namespace eraft
 
     uint64_t MemoryStorage::LastIndex() {
         std::lock_guard<std::mutex> lck (mutex_);
+        // std::cout << "call MemoryStorage::LastIndex: this->ents_[0].index() = " << this->ents_[0].index() << std::endl;
         return (this->ents_[0].index() + this->ents_.size() - 1);
     }
 

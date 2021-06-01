@@ -59,7 +59,7 @@ struct Config {
 	// should only be set when starting a new raft cluster. Restarting raft from
 	// previous configuration will panic if peers is set. peer is private and only
 	// used for testing right now.
-    std::vector<uint64_t> *peers;
+    std::vector<uint64_t> peers;
 
 	// ElectionTick is the number of Node.Tick invocations that must pass between
 	// elections. That is, if a follower does not receive any message from the
@@ -78,7 +78,7 @@ struct Config {
 	// stored in storage. raft reads the persisted entries and states out of
 	// Storage when it needs. raft reads out the previous state and configuration
 	// out of storage when restarting.
-    StorageInterface *storage;
+    std::shared_ptr<StorageInterface> storage;
 
 	// Applied is the last applied index. It should only be set when restarting
 	// raft. raft will not return entries to the application smaller or equal to
@@ -123,6 +123,16 @@ public:
     // on `eraftpb.proto` for what msgs should be handled
     bool Step(eraftpb::Message m);
 
+    // becomeCandidate transform this peer's state to candidate
+    void BecomeCandidate();
+
+    // becomeLeader transform this peer's state to leader
+    void BecomeLeader();
+
+    std::map<uint64_t, std::shared_ptr<Progress> > prs_;
+    
+    uint64_t id_;
+
 private:
 
     std::vector<uint64_t> Nodes(std::shared_ptr<RaftContext> raft) {
@@ -165,12 +175,6 @@ private:
     // becomeFollower transform this peer's state to Follower
     void BecomeFollower(uint64_t term, uint64_t lead);
 
-    // becomeCandidate transform this peer's state to candidate
-    void BecomeCandidate();
-
-    // becomeLeader transform this peer's state to leader
-    void BecomeLeader();
-
     void StepFollower(eraftpb::Message m);
 
     void StepCandidate(eraftpb::Message m);
@@ -197,7 +201,7 @@ private:
     // handleHeartbeat handle Heartbeat RPC request
     bool HandleHeartbeat(eraftpb::Message m);
 
-    void AppendEntries(std::vector<eraftpb::Entry* > entries);
+    void AppendEntries(std::vector<std::shared_ptr<eraftpb::Entry> > entries);
 
     std::shared_ptr<ESoftState> SoftState();
 
@@ -214,15 +218,12 @@ private:
     // removeNode remove a node from raft group
     void RemoveNode(uint64_t id);
 
-    uint64_t id_;
 
     uint64_t term_;
 
     uint64_t vote_;
 
     std::shared_ptr<RaftLog> raftLog_;
-
-    std::map<uint64_t, std::shared_ptr<Progress> > prs_;
 
     NodeState state_;
 

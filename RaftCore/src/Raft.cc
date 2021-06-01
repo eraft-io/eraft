@@ -36,19 +36,20 @@ namespace eraft
         std::tuple<eraftpb::HardState, eraftpb::ConfState> st(this->raftLog_->storage_->InitialState());
         eraftpb::HardState hardSt = std::get<0>(st);
         eraftpb::ConfState confSt = std::get<1>(st);
-        if(c.peers == nullptr) {
-            std::vector<uint64_t> *peersTp;
+        if(c.peers.size() == 0) {
+            std::vector<uint64_t> peersTp;
             for(auto node: confSt.nodes()) {
-                peersTp->push_back(node);
+                peersTp.push_back(node);
             }
             c.peers = peersTp;
         }
         uint64_t lastIndex = this->raftLog_->LastIndex();
-        for(auto iter = c.peers->begin(); iter != c.peers->end(); iter++) {
-            if(*iter == this->id_) {
-                this->prs_[*iter] = std::make_shared<Progress>(lastIndex + 1, lastIndex);
+        // std::cout << "RaftContext LastIndex: " << lastIndex << std::endl; 
+        for(auto iter : c.peers) {
+            if(iter == this->id_) {
+                this->prs_[iter] = std::make_shared<Progress>(lastIndex + 1, lastIndex);
             } else {
-                this->prs_[*iter] = std::make_shared<Progress>(lastIndex + 1);
+                this->prs_[iter] = std::make_shared<Progress>(lastIndex + 1);
             }
         }
         this->BecomeFollower(0, NONE);
@@ -91,7 +92,9 @@ namespace eraft
         msg.set_log_term(prevLogTerm);
         msg.set_index(prevIndex);
         for(auto ent: entries) {
-            ent = msg.add_entries();
+            // https://stackoverflow.com/questions/1770707/how-do-you-add-a-repeated-field-using-googles-protocol-buffer-in-c
+            eraftpb::Entry* e = msg.add_entries();
+            e = ent;
         }
         this->msgs_.push_back(msg);
         return false;
@@ -224,6 +227,7 @@ namespace eraft
         this->state_ = NodeState::StateLeader;
         this->lead_ = this->id_;
         uint64_t lastIndex = this->raftLog_->LastIndex();
+        // std::cout << "BecomeLeader lastIndex: " << lastIndex << std::endl;
         this->heartbeatElapsed_ = 0;
         for(auto peer : this->prs_) {
             if(peer.first == this->id_) {
@@ -349,12 +353,13 @@ namespace eraft
         case eraftpb::MsgPropose:
             {
                 if(this->leadTransferee_ == NONE) {
-                    std::vector<eraftpb::Entry*> ents;
-                    for(auto ent : m.entries()) {
-                        ents.push_back(&ent);
+                    std::vector<std::shared_ptr<eraftpb::Entry> > ents;
+                    for(auto iter = m.entries().begin(); iter != m.entries().end(); iter ++) {
+                        ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
                     }
                     this->AppendEntries(ents);
                 }
+                break;
             }
         case eraftpb::MsgAppend:
             this->HandleAppendEntries(m);
@@ -576,7 +581,7 @@ namespace eraft
         this->SendHeartbeatResponse(m.from(), false);
     }
 
-    void RaftContext::AppendEntries(std::vector<eraftpb::Entry* > entries) {
+    void RaftContext::AppendEntries(std::vector<std::shared_ptr<eraftpb::Entry> > entries) {
         uint64_t lastIndex = this->raftLog_->LastIndex();
         uint64_t i = 0;
         for(auto entry : entries) {
@@ -589,6 +594,7 @@ namespace eraft
                 this->pendingConfIndex_ = entry->index();
             }
             this->raftLog_->entries_.push_back(*entry);
+            // std::cout << this->raftLog_->LastIndex() << std::endl;
             this->prs_[this->id_]->match = this->raftLog_->LastIndex();
             this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
             this->BcastAppend();
@@ -628,7 +634,7 @@ namespace eraft
         for(auto peer : meta.conf_state().nodes()) {
             this->prs_[peer] = std::make_shared<Progress>();
         }
-        this->raftLog_->pendingSnapshot_ = m.mutable_snapshot();
+        this->raftLog_->pendingSnapshot_ = m.snapshot();
         this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->LastIndex());
     }
 

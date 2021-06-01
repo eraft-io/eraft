@@ -29,22 +29,22 @@ namespace eraft
 {
 
 // IsEmptySnap returns true if the given Snapshot is empty.
-bool IsEmptySnap(eraftpb::Snapshot* sp) {
-    if(sp == nullptr || sp->has_metadata()) {
+static bool IsEmptySnap(eraftpb::Snapshot sp) {
+    if(sp.has_metadata()) {
         return true;
     }
-    return sp->metadata().index() == 0;
+    return sp.metadata().index() == 0;
 }
 
 // RandIntn return a random number between [0, n)
-bool RandIntn(uint64_t n) {
+static bool RandIntn(uint64_t n) {
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(0, n);
     return distribution(generator);
 }
 
 // IsEmptyHardState returns true if the given HardState is empty.
-bool IsEmptyHardState(eraftpb::HardState st) {
+static bool IsEmptyHardState(eraftpb::HardState st) {
     if((st.vote() == 0) 
          && (st.term() == 0) 
          && (st.commit() == 0)) {
@@ -54,7 +54,7 @@ bool IsEmptyHardState(eraftpb::HardState st) {
 }
 
 // IsEmptyHardState returns true if t hardstate a is equal to b.
-bool IsHardStateEqual(eraftpb::HardState a, eraftpb::HardState b) {
+static bool IsHardStateEqual(eraftpb::HardState a, eraftpb::HardState b) {
     return (a.term() == b.term() && a.vote() == b.vote() && a.commit() == b.commit());
 }
 
