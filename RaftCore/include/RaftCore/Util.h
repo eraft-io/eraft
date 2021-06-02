@@ -23,10 +23,59 @@
 
 #include <eraftio/eraftpb.pb.h>
 #include <stdint.h>
-#include <random>
+#include <stdlib.h>
+#include <time.h>
 
 namespace eraft
 {
+
+static std::string MsgTypeToString(eraftpb::MessageType t) {
+    switch (t)
+    {
+    case eraftpb::MsgHup:
+        return "MsgHup";
+    case eraftpb::MsgBeat:
+        return "MsgBeat";
+    case eraftpb::MsgPropose:
+        return "MsgPropose";
+    case eraftpb::MsgAppend:
+        return "MsgAppend";
+    case eraftpb::MsgAppendResponse:
+        return "MsgAppendResponse";
+    case eraftpb::MsgRequestVote:
+        return "MsgRequestVote";
+    case eraftpb::MsgRequestVoteResponse:
+        return "MsgRequestVoteResponse";
+    case eraftpb::MsgSnapshot:
+        return "MsgSnapshot";
+    case eraftpb::MsgHeartbeat:
+        return "MsgHeartbeat";
+    case eraftpb::MsgHeartbeatResponse:
+        return "MsgHeartbeatResponse";
+    case eraftpb::MsgTransferLeader:
+        return "MsgTransferLeader";
+    case eraftpb::MsgTimeoutNow:
+        return "MsgTimeoutNow";
+    }
+}
+
+static std::string StateToString(NodeState st) {
+    switch (st)
+    {
+    case NodeState::StateLeader:
+        {
+            return "StateLeader";
+        }
+    case NodeState::StateFollower:
+        {
+            return "StateFollower";
+        }
+    case NodeState::StateCandidate:
+        {
+            return "StateCandidate";
+        }
+    }
+}
 
 // IsEmptySnap returns true if the given Snapshot is empty.
 static bool IsEmptySnap(eraftpb::Snapshot sp) {
@@ -37,10 +86,9 @@ static bool IsEmptySnap(eraftpb::Snapshot sp) {
 }
 
 // RandIntn return a random number between [0, n)
-static bool RandIntn(uint64_t n) {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution(0, n);
-    return distribution(generator);
+static uint64_t RandIntn(uint64_t n) {
+    srand(time(NULL));
+    return static_cast<uint64_t>(rand() % n);
 }
 
 // IsEmptyHardState returns true if the given HardState is empty.

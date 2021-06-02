@@ -1,3 +1,9 @@
+// @file Raft.cc
+// @author Colin
+// This module impl some eraft raft core class.
+// 
+// Inspired by etcd golang version.
+
 #include <RaftCore/Raft.h>
 #include <RaftCore/Util.h>
 #include <algorithm>
@@ -44,7 +50,6 @@ namespace eraft
             c.peers = peersTp;
         }
         uint64_t lastIndex = this->raftLog_->LastIndex();
-        // std::cout << "RaftContext LastIndex: " << lastIndex << std::endl; 
         for(auto iter : c.peers) {
             if(iter == this->id_) {
                 this->prs_[iter] = std::make_shared<Progress>(lastIndex + 1, lastIndex);
@@ -52,6 +57,7 @@ namespace eraft
                 this->prs_[iter] = std::make_shared<Progress>(lastIndex + 1);
             }
         }
+        // std::cout << "c.peers.size(): " << c.peers.size() << std::endl; 
         this->BecomeFollower(0, NONE);
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
         this->term_ = hardSt.term();
@@ -71,7 +77,7 @@ namespace eraft
         msg.set_term(this->term_);
         msg.set_allocated_snapshot(&snapshot);
         this->msgs_.push_back(msg);
-        this->prs_[to]->next = snapshot.metadata().index();
+        this->prs_[to]->next = snapshot.metadata().index() + 1;
     }
 
     bool RaftContext::SendAppend(uint64_t to) {
@@ -97,7 +103,7 @@ namespace eraft
             e = ent;
         }
         this->msgs_.push_back(msg);
-        return false;
+        return true;
     }
 
     void RaftContext::SendAppendResponse(uint64_t to, bool reject, uint64_t term, uint64_t index) {
@@ -163,19 +169,24 @@ namespace eraft
     void RaftContext::Tick() {
         switch (this->state_)
         {
-        case NodeState::StateFollower:
-            this->TickElection();
-        case NodeState::StateCandidate:
-            this->TickElection();
-        case NodeState::StateLeader:
+            case NodeState::StateFollower:
+            {
+                this->TickElection();
+                break;
+            }
+            case NodeState::StateCandidate:
+            {
+                this->TickElection();
+                break;
+            }
+            case NodeState::StateLeader:
             {
                 if(this->leadTransferee_ != NONE) {
                     this->TickTransfer();
                 }
                 this->TickHeartbeat();
+                break;
             }
-        default:
-            break;
         }
     }
 
@@ -211,13 +222,13 @@ namespace eraft
         this->state_ = NodeState::StateFollower;
         this->lead_ = lead;
         this->term_ = term;
-        this->vote_ = NONE;
+        this->vote_ = 0;
     }
 
     void RaftContext::BecomeCandidate() {
         this->state_ = NodeState::StateCandidate;
         this->lead_ = NONE;
-        this->term_ ++;
+        this->term_++;
         this->vote_ = this->id_;
         this->votes_ = std::map<uint64_t, bool>{}; // init
         this->votes_[this->id_] = true; // vote for self
@@ -257,14 +268,21 @@ namespace eraft
         }
         switch (this->state_)
         {
-        case NodeState::StateFollower:
-            this->StepFollower(m);
-        case NodeState::StateCandidate:
-            this->StepCandidate(m);
-        case NodeState::StateLeader:
-            this->StepLeader(m);
-        default:
-            break;
+            case NodeState::StateFollower:
+            {
+                this->StepFollower(m);
+                break;
+            }
+            case NodeState::StateCandidate:
+            {
+                this->StepCandidate(m);
+                break;
+            }
+            case NodeState::StateLeader:
+            {
+                this->StepLeader(m);
+                break;
+            }
         }
         return true;
     }
@@ -273,112 +291,179 @@ namespace eraft
     void RaftContext::StepFollower(eraftpb::Message m) {
         switch (m.msg_type())
         {
-        case eraftpb::MsgHup:
-            this->DoElection();
-        case eraftpb::MsgBeat:
-        case eraftpb::MsgPropose:
-        case eraftpb::MsgAppend:
-            this->HandleAppendEntries(m);
-        case eraftpb::MsgAppendResponse:
-        case eraftpb::MsgRequestVote:
-            this->HandleRequestVote(m);
-        case eraftpb::MsgRequestVoteResponse:
-        case eraftpb::MsgSnapshot:
-            this->HandleSnapshot(m);
-        case eraftpb::MsgHeartbeat:
-            this->HandleHeartbeat(m);
-        case eraftpb::MsgHeartbeatResponse:
-        case eraftpb::MsgTransferLeader:
+            case eraftpb::MsgHup:
+            {
+                this->DoElection();
+                break;
+            }
+            case eraftpb::MsgBeat:
+                break;
+            case eraftpb::MsgPropose:
+                break;
+            case eraftpb::MsgAppend:
+            {
+                this->HandleAppendEntries(m);
+                break;
+            }
+            case eraftpb::MsgAppendResponse:
+            {
+                break;
+            }
+            case eraftpb::MsgRequestVote:
+            {
+                this->HandleRequestVote(m);
+                break;
+            }
+            case eraftpb::MsgRequestVoteResponse:
+                break;
+            case eraftpb::MsgSnapshot:
+            {
+                this->HandleSnapshot(m);
+                break;
+            }
+            case eraftpb::MsgHeartbeat:
+            {
+                this->HandleHeartbeat(m);
+                break;
+            }
+            case eraftpb::MsgHeartbeatResponse:
+                break;
+            case eraftpb::MsgTransferLeader:
             {
                 if(this->lead_ != NONE) {
                     m.set_to(this->lead_);
                     this->msgs_.push_back(m);
                 }
+                break;
             }
-        case eraftpb::MsgTimeoutNow:
-            this->DoElection();
-        default:
-            break;    
+            case eraftpb::MsgTimeoutNow:
+            {
+                this->DoElection(); 
+                break;
+            }
         }
     }
 
     void RaftContext::StepCandidate(eraftpb::Message m) {
         switch (m.msg_type())
         {
-        case eraftpb::MsgHup:
-            this->DoElection();
-        case eraftpb::MsgBeat:
-        case eraftpb::MsgPropose:
-        case eraftpb::MsgAppend:
-            {
-                if(m.term() == this->term_) {
-                    this->BecomeFollower(m.term(), m.from());
+            case eraftpb::MsgHup:
+                {
+                    this->DoElection();
+                    break;
                 }
-                this->HandleAppendEntries(m);
-            }
-        case eraftpb::MsgAppendResponse:
-        case eraftpb::MsgRequestVote:
-            this->HandleRequestVote(m);
-        case eraftpb::MsgRequestVoteResponse:
-            this->HandleRequestVoteResponse(m);
-        case eraftpb::MsgSnapshot:
-            this->HandleSnapshot(m);
-        case eraftpb::MsgHeartbeat:
-            {
-                if(m.term() == this->term_) {
-                    this->BecomeFollower(m.term(), m.from());
+            case eraftpb::MsgBeat:
+                break;
+            case eraftpb::MsgPropose:
+                break;
+            case eraftpb::MsgAppend:
+                {
+                    if(m.term() == this->term_) {
+                        this->BecomeFollower(m.term(), m.from());
+                    }
+                    this->HandleAppendEntries(m);
+                    break;
                 }
-                this->HandleHeartbeat(m);
-            }
-        case eraftpb::MsgHeartbeatResponse:
-        case eraftpb::MsgTransferLeader:
-            {
-                if(this->lead_ != NONE) {
-                    m.set_to(this->lead_);
-                    this->msgs_.push_back(m);
+            case eraftpb::MsgAppendResponse:
+                break;
+            case eraftpb::MsgRequestVote:
+                {
+                    this->HandleRequestVote(m);
+                    break;
                 }
-            }
-        case eraftpb::MsgTimeoutNow:
-        default:
-            break;
+            case eraftpb::MsgRequestVoteResponse:
+                {
+                    this->HandleRequestVoteResponse(m);
+                    break;
+                }
+            case eraftpb::MsgSnapshot:
+                {
+                    this->HandleSnapshot(m);
+                    break;
+                }
+            case eraftpb::MsgHeartbeat:
+                {
+                    if(m.term() == this->term_) {
+                        this->BecomeFollower(m.term(), m.from());
+                    }
+                    this->HandleHeartbeat(m);
+                    break;
+                }
+            case eraftpb::MsgHeartbeatResponse:
+                break;
+            case eraftpb::MsgTransferLeader:
+                {
+                    if(this->lead_ != NONE) {
+                        m.set_to(this->lead_);
+                        this->msgs_.push_back(m);
+                    }
+                    break;
+                }
+            case eraftpb::MsgTimeoutNow:
+                break;
         }
     }
 
     void RaftContext::StepLeader(eraftpb::Message m) {
         switch (m.msg_type())
         {
-        case eraftpb::MsgHup:
-        case eraftpb::MsgBeat:
-            this->BcastHeartbeat();
-        case eraftpb::MsgPropose:
-            {
-                if(this->leadTransferee_ == NONE) {
-                    std::vector<std::shared_ptr<eraftpb::Entry> > ents;
-                    for(auto iter = m.entries().begin(); iter != m.entries().end(); iter ++) {
-                        ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
-                    }
-                    this->AppendEntries(ents);
-                }
+            case eraftpb::MsgHup:
                 break;
-            }
-        case eraftpb::MsgAppend:
-            this->HandleAppendEntries(m);
-        case eraftpb::MsgAppendResponse:
-            this->HandleAppendEntriesResponse(m);
-        case eraftpb::MsgRequestVote:
-            this->HandleRequestVote(m);
-        case eraftpb::MsgRequestVoteResponse:
-        case eraftpb::MsgSnapshot:
-            this->HandleSnapshot(m);
-        case eraftpb::MsgHeartbeat:
-            this->HandleHeartbeat(m);
-        case eraftpb::MsgHeartbeatResponse:
-            this->SendAppend(m.from());
-        case eraftpb::MsgTransferLeader:
-            this->HandleTransferLeader(m);
-        case eraftpb::MsgTimeoutNow:
-        default:
-            break;
+            case eraftpb::MsgBeat:
+                {
+                    this->BcastHeartbeat();
+                    break;
+                }
+            case eraftpb::MsgPropose:
+                {
+                    if(this->leadTransferee_ == NONE) {
+                        std::vector<std::shared_ptr<eraftpb::Entry> > ents;
+                        for(auto iter = m.entries().begin(); iter != m.entries().end(); iter ++) {
+                            ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
+                        }
+                        this->AppendEntries(ents);
+                    }
+                    break;
+                }
+            case eraftpb::MsgAppend:
+                {
+                    this->HandleAppendEntries(m);
+                    break;
+                }
+            case eraftpb::MsgAppendResponse:
+                {
+                    this->HandleAppendEntriesResponse(m);
+                    break;
+                }
+            case eraftpb::MsgRequestVote:
+                {
+                    this->HandleRequestVote(m);
+                    break;
+                }
+            case eraftpb::MsgRequestVoteResponse:
+                break;
+            case eraftpb::MsgSnapshot:
+                {
+                    this->HandleSnapshot(m);
+                    break;
+                }
+            case eraftpb::MsgHeartbeat:
+                {
+                    this->HandleHeartbeat(m);
+                    break;
+                }
+            case eraftpb::MsgHeartbeatResponse:
+                {
+                    this->SendAppend(m.from());
+                    break;
+                }
+            case eraftpb::MsgTransferLeader:
+                {
+                    this->HandleTransferLeader(m);
+                    break;
+                }
+            case eraftpb::MsgTimeoutNow:
+                break;
         }
     }
 
@@ -442,7 +527,7 @@ namespace eraft
 
     bool RaftContext::HandleRequestVoteResponse(eraftpb::Message m) {
         if(m.term() != NONE && m.term() < this->term_) {
-            return true;
+            return false;
         }
         this->votes_[m.from()] = !m.reject();
         uint8_t grant = 0;

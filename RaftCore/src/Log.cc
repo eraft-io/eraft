@@ -1,3 +1,9 @@
+// @file Log.cc
+// @author Colin
+// This module impl the eraft::RawNode class.
+// 
+// Inspired by etcd golang version.
+
 #include <RaftCore/Log.h>
 #include <RaftCore/Util.h>
 #include <algorithm>

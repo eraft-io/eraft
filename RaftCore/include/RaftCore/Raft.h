@@ -63,7 +63,7 @@ public:
 
 struct Config {
     
-    Config(uint64_t id, std::vector<uint64_t>& peers, uint64_t election, uint64_t heartbeat, std::shared_ptr<StorageInterface> st) {
+    Config(uint64_t id, std::vector<uint64_t> peers, uint64_t election, uint64_t heartbeat, std::shared_ptr<StorageInterface> st) {
         this->id = id;
         this->peers = peers;
         this->electionTick = election;
@@ -148,11 +148,25 @@ public:
     // becomeLeader transform this peer's state to leader
     void BecomeLeader();
 
+    // becomeFollower transform this peer's state to Follower
+    void BecomeFollower(uint64_t term, uint64_t lead);
+
     std::vector<eraftpb::Message> ReadMessage();
+
+    // tick advances the internal logical clock by a single tick.
+    void Tick();
 
     std::map<uint64_t, std::shared_ptr<Progress> > prs_;
     
     uint64_t id_;
+
+    uint64_t term_;
+
+    uint64_t vote_;
+
+    NodeState state_;
+
+    std::map<uint64_t, bool> votes_;
 
 private:
 
@@ -184,17 +198,11 @@ private:
 
     void SendTimeoutNow(uint64_t to);
 
-    // tick advances the internal logical clock by a single tick.
-    void Tick();
-
     void TickElection();
 
     void TickHeartbeat();
 
     void TickTransfer();
-
-    // becomeFollower transform this peer's state to Follower
-    void BecomeFollower(uint64_t term, uint64_t lead);
 
     void StepFollower(eraftpb::Message m);
 
@@ -239,16 +247,7 @@ private:
     // removeNode remove a node from raft group
     void RemoveNode(uint64_t id);
 
-
-    uint64_t term_;
-
-    uint64_t vote_;
-
     std::shared_ptr<RaftLog> raftLog_;
-
-    NodeState state_;
-
-    std::map<uint64_t, bool> votes_;
 
     std::vector<eraftpb::Message> msgs_;
 
