@@ -5,15 +5,49 @@
 
 #include <memory>
 
+namespace eraft
+{
+
+struct Connem
+{
+
+uint64_t from;
+
+uint64_t to;
+
+};
+
+
+struct NetWork
+{
+
+std::map<uint64_t, StateMachine> peers;
+
+std::map<uint64_t, std::shared_ptr<MemoryStorage> > storage;
+
+std::map<Connem, float> dropm;
+
+std::map<eraftpb::MessageType, bool> ignorem;
+
+std::function<bool(eraftpb::Message)> msgHook;
+
+};
+
+std::shared_ptr<Config> NewTestConfig(uint64_t id, std::vector<uint64_t>& peers, uint64_t election, uint64_t heartbeat, std::shared_ptr<StorageInterface> st) {
+    return std::make_shared<Config>(id, peers, election, heartbeat, st);
+}
+
+// newNetworkWithConfig is like newNetwork but calls the given func to
+// modify the configuration of any state machines it creates.
+
+
+} // namespace eraft
+
+
 TEST(RaftTests, TestProgressLeader2AB) {
     std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
-    eraft::Config c;
-    c.id = 1;
-    std::vector<uint64_t> prs = {1, 2};
-    c.peers = prs;
-    c.electionTick = 5;
-    c.heartbeatTick = 1;
-    c.storage = memSt;
+    std::vector<uint64_t> peers = {1, 2};
+    eraft::Config c(1, peers, 5, 1, memSt);
     std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
     r->BecomeCandidate();
     r->BecomeLeader();

@@ -166,5 +166,5 @@ namespace eraft
         }
         return true;
     }
-    
+
 } // namespace eraft

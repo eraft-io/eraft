@@ -50,8 +50,27 @@ public:
     bool Equal(std::shared_ptr<ESoftState> b);
 };
 
+class StateMachine 
+{
+public:
+
+    // Step the entrance of handle message, see `MessageType`
+    // on `eraftpb.proto` for what msgs should be handled
+    virtual bool Step(eraftpb::Message m) = 0;
+
+    virtual std::vector<eraftpb::Message> ReadMessage() = 0;
+};
+
 struct Config {
     
+    Config(uint64_t id, std::vector<uint64_t>& peers, uint64_t election, uint64_t heartbeat, std::shared_ptr<StorageInterface> st) {
+        this->id = id;
+        this->peers = peers;
+        this->electionTick = election;
+        this->heartbeatTick = heartbeat;
+        this->storage = st;
+    }
+
     // ID is the identity of the local raft. ID cannot be 0.
     uint64_t id;
 
@@ -110,7 +129,7 @@ struct Progress {
 
 };
 
-class RaftContext {
+class RaftContext : StateMachine {
 
 public:
     friend class RaftLog;
@@ -128,6 +147,8 @@ public:
 
     // becomeLeader transform this peer's state to leader
     void BecomeLeader();
+
+    std::vector<eraftpb::Message> ReadMessage();
 
     std::map<uint64_t, std::shared_ptr<Progress> > prs_;
     

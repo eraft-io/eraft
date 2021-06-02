@@ -674,4 +674,10 @@ namespace eraft
         this->pendingConfIndex_ = NONE;
     }
 
+    std::vector<eraftpb::Message> RaftContext::ReadMessage() {
+        std::vector<eraftpb::Message> msgs = this->msgs_;
+        this->msgs_.clear();
+        return msgs;
+    }
+
 } // namespace eraft
