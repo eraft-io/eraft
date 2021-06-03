@@ -366,42 +366,148 @@ TEST(RaftPaperTests, TestCandidateElectionTimeoutRandomized2AA) {
     }
 }
 
+
+// TestFollowersElectionTimeoutNonconflict2AA tests that in most cases only a
+// single server(follower or candidate) will time out, which reduces the
+// likelihood of split vote in the new election.
+// Reference: section 5.2
+
 TEST(RaftPaperTests, TestFollowersElectionTimeoutNonconflict2AA) {
     uint64_t et = 10;
     uint64_t size = 5;
-    std::vector<std::shared_ptr<eraft::RaftContext> > rs;
     std::vector<uint64_t> ids = IdsBySize(size);
-    for(uint8_t i = 0; i < size; i++) {
-        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
-        eraft::Config c(ids[i], ids, et, 1, memSt);
-        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
-        rs.push_back(r);
-    }
+
+    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c(1, ids, et, 1, memSt);
+    std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+    std::shared_ptr<eraft::StorageInterface> memSt1 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c1(2, ids, et, 1, memSt1);
+    std::shared_ptr<eraft::RaftContext> r1 = std::make_shared<eraft::RaftContext>(c1);
+
+    std::shared_ptr<eraft::StorageInterface> memSt2 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c2(3, ids, et, 1, memSt2);
+    std::shared_ptr<eraft::RaftContext> r2 = std::make_shared<eraft::RaftContext>(c2);
+
+    std::shared_ptr<eraft::StorageInterface> memSt3 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c3(4, ids, et, 1, memSt3);
+    std::shared_ptr<eraft::RaftContext> r3 = std::make_shared<eraft::RaftContext>(c3);
+
+    std::shared_ptr<eraft::StorageInterface> memSt4 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c4(5, ids, et, 1, memSt4);
+    std::shared_ptr<eraft::RaftContext> r4 = std::make_shared<eraft::RaftContext>(c4);
+
     uint64_t conflicts = 0;
     for(uint64_t round = 0; round < 1000; round++) {
-        for(auto r : rs) {
-            r->BecomeFollower(r->term_+1, eraft::NONE);
-        }
-
+        r->BecomeFollower(r->term_+1, eraft::NONE);
         uint64_t timeoutNum = 0;
         while (timeoutNum == 0)
         {
-            for(auto r : rs) {
-                r->Tick();
-                if(r->ReadMessage().size() > 0) {
-                    timeoutNum++;
-                }
+            r->Tick();
+            if(r->ReadMessage().size() > 0) {  // state machine timeout
+                timeoutNum++;
+            }
+            r1->Tick();
+            if(r1->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+            r2->Tick();
+            if(r2->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+            r3->Tick();
+            if(r3->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+            r4->Tick();
+            if(r4->ReadMessage().size() > 0) {
+                timeoutNum++;
             }
         }
-
         if(timeoutNum > 1) {
             conflicts++;
         }
     }
     double probabilityOfConflicts = double(conflicts)/1000.0;
-    std::cout << "probability of conflicts = " << probabilityOfConflicts <<  std::endl;
-    // if(probabilityOfConflicts > 0.3) {
-    //     std::cerr << "probability of conflicts = " << probabilityOfConflicts << " want <= 0.3" << std::endl;
-    // } 
+    std::cout <<  "probability of conflicts = " << probabilityOfConflicts << std::endl;
+    if(probabilityOfConflicts > 0.3) {
+        std::cerr << "probability of conflicts = " << probabilityOfConflicts << " want <= 0.3" << std::endl;
+    } 
 }
 
+TEST(RaftPaperTests, TestCandidatesElectionTimeoutNonconflict2AA) {
+    uint64_t et = 10;
+    uint64_t size = 5;
+    std::vector<uint64_t> ids = IdsBySize(size);
+
+    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c(1, ids, et, 1, memSt);
+    std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+    std::shared_ptr<eraft::StorageInterface> memSt1 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c1(2, ids, et, 1, memSt1);
+    std::shared_ptr<eraft::RaftContext> r1 = std::make_shared<eraft::RaftContext>(c1);
+
+    std::shared_ptr<eraft::StorageInterface> memSt2 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c2(3, ids, et, 1, memSt2);
+    std::shared_ptr<eraft::RaftContext> r2 = std::make_shared<eraft::RaftContext>(c2);
+
+    std::shared_ptr<eraft::StorageInterface> memSt3 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c3(4, ids, et, 1, memSt3);
+    std::shared_ptr<eraft::RaftContext> r3 = std::make_shared<eraft::RaftContext>(c3);
+
+    std::shared_ptr<eraft::StorageInterface> memSt4 = std::make_shared<eraft::MemoryStorage>();
+    eraft::Config c4(5, ids, et, 1, memSt4);
+    std::shared_ptr<eraft::RaftContext> r4 = std::make_shared<eraft::RaftContext>(c4);
+
+    uint64_t conflicts = 0;
+    for(uint64_t round = 0; round < 1000; round++) {
+        r->BecomeCandidate();
+        uint64_t timeoutNum = 0;
+        while (timeoutNum == 0)
+        {
+            r->Tick();
+            if(r->ReadMessage().size() > 0) {  // state machine timeout
+                timeoutNum++;
+            }
+            r1->Tick();
+            if(r1->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+            r2->Tick();
+            if(r2->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+            r3->Tick();
+            if(r3->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+            r4->Tick();
+            if(r4->ReadMessage().size() > 0) {
+                timeoutNum++;
+            }
+        }
+        if(timeoutNum > 1) {
+            conflicts++;
+        }
+    }
+    double probabilityOfConflicts = double(conflicts)/1000.0;
+    std::cout <<  "probability of conflicts = " << probabilityOfConflicts << std::endl;
+    if(probabilityOfConflicts > 0.3) {
+        std::cerr << "probability of conflicts = " << probabilityOfConflicts << " want <= 0.3" << std::endl;
+    } 
+}
+
+// TestLeaderStartReplication tests that when receiving client proposals,
+// the leader appends the proposal to its log as a new entry, then issues
+// AppendEntries RPCs in parallel to each of the other servers to replicate
+// the entry. Also, when sending an AppendEntries RPC, the leader includes
+// the index and term of the entry in its log that immediately precedes
+// the new entries.
+// Also, it writes the new entry into stable storage.
+// Reference: section 5.3
+
+
+TEST(RaftPaperTests, TestLeaderStartReplication2AB) {
+
+}

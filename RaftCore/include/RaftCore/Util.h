@@ -24,7 +24,7 @@
 #include <eraftio/eraftpb.pb.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <time.h>
+#include <random>
 
 namespace eraft
 {
@@ -87,8 +87,10 @@ static bool IsEmptySnap(eraftpb::Snapshot sp) {
 
 // RandIntn return a random number between [0, n)
 static uint64_t RandIntn(uint64_t n) {
-    srand(time(NULL));
-    return static_cast<uint64_t>(rand() % n);
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist6(0, n - 1);
+    return static_cast<uint64_t>(dist6(rng));
 }
 
 // IsEmptyHardState returns true if the given HardState is empty.

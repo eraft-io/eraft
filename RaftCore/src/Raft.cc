@@ -38,6 +38,8 @@ namespace eraft
         this->votes_ = std::map<uint64_t, bool> {};
         this->heartbeatTimeout_ = c.heartbeatTick;
         this->electionTimeout_ = c.electionTick;
+        this->electionElapsed_ = 0;
+        this->heartbeatElapsed_ = 0;
         this->raftLog_ = std::make_shared<RaftLog>(*c.storage);
         std::tuple<eraftpb::HardState, eraftpb::ConfState> st(this->raftLog_->storage_->InitialState());
         eraftpb::HardState hardSt = std::get<0>(st);
