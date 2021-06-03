@@ -498,6 +498,47 @@ TEST(RaftPaperTests, TestCandidatesElectionTimeoutNonconflict2AA) {
     } 
 }
 
+
+static eraftpb::Message AcceptAndReply(eraftpb::Message m) {
+    if(m.msg_type() != eraftpb::MsgAppend) {
+        exit(-1);
+    }
+    eraftpb::Message reply;
+    reply.set_from(m.to());
+    reply.set_to(m.from());
+    reply.set_term(m.term());
+    reply.set_msg_type(eraftpb::MsgAppendResponse);
+    reply.set_index(m.index() + m.entries().size());
+    return reply;
+}
+
+static bool CommitNoopEntry(std::shared_ptr<eraft::RaftContext> r, std::shared_ptr<eraft::StorageInterface> s) {
+    if(r->state_ != eraft::NodeState::StateLeader) {
+        return false;
+    }
+    for(auto pr : r->prs_) {
+        if(pr.first == r->id_) {
+            continue;
+        }
+        r->SendAppend(pr.first);
+    }
+    // simulate the response of MessageType_MsgAppend
+    std::vector<eraftpb::Message> msgs = r->ReadMessage();
+    for(auto m : msgs) {
+        if(m.msg_type() != eraftpb::MsgAppend || m.entries().size() != 1 || !m.entries()[0].data().empty()) {
+            return false;
+        }
+        // std::cout << "AcceptAndReply " << "m.from(): " << m.from() << "m.to() " << m.to() << std::endl;
+        r->Step(AcceptAndReply(m));
+    }
+    // ignore further messages to refresh followers' commit index.
+    r->ReadMessage();
+    s->Append(r->raftLog_->UnstableEntries());
+    r->raftLog_->applied_ = r->raftLog_->commited_;
+    r->raftLog_->stabled_ = r->raftLog_->LastIndex();
+    return true;
+}
+
 // TestLeaderStartReplication tests that when receiving client proposals,
 // the leader appends the proposal to its log as a new entry, then issues
 // AppendEntries RPCs in parallel to each of the other servers to replicate
@@ -507,7 +548,148 @@ TEST(RaftPaperTests, TestCandidatesElectionTimeoutNonconflict2AA) {
 // Also, it writes the new entry into stable storage.
 // Reference: section 5.3
 
-
 TEST(RaftPaperTests, TestLeaderStartReplication2AB) {
+    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    std::vector<uint64_t> ids = IdsBySize(3);
+    eraft::Config c(1, ids, 10, 1, memSt);
+    std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
 
+    r->BecomeCandidate();
+    r->BecomeLeader();
+    ASSERT_TRUE(CommitNoopEntry(r, memSt));
+    uint64_t li = r->raftLog_->LastIndex();
+
+    eraftpb::Message proposeMsg;
+    proposeMsg.set_from(1);
+    proposeMsg.set_to(1);
+    proposeMsg.set_msg_type(eraftpb::MsgPropose);
+    eraftpb::Entry* eptr = proposeMsg.add_entries();
+    eptr->set_data("some data");
+
+    r->Step(proposeMsg);
+
+    ASSERT_EQ(r->raftLog_->LastIndex(), li + 1);
+    ASSERT_EQ(r->raftLog_->commited_, li);
+
+    std::vector<eraftpb::Message> msgs = r->ReadMessage();
+    
+    std::cout << "====================r->ReadMessage()====================" << std::endl;
+    for(auto m : msgs) {
+        std::cout << eraft::MessageToString(m) << std::endl;
+    }
+
+    std::cout << "=============r->raftLog_->UnstableEntries()=============" << std::endl;
+    // wents := []pb.Entry{{Index: li + 1, Term: 1, Data: []byte("some data")}}
+    std::cout << "stabled_: " << r->raftLog_->stabled_ << "commited_: " << r->raftLog_->commited_ << std::endl;
+    std::vector<eraftpb::Entry> ents = r->raftLog_->UnstableEntries();
+    for(auto e : ents) {
+        std::cout << eraft::EntryToString(e) << std::endl;
+    }
+}
+
+// TestLeaderCommitEntry tests that when the entry has been safely replicated,
+// the leader gives out the applied entries, which can be applied to its state
+// machine.
+// Also, the leader keeps track of the highest index it knows to be committed,
+// and it includes that index in future AppendEntries RPCs so that the other
+// servers eventually find out.
+// Reference: section 5.3
+
+TEST(RaftPaperTests, TestLeaderCommitEntry2AB) {
+    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    std::vector<uint64_t> ids = IdsBySize(3);
+    eraft::Config c(1, ids, 10, 1, memSt);
+    std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+    r->BecomeCandidate();
+    r->BecomeLeader();
+    CommitNoopEntry(r, memSt);
+    uint64_t li = r->raftLog_->LastIndex();
+    eraftpb::Message proposeMsg;
+    proposeMsg.set_from(1);
+    proposeMsg.set_to(1);
+    proposeMsg.set_msg_type(eraftpb::MsgPropose);
+    eraftpb::Entry* eptr = proposeMsg.add_entries();
+    eptr->set_data("some data");
+    r->Step(proposeMsg);
+
+    std::vector<eraftpb::Message> msgs = r->ReadMessage();
+    std::cout << "====================r->ReadMessage()====================" << std::endl;
+    for(auto m : msgs) {
+        r->Step(AcceptAndReply(m));
+    }
+
+    ASSERT_EQ(r->raftLog_->commited_, li + 1);
+
+    // wents := []pb.Entry{{Index: li + 1, Term: 1, Data: []byte("some data")}}
+    std::vector<eraftpb::Entry> ents = r->raftLog_->NextEnts();
+    for(auto e : ents) {
+        std::cout << eraft::EntryToString(e) << std::endl;
+    }
+
+    std::vector<eraftpb::Message> msgsAppend = r->ReadMessage();
+    uint8_t i = 0;
+    for(auto m : msgsAppend) {
+        std::cout << eraft::MessageToString(m) << std::endl;
+    }
+}
+
+
+struct TestEntry2
+{
+    TestEntry2(uint64_t size, std::map<uint64_t, bool> acceptors, bool wack) {
+        this->size_ = size;
+        this->acceptors_ = acceptors;
+        this->wack_ = wack;
+    }
+
+    uint64_t size_;
+
+    std::map<uint64_t, bool> acceptors_;
+
+    bool wack_;
+};
+
+// TestLeaderAcknowledgeCommit tests that a log entry is committed once the
+// leader that created the entry has replicated it on a majority of the servers.
+// Reference: section 5.3
+TEST(RaftPaperTests, TestLeaderAcknowledgeCommit2AB) {
+    // std::vector<TestEntry2> tests;
+    // tests.push_back(TestEntry2(1, std::map<uint64_t, bool>{ }, true));
+    // tests.push_back(TestEntry2(3, std::map<uint64_t, bool>{ }, false));
+    // tests.push_back(TestEntry2(3, std::map<uint64_t, bool>{ {2, true} }, true));
+    // tests.push_back(TestEntry2(3, std::map<uint64_t, bool>{ {2, true}, {3, true} }, true));
+    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ }, false));
+    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true} }, false));
+    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true} }, true));
+    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true}, {4, true} }, true));
+    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true}, {4, true}, {5, true} }, true));
+
+    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    std::vector<uint64_t> ids = IdsBySize(3);
+    eraft::Config c(1, ids, 10, 1, memSt);
+    std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+    r->BecomeCandidate();
+    r->BecomeLeader();
+    CommitNoopEntry(r, memSt);
+    uint64_t li = r->raftLog_->LastIndex();
+    eraftpb::Message proposeMsg;
+    proposeMsg.set_from(1);
+    proposeMsg.set_to(1);
+    proposeMsg.set_msg_type(eraftpb::MsgPropose);
+    eraftpb::Entry* eptr = proposeMsg.add_entries();
+    
+    eptr->set_data("some data");
+    r->Step(proposeMsg);
+
+    std::cout << "Read Msg" << std::endl;
+    std::vector<eraftpb::Message> msgs = r->ReadMessage();
+    std::cout << "====================r->ReadMessage()====================" << msgs.size() << std::endl;
+    for(auto m : msgs) {
+        std::cout << eraft::MessageToString(m) << std::endl;
+        r->Step(AcceptAndReply(m));
+    }
+
+    // std::cout << "r->raftLog_->commited_: " << r->raftLog_->commited_ << " li:" << li << " wack: " << tests[3].wack_ << std::endl;
+    // ASSERT_EQ(r->raftLog_->commited_ > li, tt.wack_);
+    // }
 }

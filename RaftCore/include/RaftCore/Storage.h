@@ -72,6 +72,8 @@ public:
 	// snapshot and call Snapshot later.
     virtual eraftpb::Snapshot Snapshot() = 0;
 
+	virtual bool Append(std::vector<eraftpb::Entry> entries) = 0;
+
 };
 
 } // namespace name

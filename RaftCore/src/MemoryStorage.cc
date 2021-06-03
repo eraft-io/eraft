@@ -13,7 +13,6 @@ namespace eraft
 {
 
     MemoryStorage::MemoryStorage() {
-        this->ents_.reserve(1);
         this->ents_.resize(1);
         this->snapShot_ = eraftpb::Snapshot();
     }
@@ -49,7 +48,7 @@ namespace eraft
     }
 
     uint64_t MemoryStorage::Term(uint64_t i) {
-        std::lock_guard<std::mutex> lck (mutex_);
+        // std::lock_guard<std::mutex> lck (mutex_);
         uint64_t offset = this->ents_[0].index();
         if (i < offset) {
             return 0;
@@ -61,7 +60,7 @@ namespace eraft
     }
 
     uint64_t MemoryStorage::LastIndex() {
-        std::lock_guard<std::mutex> lck (mutex_);
+        // std::lock_guard<std::mutex> lck (mutex_);
         return (this->ents_[0].index() + this->ents_.size() - 1);
     }
 
@@ -81,7 +80,7 @@ namespace eraft
      */
 
     bool MemoryStorage::ApplySnapshot(eraftpb::Snapshot &snap) {
-        std::lock_guard<std::mutex> lck (mutex_);
+        
         uint64_t msIndex = this->snapShot_.metadata().index();
         uint64_t snapIndex = snap.metadata().index();
         if (msIndex >= snapIndex) {
@@ -90,29 +89,34 @@ namespace eraft
         }
         this->snapShot_ = snap;
         eraftpb::Entry entry;
-        entry.set_term(snap.metadata().term());
-        entry.set_index(snap.metadata().index());
-        this->ents_.push_back(entry);
+        {
+            std::lock_guard<std::mutex> lck (mutex_);
+            entry.set_term(snap.metadata().term());
+            entry.set_index(snap.metadata().index());
+            this->ents_.push_back(entry);
+        }
         return true;
     }
 
     eraftpb::Snapshot MemoryStorage::CreateSnapshot(uint64_t i, eraftpb::ConfState* cs, const char* data) {
-        std::lock_guard<std::mutex> lck (mutex_);
-        if (i < this->snapShot_.metadata().index()) {
-            return eraftpb::Snapshot();
+        {
+            std::lock_guard<std::mutex> lck (mutex_);
+            if (i < this->snapShot_.metadata().index()) {
+                return eraftpb::Snapshot();
+            }
+            uint64_t offset = this->ents_[0].index();
+            if (i > this->LastIndex()) {
+                // TODO: log panic
+            }
+            eraftpb::SnapshotMetadata meta_;
+            meta_.set_index(i);
+            meta_.set_term(this->ents_[i-offset].term());
+            if (cs != nullptr) {
+                meta_.set_allocated_conf_state(cs);   
+            }
+            this->snapShot_.set_data(data);
+            this->snapShot_.set_allocated_metadata(&meta_);
         }
-        uint64_t offset = this->ents_[0].index();
-        if (i > this->LastIndex()) {
-            // TODO: log panic
-        }
-        eraftpb::SnapshotMetadata meta_;
-        meta_.set_index(i);
-        meta_.set_term(this->ents_[i-offset].term());
-        if (cs != nullptr) {
-            meta_.set_allocated_conf_state(cs);   
-        }
-        this->snapShot_.set_data(data);
-        this->snapShot_.set_allocated_metadata(&meta_);
         return this->snapShot_;
     }
 
@@ -130,7 +134,7 @@ namespace eraft
         uint64_t i = compactIndex - offset;
         std::vector<eraftpb::Entry> ents;
         uint64_t newSize_ = 1 + this->ents_.size() - i;
-        ents.reserve(newSize_);
+        ents.resize(newSize_);
         for (uint64_t index = i; index < this->LastIndex(); index ++) {
             ents.push_back(this->ents_[index]);
         }
@@ -140,10 +144,9 @@ namespace eraft
 
     bool MemoryStorage::Append(std::vector<eraftpb::Entry> entries) {
         if (entries.size() == 0) {
-            return true;
+            return false;
         }
-        std::lock_guard<std::mutex> lck (mutex_);
-
+        
         uint64_t first = this->FirstIndex();
         uint64_t last = entries[0].index() + entries.size() - 1;
         // shortcut if there is no new entry.
@@ -151,17 +154,26 @@ namespace eraft
             return true;
         }
         if(first > entries[0].index()) {
-            entries.erase(entries.begin() + (first-entries[0].index()));
+            {
+                std::lock_guard<std::mutex> lck (mutex_);
+                entries.erase(entries.begin() + (first-entries[0].index()));
+            }
         }
         uint64_t offset = entries[0].index() - this->ents_[0].index();
         std::vector<eraftpb::Entry> ents;
         if (this->ents_.size() > offset) {
-            ents.insert(ents.begin(), this->ents_.begin() + offset, this->ents_.end());
-            ents.insert(ents.end(), entries.begin(), entries.end());
-            this->ents_ = ents;
+            {
+                std::lock_guard<std::mutex> lck (mutex_);
+                ents.insert(ents.begin(), this->ents_.begin() + offset, this->ents_.end());
+                ents.insert(ents.end(), entries.begin(), entries.end());
+                this->ents_ = ents;
+            }
         } else if (this->ents_.size() == offset) {
-            ents.insert(ents.end(), entries.begin(), entries.end());
-            this->ents_ = ents;
+            {
+                std::lock_guard<std::mutex> lck (mutex_);
+                ents.insert(ents.end(), entries.begin(), entries.end());
+                this->ents_ = ents;
+            }
         } else {
             // TODO: log panic
         }

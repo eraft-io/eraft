@@ -8,6 +8,7 @@
 #include <RaftCore/Util.h>
 #include <algorithm>
 #include <assert.h>
+#include <google/protobuf/text_format.h>
 
 namespace eraft
 {
@@ -58,6 +59,7 @@ namespace eraft
             } else {
                 this->prs_[iter] = std::make_shared<Progress>(lastIndex + 1);
             }
+            // std::cout << "node_id: " << iter << ", this->prs_[iter]->match: " << this->prs_[iter]->match << "this->prs_[iter]->next: " << this->prs_[iter]->next << std::endl; 
         }
         // std::cout << "c.peers.size(): " << c.peers.size() << std::endl; 
         this->BecomeFollower(0, NONE);
@@ -224,7 +226,7 @@ namespace eraft
         this->state_ = NodeState::StateFollower;
         this->lead_ = lead;
         this->term_ = term;
-        this->vote_ = 0;
+        this->vote_ = NONE;
     }
 
     void RaftContext::BecomeCandidate() {
@@ -264,6 +266,7 @@ namespace eraft
         if(this->prs_.find(this->id_) == this->prs_.end() && m.msg_type() == eraftpb::MsgTimeoutNow) {
             return false;
         }
+        // m term bigger than self -> become follower
         if(m.term() > this->term_) {
             this->leadTransferee_ = NONE;
             this->BecomeFollower(m.term(), NONE);
@@ -423,6 +426,7 @@ namespace eraft
                         for(auto iter = m.entries().begin(); iter != m.entries().end(); iter ++) {
                             ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
                         }
+                        // std::cout << "StepLeader -> ents.size(): " << ents.size() << std::endl;
                         this->AppendEntries(ents);
                     }
                     break;
@@ -443,7 +447,7 @@ namespace eraft
                     break;
                 }
             case eraftpb::MsgRequestVoteResponse:
-                break;
+                    break;
             case eraftpb::MsgSnapshot:
                 {
                     this->HandleSnapshot(m);
@@ -501,6 +505,7 @@ namespace eraft
             if(peer.first == this->id_) {
                 continue;
             }
+            // send append to peer
             this->SendAppend(peer.first);
         }
     }
@@ -584,7 +589,7 @@ namespace eraft
                 if(logTerm != entry.term()) {
                     uint64_t idx = this->raftLog_->ToSliceIndex(entry.index());
                     this->raftLog_->entries_[idx] = entry;
-                    this->raftLog_->entries_.erase(this->raftLog_->entries_.begin(), this->raftLog_->entries_.begin() + idx + 1);
+                    this->raftLog_->entries_.erase(this->raftLog_->entries_.begin(), this->raftLog_->entries_.begin() + idx);
                     this->raftLog_->stabled_ = std::min(this->raftLog_->stabled_, entry.index()-1);
                 }
             } else {
@@ -603,6 +608,10 @@ namespace eraft
     }
 
     bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
+        // std::string str1;
+        // google::protobuf::TextFormat::PrintToString(m, &str1);
+        // std::cout << "HandleAppendEntriesResponse: " << str1 << " this->term_:  " << this->term_ <<std::endl;
+        // std::cout << "this->prs_[m.from()]->match(): " << this->prs_[m.from()]->match << std::endl;
         if(m.term() != NONE && m.term() < this->term_) {
             return false;
         }
@@ -639,8 +648,9 @@ namespace eraft
     }
 
     void RaftContext::LeaderCommit() {
+        // std::cout << "LeaderCommit()" << std::endl;
         std::vector<uint64_t> match;
-        match.reserve(this->prs_.size());
+        match.resize(this->prs_.size());
         uint64_t i = 0;
         for(auto prs : this->prs_) {
             match[i] = prs.second->match;
@@ -671,6 +681,7 @@ namespace eraft
     void RaftContext::AppendEntries(std::vector<std::shared_ptr<eraftpb::Entry> > entries) {
         uint64_t lastIndex = this->raftLog_->LastIndex();
         uint64_t i = 0;
+        // push entries to raftLog
         for(auto entry : entries) {
             entry->set_term(this->term_);
             entry->set_index(lastIndex + i + 1);
@@ -681,13 +692,12 @@ namespace eraft
                 this->pendingConfIndex_ = entry->index();
             }
             this->raftLog_->entries_.push_back(*entry);
-            // std::cout << this->raftLog_->LastIndex() << std::endl;
-            this->prs_[this->id_]->match = this->raftLog_->LastIndex();
-            this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
-            this->BcastAppend();
-            if(this->prs_.size() == 1) {
-                this->raftLog_->commited_ = this->prs_[this->id_]->match;
-            }
+        }
+        this->prs_[this->id_]->match = this->raftLog_->LastIndex();
+        this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
+        this->BcastAppend();
+        if(this->prs_.size() == 1) {
+            this->raftLog_->commited_ = this->prs_[this->id_]->match;
         }
     }
 

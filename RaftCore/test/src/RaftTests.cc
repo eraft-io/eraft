@@ -50,7 +50,7 @@ enum class PeerType {
 
 std::vector<uint64_t> IdsBySize(uint64_t size) {
     std::vector<uint64_t> ids;
-    ids.reserve(size);
+    ids.resize(size);
     for(uint64_t i = 0; i < size; i++) {
         ids[i] = 1 + i;
     }

@@ -58,8 +58,6 @@ public:
     // Term return the term of the entry in the given index
     uint64_t Term(uint64_t i);
 
-private:
-
     // We need to compact the log entries in some point of time like
     // storage compact stabled log entries prevent the log entries
     // grow unlimitedly in memory
@@ -75,9 +73,6 @@ private:
 
     uint64_t ToEntryIndex(uint64_t i);
 
-	// storage contains all stable entries since the last snapshot.
-    StorageInterface *storage_; // point to real storage
-
 	// committed is the highest log position that is known to be in
 	// stable storage on a quorum of nodes.
     uint64_t commited_;
@@ -91,6 +86,11 @@ private:
 	// It is used to record the logs that are not persisted by storage yet.
 	// Everytime handling `Ready`, the unstabled logs will be included.
     uint64_t stabled_;
+
+private:
+
+	// storage contains all stable entries since the last snapshot.
+    StorageInterface *storage_; // point to real storage
 
 	// all entries that have not yet compact.
     std::vector<eraftpb::Entry> entries_;

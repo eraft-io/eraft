@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <random>
+#include <google/protobuf/text_format.h>
 
 namespace eraft
 {
@@ -106,6 +107,20 @@ static bool IsEmptyHardState(eraftpb::HardState st) {
 // IsEmptyHardState returns true if t hardstate a is equal to b.
 static bool IsHardStateEqual(eraftpb::HardState a, eraftpb::HardState b) {
     return (a.term() == b.term() && a.vote() == b.vote() && a.commit() == b.commit());
+}
+
+// protobuf Message to string
+static std::string MessageToString(eraftpb::Message m) {
+    std::string str1;
+    google::protobuf::TextFormat::PrintToString(m, &str1);
+    return str1;
+}
+
+// protobuf Entry to string
+static std::string EntryToString(eraftpb::Entry m) {
+    std::string str1;
+    google::protobuf::TextFormat::PrintToString(m, &str1);
+    return str1;
 }
 
 } // namespace eraft

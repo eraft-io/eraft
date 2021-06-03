@@ -111,6 +111,8 @@ struct Config {
 
 struct Progress {
     
+
+
     Progress(uint64_t next, uint64_t match) {
         this->next = next;
         this->match = match;
@@ -118,9 +120,12 @@ struct Progress {
 
     Progress(uint64_t next) {
         this->next = next;
+        this->match = 0;
     }
 
     Progress() {
+        this->next = 0;
+        this->match = 0;
     }
 
     uint64_t match;
@@ -153,6 +158,10 @@ public:
 
     std::vector<eraftpb::Message> ReadMessage();
 
+    // sendAppend sends an append RPC with new entries (if any) and the
+    // current commit index to the given peer. Returns true if a message was sent.
+    bool SendAppend(uint64_t to);
+
     // tick advances the internal logical clock by a single tick.
     void Tick();
 
@@ -168,6 +177,8 @@ public:
 
     std::map<uint64_t, bool> votes_;
 
+    std::shared_ptr<RaftLog> raftLog_;
+
 private:
 
     std::vector<uint64_t> Nodes(std::shared_ptr<RaftContext> raft) {
@@ -180,10 +191,6 @@ private:
     }
 
     void SendSnapshot(uint64_t to);
-
-    // sendAppend sends an append RPC with new entries (if any) and the
-    // current commit index to the given peer. Returns true if a message was sent.
-    bool SendAppend(uint64_t to);
 
     void SendAppendResponse(uint64_t to, bool reject, uint64_t term, uint64_t index);
 
@@ -246,8 +253,6 @@ private:
 
     // removeNode remove a node from raft group
     void RemoveNode(uint64_t id);
-
-    std::shared_ptr<RaftLog> raftLog_;
 
     std::vector<eraftpb::Message> msgs_;
 

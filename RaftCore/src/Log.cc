@@ -31,6 +31,7 @@ namespace eraft
         this->applied_ = lo - 1;
         this->stabled_ = hi;
         this->firstIndex_ = lo;
+        this->commited_ = 0;
     }
 
     RaftLog::~RaftLog() {}
@@ -68,7 +69,7 @@ namespace eraft
         uint64_t idx = i - this->firstIndex_;
         if(idx < 0) {
             // TODO: log panic
-            return -1;
+            exit(-1);
         }
         return idx;
     }
