@@ -104,7 +104,10 @@ namespace eraft
         for(auto ent: entries) {
             // https://stackoverflow.com/questions/1770707/how-do-you-add-a-repeated-field-using-googles-protocol-buffer-in-c
             eraftpb::Entry* e = msg.add_entries();
-            e = ent;
+            e->set_entry_type(ent->entry_type());
+            e->set_index(ent->index());
+            e->set_term(ent->term());
+            e->set_data(ent->data());
         }
         this->msgs_.push_back(msg);
         return true;

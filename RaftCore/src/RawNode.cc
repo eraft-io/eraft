@@ -27,12 +27,11 @@ namespace eraft
     }
 
     void RawNode::Propose(std::vector<uint8_t> *data) {
-        eraftpb::Entry ent;
-        ent.set_data((const char*)data);
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         msg.set_from(this->raft->id_);
-        msg.add_entries(); // TODO:
+        eraftpb::Entry* ent = msg.add_entries(); // TODO:
+        ent->set_data((const char*)data);
         this->raft->Step(msg);
     }
 
