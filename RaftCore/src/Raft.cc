@@ -556,7 +556,8 @@ namespace eraft
     }
 
     bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
-        // std::cout << "HandleAppendEntries " << MessageToString(m) << std::endl;
+        std::cout << "HandleAppendEntries " << MessageToString(m) << std::endl;
+        // this->term_ = 2, 
         if(m.term() != NONE && m.term() < this->term_) {
             this->SendAppendResponse(m.from(), true, NONE, NONE);
             return false;
@@ -565,10 +566,12 @@ namespace eraft
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
         this->lead_ = m.from();
         uint64_t lastIndex = this->raftLog_->LastIndex();
+        std::cout << "lastIndex: " << lastIndex << std::endl;
         if(m.index() > lastIndex) {
             this->SendAppendResponse(m.from(), true, NONE, lastIndex+1);
             return false;
         }
+        std::cout << "firstIndex_: " << this->raftLog_->firstIndex_ << std::endl;
         if(m.index() >= this->raftLog_->firstIndex_) {
             uint64_t logTerm = this->raftLog_->Term(m.index());
             if(logTerm != m.log_term()) {
@@ -593,9 +596,7 @@ namespace eraft
                 if(logTerm != entry.term()) {
                     uint64_t idx = this->raftLog_->ToSliceIndex(entry.index());
                     this->raftLog_->entries_[idx] = entry;
-                    std::vector<eraftpb::Entry> ents_(this->raftLog_->entries_.begin(), this->raftLog_->entries_.begin() + idx + 1);
-                    this->raftLog_->entries_.clear();
-                    this->raftLog_->entries_ = ents_;
+                    this->raftLog_->entries_.erase(this->raftLog_->entries_.begin() + idx + 1, this->raftLog_->entries_.end());
                     this->raftLog_->stabled_ = std::min(this->raftLog_->stabled_, entry.index()-1);
                 }
             } else {

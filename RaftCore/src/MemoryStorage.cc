@@ -65,7 +65,7 @@ namespace eraft
     }
 
     uint64_t MemoryStorage::LastIndex() {
-        // std::lock_guard<std::mutex> lck (mutex_);
+        std::lock_guard<std::mutex> lck (mutex_);
         return (this->ents_[0].index() + this->ents_.size() - 1);
     }
 

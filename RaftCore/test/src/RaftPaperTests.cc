@@ -826,3 +826,78 @@ TEST(RaftPaperTests, TestFollowerCommitEntry2AB) {
 }
 
 
+struct TestEntry3
+{
+    TestEntry3(uint64_t term, uint64_t index, bool wreject) {
+        this->term_ = term;
+        this->index_ = index;
+        this->wreject_ = wreject;
+    }
+
+    uint64_t term_;
+
+    uint64_t index_;
+
+    bool wreject_;
+};
+
+// TestFollowerCheckMessageType_MsgAppend tests that if the follower does not find an
+// entry in its log with the same index and term as the one in AppendEntries RPC,
+// then it refuses the new entries. Otherwise it replies that it accepts the
+// append entries.
+// Reference: section 5.3
+TEST(RaftPaperTests, TestFollowerCheckMessageType_MsgAppend2AB) {
+    eraftpb::Entry en1, en2;
+    en1.set_term(1); en1.set_index(1);
+    en2.set_term(2); en2.set_index(2);
+
+    std::vector<TestEntry3> tests = { 
+        // match with committed entries
+        // TestEntry3(0 , 0, false),
+        TestEntry3(1, 1, false),
+
+        // // match with uncommited entries
+        // TestEntry3(en2.term(), en2.index(), false),
+
+        // // unmatch with existing entry
+        // TestEntry3(en1.term(), en2.index(), true),
+
+        // // unexisting entry
+        // TestEntry3(en2.term() + 1, en2.index() + 1, true),
+
+    };
+
+    for(auto tt : tests) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::vector<uint64_t> ids = IdsBySize(3);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+        r->raftLog_->commited_ = 1;
+        r->BecomeFollower(2, 2);
+        r->ReadMessage(); // clear message
+
+        eraftpb::Message appEnd;
+        appEnd.set_from(2);
+        appEnd.set_to(1);
+        appEnd.set_msg_type(eraftpb::MsgAppend);
+        appEnd.set_term(2);
+        appEnd.set_log_term(tt.term_);
+        appEnd.set_index(tt.index_);
+
+        r->Step(appEnd);
+
+        std::vector<eraftpb::Message> msgs = r->ReadMessage();
+        ASSERT_EQ(msgs.size(), 1);
+        ASSERT_EQ(msgs[0].term(), 2);
+        // ASSERT_EQ(msgs[0].reject(), tt.wreject_);
+        // std::cout << "ROUND START " << std::endl;
+        for(auto m : msgs) {
+            // std::cout << eraft::MessageToString(m) << std::endl;
+        }
+        // std::cout << "ROUND END " << std::endl;
+
+    }
+
+
+}
+
