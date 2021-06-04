@@ -69,6 +69,7 @@ struct Config {
         this->electionTick = election;
         this->heartbeatTick = heartbeat;
         this->storage = st;
+        this->applied = 0;
     }
 
     // ID is the identity of the local raft. ID cannot be 0.

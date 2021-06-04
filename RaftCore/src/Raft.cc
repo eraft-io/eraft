@@ -553,6 +553,7 @@ namespace eraft
     }
 
     bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
+        // std::cout << "HandleAppendEntries " << MessageToString(m) << std::endl;
         if(m.term() != NONE && m.term() < this->term_) {
             this->SendAppendResponse(m.from(), true, NONE, NONE);
             return false;
@@ -589,7 +590,9 @@ namespace eraft
                 if(logTerm != entry.term()) {
                     uint64_t idx = this->raftLog_->ToSliceIndex(entry.index());
                     this->raftLog_->entries_[idx] = entry;
-                    this->raftLog_->entries_.erase(this->raftLog_->entries_.begin(), this->raftLog_->entries_.begin() + idx);
+                    std::vector<eraftpb::Entry> ents_(this->raftLog_->entries_.begin(), this->raftLog_->entries_.begin() + idx + 1);
+                    this->raftLog_->entries_.clear();
+                    this->raftLog_->entries_ = ents_;
                     this->raftLog_->stabled_ = std::min(this->raftLog_->stabled_, entry.index()-1);
                 }
             } else {

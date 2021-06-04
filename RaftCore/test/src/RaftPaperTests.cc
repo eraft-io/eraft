@@ -643,9 +643,7 @@ struct TestEntry2
     }
 
     uint64_t size_;
-
     std::map<uint64_t, bool> acceptors_;
-
     bool wack_;
 };
 
@@ -653,43 +651,178 @@ struct TestEntry2
 // leader that created the entry has replicated it on a majority of the servers.
 // Reference: section 5.3
 TEST(RaftPaperTests, TestLeaderAcknowledgeCommit2AB) {
-    // std::vector<TestEntry2> tests;
-    // tests.push_back(TestEntry2(1, std::map<uint64_t, bool>{ }, true));
-    // tests.push_back(TestEntry2(3, std::map<uint64_t, bool>{ }, false));
-    // tests.push_back(TestEntry2(3, std::map<uint64_t, bool>{ {2, true} }, true));
-    // tests.push_back(TestEntry2(3, std::map<uint64_t, bool>{ {2, true}, {3, true} }, true));
-    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ }, false));
-    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true} }, false));
-    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true} }, true));
-    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true}, {4, true} }, true));
-    // tests.push_back(TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true}, {4, true}, {5, true} }, true));
 
-    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
-    std::vector<uint64_t> ids = IdsBySize(3);
-    eraft::Config c(1, ids, 10, 1, memSt);
-    std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
-    r->BecomeCandidate();
-    r->BecomeLeader();
-    CommitNoopEntry(r, memSt);
-    uint64_t li = r->raftLog_->LastIndex();
-    eraftpb::Message proposeMsg;
-    proposeMsg.set_from(1);
-    proposeMsg.set_to(1);
-    proposeMsg.set_msg_type(eraftpb::MsgPropose);
-    eraftpb::Entry* eptr = proposeMsg.add_entries();
-    
-    eptr->set_data("some data");
-    r->Step(proposeMsg);
+    auto runtest = [](std::vector<TestEntry2> cases) {
+        for(auto iter = cases.begin(); iter != cases.end(); iter++) {
+            std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+            std::vector<uint64_t> ids = IdsBySize(iter->size_);
+            eraft::Config c(1, ids, 10, 1, memSt);
+            std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+            r->BecomeCandidate();
+            r->BecomeLeader();
+            CommitNoopEntry(r, memSt);
+            uint64_t li = r->raftLog_->LastIndex();
+            eraftpb::Message proposeMsg;
+            proposeMsg.set_from(1);
+            proposeMsg.set_to(1);
+            proposeMsg.set_msg_type(eraftpb::MsgPropose);
+            eraftpb::Entry* eptr = proposeMsg.add_entries();
+            
+            eptr->set_data("some data");
+            r->Step(proposeMsg);
 
-    std::cout << "Read Msg" << std::endl;
-    std::vector<eraftpb::Message> msgs = r->ReadMessage();
-    std::cout << "====================r->ReadMessage()====================" << msgs.size() << std::endl;
-    for(auto m : msgs) {
-        std::cout << eraft::MessageToString(m) << std::endl;
-        r->Step(AcceptAndReply(m));
-    }
+            std::vector<eraftpb::Message> msgs = r->ReadMessage();
 
-    // std::cout << "r->raftLog_->commited_: " << r->raftLog_->commited_ << " li:" << li << " wack: " << tests[3].wack_ << std::endl;
-    // ASSERT_EQ(r->raftLog_->commited_ > li, tt.wack_);
-    // }
+            for(auto m : msgs) {
+                if(iter->acceptors_[m.to()]) {
+                    std::cout << "AcceptAndReply" << std::endl;
+                    r->Step(AcceptAndReply(m));
+                }
+            }
+
+            std::cout << "r->raftLog_->commited_: " << r->raftLog_->commited_ << " li:" << li << std::endl;
+            ASSERT_EQ(r->raftLog_->commited_ > li, iter->wack_);
+        }
+    };
+
+    std::vector<TestEntry2> testCases { 
+        TestEntry2(3, std::map<uint64_t, bool>{ {2, true} }, true),
+        TestEntry2(3, std::map<uint64_t, bool>{ {2, true}, {3, true} }, true),
+        TestEntry2(5, std::map<uint64_t, bool>{ {2, true} }, false),
+        TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true} }, true),
+        TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true}, {4, true} }, true),
+        TestEntry2(5, std::map<uint64_t, bool>{ {2, true}, {3, true}, {4, true}, {5, true} }, true),
+    };
+
+    runtest(testCases);
+
+    std::vector<TestEntry2> testCasesEx { 
+        TestEntry2(1, {}, true), 
+        TestEntry2(3, {}, false),
+        TestEntry2(5, {}, false),
+    };
+
+    runtest(testCasesEx);
 }
+
+
+// TestLeaderCommitPrecedingEntries tests that when leader commits a log entry,
+// it also commits all preceding entries in the leader’s log, including
+// entries created by previous leaders.
+// Also, it applies the entry to its local state machine (in log order).
+// Reference: section 5.3
+TEST(RaftPaperTests, TestLeaderCommitPrecedingEntries2AB) {
+    eraftpb::Entry en1, en2, en3;
+    en1.set_term(2);
+    en1.set_index(1);
+
+    en2.set_term(1);
+    en2.set_index(1);
+
+    en3.set_term(2);
+    en3.set_index(2);
+
+    std::vector<eraftpb::Entry> ens1  = { };
+    std::vector<eraftpb::Entry> ens2  = { en1 };
+    std::vector<eraftpb::Entry> ens3  = { en2, en3 };
+    std::vector<eraftpb::Entry> ens4  = { en2 };
+
+    std::vector< std::vector<eraftpb::Entry> > testCases = { ens1, ens2, ens3, ens4 };
+    // std::vector< std::vector<eraftpb::Entry> > testCases = { ens4 };
+
+    for(auto tt: testCases) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        memSt->Append(tt);
+
+        std::vector<uint64_t> ids = IdsBySize(3);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+        r->term_ = 2;
+        r->BecomeCandidate();
+        r->BecomeLeader();
+
+        eraftpb::Message proposeMsg;
+        proposeMsg.set_from(1);
+        proposeMsg.set_to(1);
+        proposeMsg.set_msg_type(eraftpb::MsgPropose);
+        eraftpb::Entry* eptr = proposeMsg.add_entries();
+        
+        eptr->set_data("some data");
+        r->Step(proposeMsg);
+
+        std::vector<eraftpb::Message> msgs = r->ReadMessage();
+        for(auto m : msgs) {
+            r->Step(AcceptAndReply(m));
+        }
+
+        uint64_t li = tt.size();
+        // std::cout << "tt.size() " << li << " applied_: " << r->raftLog_->applied_ << " commited_: " << r->raftLog_->commited_ << " firstIndex_: " << r->raftLog_->firstIndex_ << std::endl;
+        std::vector<eraftpb::Entry> ents = r->raftLog_->NextEnts();
+        uint8_t i = 1;
+        std::cout << "ROUND: " << i << std::endl;
+        for(auto e : ents) {
+            // wents := append(tt, pb.Entry{Term: 3, Index: li + 1}, pb.Entry{Term: 3, Index: li + 2, Data: []byte("some data")})
+            std::cout << eraft::EntryToString(e) << std::endl;
+            i++;
+        }
+    }
+}
+
+
+// TestFollowerCommitEntry tests that once a follower learns that a log entry
+// is committed, it applies the entry to its local state machine (in log order).
+// Reference: section 5.3
+TEST(RaftPaperTests, TestFollowerCommitEntry2AB) {
+    eraftpb::Entry en1, en2, en3, en4;
+    en1.set_term(1); en1.set_index(1);  en1.set_data("some data");
+    en2.set_term(1); en2.set_index(2);  en2.set_data("some data2");
+    en3.set_term(1); en3.set_index(1);  en3.set_data("some data2");
+    en4.set_term(1); en4.set_index(2); en4.set_data("some data");
+
+    std::vector<eraftpb::Entry* > ens1, ens2, ens3, ens4;
+    ens1.push_back(&en1);
+    ens2.push_back(&en1);
+    ens2.push_back(&en2);
+    ens3.push_back(&en3);
+    ens3.push_back(&en4);
+    ens4.push_back(&en1);
+    ens4.push_back(&en2);
+
+    std::vector<std::pair<std::vector<eraftpb::Entry* >, uint64_t> > tests = { {ens1, 1}, {ens2, 2}, {ens3, 2}, {ens4, 1} };
+    for(auto tt : tests) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::vector<uint64_t> ids = IdsBySize(3);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+        r->BecomeFollower(1, 2);
+
+        eraftpb::Message appEnd;
+        appEnd.set_from(2);
+        appEnd.set_to(1);
+        appEnd.set_msg_type(eraftpb::MsgAppend);
+        appEnd.set_term(1);
+        for(auto e : tt.first) {
+            eraftpb::Entry *en = appEnd.add_entries();
+            en->set_index(e->index());
+            en->set_data(e->data());
+            en->set_term(e->term());
+            en->set_entry_type(e->entry_type());
+        }
+        appEnd.set_commit(tt.second);
+
+        r->Step(appEnd);
+
+        std::cout << r->raftLog_->commited_ << std::endl;
+        ASSERT_EQ(r->raftLog_->commited_, tt.second);
+
+        std::vector<eraftpb::Entry> ents = r->raftLog_->NextEnts();
+        std::cout << "ROUND START " << std::endl;
+        for(auto e : ents) {
+            std::cout << eraft::EntryToString(e) << std::endl;
+        }
+        std::cout << "ROUND END " << std::endl;
+    }
+}
+
+

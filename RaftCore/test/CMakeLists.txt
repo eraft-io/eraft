@@ -7,7 +7,7 @@ set(This RaftTests)
 
 set(Sources 
     src/RaftPaperTests.cc
-    src/RaftTests.cc
+    # src/RaftTests.cc
 )
 
 add_executable(${This} ${Sources})

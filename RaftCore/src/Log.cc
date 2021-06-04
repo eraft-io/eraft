@@ -24,11 +24,12 @@ namespace eraft
     RaftLog::RaftLog(StorageInterface &st) {
         uint64_t lo = st.FirstIndex();
         uint64_t hi = st.LastIndex();
-        // std::cout << "RaftLog::st.LastIndex() = " << st.LastIndex() << std::endl;
+        // std::cout << "RaftLog::st.FirstIndex() = " << st.FirstIndex() << std::endl;
         std::vector<eraftpb::Entry> entries = st.Entries(lo, hi + 1);
         this->storage_ = &st;
         this->entries_ = entries;
         this->applied_ = lo - 1;
+        std::cout << "RaftLog::applied_ = " << this->applied_ << std::endl;
         this->stabled_ = hi;
         this->firstIndex_ = lo;
         this->commited_ = 0;
@@ -51,16 +52,16 @@ namespace eraft
 
     std::vector<eraftpb::Entry> RaftLog::UnstableEntries() {
         if(this->entries_.size() > 0) {
-            return std::vector<eraftpb::Entry> {this->entries_.begin() + 
-            (this->stabled_ - this->firstIndex_ + 1), this->entries_.end()};
+            return std::vector<eraftpb::Entry> (this->entries_.begin() + 
+            (this->stabled_ - this->firstIndex_ + 1), this->entries_.end());
         }
         return std::vector<eraftpb::Entry>{};
     }
 
     std::vector<eraftpb::Entry> RaftLog::NextEnts() {
         if(this->entries_.size() > 0) {
-            return std::vector<eraftpb::Entry> {this->entries_.begin() + (this->applied_ - this->firstIndex_ + 1), 
-            this->entries_.begin() + this->commited_ - this->firstIndex_ + 1};
+            return std::vector<eraftpb::Entry> (this->entries_.begin() + (this->applied_ - this->firstIndex_ + 1), 
+            this->entries_.begin() + this->commited_ - this->firstIndex_ + 1);
         }
         return this->entries_;
     }

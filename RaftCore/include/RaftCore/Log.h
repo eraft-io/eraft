@@ -87,6 +87,9 @@ public:
 	// Everytime handling `Ready`, the unstabled logs will be included.
     uint64_t stabled_;
 
+    uint64_t firstIndex_;
+
+
 private:
 
 	// storage contains all stable entries since the last snapshot.
@@ -98,7 +101,6 @@ private:
 	// the incoming unstable snapshot, if any.
     eraftpb::Snapshot pendingSnapshot_;
 
-    uint64_t firstIndex_;
 
 };
     

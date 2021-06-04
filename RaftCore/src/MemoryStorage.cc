@@ -13,7 +13,12 @@ namespace eraft
 {
 
     MemoryStorage::MemoryStorage() {
+        this->ents_ = std::vector<eraftpb::Entry> {};
         this->ents_.resize(1);
+        this->ents_[0].set_index(0);
+        // eraftpb::Entry ent;
+        // ent.set_index(0);
+        // this->ents_.push_back(ent);
         this->snapShot_ = eraftpb::Snapshot();
     }
 
@@ -39,7 +44,7 @@ namespace eraft
             std::lock_guard<std::mutex> lck (mutex_);
             std::vector<eraftpb::Entry> ents2;
             ents2.insert(ents2.begin(), this->ents_.begin() + (lo - offset), this->ents_.begin() + (hi - offset));
-            ents = std::move(ents2);
+            ents = ents2;
             if (this->ents_.size() == 1 && ents.size() != 0) {
                 return std::vector<eraftpb::Entry>{};
             }
@@ -149,30 +154,37 @@ namespace eraft
         
         uint64_t first = this->FirstIndex();
         uint64_t last = entries[0].index() + entries.size() - 1;
+
+        std::cout << "first: " << first << " entries[0].index():" << entries[0].index() << " entries.size() " << entries.size() << " last " << last << std::endl;
         // shortcut if there is no new entry.
-        if(last > first) {
-            return true;
+        if(last < first) {
+            return false;
         }
         if(first > entries[0].index()) {
             {
                 std::lock_guard<std::mutex> lck (mutex_);
-                entries.erase(entries.begin() + (first-entries[0].index()));
+                entries.erase(entries.begin() + (first-entries[0].index() - 1));
             }
         }
+        // offset = 1
         uint64_t offset = entries[0].index() - this->ents_[0].index();
         std::vector<eraftpb::Entry> ents;
+        // std::cout << "this->ents_.size(): " << this->ents_.size() << " offset " << offset << std::endl;
         if (this->ents_.size() > offset) {
             {
                 std::lock_guard<std::mutex> lck (mutex_);
-                ents.insert(ents.begin(), this->ents_.begin() + offset, this->ents_.end());
+                ents_ = this->ents_;
+                ents.insert(ents.begin(), this->ents_.begin(), this->ents_.begin() + offset);
                 ents.insert(ents.end(), entries.begin(), entries.end());
                 this->ents_ = ents;
             }
         } else if (this->ents_.size() == offset) {
             {
                 std::lock_guard<std::mutex> lck (mutex_);
-                ents.insert(ents.end(), entries.begin(), entries.end());
-                this->ents_ = ents;
+                for(auto e: entries) {
+                    this->ents_.push_back(e);
+                }
+                // std::cout << "this->ents_.size(): " << this->ents_.size() << std::endl;
             }
         } else {
             // TODO: log panic
