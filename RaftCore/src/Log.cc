@@ -29,7 +29,7 @@ namespace eraft
         this->storage_ = &st;
         this->entries_ = entries;
         this->applied_ = lo - 1;
-        std::cout << "RaftLog::applied_ = " << this->applied_ << std::endl;
+        // std::cout << "RaftLog::applied_ = " << this->applied_ << std::endl;
         this->stabled_ = hi;
         this->firstIndex_ = lo;
         this->commited_ = 0;

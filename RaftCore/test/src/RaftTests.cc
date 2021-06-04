@@ -139,3 +139,13 @@ TEST(RaftTests, MemoryStorage) {
     std::cout << "LastIndex(): " << memSt->LastIndex() << std::endl;
     std::cout << "FirstIndex(): " << memSt->FirstIndex() << std::endl;
 }
+
+// TestLeaderSyncFollowerLog tests that the leader could bring a follower's log
+// into consistency with its own.
+// Reference: section 5.3, figure 7
+TEST(RaftPaperTests, TestLeaderSyncFollowerLog2AB) {
+
+    eraftpb::Entry en_1_1, en_1_2, en_1_3, en_4_4, en_4_5, en_5_6, en_5_7, en_6_8, en_6_9, en_6_10;
+    // std::vector<eraftpb::Entry> { {},  }
+    // TODO: with mock newwork
+}

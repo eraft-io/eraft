@@ -1,3 +1,9 @@
+// @file RaftPaperTests.cc
+// @author Colin
+// This module impl the major test in raft paper.
+// 
+// Inspired by etcd golang version.
+
 #include <RaftCore/Raft.h>
 #include <RaftCore/MemoryStorage.h>
 #include <RaftCore/Util.h>
@@ -851,24 +857,29 @@ TEST(RaftPaperTests, TestFollowerCheckMessageType_MsgAppend2AB) {
     en1.set_term(1); en1.set_index(1);
     en2.set_term(2); en2.set_index(2);
 
+    std::vector<eraftpb::Entry> ents;
+    ents.push_back(en1);
+    ents.push_back(en2);
+
     std::vector<TestEntry3> tests = { 
         // match with committed entries
-        // TestEntry3(0 , 0, false),
+        TestEntry3(0 , 0, false),
         TestEntry3(1, 1, false),
 
-        // // match with uncommited entries
-        // TestEntry3(en2.term(), en2.index(), false),
+        // match with uncommited entries
+        TestEntry3(en2.term(), en2.index(), false),
 
-        // // unmatch with existing entry
-        // TestEntry3(en1.term(), en2.index(), true),
+        // unmatch with existing entry
+        TestEntry3(en1.term(), en2.index(), true),
 
-        // // unexisting entry
-        // TestEntry3(en2.term() + 1, en2.index() + 1, true),
+        // unexisting entry
+        TestEntry3(en2.term() + 1, en2.index() + 1, true),
 
     };
 
     for(auto tt : tests) {
         std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        memSt->Append(ents);
         std::vector<uint64_t> ids = IdsBySize(3);
         eraft::Config c(1, ids, 10, 1, memSt);
         std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
@@ -889,15 +900,322 @@ TEST(RaftPaperTests, TestFollowerCheckMessageType_MsgAppend2AB) {
         std::vector<eraftpb::Message> msgs = r->ReadMessage();
         ASSERT_EQ(msgs.size(), 1);
         ASSERT_EQ(msgs[0].term(), 2);
-        // ASSERT_EQ(msgs[0].reject(), tt.wreject_);
+        ASSERT_EQ(msgs[0].reject(), tt.wreject_);
         // std::cout << "ROUND START " << std::endl;
-        for(auto m : msgs) {
-            // std::cout << eraft::MessageToString(m) << std::endl;
-        }
+        // for(auto m : msgs) {
+        //     std::cout << eraft::MessageToString(m) << std::endl;
+        // }
         // std::cout << "ROUND END " << std::endl;
 
     }
-
-
 }
 
+
+struct TestEntry4
+{
+    TestEntry4(uint64_t index, uint64_t term, std::vector<eraftpb::Entry> ents, std::vector<eraftpb::Entry> wents, std::vector<eraftpb::Entry> wunstable) {
+        this->index_ = index;
+        this->term_ = term;
+        this->ents_ = ents;
+        this->wents_ = wents;
+        this->wunstable_ = wunstable;
+    }
+
+    uint64_t index_;
+
+    uint64_t term_;
+
+    std::vector<eraftpb::Entry> ents_;
+
+    std::vector<eraftpb::Entry> wents_;
+
+    std::vector<eraftpb::Entry> wunstable_;
+};
+
+
+// TestFollowerAppendEntries tests that when AppendEntries RPC is valid,
+// the follower will delete the existing conflict entry and all that follow it,
+// and append any new entries not already in the log.
+// Also, it writes the new entry into stable storage.
+// Reference: section 5.3
+TEST(RaftPaperTests, TestFollowerAppendEntries2AB) {
+
+    eraftpb::Entry en_3_3, en_1_1, en_2_2, en_3_2, en_4_3, en_3_1;
+    en_3_3.set_term(3); en_3_3.set_index(3);
+    en_1_1.set_term(1); en_1_1.set_index(1);
+    en_2_2.set_term(2); en_2_2.set_index(2);
+    en_3_2.set_term(3); en_3_2.set_index(2);
+    en_4_3.set_term(4); en_4_3.set_index(3);
+    en_3_1.set_term(3); en_3_1.set_index(1);
+
+    std::vector<TestEntry4> tests = {
+        {
+            2, 2, 
+            std::vector<eraftpb::Entry>{ en_3_3 /* en _ term _ index */ },  // ents
+            std::vector<eraftpb::Entry>{ en_1_1, en_2_2, en_3_3 }, // wents
+            std::vector<eraftpb::Entry>{ en_3_3 } // wunstable_
+        },
+        {
+            1, 1, 
+            std::vector<eraftpb::Entry>{ en_3_2, en_4_3 }, 
+            std::vector<eraftpb::Entry>{ en_1_1, en_3_2, en_4_3 }, 
+            std::vector<eraftpb::Entry>{ en_3_2, en_4_3 } 
+        },
+        {
+            0, 0, 
+            std::vector<eraftpb::Entry>{ en_1_1 }, 
+            std::vector<eraftpb::Entry>{ en_1_1, en_2_2 }, 
+            std::vector<eraftpb::Entry>{ } 
+        },
+        {
+            0, 0, 
+            std::vector<eraftpb::Entry>{ en_3_1 }, 
+            std::vector<eraftpb::Entry>{ en_3_1 }, 
+            std::vector<eraftpb::Entry>{ en_3_1 } 
+        },
+    };
+
+    for(auto tt : tests) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        memSt->Append(std::vector<eraftpb::Entry>{ en_1_1, en_2_2 });
+        std::vector<uint64_t> ids = IdsBySize(3);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+        r->BecomeFollower(2, 2);
+
+        eraftpb::Message appEnd;
+        appEnd.set_from(2);
+        appEnd.set_to(1);
+        appEnd.set_msg_type(eraftpb::MsgAppend);
+        appEnd.set_term(2);
+        appEnd.set_log_term(tt.term_);
+        appEnd.set_index(tt.index_);
+        for(auto e : tt.ents_) {
+            eraftpb::Entry *en = appEnd.add_entries();
+            en->set_index(e.index());
+            en->set_data(e.data());
+            en->set_term(e.term());
+            en->set_entry_type(e.entry_type());
+        }
+
+        r->Step(appEnd);
+
+        std::cout << "r->raftLog_->entries_ start" << std::endl;
+        // == wents
+        for(auto en: r->raftLog_->entries_) {
+            std::cout << eraft::EntryToString(en) << std::endl;
+        }
+        std::cout << "r->raftLog_->entries_ end" << std::endl;
+
+        std::cout << "r->raftLog_->UnstableEntries() start" << std::endl;
+        // == wunstable_
+        for(auto en: r->raftLog_->UnstableEntries()) {
+            std::cout << eraft::EntryToString(en) << std::endl;
+        }
+        std::cout << "r->raftLog_->UnstableEntries() end" << std::endl;
+    }
+}
+
+struct TestEntry5
+{
+    TestEntry5(std::vector<eraftpb::Entry> ents, uint64_t wterm) {
+        this->ents_ = ents;
+        this->wterm_ = wterm;
+    }
+
+    std::vector<eraftpb::Entry> ents_;
+
+    uint64_t wterm_;
+};
+
+
+// TestVoteRequest tests that the vote request includes information about the candidate’s log
+// and are sent to all of the other nodes.
+// Reference: section 5.4.1
+TEST(RaftPaperTests, TestVoteRequest2AB) {
+    eraftpb::Entry en_1_1, en_2_2;
+    en_1_1.set_term(1); en_1_1.set_index(1);
+    en_2_2.set_term(2); en_2_2.set_index(2);
+
+    std::vector<TestEntry5> tests =
+    { 
+        TestEntry5(std::vector<eraftpb::Entry>{en_1_1}, 2),
+        TestEntry5(std::vector<eraftpb::Entry>{en_1_1, en_2_2}, 3)
+    };
+
+    for(auto tt : tests) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::vector<uint64_t> ids = IdsBySize(3);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+        eraftpb::Message appEnd;
+        appEnd.set_from(2);
+        appEnd.set_to(1);
+        appEnd.set_msg_type(eraftpb::MsgAppend);
+        appEnd.set_term(tt.wterm_ - 1);
+        appEnd.set_log_term(0);
+        appEnd.set_index(0);
+        for(auto e : tt.ents_) {
+            eraftpb::Entry *en = appEnd.add_entries();
+            en->set_index(e.index());
+            en->set_data(e.data());
+            en->set_term(e.term());
+            en->set_entry_type(e.entry_type());
+        };
+
+        r->Step(appEnd);
+
+        r->ReadMessage();
+
+        while (r->state_ != eraft::NodeState::StateCandidate)
+        {
+            r->Tick();
+        }
+
+        std::vector<eraftpb::Message> msgs = r->ReadMessage();   
+        uint8_t i = 0;
+        for(auto m : msgs) {
+            ASSERT_EQ(eraft::MsgTypeToString(m.msg_type()), eraft::MsgTypeToString(eraftpb::MsgRequestVote));
+            ASSERT_EQ(m.to(), i + 2);
+            ASSERT_EQ(m.term(), tt.wterm_);
+            ASSERT_EQ(m.index(), tt.ents_[tt.ents_.size()-1].index());
+            ASSERT_EQ(m.log_term(), tt.ents_[tt.ents_.size()-1].term());
+            // std::cout << eraft::MessageToString(m) << std::endl;
+            i++;
+        }
+    }
+}
+
+struct TestEntry6
+{
+    TestEntry6(std::vector<eraftpb::Entry> ents, uint64_t logterm, uint64_t index, bool wreject) {
+        this->ents_ = ents;
+        this->logterm_ = logterm;
+        this->index_ = index;
+        this->wreject_ = wreject;
+    }
+
+    std::vector<eraftpb::Entry> ents_;
+    uint64_t logterm_;
+    uint64_t index_;
+    bool wreject_;
+};
+
+
+// TestVoter tests the voter denies its vote if its own log is more up-to-date
+// than that of the candidate.
+// Reference: section 5.4.1
+TEST(RaftPaperTests, TestVoter2AA) {
+    eraftpb::Entry en_1_1, en_1_2, en_2_1, en_2_2;
+    en_1_1.set_term(1); en_1_1.set_index(1);
+    en_1_2.set_term(1); en_1_2.set_index(2);
+    en_2_1.set_term(2); en_2_1.set_index(1);
+    en_2_2.set_term(2); en_2_2.set_index(2);
+
+    std::vector<TestEntry6> tests = 
+    {
+        // some log trem
+        TestEntry6(std::vector<eraftpb::Entry>{ en_1_1 }, 1, 1, false),
+        TestEntry6(std::vector<eraftpb::Entry>{ en_1_1 }, 1, 2, false),
+        TestEntry6(std::vector<eraftpb::Entry>{ en_1_1, en_1_2 }, 1, 1, true),
+        
+        // candidate higher logterm
+        TestEntry6(std::vector<eraftpb::Entry>{ en_1_1 }, 2, 1, false),
+        TestEntry6(std::vector<eraftpb::Entry>{ en_1_1 }, 2, 2, false),
+        TestEntry6(std::vector<eraftpb::Entry>{ en_1_1, en_1_2 }, 2, 1, false),
+        
+        // voter higher logterm
+        TestEntry6(std::vector<eraftpb::Entry>{ en_2_1 }, 1, 1, true),
+        TestEntry6(std::vector<eraftpb::Entry>{ en_2_1 }, 1, 2, true),
+        TestEntry6(std::vector<eraftpb::Entry>{ en_2_1, en_1_2 }, 1, 1, true),
+    };
+
+    for(auto tt : tests) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        memSt->Append(tt.ents_);
+        std::vector<uint64_t> ids = IdsBySize(2);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+        eraftpb::Message reqVote;
+        reqVote.set_from(2);
+        reqVote.set_to(1);
+        reqVote.set_msg_type(eraftpb::MsgRequestVote);
+        reqVote.set_term(3);
+        reqVote.set_log_term(tt.logterm_);
+        reqVote.set_index(tt.index_);
+
+        r->Step(reqVote);
+
+        std::vector<eraftpb::Message> msgs = r->ReadMessage();
+
+        ASSERT_EQ(msgs.size(), 1);
+
+        ASSERT_EQ(msgs[0].msg_type(), eraftpb::MsgRequestVoteResponse);
+
+        ASSERT_EQ(msgs[0].reject(), tt.wreject_);
+    }
+}
+
+struct TestEntry7
+{
+    TestEntry7(uint64_t index, uint64_t wcommit){
+        this->index_ = index;
+        this->wcommit_ = wcommit;
+    }
+    uint64_t index_;
+    uint64_t wcommit_;
+};
+
+
+// TestLeaderOnlyCommitsLogFromCurrentTerm tests that only log entries from the leader’s
+// current term are committed by counting replicas.
+// Reference: section 5.4.2
+TEST(RaftPaperTests, TestLeaderOnlyCommitsLogFromCurrentTerm2AB) {
+    eraftpb::Entry en_1_1, en_2_2;
+    en_1_1.set_term(1); en_1_1.set_index(1);
+    en_2_2.set_term(2); en_2_2.set_index(2);
+    std::vector<eraftpb::Entry> ents = { en_1_1, en_2_2 };
+
+    std::vector<TestEntry7> tests = 
+    {
+        TestEntry7(1, 0),
+        TestEntry7(2, 0),
+        TestEntry7(3, 3)
+    };
+
+    for(auto tt : tests) {
+        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        memSt->Append(ents);
+        std::vector<uint64_t> ids = IdsBySize(2);
+        eraft::Config c(1, ids, 10, 1, memSt);
+        std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
+
+        r->term_ = 2;
+
+        // become leader at term 3
+        r->BecomeCandidate();
+        r->BecomeLeader();
+        r->ReadMessage();
+
+        eraftpb::Message proMsg;
+        proMsg.set_from(1);
+        proMsg.set_to(1);
+        proMsg.set_msg_type(eraftpb::MsgPropose);
+
+        r->Step(proMsg);
+
+        eraftpb::Message appendMsg;
+        appendMsg.set_from(2);
+        appendMsg.set_to(1);
+        appendMsg.set_msg_type(eraftpb::MsgAppendResponse);
+        appendMsg.set_term(r->term_);
+        appendMsg.set_index(tt.index_);
+
+        r->Step(appendMsg);
+
+        ASSERT_EQ(r->raftLog_->commited_, tt.wcommit_);
+    }
+}

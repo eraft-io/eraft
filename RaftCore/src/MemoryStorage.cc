@@ -16,9 +16,6 @@ namespace eraft
         this->ents_ = std::vector<eraftpb::Entry> {};
         this->ents_.resize(1);
         this->ents_[0].set_index(0);
-        // eraftpb::Entry ent;
-        // ent.set_index(0);
-        // this->ents_.push_back(ent);
         this->snapShot_ = eraftpb::Snapshot();
     }
 
@@ -155,7 +152,7 @@ namespace eraft
         uint64_t first = this->FirstIndex();
         uint64_t last = entries[0].index() + entries.size() - 1;
 
-        std::cout << "first: " << first << " entries[0].index():" << entries[0].index() << " entries.size() " << entries.size() << " last " << last << std::endl;
+        // std::cout << "first: " << first << " entries[0].index():" << entries[0].index() << " entries.size() " << entries.size() << " last " << last << std::endl;
         // shortcut if there is no new entry.
         if(last < first) {
             return false;

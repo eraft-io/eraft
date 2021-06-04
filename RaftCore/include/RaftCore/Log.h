@@ -89,14 +89,13 @@ public:
 
     uint64_t firstIndex_;
 
+	// all entries that have not yet compact.
+    std::vector<eraftpb::Entry> entries_;
 
 private:
 
 	// storage contains all stable entries since the last snapshot.
     StorageInterface *storage_; // point to real storage
-
-	// all entries that have not yet compact.
-    std::vector<eraftpb::Entry> entries_;
 
 	// the incoming unstable snapshot, if any.
     eraftpb::Snapshot pendingSnapshot_;
