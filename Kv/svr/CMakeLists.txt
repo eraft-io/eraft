@@ -3,11 +3,10 @@
 # © 2020 by LiuJ
 
 cmake_minimum_required(VERSION 3.8)
-set(This RaftTests)
+set(This TestsSvr)
 
 set(Sources 
-    # src/RaftPaperTests.cc
-    src/RaftTests.cc
+    TestsSvr.cc
 )
 
 add_executable(${This} ${Sources})
@@ -17,8 +16,8 @@ set_target_properties(${This} PROPERTIES
 
 target_link_libraries(${This} PUBLIC
     gtest_main
+    Logger
     Protocol
-    RaftCore
 )
 
 add_test(

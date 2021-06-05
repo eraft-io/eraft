@@ -30,7 +30,7 @@ namespace eraft
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         msg.set_from(this->raft->id_);
-        eraftpb::Entry* ent = msg.add_entries(); // TODO:
+        eraftpb::Entry* ent = msg.add_entries();
         ent->set_data((const char*)data);
         this->raft->Step(msg);
     }
@@ -56,11 +56,15 @@ namespace eraft
         switch (cc.change_type())
         {
         case eraftpb::AddNode:
-            this->raft->AddNode(cc.node_id());
+            {
+                this->raft->AddNode(cc.node_id());
+                break;
+            }
         case eraftpb::RemoveNode:
-            this->raft->RemoveNode(cc.node_id());
-        default:
-            break;
+            {
+                this->raft->RemoveNode(cc.node_id());
+                break;
+            }
         }
         std::vector<uint64_t> nodes = this->raft->Nodes(this->raft);
             for(uint64_t i = 0; i < nodes.size(); i++) {
@@ -79,9 +83,6 @@ namespace eraft
         rd.entries = r->raftLog_->UnstableEntries();
         rd.committedEntries = r->raftLog_->NextEnts();
         rd.messages = r->msgs_;
-        // TODO: check
-        // ESoftState *softSt = r->SoftState();
-        // eraftpb::HardState *hardSt = r->HardState();
         if(!r->SoftState()->Equal(this->prevSoftSt)) {
             this->prevSoftSt = r->SoftState();
             rd.softSt = r->SoftState();
@@ -139,6 +140,5 @@ namespace eraft
         msg.set_from(transferee);
         this->Step(msg);
     }
-
 
 } // namespace eraft
