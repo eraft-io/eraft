@@ -21,7 +21,7 @@
 #include <string>
 
 #include <grpcpp/grpcpp.h>
-#include <eraftio/helloworld.pb.h>
+#include <eraftio/helloworld.grpc.pb.h>
 
 using grpc::Channel;
 using grpc::ClientContext;

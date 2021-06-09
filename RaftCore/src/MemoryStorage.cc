@@ -82,7 +82,6 @@ namespace eraft
      */
 
     bool MemoryStorage::ApplySnapshot(eraftpb::Snapshot &snap) {
-        
         uint64_t msIndex = this->snapShot_.metadata().index();
         uint64_t snapIndex = snap.metadata().index();
         if (msIndex >= snapIndex) {

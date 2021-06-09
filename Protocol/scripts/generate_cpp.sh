@@ -7,6 +7,7 @@ echo "generate cpp code..."
 
 KVPROTO_ROOT="$SCRIPTS_DIR/.."
 GRPC_INCLUDE=.:../include
+GRPC_CPP_PLUGIN=$(which grpc_cpp_plugin)
 
 cd $KVPROTO_ROOT
 rm -rf proto-cpp && mkdir -p proto-cpp
@@ -20,6 +21,7 @@ sed_inplace -e 's/\[.*gogoproto.*\]//g' proto-cpp/*
 
 push proto-cpp
 protoc -I${GRPC_INCLUDE} --cpp_out ../eraftio/ *.proto || exit $?
+protoc -I${GRPC_INCLUDE} --grpc_out ../eraftio/ --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN} *.proto || exit $?
 pop
 
 rm -rf proto-cpp

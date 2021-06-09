@@ -22,8 +22,7 @@
 
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
-#include <grpcpp/ext/proto_server_reflection_plugin.h>
-#include <eraftio/helloworld.pb.h>
+#include <eraftio/helloworld.grpc.pb.h>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -48,7 +47,6 @@ void RunServer() {
   GreeterServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
-  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;
   // Listen on the given address without any authentication mechanism.
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());

@@ -22,6 +22,7 @@ target_include_directories(${This} PUBLIC include)
 
 target_link_libraries(${This} PUBLIC
     gtest_main
+    grpc++_unsecure
 )
 
 add_subdirectory(cli)

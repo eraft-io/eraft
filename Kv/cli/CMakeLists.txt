@@ -17,6 +17,7 @@ set_target_properties(${This} PROPERTIES
 target_link_libraries(${This} PUBLIC
     gtest_main
     Logger
+    gRPC::grpc++
     Protocol
 )
 

@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.8)
 set(This RaftTests)
 
 set(Sources 
-    # src/RaftPaperTests.cc
+    src/RaftPaperTests.cc
     src/RaftTests.cc
 )
 
