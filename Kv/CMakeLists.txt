@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.8)
 set(This Kv)
 
 set(Headers 
-    # include/Logger/Logger.h
+    include/Kv/ServerImpl.h
 )
 
 set(Sources
@@ -22,7 +22,6 @@ target_include_directories(${This} PUBLIC include)
 
 target_link_libraries(${This} PUBLIC
     gtest_main
-    grpc++_unsecure
 )
 
 add_subdirectory(cli)
