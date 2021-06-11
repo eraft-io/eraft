@@ -128,23 +128,19 @@ class TinyKv final {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawScanResponse>>(PrepareAsyncRawScanRaw(context, request, cq));
     }
     // Raft commands (tinykv <-> tinykv).
-    std::unique_ptr< ::grpc::ClientWriterInterface< ::raft_serverpb::RaftMessage>> Raft(::grpc::ClientContext* context, ::raft_serverpb::Done* response) {
-      return std::unique_ptr< ::grpc::ClientWriterInterface< ::raft_serverpb::RaftMessage>>(RaftRaw(context, response));
+    virtual ::grpc::Status Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::raft_serverpb::Done* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>> AsyncRaft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>>(AsyncRaftRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::RaftMessage>> AsyncRaft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::RaftMessage>>(AsyncRaftRaw(context, response, cq, tag));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>> PrepareAsyncRaft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>>(PrepareAsyncRaftRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::RaftMessage>> PrepareAsyncRaft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::RaftMessage>>(PrepareAsyncRaftRaw(context, response, cq));
+    virtual ::grpc::Status Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::raft_serverpb::Done* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>> AsyncSnapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>>(AsyncSnapshotRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientWriterInterface< ::raft_serverpb::SnapshotChunk>> Snapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response) {
-      return std::unique_ptr< ::grpc::ClientWriterInterface< ::raft_serverpb::SnapshotChunk>>(SnapshotRaw(context, response));
-    }
-    std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::SnapshotChunk>> AsyncSnapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::SnapshotChunk>>(AsyncSnapshotRaw(context, response, cq, tag));
-    }
-    std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::SnapshotChunk>> PrepareAsyncSnapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::SnapshotChunk>>(PrepareAsyncSnapshotRaw(context, response, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>> PrepareAsyncSnapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>>(PrepareAsyncSnapshotRaw(context, request, cq));
     }
     // Coprocessor 
     virtual ::grpc::Status Coprocessor(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::coprocessor::Response* response) = 0;
@@ -204,8 +200,14 @@ class TinyKv final {
       virtual void RawScan(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest* request, ::kvrpcpb::RawScanResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       virtual void RawScan(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::kvrpcpb::RawScanResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Raft commands (tinykv <-> tinykv).
-      virtual void Raft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::experimental::ClientWriteReactor< ::raft_serverpb::RaftMessage>* reactor) = 0;
-      virtual void Snapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::experimental::ClientWriteReactor< ::raft_serverpb::SnapshotChunk>* reactor) = 0;
+      virtual void Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void Raft(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void Raft(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Coprocessor 
       virtual void Coprocessor(::grpc::ClientContext* context, const ::coprocessor::Request* request, ::coprocessor::Response* response, std::function<void(::grpc::Status)>) = 0;
       virtual void Coprocessor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::coprocessor::Response* response, std::function<void(::grpc::Status)>) = 0;
@@ -236,12 +238,10 @@ class TinyKv final {
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawDeleteResponse>* PrepareAsyncRawDeleteRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawDeleteRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawScanResponse>* AsyncRawScanRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawScanResponse>* PrepareAsyncRawScanRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientWriterInterface< ::raft_serverpb::RaftMessage>* RaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response) = 0;
-    virtual ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::RaftMessage>* AsyncRaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) = 0;
-    virtual ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::RaftMessage>* PrepareAsyncRaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientWriterInterface< ::raft_serverpb::SnapshotChunk>* SnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response) = 0;
-    virtual ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::SnapshotChunk>* AsyncSnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) = 0;
-    virtual ::grpc::ClientAsyncWriterInterface< ::raft_serverpb::SnapshotChunk>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>* AsyncRaftRaw(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>* PrepareAsyncRaftRaw(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>* AsyncSnapshotRaw(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_serverpb::Done>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::coprocessor::Response>* AsyncCoprocessorRaw(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::coprocessor::Response>* PrepareAsyncCoprocessorRaw(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::grpc::CompletionQueue* cq) = 0;
   };
@@ -325,23 +325,19 @@ class TinyKv final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawScanResponse>> PrepareAsyncRawScan(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawScanResponse>>(PrepareAsyncRawScanRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientWriter< ::raft_serverpb::RaftMessage>> Raft(::grpc::ClientContext* context, ::raft_serverpb::Done* response) {
-      return std::unique_ptr< ::grpc::ClientWriter< ::raft_serverpb::RaftMessage>>(RaftRaw(context, response));
+    ::grpc::Status Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::raft_serverpb::Done* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>> AsyncRaft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>>(AsyncRaftRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>> AsyncRaft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>>(AsyncRaftRaw(context, response, cq, tag));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>> PrepareAsyncRaft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>>(PrepareAsyncRaftRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>> PrepareAsyncRaft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>>(PrepareAsyncRaftRaw(context, response, cq));
+    ::grpc::Status Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::raft_serverpb::Done* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>> AsyncSnapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>>(AsyncSnapshotRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientWriter< ::raft_serverpb::SnapshotChunk>> Snapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response) {
-      return std::unique_ptr< ::grpc::ClientWriter< ::raft_serverpb::SnapshotChunk>>(SnapshotRaw(context, response));
-    }
-    std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>> AsyncSnapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>>(AsyncSnapshotRaw(context, response, cq, tag));
-    }
-    std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>> PrepareAsyncSnapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>>(PrepareAsyncSnapshotRaw(context, response, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>> PrepareAsyncSnapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>>(PrepareAsyncSnapshotRaw(context, request, cq));
     }
     ::grpc::Status Coprocessor(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::coprocessor::Response* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::coprocessor::Response>> AsyncCoprocessor(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::grpc::CompletionQueue* cq) {
@@ -397,8 +393,14 @@ class TinyKv final {
       void RawScan(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::kvrpcpb::RawScanResponse* response, std::function<void(::grpc::Status)>) override;
       void RawScan(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest* request, ::kvrpcpb::RawScanResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void RawScan(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::kvrpcpb::RawScanResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
-      void Raft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::experimental::ClientWriteReactor< ::raft_serverpb::RaftMessage>* reactor) override;
-      void Snapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::experimental::ClientWriteReactor< ::raft_serverpb::SnapshotChunk>* reactor) override;
+      void Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) override;
+      void Raft(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) override;
+      void Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void Raft(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) override;
+      void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)>) override;
+      void Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void Coprocessor(::grpc::ClientContext* context, const ::coprocessor::Request* request, ::coprocessor::Response* response, std::function<void(::grpc::Status)>) override;
       void Coprocessor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::coprocessor::Response* response, std::function<void(::grpc::Status)>) override;
       void Coprocessor(::grpc::ClientContext* context, const ::coprocessor::Request* request, ::coprocessor::Response* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
@@ -436,12 +438,10 @@ class TinyKv final {
     ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawDeleteResponse>* PrepareAsyncRawDeleteRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawDeleteRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawScanResponse>* AsyncRawScanRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawScanResponse>* PrepareAsyncRawScanRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawScanRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientWriter< ::raft_serverpb::RaftMessage>* RaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response) override;
-    ::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>* AsyncRaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) override;
-    ::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>* PrepareAsyncRaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientWriter< ::raft_serverpb::SnapshotChunk>* SnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response) override;
-    ::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>* AsyncSnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) override;
-    ::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* AsyncRaftRaw(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* PrepareAsyncRaftRaw(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* AsyncSnapshotRaw(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::coprocessor::Response>* AsyncCoprocessorRaw(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::coprocessor::Response>* PrepareAsyncCoprocessorRaw(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_KvGet_;
@@ -479,8 +479,8 @@ class TinyKv final {
     virtual ::grpc::Status RawDelete(::grpc::ServerContext* context, const ::kvrpcpb::RawDeleteRequest* request, ::kvrpcpb::RawDeleteResponse* response);
     virtual ::grpc::Status RawScan(::grpc::ServerContext* context, const ::kvrpcpb::RawScanRequest* request, ::kvrpcpb::RawScanResponse* response);
     // Raft commands (tinykv <-> tinykv).
-    virtual ::grpc::Status Raft(::grpc::ServerContext* context, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* reader, ::raft_serverpb::Done* response);
-    virtual ::grpc::Status Snapshot(::grpc::ServerContext* context, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* reader, ::raft_serverpb::Done* response);
+    virtual ::grpc::Status Raft(::grpc::ServerContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response);
+    virtual ::grpc::Status Snapshot(::grpc::ServerContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response);
     // Coprocessor 
     virtual ::grpc::Status Coprocessor(::grpc::ServerContext* context, const ::coprocessor::Request* request, ::coprocessor::Response* response);
   };
@@ -716,12 +716,12 @@ class TinyKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestRaft(::grpc::ServerContext* context, ::grpc::ServerAsyncReader< ::raft_serverpb::Done, ::raft_serverpb::RaftMessage>* reader, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncClientStreaming(11, context, reader, new_call_cq, notification_cq, tag);
+    void RequestRaft(::grpc::ServerContext* context, ::raft_serverpb::RaftMessage* request, ::grpc::ServerAsyncResponseWriter< ::raft_serverpb::Done>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -736,12 +736,12 @@ class TinyKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestSnapshot(::grpc::ServerContext* context, ::grpc::ServerAsyncReader< ::raft_serverpb::Done, ::raft_serverpb::SnapshotChunk>* reader, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncClientStreaming(12, context, reader, new_call_cq, notification_cq, tag);
+    void RequestSnapshot(::grpc::ServerContext* context, ::raft_serverpb::SnapshotChunk* request, ::grpc::ServerAsyncResponseWriter< ::raft_serverpb::Done>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(12, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1113,20 +1113,29 @@ class TinyKv final {
    public:
     ExperimentalWithCallbackMethod_Raft() {
       ::grpc::Service::experimental().MarkMethodCallback(11,
-        new ::grpc_impl::internal::CallbackClientStreamingHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(
-          [this] { return this->Raft(); }));
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(
+          [this](::grpc::ServerContext* context,
+                 const ::raft_serverpb::RaftMessage* request,
+                 ::raft_serverpb::Done* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   return this->Raft(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_Raft(
+        ::grpc::experimental::MessageAllocator< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>*>(
+          ::grpc::Service::experimental().GetHandler(11))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_Raft() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerReadReactor< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>* Raft() {
-      return new ::grpc_impl::internal::UnimplementedReadReactor<
-        ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>;}
+    virtual void Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_Snapshot : public BaseClass {
@@ -1135,20 +1144,29 @@ class TinyKv final {
    public:
     ExperimentalWithCallbackMethod_Snapshot() {
       ::grpc::Service::experimental().MarkMethodCallback(12,
-        new ::grpc_impl::internal::CallbackClientStreamingHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(
-          [this] { return this->Snapshot(); }));
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(
+          [this](::grpc::ServerContext* context,
+                 const ::raft_serverpb::SnapshotChunk* request,
+                 ::raft_serverpb::Done* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   return this->Snapshot(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_Snapshot(
+        ::grpc::experimental::MessageAllocator< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>*>(
+          ::grpc::Service::experimental().GetHandler(12))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerReadReactor< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>* Snapshot() {
-      return new ::grpc_impl::internal::UnimplementedReadReactor<
-        ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>;}
+    virtual void Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_Coprocessor : public BaseClass {
@@ -1381,7 +1399,7 @@ class TinyKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1398,7 +1416,7 @@ class TinyKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1652,12 +1670,12 @@ class TinyKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestRaft(::grpc::ServerContext* context, ::grpc::ServerAsyncReader< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* reader, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncClientStreaming(11, context, reader, new_call_cq, notification_cq, tag);
+    void RequestRaft(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1672,12 +1690,12 @@ class TinyKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestSnapshot(::grpc::ServerContext* context, ::grpc::ServerAsyncReader< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* reader, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncClientStreaming(12, context, reader, new_call_cq, notification_cq, tag);
+    void RequestSnapshot(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(12, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1982,20 +2000,23 @@ class TinyKv final {
    public:
     ExperimentalWithRawCallbackMethod_Raft() {
       ::grpc::Service::experimental().MarkMethodRawCallback(11,
-        new ::grpc_impl::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-          [this] { return this->Raft(); }));
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+          [this](::grpc::ServerContext* context,
+                 const ::grpc::ByteBuffer* request,
+                 ::grpc::ByteBuffer* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->Raft(context, request, response, controller);
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_Raft() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* Raft() {
-      return new ::grpc_impl::internal::UnimplementedReadReactor<
-        ::grpc::ByteBuffer, ::grpc::ByteBuffer>;}
+    virtual void Raft(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_Snapshot : public BaseClass {
@@ -2004,20 +2025,23 @@ class TinyKv final {
    public:
     ExperimentalWithRawCallbackMethod_Snapshot() {
       ::grpc::Service::experimental().MarkMethodRawCallback(12,
-        new ::grpc_impl::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-          [this] { return this->Snapshot(); }));
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+          [this](::grpc::ServerContext* context,
+                 const ::grpc::ByteBuffer* request,
+                 ::grpc::ByteBuffer* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->Snapshot(context, request, response, controller);
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* /*reader*/, ::raft_serverpb::Done* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* Snapshot() {
-      return new ::grpc_impl::internal::UnimplementedReadReactor<
-        ::grpc::ByteBuffer, ::grpc::ByteBuffer>;}
+    virtual void Snapshot(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_Coprocessor : public BaseClass {
@@ -2265,6 +2289,46 @@ class TinyKv final {
     virtual ::grpc::Status StreamedRawScan(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::kvrpcpb::RawScanRequest,::kvrpcpb::RawScanResponse>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
+  class WithStreamedUnaryMethod_Raft : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_Raft() {
+      ::grpc::Service::MarkMethodStreamed(11,
+        new ::grpc::internal::StreamedUnaryHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(std::bind(&WithStreamedUnaryMethod_Raft<BaseClass>::StreamedRaft, this, std::placeholders::_1, std::placeholders::_2)));
+    }
+    ~WithStreamedUnaryMethod_Raft() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status Raft(::grpc::ServerContext* /*context*/, const ::raft_serverpb::RaftMessage* /*request*/, ::raft_serverpb::Done* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedRaft(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::raft_serverpb::RaftMessage,::raft_serverpb::Done>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_Snapshot : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_Snapshot() {
+      ::grpc::Service::MarkMethodStreamed(12,
+        new ::grpc::internal::StreamedUnaryHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(std::bind(&WithStreamedUnaryMethod_Snapshot<BaseClass>::StreamedSnapshot, this, std::placeholders::_1, std::placeholders::_2)));
+    }
+    ~WithStreamedUnaryMethod_Snapshot() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::raft_serverpb::SnapshotChunk* /*request*/, ::raft_serverpb::Done* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedSnapshot(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::raft_serverpb::SnapshotChunk,::raft_serverpb::Done>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
   class WithStreamedUnaryMethod_Coprocessor : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -2284,9 +2348,9 @@ class TinyKv final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedCoprocessor(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::coprocessor::Request,::coprocessor::Response>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > StreamedUnaryService;
+  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Raft<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > StreamedService;
+  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Raft<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > > > StreamedService;
 };
 
 }  // namespace tinykvpb

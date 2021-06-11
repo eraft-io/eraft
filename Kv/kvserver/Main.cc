@@ -2,12 +2,12 @@
 // @author Colin
 // This module impl kv main class.
 // 
-
-#include <eraftio/tinykvpb.grpc.pb.h>
-
-
+#include <Kv/ServerImpl.h>
 
 int main(int argc, char *argv[]) {
 
+    kvserver::Server svr;
+    svr.RunLogic();
+    
     return 0;
 }

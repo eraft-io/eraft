@@ -27,7 +27,7 @@ static constexpr ::PROTOBUF_NAMESPACE_ID::Message* const* file_default_instances
 const char descriptor_table_protodef_tinykvpb_2eproto[] =
   "\n\016tinykvpb.proto\022\010tinykvpb\032\rkvrpcpb.prot"
   "o\032\023raft_serverpb.proto\032\021coprocessor.prot"
-  "o2\262\007\n\006TinyKv\0224\n\005KvGet\022\023.kvrpcpb.GetReque"
+  "o2\256\007\n\006TinyKv\0224\n\005KvGet\022\023.kvrpcpb.GetReque"
   "st\032\024.kvrpcpb.GetResponse\"\000\0227\n\006KvScan\022\024.k"
   "vrpcpb.ScanRequest\032\025.kvrpcpb.ScanRespons"
   "e\"\000\022C\n\nKvPrewrite\022\030.kvrpcpb.PrewriteRequ"
@@ -46,11 +46,11 @@ const char descriptor_table_protodef_tinykvpb_2eproto[] =
   "\031.kvrpcpb.RawDeleteRequest\032\032.kvrpcpb.Raw"
   "DeleteResponse\"\000\022>\n\007RawScan\022\027.kvrpcpb.Ra"
   "wScanRequest\032\030.kvrpcpb.RawScanResponse\"\000"
-  "\022;\n\004Raft\022\032.raft_serverpb.RaftMessage\032\023.r"
-  "aft_serverpb.Done\"\000(\001\022A\n\010Snapshot\022\034.raft"
-  "_serverpb.SnapshotChunk\032\023.raft_serverpb."
-  "Done\"\000(\001\022<\n\013Coprocessor\022\024.coprocessor.Re"
-  "quest\032\025.coprocessor.Response\"\000b\006proto3"
+  "\0229\n\004Raft\022\032.raft_serverpb.RaftMessage\032\023.r"
+  "aft_serverpb.Done\"\000\022\?\n\010Snapshot\022\034.raft_s"
+  "erverpb.SnapshotChunk\032\023.raft_serverpb.Do"
+  "ne\"\000\022<\n\013Coprocessor\022\024.coprocessor.Reques"
+  "t\032\025.coprocessor.Response\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinykvpb_2eproto_deps[3] = {
   &::descriptor_table_coprocessor_2eproto,
@@ -62,7 +62,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinykvpb_2eproto_once;
 static bool descriptor_table_tinykvpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinykvpb_2eproto = {
-  &descriptor_table_tinykvpb_2eproto_initialized, descriptor_table_protodef_tinykvpb_2eproto, "tinykvpb.proto", 1038,
+  &descriptor_table_tinykvpb_2eproto_initialized, descriptor_table_protodef_tinykvpb_2eproto, "tinykvpb.proto", 1034,
   &descriptor_table_tinykvpb_2eproto_once, descriptor_table_tinykvpb_2eproto_sccs, descriptor_table_tinykvpb_2eproto_deps, 0, 3,
   schemas, file_default_instances, TableStruct_tinykvpb_2eproto::offsets,
   file_level_metadata_tinykvpb_2eproto, 0, file_level_enum_descriptors_tinykvpb_2eproto, file_level_service_descriptors_tinykvpb_2eproto,

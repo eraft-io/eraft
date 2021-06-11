@@ -53,8 +53,8 @@ TinyKv::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   , rpcmethod_RawPut_(TinyKv_method_names[8], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_RawDelete_(TinyKv_method_names[9], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_RawScan_(TinyKv_method_names[10], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_Raft_(TinyKv_method_names[11], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
-  , rpcmethod_Snapshot_(TinyKv_method_names[12], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_Raft_(TinyKv_method_names[11], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Snapshot_(TinyKv_method_names[12], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_Coprocessor_(TinyKv_method_names[13], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
@@ -366,36 +366,60 @@ void TinyKv::Stub::experimental_async::RawScan(::grpc::ClientContext* context, c
   return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::kvrpcpb::RawScanResponse>::Create(channel_.get(), cq, rpcmethod_RawScan_, context, request, false);
 }
 
-::grpc::ClientWriter< ::raft_serverpb::RaftMessage>* TinyKv::Stub::RaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response) {
-  return ::grpc_impl::internal::ClientWriterFactory< ::raft_serverpb::RaftMessage>::Create(channel_.get(), rpcmethod_Raft_, context, response);
+::grpc::Status TinyKv::Stub::Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::raft_serverpb::Done* response) {
+  return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_Raft_, context, request, response);
 }
 
-void TinyKv::Stub::experimental_async::Raft(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::experimental::ClientWriteReactor< ::raft_serverpb::RaftMessage>* reactor) {
-  ::grpc_impl::internal::ClientCallbackWriterFactory< ::raft_serverpb::RaftMessage>::Create(stub_->channel_.get(), stub_->rpcmethod_Raft_, context, response, reactor);
+void TinyKv::Stub::experimental_async::Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_Raft_, context, request, response, std::move(f));
 }
 
-::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>* TinyKv::Stub::AsyncRaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) {
-  return ::grpc_impl::internal::ClientAsyncWriterFactory< ::raft_serverpb::RaftMessage>::Create(channel_.get(), cq, rpcmethod_Raft_, context, response, true, tag);
+void TinyKv::Stub::experimental_async::Raft(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_Raft_, context, request, response, std::move(f));
 }
 
-::grpc::ClientAsyncWriter< ::raft_serverpb::RaftMessage>* TinyKv::Stub::PrepareAsyncRaftRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) {
-  return ::grpc_impl::internal::ClientAsyncWriterFactory< ::raft_serverpb::RaftMessage>::Create(channel_.get(), cq, rpcmethod_Raft_, context, response, false, nullptr);
+void TinyKv::Stub::experimental_async::Raft(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_Raft_, context, request, response, reactor);
 }
 
-::grpc::ClientWriter< ::raft_serverpb::SnapshotChunk>* TinyKv::Stub::SnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response) {
-  return ::grpc_impl::internal::ClientWriterFactory< ::raft_serverpb::SnapshotChunk>::Create(channel_.get(), rpcmethod_Snapshot_, context, response);
+void TinyKv::Stub::experimental_async::Raft(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_Raft_, context, request, response, reactor);
 }
 
-void TinyKv::Stub::experimental_async::Snapshot(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::experimental::ClientWriteReactor< ::raft_serverpb::SnapshotChunk>* reactor) {
-  ::grpc_impl::internal::ClientCallbackWriterFactory< ::raft_serverpb::SnapshotChunk>::Create(stub_->channel_.get(), stub_->rpcmethod_Snapshot_, context, response, reactor);
+::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* TinyKv::Stub::AsyncRaftRaw(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::raft_serverpb::Done>::Create(channel_.get(), cq, rpcmethod_Raft_, context, request, true);
 }
 
-::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>* TinyKv::Stub::AsyncSnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq, void* tag) {
-  return ::grpc_impl::internal::ClientAsyncWriterFactory< ::raft_serverpb::SnapshotChunk>::Create(channel_.get(), cq, rpcmethod_Snapshot_, context, response, true, tag);
+::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* TinyKv::Stub::PrepareAsyncRaftRaw(::grpc::ClientContext* context, const ::raft_serverpb::RaftMessage& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::raft_serverpb::Done>::Create(channel_.get(), cq, rpcmethod_Raft_, context, request, false);
 }
 
-::grpc::ClientAsyncWriter< ::raft_serverpb::SnapshotChunk>* TinyKv::Stub::PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, ::raft_serverpb::Done* response, ::grpc::CompletionQueue* cq) {
-  return ::grpc_impl::internal::ClientAsyncWriterFactory< ::raft_serverpb::SnapshotChunk>::Create(channel_.get(), cq, rpcmethod_Snapshot_, context, response, false, nullptr);
+::grpc::Status TinyKv::Stub::Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::raft_serverpb::Done* response) {
+  return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_Snapshot_, context, request, response);
+}
+
+void TinyKv::Stub::experimental_async::Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_Snapshot_, context, request, response, std::move(f));
+}
+
+void TinyKv::Stub::experimental_async::Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_Snapshot_, context, request, response, std::move(f));
+}
+
+void TinyKv::Stub::experimental_async::Snapshot(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_Snapshot_, context, request, response, reactor);
+}
+
+void TinyKv::Stub::experimental_async::Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_serverpb::Done* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_Snapshot_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* TinyKv::Stub::AsyncSnapshotRaw(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::raft_serverpb::Done>::Create(channel_.get(), cq, rpcmethod_Snapshot_, context, request, true);
+}
+
+::grpc::ClientAsyncResponseReader< ::raft_serverpb::Done>* TinyKv::Stub::PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::raft_serverpb::SnapshotChunk& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::raft_serverpb::Done>::Create(channel_.get(), cq, rpcmethod_Snapshot_, context, request, false);
 }
 
 ::grpc::Status TinyKv::Stub::Coprocessor(::grpc::ClientContext* context, const ::coprocessor::Request& request, ::coprocessor::Response* response) {
@@ -484,13 +508,13 @@ TinyKv::Service::Service() {
           std::mem_fn(&TinyKv::Service::RawScan), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       TinyKv_method_names[11],
-      ::grpc::internal::RpcMethod::CLIENT_STREAMING,
-      new ::grpc::internal::ClientStreamingHandler< TinyKv::Service, ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(
           std::mem_fn(&TinyKv::Service::Raft), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       TinyKv_method_names[12],
-      ::grpc::internal::RpcMethod::CLIENT_STREAMING,
-      new ::grpc::internal::ClientStreamingHandler< TinyKv::Service, ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(
           std::mem_fn(&TinyKv::Service::Snapshot), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       TinyKv_method_names[13],
@@ -579,16 +603,16 @@ TinyKv::Service::~Service() {
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }
 
-::grpc::Status TinyKv::Service::Raft(::grpc::ServerContext* context, ::grpc::ServerReader< ::raft_serverpb::RaftMessage>* reader, ::raft_serverpb::Done* response) {
+::grpc::Status TinyKv::Service::Raft(::grpc::ServerContext* context, const ::raft_serverpb::RaftMessage* request, ::raft_serverpb::Done* response) {
   (void) context;
-  (void) reader;
+  (void) request;
   (void) response;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }
 
-::grpc::Status TinyKv::Service::Snapshot(::grpc::ServerContext* context, ::grpc::ServerReader< ::raft_serverpb::SnapshotChunk>* reader, ::raft_serverpb::Done* response) {
+::grpc::Status TinyKv::Service::Snapshot(::grpc::ServerContext* context, const ::raft_serverpb::SnapshotChunk* request, ::raft_serverpb::Done* response) {
   (void) context;
-  (void) reader;
+  (void) request;
   (void) response;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }

@@ -72,6 +72,7 @@ if(ParentDirectory STREQUAL "")
     )
 
     # grpc
+    include_directories(grpc/include)
 
     # gRPC and relateds
 

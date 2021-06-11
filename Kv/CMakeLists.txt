@@ -10,7 +10,7 @@ set(Headers
 )
 
 set(Sources
-    # src/Logger.cc
+    src/ServerImpl.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -22,7 +22,12 @@ target_include_directories(${This} PUBLIC include)
 
 target_link_libraries(${This} PUBLIC
     gtest_main
+    Logger
+    gRPC::grpc++
+    Protocol
 )
 
 add_subdirectory(cli)
 add_subdirectory(svr)
+add_subdirectory(kvserver)
+add_subdirectory(kvcli)

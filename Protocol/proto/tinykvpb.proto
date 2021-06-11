@@ -30,8 +30,8 @@ service TinyKv {
     rpc RawScan(kvrpcpb.RawScanRequest) returns (kvrpcpb.RawScanResponse) {}
 
     // Raft commands (tinykv <-> tinykv).
-    rpc Raft(stream raft_serverpb.RaftMessage) returns (raft_serverpb.Done) {}
-    rpc Snapshot(stream raft_serverpb.SnapshotChunk) returns (raft_serverpb.Done) {}
+    rpc Raft(raft_serverpb.RaftMessage) returns (raft_serverpb.Done) {}
+    rpc Snapshot(raft_serverpb.SnapshotChunk) returns (raft_serverpb.Done) {}
 
     // Coprocessor 
     rpc Coprocessor(coprocessor.Request) returns (coprocessor.Response) {}
