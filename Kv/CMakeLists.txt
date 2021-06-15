@@ -10,7 +10,7 @@ set(Headers
 )
 
 set(Sources
-    src/ServerImpl.cc
+    server/ServerImpl.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -27,7 +27,7 @@ target_link_libraries(${This} PUBLIC
     Protocol
 )
 
-add_subdirectory(cli)
-add_subdirectory(svr)
-add_subdirectory(kvserver)
-add_subdirectory(kvcli)
+add_subdirectory(test_cli)
+add_subdirectory(test_svr)
+add_subdirectory(test_kvserver)
+add_subdirectory(test_kvcli)

@@ -15,12 +15,15 @@ const std::string DEFAULT_ADDR = "127.0.0.1:12306";
 
 class ServerServiceImpl : public TinyKv::Service {
 
-    Status Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) override {
-        // metapb::Peer peer = request->from_peer();
-        // request->to_peer();
-        std::cout << "start_key: " << request->start_key() << std::endl;
-        return Status::OK;
-    }
+    Status Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) override;
+
+    Status RawGet(ServerContext* context, const kvrpcpb::RawGetRequest* request, kvrpcpb::RawGetResponse* response) override;
+   
+    Status RawPut(ServerContext* context, const kvrpcpb::RawPutRequest* request, kvrpcpb::RawPutResponse* response) override;
+    
+    Status RawDelete(ServerContext* context, const kvrpcpb::RawDeleteRequest* request, kvrpcpb::RawDeleteResponse* response) override;
+    
+    Status RawScan(ServerContext* context, const kvrpcpb::RawScanRequest* request, kvrpcpb::RawScanResponse* response) override;
 
 };
 
