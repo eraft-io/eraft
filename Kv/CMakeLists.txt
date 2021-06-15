@@ -7,10 +7,14 @@ set(This Kv)
 
 set(Headers 
     include/Kv/ServerImpl.h
+    include/Kv/File.h
+    include/Kv/Engines.h
 )
 
 set(Sources
     server/ServerImpl.cc
+    server/File.cc
+    server/Engines.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -23,6 +27,7 @@ target_include_directories(${This} PUBLIC include)
 target_link_libraries(${This} PUBLIC
     gtest_main
     Logger
+    leveldb
     gRPC::grpc++
     Protocol
 )

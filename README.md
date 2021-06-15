@@ -45,6 +45,8 @@ TODO:
 
 ###### run in docker
 ```
+// in eraft dir
+make deps;
 cd ci; make build-dev
 ```
 

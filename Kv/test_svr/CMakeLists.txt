@@ -6,7 +6,8 @@ cmake_minimum_required(VERSION 3.8)
 set(This TestsSvr)
 
 set(Sources 
-    TestsSvr.cc
+    # TestsSvr.cc
+    TestsEngine.cc
 )
 
 add_executable(${This} ${Sources})
@@ -19,6 +20,7 @@ target_link_libraries(${This} PUBLIC
     Logger
     gRPC::grpc++
     Protocol
+    Kv
 )
 
 add_test(

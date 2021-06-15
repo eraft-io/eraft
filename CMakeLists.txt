@@ -93,6 +93,7 @@ if(ParentDirectory STREQUAL "")
     find_package(gRPC CONFIG REQUIRED)
     message(STATUS "Using gRPC: ${gRPC_VERSION}")
 
+    add_subdirectory(leveldb)
     add_subdirectory(Logger)
     add_subdirectory(Protocol)
     add_subdirectory(RaftCore)
