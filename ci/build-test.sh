@@ -25,7 +25,9 @@ fi
 
 cp $build_dir/Logger/test/LoggerTests $SRCPATH/output
 cp $build_dir/RaftCore/test/RaftTests $SRCPATH/output
+cp $build_dir/Kv/test_svr/TestsSvr $SRCPATH/output
 
 # run test
 $build_dir/Logger/test/LoggerTests
 $build_dir/RaftCore/test/RaftTests
+$build_dir/Kv/test_svr/TestsSvr

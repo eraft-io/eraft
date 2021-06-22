@@ -28,7 +28,6 @@ namespace kvserver
     }
 
     bool Engines::Destory() {
-        this->Destory();
         File::DeleteDirectory(this->kvPath_);
         File::DeleteDirectory(this->raftPath_);
     }
