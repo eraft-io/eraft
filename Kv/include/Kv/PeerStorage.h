@@ -1,3 +1,6 @@
+#ifndef ERAFT_KV_PEERSTORAGE_H_
+#define ERAFT_KV_PEERSTORAGE_H_
+
 #include <iostream>
 #include <eraftio/metapb.grpc.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
@@ -27,3 +30,4 @@ private:
 
 } // namespace kvserver
 
+#endif

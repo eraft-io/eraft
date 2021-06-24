@@ -1,3 +1,6 @@
+#ifndef ERAFT_KV_UTIL_H_
+#define ERAFT_KV_UTIL_H_
+
 #include <string>
 #include <memory>
 #include <leveldb/db.h>
@@ -21,3 +24,5 @@ static std::string GetCF(std::unique_ptr<leveldb::DB> db, std::string cf, std::s
 
 
 } // namespace kvserver
+
+#endif

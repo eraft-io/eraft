@@ -30,6 +30,7 @@ target_link_libraries(${This} PUBLIC
     leveldb
     gRPC::grpc++
     Protocol
+    RaftCore
 )
 
 add_subdirectory(test_cli)

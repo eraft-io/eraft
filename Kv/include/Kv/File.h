@@ -1,3 +1,6 @@
+#ifndef ERAFT_KV_FILE_H_
+#define ERAFT_KV_FILE_H_
+
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -36,3 +39,5 @@ public:
 
 
 } // namespace kvserver
+
+#endif

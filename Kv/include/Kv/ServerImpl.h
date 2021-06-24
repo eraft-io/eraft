@@ -1,3 +1,6 @@
+#ifndef ERAFT_KV_SERVER_IMPL_H_
+#define ERAFT_KV_SERVER_IMPL_H_
+
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <eraftio/metapb.pb.h>
 #include <grpcpp/grpcpp.h>
@@ -49,3 +52,4 @@ private:
     
 } // namespace kvserver
 
+#endif

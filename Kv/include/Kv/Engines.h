@@ -1,3 +1,6 @@
+#ifndef ERAFT_KV_ENGINES_H_
+#define ERAFT_KV_ENGINES_H_
+
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 #include <memory>
@@ -31,3 +34,6 @@ struct Engines
 };
 
 } // namespace kvserver
+
+
+#endif
