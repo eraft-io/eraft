@@ -12,6 +12,8 @@
 namespace kvserver
 {
 
+class PeerStorage;
+
 struct Proposal
 {
     uint64_t index_;
@@ -24,7 +26,7 @@ struct Proposal
 
 class Peer
 {
-using namespace eraft;
+    
 
 public:
     Peer(/* args */);
@@ -33,7 +35,7 @@ public:
     // ticker
 
     // instance of the raft moudle
-    RawNode* raftGroup_;
+    eraft::RawNode* raftGroup_;
 
     // peer storage
     PeerStorage* peerStorage_;

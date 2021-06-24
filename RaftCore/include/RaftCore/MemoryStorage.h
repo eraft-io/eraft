@@ -21,7 +21,7 @@
 #ifndef ERAFT_MEMORYSTORAGE_H
 #define ERAFT_MEMORYSTORAGE_H
 
-#include "Storage.h"
+#include <RaftCore/Storage.h>
 #include <mutex>
 
 namespace eraft

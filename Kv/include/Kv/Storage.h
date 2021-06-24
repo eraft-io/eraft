@@ -1,7 +1,7 @@
 #ifndef ERAFT_KV_STORAGE_H_
 #define ERAFT_KV_STORAGE_H_
 
-#include <eraftio/kvrpcpb.grpc.pb.h>
+#include <eraftio/kvrpcpb.pb.h>
 #include <vector>
 #include <stdint.h>
 
