@@ -28,7 +28,7 @@ public:
 
     virtual bool Write(kvrpcpb::Context *ctx, std::vector<Modify>) = 0;
 
-    virtual bool Read(kvrpcpb::Context) = 0; // TODO: return something
+    virtual bool Reader(kvrpcpb::Context *ctx) = 0; // TODO: return something
 
 };
 

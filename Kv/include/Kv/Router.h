@@ -3,6 +3,10 @@
 
 #include <Kv/Peer.h>
 #include <Kv/Msg.h>
+
+
+#include <eraftio/raft_serverpb.pb.h>
+#include <eraftio/raft_cmdpb.pb.h>
 #include <stdint.h>
 #include <map>
 #include <vector>
@@ -25,6 +29,7 @@ struct PeerState
 class Router
 {
 public:
+
     Router(/* args */);
 
     Router(std::vector<Msg> storeSender);
@@ -37,7 +42,7 @@ public:
 
     bool Send(uint64_t regionID, Msg msg);
 
-    
+    void SendStore(Msg m);
 
     ~Router();
 
@@ -53,6 +58,40 @@ private:
 
 };
 
+class RaftRouter
+{
+
+public:
+    RaftRouter(/* args */);
+
+    virtual ~RaftRouter();
+
+    virtual bool Send(uint64_t regionID, Msg m) = 0;
+
+    virtual bool SendRaftMessage(raft_serverpb::RaftMessage* msg) = 0;
+
+    virtual bool SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback* cb) = 0;
+
+};
+
+class RaftstoreRouter : RaftRouter
+{
+public:
+
+    RaftstoreRouter(Router *r);
+
+    ~RaftstoreRouter();
+
+    bool Send(uint64_t regionID, Msg m) override;
+
+    bool SendRaftMessage(raft_serverpb::RaftMessage* msg) override;
+
+    bool SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback* cb) override;
+
+private:
+
+    Router *router_;
+};
 
 
 } // namespace kvserver

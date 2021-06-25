@@ -3,6 +3,9 @@
 
 #include <Kv/Config.h>
 #include <Kv/Engines.h>
+#include <Kv/Router.h>
+#include <Kv/ServerTransport.h>
+
 #include <eraftio/metapb.pb.h>
 
 namespace kvserver
@@ -18,6 +21,9 @@ struct GlobalContext
     metapb::Store storeMeta_;
 
     // TODO: router
+    Router *router_;
+
+
 
     // TODO: transport
 
