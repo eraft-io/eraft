@@ -23,14 +23,13 @@ struct GlobalContext
     // TODO: router
     Router *router_;
 
-
-
     // TODO: transport
 
-    // TODO: Scheduler Client
 
-    
+    // TODO: Scheduler Client
 };
+
+
 
 
 } // namespace kvserver
