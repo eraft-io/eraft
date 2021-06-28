@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include <deque>
+#include <atomic>
 
 namespace kvserver
 {
@@ -26,7 +27,7 @@ struct PeerState
         this->peer_ = peer;
     }
 
-    uint32_t closed_;
+    std::atomic<uint32_t> closed_;
 
     Peer *peer_;
 };
