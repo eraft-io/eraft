@@ -18,6 +18,7 @@ target_link_libraries(${This} PUBLIC
     gtest_main
     Logger
     gRPC::grpc++
+    leveldb
     Protocol
     Kv
 )

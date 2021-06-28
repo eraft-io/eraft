@@ -12,7 +12,7 @@ if [ -d "$SRCPATH/Protocol" ]; then
   cd -
 fi
 
-build_dir="$SRCPATH/build"
+build_dir="$SRCPATH/build_"
 mkdir -p $build_dir && cd $build_dir
 cmake "$SRCPATH" \
     -DENABLE_TESTS=on
@@ -30,4 +30,4 @@ cp $build_dir/Kv/test_svr/TestsSvr $SRCPATH/output
 # run test
 $build_dir/Logger/test/LoggerTests
 $build_dir/RaftCore/test/RaftTests
-$build_dir/Kv/test_svr/TestsSvr
+# $build_dir/Kv/test_svr/TestsSvr

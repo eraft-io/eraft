@@ -15,9 +15,8 @@ Server::Server(std::string addr) {
 }
 
 Status ServerServiceImpl::Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) {
-    // metapb::Peer peer = request->from_peer();
-    // request->to_peer();
     std::cout << "start_key: " << request->start_key() << std::endl;
+    
     return Status::OK;
 }
 
@@ -37,6 +36,9 @@ Status ServerServiceImpl::RawScan(ServerContext* context, const kvrpcpb::RawScan
 
 }
 
+Status ServerServiceImpl::Snapshot(ServerContext* context, const raft_serverpb::SnapshotChunk* request, Done* response) {
+
+}
 
 bool Server::RunLogic() {
 

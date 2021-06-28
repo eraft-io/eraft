@@ -9,12 +9,14 @@ set(Headers
     include/Kv/ServerImpl.h
     include/Kv/File.h
     include/Kv/Engines.h
+    include/Kv/RaftClient.h
 )
 
 set(Sources
     server/ServerImpl.cc
     server/File.cc
     server/Engines.cc
+    server/RaftClient.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -33,7 +35,8 @@ target_link_libraries(${This} PUBLIC
     RaftCore
 )
 
+add_subdirectory(kvserver)
+
 add_subdirectory(test_cli)
 add_subdirectory(test_svr)
-add_subdirectory(test_kvserver)
 add_subdirectory(test_kvcli)

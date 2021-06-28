@@ -25,10 +25,11 @@ struct Callback
         this->done_ = true;
     }
 
-    raft_cmdpb::RaftCmdResponse* resp WaitResp() {
+    raft_cmdpb::RaftCmdResponse* WaitResp() {
         if(this->done_) {
             return resp_;
         }
+        return nullptr;
     }
 
     raft_cmdpb::RaftCmdResponse* WaitRespWithTimeout() {

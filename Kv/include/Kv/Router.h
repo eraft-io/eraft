@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <map>
 #include <vector>
+#include <deque>
 
 namespace kvserver
 {
@@ -20,6 +21,11 @@ struct Msg;
 
 struct PeerState
 {
+    PeerState(Peer *peer) {
+        this->closed_ = 0;
+        this->peer_ = peer;
+    }
+
     uint32_t closed_;
 
     Peer *peer_;
@@ -30,9 +36,9 @@ class Router
 {
 public:
 
-    Router(/* args */);
+    // Router(/* args */);
 
-    Router(std::vector<Msg> storeSender);
+    Router(std::deque<Msg> storeSender);
 
     PeerState* Get(uint64_t regionID);
 
@@ -50,11 +56,11 @@ protected:
 
 private:
 
-    std::map<uint64_t, Peer*> peers_;
+    std::map<uint64_t, PeerState*> peers_;
 
-    std::vector<Msg> peerSender_;
+    std::deque<Msg> peerSender_;
 
-    std::vector<Msg> storeSender_;
+    std::deque<Msg> storeSender_;
 
 };
 

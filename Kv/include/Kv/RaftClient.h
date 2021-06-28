@@ -23,7 +23,9 @@ public:
 
     void Stop();
 
-    bool Send(raft_serverpb::RaftMessage* msg);
+    bool Send(raft_serverpb::RaftMessage& msg);
+
+    std::shared_ptr<grpc::Channel> GetChan();
 
 private:
 
@@ -33,24 +35,24 @@ private:
 
 };
 
+
 class RaftClient
 {
 
 public:
    
     RaftClient(Config *c);
+    ~RaftClient();
 
-    RaftConn* GetConn(std::string addr, uint64_t regionID);
+    std::shared_ptr<RaftConn> GetConn(std::string addr, uint64_t regionID);
 
-    bool Send(uint64_t storeID, std::string addr, raft_serverpb::RaftMessage* msg);
+    bool Send(uint64_t storeID, std::string addr, raft_serverpb::RaftMessage& msg);
 
     std::string GetAddr(uint64_t storeID);
-
+    
     void InsertAddr(uint64_t storeID, std::string addr);
 
     void Flush();
-
-    ~RaftClient();
 
 private:
     /* data */
@@ -58,7 +60,7 @@ private:
 
     std::mutex mu_;
 
-    std::map<std::string, RaftConn*> conns_;
+    std::map<std::string, std::shared_ptr<RaftConn> > conns_;
 
     std::map<uint64_t, std::string> addrs_;
 

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <iostream>
 
 namespace kvserver
 {
@@ -44,6 +45,7 @@ struct Config
 
     uint64_t regionSplitSize_;
 
+    // default config
     Config() {
         this->schedulerAddr_ = "127.0.0.1:2379";
         this->storeAddr_ = "127.0.0.1:20160";
@@ -59,7 +61,26 @@ struct Config
         this->schedulerStoreHeartbeatTickInterval_ = 10; // 10s
         this->regionMaxSize_ = 144 * MB;
         this->regionSplitSize_ = 96 * MB;
-        this->dbPath_ = "/tmp/badger";
+        this->dbPath_ = "/tmp/eraft_data";
+    }
+
+    void PrintConfigToConsole() {
+          std::cout << "\n Current StoreConfig: \n { schedulerAddr_: " << this->schedulerAddr_ << " \n "
+                    << " storeAddr_: " << this->storeAddr_ << " \n " 
+                    << " logLevel_: " << this->logLevel_ << " \n "
+                    << " raft_: " << this->raft_ << " \n "
+                    << " raftBaseTickInterval_: " << this->raftBaseTickInterval_ << " \n "
+                    << " raftHeartbeatTicks_: " << this->raftHeartbeatTicks_ << " \n "
+                    << " raftElectionTimeoutTicks_: " << this->raftElectionTimeoutTicks_ << " \n "
+                    << " raftLogGCTickInterval_: " << this->raftLogGCTickInterval_ << " \n "
+                    << " raftLogGcCountLimit_: " << this->raftLogGcCountLimit_ << " \n "
+                    << " splitRegionCheckTickInterval_: " << this->splitRegionCheckTickInterval_ << " \n "
+                    << " schedulerHeartbeatTickInterval_: " << this->schedulerHeartbeatTickInterval_ << " \n "
+                    << " schedulerStoreHeartbeatTickInterval_: " << this->schedulerStoreHeartbeatTickInterval_ << " \n "
+                    << " regionMaxSize_: " << this->regionMaxSize_ << " \n "
+                    << " regionSplitSize_: " << this->regionSplitSize_ << " \n "
+                    << " dbPath_: " << this->dbPath_ << "\n"
+                    << " } "; 
     }
 
     Config(std::string storeAddr, bool raft, std::string schedulerAddr, std::string logLevel, 

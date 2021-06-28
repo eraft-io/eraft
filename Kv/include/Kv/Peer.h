@@ -26,7 +26,8 @@ struct Proposal
 
 class Peer
 {
-    
+
+friend class Router;
 
 public:
     Peer(/* args */);
