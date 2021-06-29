@@ -13,6 +13,7 @@
 #include <Kv/node.h>
 #include <Kv/raft_store.h>
 
+#include <memory>
 
 namespace kvserver
 {
@@ -48,9 +49,9 @@ private:
 
     Node* node_;
 
-    RaftstoreRouter* raftRouter_;
+    std::shared_ptr<RaftstoreRouter> raftRouter_;
 
-    RaftStore* raftSystem_;
+    std::shared_ptr<RaftStore> raftSystem_;
     
 };
 

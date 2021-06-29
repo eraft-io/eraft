@@ -56,4 +56,13 @@ bool RaftstoreRouter::SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback*
     this->router_->Send(req->header().region_id(), m);
 }
 
+RaftstoreRouter::RaftstoreRouter(std::shared_ptr<Router> r)
+{
+    this->router_ = r;
+}
+
+RaftstoreRouter::~RaftstoreRouter()
+{
+}
+
 }// namespace kvserver

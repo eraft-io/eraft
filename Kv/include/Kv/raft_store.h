@@ -20,6 +20,8 @@ namespace kvserver
 
 class Router;
 
+class RaftstoreRouter;
+
 struct StoreState
 {
     uint64_t id_;
@@ -46,6 +48,8 @@ struct GlobalContext
 
 class RaftStore
 {
+
+friend class RaftStorage;
 
 public:
 
@@ -75,7 +79,10 @@ private:
 
     StoreState* state_;
 
-    Router* router_;
+
+    std::shared_ptr<Router> router_;
+
+    std::shared_ptr<RaftstoreRouter> raftRouter_;
 
     // scheduler client: TODO
     std::deque<uint64_t> tickDriverSender_;

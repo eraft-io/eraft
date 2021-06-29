@@ -5,7 +5,9 @@ namespace kvserver
     
 RaftStore::RaftStore(std::shared_ptr<Config> cfg)
 {
-
+    std::deque<Msg> storeSender;
+    this->router_ = std::make_shared<Router>(storeSender);
+    this->raftRouter_ = std::make_shared<RaftstoreRouter>(router_);
 }
 
 RaftStore::~RaftStore()

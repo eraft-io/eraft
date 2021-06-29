@@ -5,7 +5,7 @@ namespace kvserver
 {
 
 RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
-    Engines engines(conf->dbPath_ + "raft", conf->dbPath_ + "kv");
+    Engines engines(conf->dbPath_ + "_raft", conf->dbPath_ + "_kv");
     // TODO: snap
     this->engs_ = &engines;
     this->conf_ = conf;
@@ -109,6 +109,9 @@ bool RaftStorage::SnapShot(raft_serverpb::RaftSnapshotData* snap)
 
 bool RaftStorage::Start()
 {
+    // TODO: schedulerClient
+    this->raftSystem_ = std::make_shared<RaftStore>(this->conf_);
+    this->raftRouter_ =  this->raftSystem_->raftRouter_;
 
 }
 

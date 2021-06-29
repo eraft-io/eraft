@@ -45,6 +45,7 @@ set(Sources
     server/router.cc
     server/server_impl.cc
     server/store_worker.cc
+    server/server_transport.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})

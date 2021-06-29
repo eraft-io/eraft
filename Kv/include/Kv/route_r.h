@@ -12,6 +12,7 @@
 #include <vector>
 #include <deque>
 #include <atomic>
+#include <memory>
 
 namespace kvserver
 {
@@ -40,8 +41,6 @@ friend class RaftWorker;
 
 public:
 
-    // Router(/* args */);
-
     Router(std::deque<Msg> storeSender);
 
     PeerState_* Get(uint64_t regionID);
@@ -54,7 +53,7 @@ public:
 
     void SendStore(Msg m);
 
-    ~Router();
+    ~Router() {}
 
 protected:
 
@@ -72,9 +71,6 @@ class RaftRouter
 {
 
 public:
-    RaftRouter(/* args */);
-
-    virtual ~RaftRouter();
 
     virtual bool Send(uint64_t regionID, Msg m) = 0;
 
@@ -88,7 +84,7 @@ class RaftstoreRouter : RaftRouter
 {
 public:
 
-    RaftstoreRouter(Router *r);
+    RaftstoreRouter(std::shared_ptr<Router> r);
 
     ~RaftstoreRouter();
 
@@ -100,7 +96,7 @@ public:
 
 private:
 
-    Router *router_;
+    std::shared_ptr<Router> router_;
 };
 
 
