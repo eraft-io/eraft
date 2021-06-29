@@ -46,7 +46,8 @@ struct Config
     uint64_t regionSplitSize_;
 
     // default config
-    Config() {
+    Config() 
+    {
         this->schedulerAddr_ = "127.0.0.1:2379";
         this->storeAddr_ = "127.0.0.1:20160";
         this->logLevel_ = "info";
@@ -64,7 +65,8 @@ struct Config
         this->dbPath_ = "/tmp/eraft_data";
     }
 
-    void PrintConfigToConsole() {
+    void PrintConfigToConsole() 
+    {
           std::cout << "\n Current StoreConfig: \n { schedulerAddr_: " << this->schedulerAddr_ << " \n "
                     << " storeAddr_: " << this->storeAddr_ << " \n " 
                     << " logLevel_: " << this->logLevel_ << " \n "
@@ -103,7 +105,8 @@ struct Config
       schedulerStoreHeartbeatTickInterval_(schedulerStoreHeartbeatTickInterval),
       regionMaxSize_(regionMaxSize),
       regionSplitSize_(regionSplitSize)
-    {}
+    {
+    }
 
 };
 

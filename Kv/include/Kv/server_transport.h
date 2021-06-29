@@ -1,7 +1,7 @@
 #ifndef ERAFT_KV_SERVER_TRANSPORT_H_
 #define ERAFT_KV_SERVER_TRANSPORT_H_
 
-#include <Kv/Transport.h>
+#include <Kv/transport.h>
 
 namespace kvserver
 {

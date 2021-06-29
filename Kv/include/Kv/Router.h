@@ -1,9 +1,9 @@
 #ifndef ERAFT_KV_ROUTER_H_
 #define ERAFT_KV_ROUTER_H_
 
-#include <Kv/Peer.h>
-#include <Kv/Msg.h>
-
+#include <Kv/peer.h>
+#include <Kv/msg.h>
+#include <Kv/raft_worker.h>
 
 #include <eraftio/raft_serverpb.pb.h>
 #include <eraftio/raft_cmdpb.pb.h>
@@ -20,9 +20,9 @@ class Peer;
 
 struct Msg;
 
-struct PeerState
+struct PeerState_
 {
-    PeerState(Peer *peer) {
+    PeerState_(Peer *peer) {
         this->closed_ = 0;
         this->peer_ = peer;
     }
@@ -35,13 +35,16 @@ struct PeerState
 
 class Router
 {
+
+friend class RaftWorker;
+
 public:
 
     // Router(/* args */);
 
     Router(std::deque<Msg> storeSender);
 
-    PeerState* Get(uint64_t regionID);
+    PeerState_* Get(uint64_t regionID);
 
     void Register(Peer* peer);
 
@@ -57,7 +60,7 @@ protected:
 
 private:
 
-    std::map<uint64_t, PeerState*> peers_;
+    std::map<uint64_t, PeerState_*> peers_;
 
     std::deque<Msg> peerSender_;
 

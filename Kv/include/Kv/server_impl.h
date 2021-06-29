@@ -7,7 +7,7 @@
 #include <grpcpp/grpcpp.h>
 #include <iostream>
 
-#include <Kv/Storage.h>
+#include <Kv/storage.h>
 
 using tinykvpb::TinyKv;
 using grpc::Status;

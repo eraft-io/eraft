@@ -9,7 +9,8 @@ namespace kvserver
     
 struct Callback
 {
-    Callback() {
+    Callback() 
+    {
         this->done_ = false;
         this->resp_ = nullptr;
     }
@@ -18,22 +19,28 @@ struct Callback
 
     std::atomic<bool> done_;
 
-    void Done(raft_cmdpb::RaftCmdResponse* resp) {
-        if(resp != nullptr) {
+    void Done(raft_cmdpb::RaftCmdResponse* resp) 
+    {
+        if(resp != nullptr) 
+        {
             this->resp_ = resp;
         }
         this->done_ = true;
     }
 
-    raft_cmdpb::RaftCmdResponse* WaitResp() {
-        if(this->done_) {
+    raft_cmdpb::RaftCmdResponse* WaitResp() 
+    {
+        if(this->done_) 
+        {
             return resp_;
         }
         return nullptr;
     }
 
-    raft_cmdpb::RaftCmdResponse* WaitRespWithTimeout() {
-        if(this->done_) { // TODO: with time check
+    raft_cmdpb::RaftCmdResponse* WaitRespWithTimeout() 
+    {
+        if(this->done_) 
+        { // TODO: with time check
         }
     }
 };

@@ -1,14 +1,19 @@
-#include <Kv/RaftServer.h>
-#include <Kv/Engines.h>
+#include <Kv/raft_server.h>
+#include <Kv/engines.h>
 
 namespace kvserver
 {
 
-RaftStorage::RaftStorage(Config* conf) {
+RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
     Engines engines(conf->dbPath_ + "raft", conf->dbPath_ + "kv");
     // TODO: snap
     this->engs_ = &engines;
     this->conf_ = conf;
+}
+
+RaftStorage::~RaftStorage()
+{
+
 }
 
 bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
@@ -84,13 +89,12 @@ StorageReader* RaftStorage::Reader(kvrpcpb::Context* ctx)
     raft_cmdpb::RaftCmdRequest request;
     raft_cmdpb::Request req;
     req.set_cmd_type(raft_cmdpb::CmdType::Snap);
-    req.set_allocated_snap(&raft_cmdpb::SnapRequest());
+    raft_cmdpb::SnapRequest snapReq;
+    req.set_allocated_snap(&snapReq);
 
     Callback* cb;
     
     this->raftRouter_->SendRaftCommand(&request, cb);
-
-
 }
 
 bool RaftStorage::Raft(raft_serverpb::RaftMessage* msg)
@@ -113,5 +117,4 @@ bool RaftStorage::Stop()
 
 }
 
-    
 } // namespace kvserver

@@ -1,4 +1,4 @@
-#include <Kv/Router.h>
+#include <Kv/router.h>
 
 namespace kvserver
 {
@@ -8,7 +8,7 @@ Router::Router(std::deque<Msg> storeSender)
     this->storeSender_ = storeSender;
 }
     
-PeerState* Router::Get(uint64_t regionID)
+PeerState_* Router::Get(uint64_t regionID)
 {
     if(this->peers_.find(regionID) != this->peers_.end()) {
         return this->peers_[regionID];
@@ -18,7 +18,7 @@ PeerState* Router::Get(uint64_t regionID)
 
 void Router::Register(Peer* peer) 
 {
-    PeerState* ps = new PeerState(peer);
+    PeerState_* ps = new PeerState_(peer);
     this->peers_[peer->regionId_] = ps;
 }
 
@@ -35,20 +35,25 @@ bool Router::Send(uint64_t regionID, Msg msg)
 
 void Router::SendStore(Msg m) 
 {
-    this->storeSender_.push(m);
+    this->storeSender_.push_front(m);
 }
 
 bool RaftstoreRouter::Send(uint64_t regionID, Msg m)
 {
-    this->router_.Send(regionID, m);
+    this->router_->Send(regionID, m);
 }
 
 bool RaftstoreRouter::SendRaftMessage(raft_serverpb::RaftMessage* msg)
 {
-    this->router_.Send(msg.region_id());
+    Msg m(MsgType::MsgTypeRaftMessage, msg->region_id(), msg);
+    this->router_->Send(msg->region_id(), m);
 }
 
 bool RaftstoreRouter::SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback* cb)
 {
-    
-} // namespace kvserver
+    MsgRaftCmd* cmd = new MsgRaftCmd(req, cb);
+    Msg m(MsgType::MsgTypeRaftCmd, req->header().region_id(), cmd);
+    this->router_->Send(req->header().region_id(), m);
+}
+
+}// namespace kvserver

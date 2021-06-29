@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.8)
 set(This kv_svr)
 
 set(Sources 
-    Main.cc
+    main.cc
 )
 
 add_executable(${This} ${Sources})

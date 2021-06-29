@@ -1,26 +1,28 @@
 #ifndef ERAFT_KV_RAFT_SERVER_H_
 #define ERAFT_KV_RAFT_SERVER_H_
 
-#include <Kv/Engines.h>
-#include <Kv/Config.h>
-#include <Kv/Node.h>
-#include <Kv/Router.h>
-#include <Kv/Storage.h>
-
 #include <eraftio/raft_cmdpb.pb.h>
 #include <eraftio/kvrpcpb.pb.h>
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 
+#include <Kv/engines.h>
+#include <Kv/config.h>
+#include <Kv/router.h>
+#include <Kv/storage.h>
+#include <Kv/node.h>
+#include <Kv/raft_store.h>
+
+
 namespace kvserver
 {
     
-class RaftStorage
+class RaftStorage : Storage
 {
 
 public:
     
-    RaftStorage(Config* conf);
+    RaftStorage(std::shared_ptr<Config> conf);
 
     ~RaftStorage();
 
@@ -42,7 +44,7 @@ private:
 
     Engines* engs_;
 
-    Config* conf_;
+    std::shared_ptr<Config> conf_;
 
     Node* node_;
 
@@ -56,5 +58,4 @@ private:
 } // namespace kvserver
 
 
-
-#endif
+#endif // ERAFT_KV_RAFT_SERVER_H_

@@ -3,10 +3,14 @@
 
 #include <stdint.h>
 
+#include <Kv/callback.h>
+#include <eraftio/raft_cmdpb.pb.h>
+
 namespace kvserver
 {
 
-enum class MsgType {
+enum class MsgType 
+{
     MsgTypeNull,
     MsgTypeStart,
     MsgTypeTick,
@@ -39,11 +43,26 @@ struct Msg
     }
 };
 
-static Msg NewMsg(MsgType tp, void* data) {
+struct MsgRaftCmd {
+
+    raft_cmdpb::RaftCmdRequest* request_;
+
+    Callback* callback_;
+
+    MsgRaftCmd(raft_cmdpb::RaftCmdRequest* request, Callback* callback) {
+        this->request_ = request;
+        this->callback_ = callback;
+    }
+
+};
+
+static Msg NewMsg(MsgType tp, void* data) 
+{
     return Msg(tp, data);
 }
 
-static Msg NewPeerMsg(MsgType tp, uint64_t regionId, void* data) {
+static Msg NewPeerMsg(MsgType tp, uint64_t regionId, void* data) 
+{
     return Msg(tp, regionId, data);
 }
 

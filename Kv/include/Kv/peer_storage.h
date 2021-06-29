@@ -5,7 +5,7 @@
 #include <eraftio/metapb.grpc.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 
-#include <Kv/Engines.h>
+#include <Kv/engines.h>
 #include <RaftCore/Storage.h>
 
 namespace kvserver
@@ -75,7 +75,6 @@ private:
     std::shared_ptr<raft_serverpb::RaftApplyState> applyState_;
 
     // TODO: snap
-
     uint64_t snapTriedCnt_;
 
     Engines *engines_;

@@ -1,4 +1,5 @@
-#include <Kv/RaftClient.h>
+#include <Kv/raft_client.h>
+
 #include <grpcpp/grpcpp.h>
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <eraftio/raft_serverpb.pb.h>

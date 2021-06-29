@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include <eraftio/metapb.pb.h>
 
-#include <Kv/Config.h>
-#include <Kv/RaftStore.h>
-#include <Kv/Engines.h>
-#include <Kv/Transport.h>
+#include <Kv/config.h>
+#include <Kv/raft_store.h>
+#include <Kv/engines.h>
+#include <Kv/transport.h>
 
 namespace kvserver
 {
@@ -16,8 +16,6 @@ class Node
 {
 
 public:
-    
-    Node(/* args */);
 
     Node(RaftStore* system, Config* cfg);
 

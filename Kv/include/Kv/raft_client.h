@@ -8,7 +8,8 @@
 #include <memory>
 #include <string>
 #include <map>
-#include <Kv/Config.h>
+
+#include <Kv/config.h>
 
 namespace kvserver
 {
