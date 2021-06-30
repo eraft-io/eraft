@@ -24,7 +24,7 @@ namespace kvserver
 
     bool Engines::Close() {
         delete kvDB_;
-        delete raftDB_;        
+        delete raftDB_;     
     }
 
     bool Engines::Destory() {

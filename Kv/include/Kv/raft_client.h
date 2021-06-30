@@ -18,7 +18,7 @@ class RaftConn
 {
 public:
 
-    RaftConn(std::string addr_, Config* cfg);
+    RaftConn(std::string addr_, std::shared_ptr<Config> cfg);
 
     ~RaftConn();
 
@@ -42,7 +42,7 @@ class RaftClient
 
 public:
    
-    RaftClient(Config *c);
+    RaftClient(std::shared_ptr<Config> c);
     ~RaftClient();
 
     std::shared_ptr<RaftConn> GetConn(std::string addr, uint64_t regionID);
@@ -57,7 +57,7 @@ public:
 
 private:
     /* data */
-    Config* conf_;
+    std::shared_ptr<Config> conf_;
 
     std::mutex mu_;
 

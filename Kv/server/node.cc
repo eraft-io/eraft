@@ -3,14 +3,15 @@
 namespace kvserver
 {
 
-Node::Node(RaftStore* system, Config* cfg)
+Node::Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg)
 {
 
 }
 
-bool Node::Start(Engines* engines, Transport trans)
+bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> trans)
 {
 
+    return true;
 }
 
 bool Node::CheckStore(Engines& engs, uint64_t* storeId)
@@ -23,7 +24,7 @@ bool Node::BootstrapStore(Engines& engs, uint64_t* storeId)
 
 }
 
-bool Node::StartNode(Engines* engs, Transport trans)
+bool Node::StartNode(std::shared_ptr<Engines> engines, std::shared_ptr<Transport>)
 {
 
 }

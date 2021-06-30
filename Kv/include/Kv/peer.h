@@ -66,7 +66,7 @@ public:
 
     bool IsLeader();
 
-    void Send(Transport trans, std::vector<eraftpb::Message> msgs);
+    void Send(std::shared_ptr<Transport> trans, std::vector<eraftpb::Message> msgs);
 
     std::vector<std::shared_ptr<metapb::Peer> > CollectPendingPeers();
 
@@ -80,17 +80,17 @@ public:
 
     void HeartbeatScheduler(); // heart beat
 
-    bool SendRaftMessage(eraftpb::Message msg, Transport trans);
+    bool SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans);
 
     // ticker
 
     // instance of the raft moudle
-    eraft::RawNode* raftGroup;
+    std::shared_ptr<eraft::RawNode> raftGroup;
 
     // peer storage
-    PeerStorage* peerStorage;
+    std::shared_ptr<PeerStorage> peerStorage;
 
-    metapb::Peer* meta;
+    std::shared_ptr<metapb::Peer> meta;
 
 private:
 
@@ -102,7 +102,7 @@ private:
 
     uint64_t lastCompactedIdx_;
 
-    std::map<uint64_t, metapb::Peer* > peerCache_;
+    std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
     
     bool stopped_;
 

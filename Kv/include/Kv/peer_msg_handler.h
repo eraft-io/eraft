@@ -8,6 +8,7 @@
 #include <leveldb/write_batch.h>
 
 #include <functional>
+#include <memory>
 
 namespace kvserver
 {
@@ -20,7 +21,7 @@ class PeerMsgHandler : Peer
 {
 public:
     
-    PeerMsgHandler(Peer* peer, GlobalContext* ctx);
+    PeerMsgHandler(std::shared_ptr<Peer> peer, std::shared_ptr<GlobalContext> ctx);
 
     ~PeerMsgHandler();
 
@@ -90,9 +91,9 @@ public:
 
 private:
 
-    Peer* peer_;
+    std::shared_ptr<Peer> peer_;
 
-    GlobalContext* ctx_;
+    std::shared_ptr<GlobalContext> ctx_;
 
 };
 

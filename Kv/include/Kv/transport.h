@@ -3,6 +3,8 @@
 
 #include <eraftio/raft_serverpb.pb.h>
 
+#include <memory>
+
 namespace kvserver
 {
 
@@ -11,9 +13,7 @@ class Transport
 
 public:
 
-    Transport(/* args */);
-
-    bool Send(raft_serverpb::RaftMessage* msg);
+    virtual bool Send(std::shared_ptr<raft_serverpb::RaftMessage> msgg) = 0;
 
     virtual ~Transport();
 

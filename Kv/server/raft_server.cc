@@ -1,13 +1,14 @@
 #include <Kv/raft_server.h>
 #include <Kv/engines.h>
 
+#include <cassert>
+
 namespace kvserver
 {
 
 RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
-    Engines engines(conf->dbPath_ + "_raft", conf->dbPath_ + "_kv");
     // TODO: snap
-    this->engs_ = &engines;
+    this->engs_ = std::make_shared<Engines>(conf->dbPath_ + "_raft", conf->dbPath_ + "_kv");
     this->conf_ = conf;
 }
 
@@ -110,8 +111,22 @@ bool RaftStorage::SnapShot(raft_serverpb::RaftSnapshotData* snap)
 bool RaftStorage::Start()
 {
     // TODO: schedulerClient
+
+    // raft system init
     this->raftSystem_ = std::make_shared<RaftStore>(this->conf_);
+
+    // router init
     this->raftRouter_ =  this->raftSystem_->raftRouter_;
+
+    // raft client init
+    std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(this->conf_);
+
+    // server transport init
+    std::shared_ptr<ServerTransport> trans = std::make_shared<ServerTransport>(raftClient, raftRouter_);
+
+    this->node_ = std::make_shared<Node>(this->raftSystem_, this->conf_);
+
+    assert(this->node_->Start(this->engs_, trans));    
 
 }
 

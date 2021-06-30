@@ -43,13 +43,13 @@ public:
 
 private:
 
-    Engines* engs_;
+    std::shared_ptr<Engines> engs_;
 
     std::shared_ptr<Config> conf_;
 
-    Node* node_;
+    std::shared_ptr<Node> node_;
 
-    std::shared_ptr<RaftstoreRouter> raftRouter_;
+    std::shared_ptr<RaftRouter> raftRouter_;
 
     std::shared_ptr<RaftStore> raftSystem_;
     

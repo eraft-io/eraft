@@ -33,15 +33,15 @@ struct StoreState
 struct GlobalContext
 {
 
-    Config *cfg_;
+    std::shared_ptr<Config> cfg_;
 
-    Engines *engine_;
+    std::shared_ptr<Engines> engine_;
 
     metapb::Store storeMeta_;
 
-    Router *router_;
+    std::shared_ptr<Router> router_;
 
-    Transport trans_;
+    std::shared_ptr<Transport> trans_;
 
     // TODO: Scheduler Client
 };
@@ -59,9 +59,11 @@ public:
 
     ~RaftStore();
 
-    std::vector<Peer* > LoadPeers();
+    std::vector<Peer> LoadPeers();
 
-    void ClearStaleMeta(leveldb::WriteBatch* kvWB, leveldb::WriteBatch* raftWB, raft_serverpb::RegionLocalState* originState);
+    void ClearStaleMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, 
+                        std::shared_ptr<leveldb::WriteBatch> raftWB, 
+                        std::shared_ptr<raft_serverpb::RegionLocalState> originState);
     
     bool Start();
 
@@ -75,14 +77,14 @@ public:
 
 private:
 
-    GlobalContext* ctx_;
+    std::shared_ptr<GlobalContext> ctx_;
 
-    StoreState* state_;
+    std::shared_ptr<StoreState> state_;
 
 
     std::shared_ptr<Router> router_;
 
-    std::shared_ptr<RaftstoreRouter> raftRouter_;
+    std::shared_ptr<RaftRouter> raftRouter_;
 
     // scheduler client: TODO
     std::deque<uint64_t> tickDriverSender_;

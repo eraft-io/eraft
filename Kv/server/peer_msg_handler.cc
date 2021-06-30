@@ -3,7 +3,7 @@
 namespace kvserver
 {
 
-PeerMsgHandler::PeerMsgHandler(Peer* peer, GlobalContext* ctx)
+PeerMsgHandler::PeerMsgHandler(std::shared_ptr<Peer> peer, std::shared_ptr<GlobalContext> ctx)
 {
 
 }

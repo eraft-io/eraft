@@ -78,7 +78,7 @@ bool Peer::IsLeader()
 
 }
 
-void Peer::Send(Transport trans, std::vector<eraftpb::Message> msgs)
+void Peer::Send(std::shared_ptr<Transport> trans, std::vector<eraftpb::Message> msgs)
 {
 
 }
@@ -113,7 +113,7 @@ void Peer::HeartbeatScheduler()
 
 }
 
-bool Peer::SendRaftMessage(eraftpb::Message msg, Transport trans)
+bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans)
 {
     
 }

@@ -10,7 +10,7 @@ using tinykvpb::TinyKv;
 namespace kvserver
 {
 
-RaftConn::RaftConn(std::string addr_, Config* cfg) {
+RaftConn::RaftConn(std::string addr_, std::shared_ptr<Config>) {
     this->chan_ = grpc::CreateChannel(addr_, grpc::InsecureChannelCredentials());
 }
 
@@ -23,7 +23,7 @@ std::shared_ptr<grpc::Channel> RaftConn::GetChan() {
 }
 
 
-RaftClient::RaftClient(Config *c){
+RaftClient::RaftClient(std::shared_ptr<Config> c){
     this->conf_ = c;
 }
 

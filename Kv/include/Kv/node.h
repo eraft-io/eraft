@@ -9,6 +9,8 @@
 #include <Kv/engines.h>
 #include <Kv/transport.h>
 
+#include <memory>
+
 namespace kvserver
 {
 
@@ -17,15 +19,15 @@ class Node
 
 public:
 
-    Node(RaftStore* system, Config* cfg);
+    Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg);
 
-    bool Start(Engines* engines, Transport trans);
+    bool Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport>);
 
     bool CheckStore(Engines& engs, uint64_t* storeId);
 
     bool BootstrapStore(Engines& engs, uint64_t* storeId);
 
-    bool StartNode(Engines* engs, Transport trans);
+    bool StartNode(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> trans);
 
     bool StopNode(uint64_t storeID);
 
@@ -39,11 +41,11 @@ private:
     
     uint64_t clusterID_;
 
-    metapb::Store* store_;
+    std::shared_ptr<metapb::Store> store_;
 
-    Config* cfg_;
+    std::shared_ptr<Config> cfg_;
 
-    RaftStore* system_;
+    std::shared_ptr<RaftStore> system_;
 };
 
     

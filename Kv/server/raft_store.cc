@@ -7,7 +7,7 @@ RaftStore::RaftStore(std::shared_ptr<Config> cfg)
 {
     std::deque<Msg> storeSender;
     this->router_ = std::make_shared<Router>(storeSender);
-    this->raftRouter_ = std::make_shared<RaftstoreRouter>(router_);
+    this->raftRouter_ = std::make_shared<RaftRouter>(router_);
 }
 
 RaftStore::~RaftStore()
@@ -15,12 +15,14 @@ RaftStore::~RaftStore()
 
 }
 
-std::vector<Peer* > RaftStore::LoadPeers()
+std::vector<Peer> RaftStore::LoadPeers()
 {
 
 }
 
-void RaftStore::ClearStaleMeta(leveldb::WriteBatch* kvWB, leveldb::WriteBatch* raftWB, raft_serverpb::RegionLocalState* originState)
+void RaftStore::ClearStaleMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, 
+                               std::shared_ptr<leveldb::WriteBatch> raftWB, 
+                               std::shared_ptr<raft_serverpb::RegionLocalState> originState)
 {
 
 }

@@ -13,11 +13,12 @@ namespace kvserver
 
 class RaftRouter;
 
-class ServerTransport : Transport
+class ServerTransport : public Transport
 {
 public:
 
     ServerTransport(std::shared_ptr<RaftClient> raftClient, std::shared_ptr<RaftRouter> raftRouter);
+
     ~ServerTransport();
 
     bool Send(std::shared_ptr<raft_serverpb::RaftMessage> msg);

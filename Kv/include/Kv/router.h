@@ -80,7 +80,7 @@ public:
 
 };
 
-class RaftstoreRouter : RaftRouter
+class RaftstoreRouter : public RaftRouter
 {
 public:
 
