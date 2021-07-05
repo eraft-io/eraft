@@ -14,6 +14,10 @@ RaftConn::RaftConn(std::string addr_, std::shared_ptr<Config>) {
     this->chan_ = grpc::CreateChannel(addr_, grpc::InsecureChannelCredentials());
 }
 
+RaftConn::~RaftConn() 
+{
+}
+
 void RaftConn::Stop() {
 
 }
@@ -27,6 +31,9 @@ RaftClient::RaftClient(std::shared_ptr<Config> c){
     this->conf_ = c;
 }
 
+RaftClient::~RaftClient()
+{
+}
 
 /***
  *  Get connection from cache, if not find, create 

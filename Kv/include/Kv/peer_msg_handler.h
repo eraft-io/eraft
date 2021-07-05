@@ -88,7 +88,6 @@ public:
     void OnGCSnap();  //  TODO:
 
 
-
 private:
 
     std::shared_ptr<Peer> peer_;

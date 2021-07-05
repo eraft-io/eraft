@@ -31,6 +31,11 @@ void Router::Close(uint64_t regionID)
 bool Router::Send(uint64_t regionID, Msg msg) 
 {
     msg.regionId_ = regionID;
+    PeerState_* ps = this->Get(regionID);
+    if(ps == nullptr) {
+        return false; // TODO: log peer not fount
+    }
+    this->peerSender_.push_back(msg);
 }
 
 void Router::SendStore(Msg m) 

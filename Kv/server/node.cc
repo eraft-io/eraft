@@ -8,6 +8,11 @@ Node::Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg)
 
 }
 
+Node::~Node()
+{
+    
+}
+
 bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> trans)
 {
 

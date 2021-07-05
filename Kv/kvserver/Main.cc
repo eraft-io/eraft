@@ -3,6 +3,8 @@
 // This module impl kv main class.
 // 
 
+#include <memory>
+
 #include <Kv/server_impl.h>
 #include <Kv/config.h>
 #include <Kv/raft_store.h>
@@ -15,8 +17,8 @@ int main(int argc, char *argv[]) {
     conf->PrintConfigToConsole();
     
     // start raft store
-    kvserver::RaftStorage storage = kvserver::RaftStorage(conf);
-    storage.Start();
+    std::shared_ptr<kvserver::Storage> storage = std::make_shared<kvserver::RaftStorage>(conf);
+    storage->Start();
 
     // start rpc service server
     kvserver::Server svr(conf->storeAddr_);

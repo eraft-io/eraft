@@ -18,7 +18,7 @@
 namespace kvserver
 {
     
-class RaftStorage : Storage
+class RaftStorage : public Storage
 {
 
 public:

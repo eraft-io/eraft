@@ -2,6 +2,8 @@
 #define ERAFT_KV_PEERSTORAGE_H_
 
 #include <iostream>
+#include <memory>
+
 #include <eraftio/metapb.grpc.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 
@@ -13,16 +15,16 @@ namespace kvserver
 
 struct ApplySnapResult
 {
-    metapb::Region *prevRegion;
+    std::shared_ptr<metapb::Region> prevRegion;
 
-    metapb::Region *region;
+    std::shared_ptr<metapb::Region> region;
 };
 
 class PeerStorage : public eraft::StorageInterface
 {
 public:
 
-    PeerStorage(Engines *engs, metapb::Region *region, std::string tag);
+    PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::Region> region, std::string tag);
 
     ~PeerStorage();
 
@@ -77,7 +79,7 @@ private:
     // TODO: snap
     uint64_t snapTriedCnt_;
 
-    Engines *engines_;
+    std::vector<Engines> engines_;
 
     std::string tag_;
 };

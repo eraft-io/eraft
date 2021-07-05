@@ -22,6 +22,8 @@ class Router;
 
 class RaftstoreRouter;
 
+class RaftRouter;
+
 struct StoreState
 {
     uint64_t id_;

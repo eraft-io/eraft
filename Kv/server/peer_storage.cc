@@ -2,7 +2,7 @@
 
 namespace kvserver {
 
-PeerStorage::PeerStorage(Engines *engs, metapb::Region *region, std::string tag)
+PeerStorage::PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::Region> region, std::string tag)
 {
 
 }

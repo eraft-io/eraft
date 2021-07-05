@@ -15,7 +15,7 @@ public:
 
     virtual bool Send(std::shared_ptr<raft_serverpb::RaftMessage> msgg) = 0;
 
-    virtual ~Transport();
+    // virtual ~Transport();
 
 private:
     /* data */

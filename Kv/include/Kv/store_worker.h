@@ -54,8 +54,11 @@ public:
 protected:
 
 private:
+
     uint64_t id_;
+
     std::atomic<bool> running_;
+
     std::mutex mutex_;
 };
 

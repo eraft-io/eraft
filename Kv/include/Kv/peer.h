@@ -28,7 +28,6 @@ struct Proposal
     Callback* db_;
 };
 
-
 class Peer
 {
 

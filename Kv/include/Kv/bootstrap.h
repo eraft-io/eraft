@@ -15,7 +15,8 @@ static bool IsRangeEmpty(std::shared_ptr<leveldb::DB> engine, std::string startK
 
 static bool BootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
 
-static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(std::shared_ptr<Engines> engines, uint64_t storeID, uint64_t regionID, uint64_t peerID);
+static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
+    std::shared_ptr<Engines> engines, uint64_t storeID, uint64_t regionID, uint64_t peerID);
 
 static bool PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
 
