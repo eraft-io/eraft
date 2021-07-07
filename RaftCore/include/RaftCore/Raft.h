@@ -72,6 +72,14 @@ struct Config {
         this->applied = 0;
     }
 
+    Config(uint64_t id, uint64_t election, uint64_t heartbeat, uint64_t appliedIndex, std::shared_ptr<StorageInterface> st) {
+        this->id = id;
+        this->electionTick = election;
+        this->heartbeatTick = heartbeat;
+        this->applied = appliedIndex;
+        this->storage = st;
+    }
+
     // ID is the identity of the local raft. ID cannot be 0.
     uint64_t id;
 

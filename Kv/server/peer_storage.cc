@@ -85,4 +85,10 @@ bool PeerStorage::Append(std::vector<eraftpb::Entry> entries)
     
 }
 
+uint64_t PeerStorage::AppliedIndex()
+{
+
+}
+
+
 } // namespace kvserver

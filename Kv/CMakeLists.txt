@@ -26,7 +26,7 @@ set(Headers
     include/Kv/storage.h
     include/Kv/store_worker.h
     include/Kv/transport.h
-    include/Kv/util.h
+    include/Kv/utils.h
 )
 
 set(Sources

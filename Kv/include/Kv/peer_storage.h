@@ -43,6 +43,8 @@ public:
     // FirstIndex implements the Storage interface.
     uint64_t FirstIndex() override;
 
+    uint64_t AppliedIndex();
+
     // Snapshot implements the Storage interface.
     eraftpb::Snapshot Snapshot() override;
 
@@ -68,9 +70,9 @@ public:
     // entries[0].Index > ms.entries[0].Index
     bool Append(std::vector<eraftpb::Entry> entries);
 
-private:
-
     std::shared_ptr<metapb::Region> region_;
+
+private:
 
     std::shared_ptr<raft_serverpb::RaftLocalState> raftState_;
 

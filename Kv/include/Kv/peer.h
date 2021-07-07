@@ -36,7 +36,7 @@ friend class Router;
 public:
 
     Peer();
-    Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
+    Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region, std::shared_ptr<metapb::Peer> meta);
     ~Peer();
 
     void InsertPeerCache(std::shared_ptr<metapb::Peer> peer);
@@ -84,12 +84,12 @@ public:
     // ticker
 
     // instance of the raft moudle
-    std::shared_ptr<eraft::RawNode> raftGroup;
+    std::shared_ptr<eraft::RawNode> raftGroup_;
 
     // peer storage
-    std::shared_ptr<PeerStorage> peerStorage;
+    std::shared_ptr<PeerStorage> peerStorage_;
 
-    std::shared_ptr<metapb::Peer> meta;
+    std::shared_ptr<metapb::Peer> meta_;
 
 private:
 
