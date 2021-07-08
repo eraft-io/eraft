@@ -34,7 +34,7 @@ public:
     MemoryStorage();
 
     // InitialState implements the Storage interface.
-    std::tuple<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
+    std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
 
     // Entries implements the Storage interface.
     std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;

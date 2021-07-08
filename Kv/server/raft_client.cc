@@ -33,6 +33,7 @@ RaftClient::RaftClient(std::shared_ptr<Config> c){
 
 RaftClient::~RaftClient()
 {
+
 }
 
 /***

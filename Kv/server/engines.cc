@@ -6,13 +6,13 @@ namespace kvserver
 {
 
     Engines::Engines(std::string kvPath, std::string raftPath) {
-        leveldb::Options opts;
+        rocksdb::Options opts;
         opts.create_if_missing = true;
-        leveldb::Status s1 = leveldb::DB::Open(opts, kvPath, &kvDB_);
+        rocksdb::Status s1 = rocksdb::DB::Open(opts, kvPath, &kvDB_);
         assert(s1.ok());
-        leveldb::Options opts1;
+        rocksdb::Options opts1;
         opts1.create_if_missing = true;
-        leveldb::Status s2 = leveldb::DB::Open(opts1, raftPath, &raftDB_);
+        rocksdb::Status s2 = rocksdb::DB::Open(opts1, raftPath, &raftDB_);
         assert(s2.ok());
         this->kvPath_ = kvPath;
         this->raftPath_ = raftPath;
@@ -32,13 +32,13 @@ namespace kvserver
         File::DeleteDirectory(this->raftPath_);
     }
 
-    bool Engines::WriteKV(leveldb::WriteBatch& batch) {
-        leveldb::Status s = kvDB_->Write(leveldb::WriteOptions(), &batch);
+    bool Engines::WriteKV(rocksdb::WriteBatch& batch) {
+        rocksdb::Status s = kvDB_->Write(rocksdb::WriteOptions(), &batch);
         assert(s.ok());
     }
 
-    bool Engines::WriteRaft(leveldb::WriteBatch& batch) {
-        leveldb::Status s = raftDB_->Write(leveldb::WriteOptions(), &batch);
+    bool Engines::WriteRaft(rocksdb::WriteBatch& batch) {
+        rocksdb::Status s = raftDB_->Write(rocksdb::WriteOptions(), &batch);
         assert(s.ok());
     }
 

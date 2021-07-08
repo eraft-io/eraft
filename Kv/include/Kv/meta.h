@@ -4,11 +4,15 @@
 #include <vector>
 #include <stdint.h>
 #include <cassert>
+
 #include <Kv/utils.h>
+#include <eraftio/raft_serverpb.pb.h>
+#include <eraftio/eraftpb.pb.h>
+#include <rocksdb/db.h>
 
 namespace kvserver
 {
-    
+
 const std::vector<uint8_t> kLocalPrefix = { 0x01 };
 
 const std::vector<uint8_t> kRegionRaftPrefix = { 0x02 };
@@ -27,7 +31,6 @@ const std::vector<uint8_t> kApplyStateSuffix = { 0x03 };
 
 const std::vector<uint8_t> kRegionStateSuffix = { 0x01 };
 
-
 const std::vector<uint8_t> MinKey = {};
 
 const std::vector<uint8_t> MaxKey = { 255 };
@@ -43,6 +46,15 @@ const std::vector<uint8_t> RegionMetaMaxKey = { 0x01, 0x04 };
 const std::vector<uint8_t> PrepareBootstrapKey = { 0x01, 0x01 };
 
 const std::vector<uint8_t> StoreIdentKey = { 0x01, 0x02 };
+
+//
+//  CF defines
+//
+const std::string CfDefault = "default";
+const std::string CfWrite = "write";
+const std::string CfLock = "lock";
+
+const std::vector<std::string> CFs = { CfDefault, CfWrite, CfLock };
 
 //
 // RegionPrefix: kLocalPrefix + kRegionRaftPrefix + regionID + suffix
@@ -129,6 +141,7 @@ static std::vector<uint8_t> RegionMetaPrefixKey(uint64_t regionID)
     return packet;
 }
 
+// kLocalPrefix + kRegionMetaPrefix + regionID + kRegionStateSuffix
 static std::vector<uint8_t> RegionStateKey(uint64_t regionID)
 {
     std::vector<uint8_t> packet;
@@ -150,7 +163,95 @@ static uint64_t RaftLogIndex(std::vector<uint8_t> key)
     return ReadU64(key.begin() + (kRegionRaftLogLen - 8));
 }
 
-} // namespace kvserver
+static raft_serverpb::RegionLocalState* GetRegionLocalState(std::shared_ptr<rocksdb::DB> db, uint64_t regionId)
+{
+    raft_serverpb::RegionLocalState* regionLocalState;
+    GetMeta(db, std::string(RegionStateKey(regionId).begin(), RegionStateKey(regionId).end()), regionLocalState);
+    return regionLocalState;
+}
 
+static std::pair<raft_serverpb::RaftLocalState*, rocksdb::Status> GetRaftLocalState(std::shared_ptr<rocksdb::DB> db, uint64_t regionId)
+{
+    raft_serverpb::RaftLocalState* raftLocalState;
+    rocksdb::Status s = GetMeta(db, std::string(RaftStateKey(regionId).begin(), RaftStateKey(regionId).end()), raftLocalState);
+    return std::pair<raft_serverpb::RaftLocalState*, rocksdb::Status> (raftLocalState, s);
+}
+
+static std::pair<raft_serverpb::RaftApplyState*, rocksdb::Status> GetApplyState(std::shared_ptr<rocksdb::DB> db, uint64_t regionId)
+{
+    raft_serverpb::RaftApplyState* applyState;
+    rocksdb::Status s = GetMeta(db, std::string(ApplyStateKey(regionId).begin(), ApplyStateKey(regionId).end()), applyState);
+    return std::pair<raft_serverpb::RaftApplyState*, rocksdb::Status> (applyState, s);   
+}
+
+static eraftpb::Entry* GetRaftEntry(std::shared_ptr<rocksdb::DB> db, uint64_t regionId, uint64_t idx)
+{
+    eraftpb::Entry* entry;
+    GetMeta(db, std::string(RaftLogKey(regionId, idx).begin(), RaftLogKey(regionId, idx).end()), entry);
+    return entry;
+}
+
+const uint8_t kRaftInitLogTerm = 5;
+const uint8_t kRaftInitLogIndex = 5;
+
+//
+//  This function init raft local state to db
+// 
+static std::pair<raft_serverpb::RaftLocalState*, bool> InitRaftLocalState(std::shared_ptr<rocksdb::DB> raftEngine, std::shared_ptr<metapb::Region> region)
+{
+    auto lst = GetRaftLocalState(raftEngine, region->id());
+    if(lst.second.IsNotFound()) 
+    {
+        raft_serverpb::RaftLocalState raftState;
+        raftState.set_allocated_hard_state(new eraftpb::HardState);
+        // new split region
+        if (region->peers().size() > 0)
+        {
+            raftState.set_last_index(kRaftInitLogIndex);
+            raftState.set_last_term(kRaftInitLogTerm);
+            raftState.mutable_hard_state()->set_term(kRaftInitLogTerm);
+            raftState.mutable_hard_state()->set_commit(kRaftInitLogIndex);
+            if(!PutMeta(raftEngine, std::string(RaftStateKey(region->id()).begin(), RaftStateKey(region->id()).end()), raftState))
+            {
+                return std::pair<raft_serverpb::RaftLocalState*, bool>(&raftState, false);
+            }
+        }
+    }
+    return std::pair<raft_serverpb::RaftLocalState*, bool>(lst.first, true);
+}
+
+static std::pair<raft_serverpb::RaftApplyState*, bool> InitApplyState(std::shared_ptr<rocksdb::DB> kvEngine, std::shared_ptr<metapb::Region> region)
+{
+    auto ast = GetApplyState(kvEngine, region->id());
+    if(ast.second.IsNotFound()) 
+    {
+        raft_serverpb::RaftApplyState applyState;
+        applyState.set_allocated_truncated_state(new raft_serverpb::RaftTruncatedState);
+        if(region->peers().size() > 0)
+        {
+            applyState.set_applied_index(kRaftInitLogIndex);
+            applyState.mutable_truncated_state()->set_index(kRaftInitLogIndex);
+            applyState.mutable_truncated_state()->set_term(kRaftInitLogTerm);
+        }
+        if(!PutMeta(kvEngine, std::string(ApplyStateKey(region->id()).begin(), ApplyStateKey(region->id()).end()), applyState))
+        {
+            return std::pair<raft_serverpb::RaftApplyState*, bool>(&applyState, false);
+        }
+    }
+    return std::pair<raft_serverpb::RaftApplyState*, bool>(ast.first, false);
+}
+
+//
+// write region state to kv write batch
+//
+static void WriteRegionState(std::shared_ptr<rocksdb::WriteBatch> kvWB, std::shared_ptr<metapb::Region> region, const raft_serverpb::PeerState& state)
+{
+    raft_serverpb::RegionLocalState regionState;
+    regionState.set_state(state);
+    regionState.set_allocated_region(& *region);
+    SetMeta(kvWB, std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end()), regionState);
+}
+
+} // namespace kvserver
 
 #endif

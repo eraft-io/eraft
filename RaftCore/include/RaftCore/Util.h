@@ -78,6 +78,13 @@ static std::string StateToString(NodeState st) {
     }
 }
 
+static const uint64_t kRaftInvalidIndex = 0;
+
+static bool IsInitialMsg(eraftpb::Message& msg)
+{
+    return msg.msg_type() == eraftpb::MsgRequestVote || (msg.msg_type() == eraftpb::MsgHeartbeat && msg.commit() == kRaftInvalidIndex);
+}
+
 // IsEmptySnap returns true if the given Snapshot is empty.
 static bool IsEmptySnap(eraftpb::Snapshot sp) {
     if(sp.has_metadata()) {

@@ -10,7 +10,7 @@
 #include <Kv/engines.h>
 #include <RaftCore/Storage.h>
 #include <RaftCore/RawNode.h>
-#include <leveldb/write_batch.h>
+#include <rocksdb/write_batch.h>
 
 namespace kvserver
 {
@@ -31,7 +31,7 @@ public:
     ~PeerStorage();
 
     // InitialState implements the Storage interface.
-    std::tuple<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
+    std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
 
     // Entries implements the Storage interface.
     std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;
@@ -64,7 +64,7 @@ public:
 
     bool ValidateSnap(std::shared_ptr<eraftpb::Snapshot> snap);
 
-    bool ClearMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, std::shared_ptr<leveldb::WriteBatch> raftWB);
+    bool ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, std::shared_ptr<rocksdb::WriteBatch> raftWB);
 
     void ClearExtraData(std::shared_ptr<metapb::Region> newRegion);
 
@@ -94,20 +94,20 @@ public:
 
     // Append the new entries to storage.
     // entries[0].Index > ms.entries[0].Index
-    bool Append(std::vector<eraftpb::Entry> entries);
+    bool Append(std::vector<eraftpb::Entry> entries, std::shared_ptr<rocksdb::WriteBatch> raftWB);
 
     std::shared_ptr<metapb::Region> region_;
 
 private:
 
-    std::shared_ptr<raft_serverpb::RaftLocalState> raftState_;
+    raft_serverpb::RaftLocalState* raftState_;
 
-    std::shared_ptr<raft_serverpb::RaftApplyState> applyState_;
+    raft_serverpb::RaftApplyState* applyState_;
 
     // TODO: snap
     uint64_t snapTriedCnt_;
 
-    std::vector<Engines> engines_;
+    std::shared_ptr<Engines> engines_;
 
     std::string tag_;
 };

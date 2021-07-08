@@ -5,3 +5,4 @@ protobuf
 .vscode
 output
 grpc
+rocksdb

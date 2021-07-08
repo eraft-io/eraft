@@ -188,6 +188,8 @@ public:
 
     std::shared_ptr<RaftLog> raftLog_;
 
+    uint64_t lead_;
+
 private:
 
     std::vector<uint64_t> Nodes(std::shared_ptr<RaftContext> raft) {
@@ -264,8 +266,6 @@ private:
     void RemoveNode(uint64_t id);
 
     std::vector<eraftpb::Message> msgs_;
-
-    uint64_t lead_;
 
     uint64_t heartbeatTimeout_;
 

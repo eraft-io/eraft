@@ -1,7 +1,7 @@
 #ifndef ERAFT_KV_ENGINES_H_
 #define ERAFT_KV_ENGINES_H_
 
-#include <leveldb/db.h>
+#include <rocksdb/db.h>
 #include <leveldb/write_batch.h>
 #include <memory>
 #include <cassert>
@@ -15,17 +15,17 @@ struct Engines
 
     ~Engines();
 
-    leveldb::DB* kvDB_;
+    rocksdb::DB* kvDB_;
 
     std::string kvPath_;
 
-    leveldb::DB* raftDB_;
+    rocksdb::DB* raftDB_;
 
     std::string raftPath_;
 
-    bool WriteKV(leveldb::WriteBatch& batch);
+    bool WriteKV(rocksdb::WriteBatch& batch);
 
-    bool WriteRaft(leveldb::WriteBatch& batch);
+    bool WriteRaft(rocksdb::WriteBatch& batch);
 
     bool Close();
 

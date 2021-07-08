@@ -91,6 +91,8 @@ public:
 
     std::shared_ptr<metapb::Peer> meta_;
 
+    // TODO: peers start pending time
+
 private:
 
     uint64_t regionId_;

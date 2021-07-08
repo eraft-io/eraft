@@ -19,8 +19,8 @@ namespace eraft
         this->snapShot_ = eraftpb::Snapshot();
     }
 
-    std::tuple<eraftpb::HardState, eraftpb::ConfState> MemoryStorage::InitialState() {
-        return std::make_tuple(this->hardState_, this->snapShot_.mutable_metadata()->conf_state());
+    std::pair<eraftpb::HardState, eraftpb::ConfState> MemoryStorage::InitialState() {
+        return std::make_pair(this->hardState_, this->snapShot_.mutable_metadata()->conf_state());
     }
 
     void MemoryStorage::SetHardState(eraftpb::HardState &st) {

@@ -44,7 +44,7 @@ public:
     virtual ~StorageInterface() {}
 
     // InitialState returns the saved HardState and ConfState information.
-    virtual std::tuple<eraftpb::HardState, eraftpb::ConfState> InitialState() = 0;
+    virtual std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() = 0;
 
 	// Entries returns a slice of log entries in the range [lo,hi).
 	// MaxSize limits the total size of the log entries returned, but
