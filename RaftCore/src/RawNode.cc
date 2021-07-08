@@ -77,9 +77,9 @@ namespace eraft
         this->raft->Step(m);
     }
 
-    Ready RawNode::EReady() {
+    DReady RawNode::EReady() {
         std::shared_ptr<RaftContext> r = this->raft;
-        Ready rd;
+        DReady rd;
         rd.entries = r->raftLog_->UnstableEntries();
         rd.committedEntries = r->raftLog_->NextEnts();
         rd.messages = r->msgs_;
@@ -111,7 +111,7 @@ namespace eraft
         return false;
     }
 
-    void RawNode::Advance(Ready rd) {
+    void RawNode::Advance(DReady rd) {
         if(!IsEmptyHardState(rd.hardSt)) {
             this->prevHardSt = std::make_shared<eraftpb::HardState>(rd.hardSt);
         }

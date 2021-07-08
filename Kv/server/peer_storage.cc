@@ -90,5 +90,59 @@ uint64_t PeerStorage::AppliedIndex()
 
 }
 
+bool PeerStorage::IsInitialized()
+{
+
+}
+
+std::shared_ptr<metapb::Region> PeerStorage::Region()
+{
+
+}
+
+void PeerStorage::SetRegion(std::shared_ptr<metapb::Region> region)
+{
+
+}
+
+bool PeerStorage::CheckRange(uint64_t low, uint64_t high)
+{
+
+}
+
+uint64_t PeerStorage::TruncatedIndex()
+{
+
+}
+
+uint64_t PeerStorage::TruncatedTerm()
+{
+
+}
+
+bool PeerStorage::ValidateSnap(std::shared_ptr<eraftpb::Snapshot> snap)
+{
+
+}
+
+bool ClearMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, std::shared_ptr<leveldb::WriteBatch> raftWB)
+{
+
+}
+
+void PeerStorage::ClearExtraData(std::shared_ptr<metapb::Region> newRegion)
+{
+
+}
+
+std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(std::shared_ptr<eraft::DReady> ready)
+{
+
+}
+
+void PeerStorage::ClearData()
+{
+
+}
 
 } // namespace kvserver

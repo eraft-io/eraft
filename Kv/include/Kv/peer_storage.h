@@ -9,6 +9,8 @@
 
 #include <Kv/engines.h>
 #include <RaftCore/Storage.h>
+#include <RaftCore/RawNode.h>
+#include <leveldb/write_batch.h>
 
 namespace kvserver
 {
@@ -47,6 +49,30 @@ public:
 
     // Snapshot implements the Storage interface.
     eraftpb::Snapshot Snapshot() override;
+
+    bool IsInitialized();
+
+    std::shared_ptr<metapb::Region> Region();
+
+    void SetRegion(std::shared_ptr<metapb::Region> region);
+
+    bool CheckRange(uint64_t low, uint64_t high);
+
+    uint64_t TruncatedIndex();
+
+    uint64_t TruncatedTerm();
+
+    bool ValidateSnap(std::shared_ptr<eraftpb::Snapshot> snap);
+
+    bool ClearMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, std::shared_ptr<leveldb::WriteBatch> raftWB);
+
+    void ClearExtraData(std::shared_ptr<metapb::Region> newRegion);
+
+    std::shared_ptr<ApplySnapResult> SaveReadyState(std::shared_ptr<eraft::DReady> ready);
+
+    void ClearData();
+
+    void ClearRange(uint64_t regionID, std::string start, std::string end);    
 
     // SetHardState saves the current HardState.
     void SetHardState(eraftpb::HardState &st);

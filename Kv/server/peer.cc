@@ -12,7 +12,8 @@ namespace kvserver
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region, std::shared_ptr<metapb::Peer> meta)
 {
     assert(meta->id() == 0);
-    std::string tag = "region->id() + meta->id()"; // TODO: sprintf to str
+    std::string tag = "[region " + std::to_string(region->id()) + " ] " + std::to_string(meta->id());
+    // TODO: sprintf to str
     std::shared_ptr<PeerStorage> ps = std::make_shared<PeerStorage>(engines, region, tag);
     
     uint64_t appliedIndex = ps->AppliedIndex();
@@ -39,7 +40,7 @@ Peer::~Peer()
 
 void Peer::InsertPeerCache(std::shared_ptr<metapb::Peer> peer)
 {
-    this->peerCache_[peer->id()] = peer;
+    this->peerCache_.insert(std::pair<uint64_t, std::shared_ptr<metapb::Peer> >(peer->id(), peer));
 }
 
 void Peer::RemovePeerCache(uint64_t peerID)
@@ -54,11 +55,10 @@ std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID)
     }
     for(auto peer : peerStorage_->region_->peers()) {
         if(peer.id() == peerID) {
-            this->InsertPeerCache(std::move(peer));
-            return std::move(peer);
+            this->InsertPeerCache(std::make_shared<metapb::Peer>(peer));
+            return std::make_shared<metapb::Peer>(peer);
         }
     }
-    return nullptr;
 }
 
 uint64_t Peer::NextProposalIndex()
@@ -68,17 +68,28 @@ uint64_t Peer::NextProposalIndex()
 
 bool Peer::MaybeDestory()
 {
-
+    if(this->stopped_) {
+        return false;
+    }
+    return true;
 }
 
 bool Peer::Destory(std::shared_ptr<Engines> engine, bool keepData)
 {
+    std::shared_ptr<metapb::Region> region = this->Region();
+    // TODO: // log p.tag begin to destory
+
+    std::shared_ptr<leveldb::WriteBatch> kvWB = std::make_shared<leveldb::WriteBatch>();
+    std::shared_ptr<leveldb::WriteBatch> raftWB = std::make_shared<leveldb::WriteBatch>();
+
+    this->peerStorage_->ClearMeta(kvWB, raftWB);
+    
 
 }
 
 bool Peer::IsInitialized()
 {
-    // this->peerStorage_->
+    this->peerStorage_->IsInitialized();
 }
 
 uint64_t Peer::storeID()

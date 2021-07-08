@@ -11,6 +11,7 @@ set(Headers
     include/Kv/config.h
     include/Kv/engines.h
     include/Kv/file.h
+    include/Kv/meta.h
     include/Kv/msg.h
     include/Kv/node.h
     include/Kv/peer_msg_handler.h

@@ -29,15 +29,14 @@
 namespace eraft
 {
 
-class Ready
+struct DReady
 {
-    public:
-
+    
     std::shared_ptr<ESoftState> softSt;
     
     eraftpb::HardState hardSt;
 
-    Ready();
+    DReady();
     // Entries specifies entries to be saved to stable storage BEFORE
     // Messages are sent.
     std::vector<eraftpb::Entry> entries;
@@ -77,14 +76,14 @@ public:
     void Step(eraftpb::Message m);
 
     // EReady returns the current point-in-time state of this RawNode.
-    Ready EReady();
+    DReady EReady();
 
     // HasReady called when RawNode user need to check if any Ready pending.
     bool HasReady();
 
     // Advance notifies the RawNode that the application has applied and saved progress in the
     // last Ready results.
-    void Advance(Ready rd);
+    void Advance(DReady rd);
 
     // GetProgress return the the Progress of this node and its peers, if this
     // node is leader.
