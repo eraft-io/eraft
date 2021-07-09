@@ -23,14 +23,14 @@ struct Msg;
 
 struct PeerState_
 {
-    PeerState_(Peer *peer) {
+    PeerState_(std::shared_ptr<Peer> peer) {
         this->closed_ = 0;
         this->peer_ = peer;
     }
 
     std::atomic<uint32_t> closed_;
 
-    Peer *peer_;
+    std::shared_ptr<Peer> peer_;
 };
 
 

@@ -26,7 +26,7 @@ public:
 
     void Run();
 
-    std::shared_ptr<PeerState_> GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersMap, uint64_t regionID);
+    std::shared_ptr<PeerState_> GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap, uint64_t regionID);
 
 private:
 

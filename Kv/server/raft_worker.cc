@@ -1,4 +1,5 @@
 #include <Kv/raft_worker.h>
+#include <Kv/peer_msg_handler.h>
 
 namespace kvserver
 {
@@ -12,14 +13,27 @@ RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Route
 
 void RaftWorker::Run() 
 {
+    std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap = std::map<uint64_t, std::shared_ptr<PeerState_> >{};
+    // get msg from raft router, and handler it.
     while (this->raftCh_.size() > 0)
     {
         Msg m = *this->raftCh_.end();
         // handle m, call PeerMessageHandler
-
+        std::shared_ptr<PeerState_> peerState = this->GetPeerState(peerStMap, m.regionId_);
+        if(peerState == nullptr)
+        {
+            continue;
+        }
+        PeerMsgHandler pmHandler(peerState->peer_, this->ctx_);
+        pmHandler.HandleMsg(m);
         this->raftCh_.pop_back();
     }
-     
+    // get peer state, and handle raft ready
+    for(auto peerState : peerStMap) 
+    {
+        PeerMsgHandler pmHandler(peerState.second->peer_, this->ctx_);
+        pmHandler.HandleRaftReady();
+    }
 }
 
 RaftWorker::~RaftWorker()
@@ -27,7 +41,7 @@ RaftWorker::~RaftWorker()
 
 }
 
-std::shared_ptr<PeerState_> RaftWorker::GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersMap, uint64_t regionID)
+std::shared_ptr<PeerState_> RaftWorker::GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap, uint64_t regionID)
 {
 
 }

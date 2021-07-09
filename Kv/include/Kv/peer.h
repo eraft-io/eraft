@@ -13,6 +13,7 @@
 #include <Kv/engines.h>
 #include <Kv/transport.h>
 #include <Kv/config.h>
+#include <Kv/peer_storage.h>
 
 namespace kvserver
 {
@@ -92,6 +93,7 @@ public:
     std::shared_ptr<metapb::Peer> meta_;
 
     // TODO: peers start pending time
+    bool stopped_;
 
 private:
 
@@ -105,8 +107,6 @@ private:
 
     std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
     
-    bool stopped_;
-
     uint64_t sizeDiffHint_;
 
     uint64_t approximateSize_;

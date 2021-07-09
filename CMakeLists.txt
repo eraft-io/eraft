@@ -103,13 +103,11 @@ if(ParentDirectory STREQUAL "")
         rocksdb/include/utilities
     )
 
-
     # add_subdirectory(leveldb)
     add_subdirectory(Logger)
     add_subdirectory(Protocol)
     add_subdirectory(RaftCore)
     add_subdirectory(Kv)
-
 
 endif(ParentDirectory STREQUAL "")
 

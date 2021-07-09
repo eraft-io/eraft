@@ -17,7 +17,7 @@ static raft_cmdpb::RaftCmdRequest* NewAdminRequest(uint64_t regionID, metapb::Pe
 
 static raft_cmdpb::RaftCmdRequest* NewCompactLogRequest(uint64_t regionID, metapb::Peer* peer, uint64_t compactIndex, uint64_t compactTerm);
 
-class PeerMsgHandler : Peer
+class PeerMsgHandler
 {
 public:
     

@@ -46,7 +46,24 @@ rocksdb::WriteBatch* PeerMsgHandler::Process(eraftpb::Entry* entry, rocksdb::Wri
 
 void PeerMsgHandler::HandleRaftReady()
 {
-
+    if(this->peer_->stopped_) 
+    {
+        return;
+    }
+    if(this->peer_->raftGroup_->HasReady())
+    {
+        eraft::DReady rd = this->peer_->raftGroup_->EReady();
+        auto result = this->peer_->peerStorage_->SaveReadyState(std::make_shared<eraft::DReady>(rd));
+        if(result != nullptr)
+        {
+            // TODO: snapshot
+        }
+        this->peer_->Send(this->ctx_->trans_, rd.messages);
+        if(rd.committedEntries.size() > 0)
+        {
+            
+        }
+    }
 }
 
 void PeerMsgHandler::HandleMsg(Msg m)

@@ -29,14 +29,20 @@
 namespace eraft
 {
 
-struct DReady
+class DReady
 {
-    
+
+public:
+
     std::shared_ptr<ESoftState> softSt;
     
     eraftpb::HardState hardSt;
 
     DReady();
+
+    ~DReady();
+
+
     // Entries specifies entries to be saved to stable storage BEFORE
     // Messages are sent.
     std::vector<eraftpb::Entry> entries;
