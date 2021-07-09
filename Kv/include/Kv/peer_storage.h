@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 
-#include <eraftio/metapb.grpc.pb.h>
+#include <eraftio/metapb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 
 #include <Kv/engines.h>
@@ -15,11 +15,17 @@
 namespace kvserver
 {
 
-struct ApplySnapResult
+class ApplySnapResult
 {
+    public:
+
     std::shared_ptr<metapb::Region> prevRegion;
 
     std::shared_ptr<metapb::Region> region;
+
+    ApplySnapResult() {}
+
+    ~ApplySnapResult() {}
 };
 
 class PeerStorage : public eraft::StorageInterface

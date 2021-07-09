@@ -5,7 +5,8 @@ namespace kvserver
 
 PeerMsgHandler::PeerMsgHandler(std::shared_ptr<Peer> peer, std::shared_ptr<GlobalContext> ctx)
 {
-    
+    this->peer_ = peer;
+    this->ctx_ = ctx;   
 }
 
 PeerMsgHandler::~PeerMsgHandler()
@@ -23,22 +24,22 @@ void PeerMsgHandler::HandleProposal(eraftpb::Entry* entry, std::function<void(Pr
 
 }
 
-leveldb::WriteBatch* PeerMsgHandler::ProcessRequest(eraftpb::Entry* entry, leveldb::WriteBatch* wb)
+rocksdb::WriteBatch* PeerMsgHandler::ProcessRequest(eraftpb::Entry* entry, rocksdb::WriteBatch* wb)
 {
 
 }
 
-void PeerMsgHandler::ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest, leveldb::WriteBatch* wb)
+void PeerMsgHandler::ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest, rocksdb::WriteBatch* wb)
 {
 
 }
 
-void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, leveldb::WriteBatch* wb)
+void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, rocksdb::WriteBatch* wb)
 {
 
 }
 
-leveldb::WriteBatch* PeerMsgHandler::Process(eraftpb::Entry* entry, leveldb::WriteBatch* wb)
+rocksdb::WriteBatch* PeerMsgHandler::Process(eraftpb::Entry* entry, rocksdb::WriteBatch* wb)
 {
 
 }
@@ -50,7 +51,7 @@ void PeerMsgHandler::HandleRaftReady()
 
 void PeerMsgHandler::HandleMsg(Msg m)
 {
-
+    
 }
 
 bool PeerMsgHandler::PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req)

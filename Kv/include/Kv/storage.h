@@ -5,7 +5,7 @@
 #include <vector>
 #include <stdint.h>
 #include <string>
-#include <leveldb/db.h>
+#include <rocksdb/db.h>
 
 namespace kvserver
 {
@@ -99,7 +99,7 @@ public:
 
     virtual std::vector<uint8_t> GetCF(std::string cf, std::vector<uint8_t> key) = 0;
 
-    virtual leveldb::Iterator* IterCF(std::uint8_t cf) = 0;
+    virtual rocksdb::Iterator* IterCF(std::uint8_t cf) = 0;
 
     virtual void Close() = 0;
 };

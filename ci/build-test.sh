@@ -6,6 +6,8 @@ SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 SRCPATH=$(cd $SCRIPTPATH/..; pwd -P)
 NPROC=$(nproc || grep -c ^processor /proc/cpuinfo)
 
+# cd "$SRCPATH/rocksdb" && make static_lib && cd -
+
 if [ -d "$SRCPATH/Protocol" ]; then
   cd "$SRCPATH/Protocol"
   ./scripts/generate_cpp.sh
@@ -16,7 +18,7 @@ build_dir="$SRCPATH/build_"
 mkdir -p $build_dir && cd $build_dir
 cmake "$SRCPATH" \
     -DENABLE_TESTS=on
-make -j 8
+make -j 2
 
 if [ ! -d "$SRCPATH/output" ]; then
   mkdir $SRCPATH/output

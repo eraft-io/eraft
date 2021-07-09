@@ -2,7 +2,7 @@
 #define ERAFT_KV_ENGINES_H_
 
 #include <rocksdb/db.h>
-#include <leveldb/write_batch.h>
+#include <rocksdb/write_batch.h>
 #include <memory>
 #include <cassert>
 

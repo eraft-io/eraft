@@ -15,10 +15,10 @@ set_target_properties(${This} PROPERTIES
 )
 
 target_link_libraries(${This} PUBLIC
-    gtest_main
+    gtest
     Logger
     gRPC::grpc++
-    leveldb
+    rocksdb
     Protocol
     Kv
 )

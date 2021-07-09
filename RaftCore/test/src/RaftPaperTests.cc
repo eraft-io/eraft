@@ -518,7 +518,7 @@ static eraftpb::Message AcceptAndReply(eraftpb::Message m) {
     return reply;
 }
 
-static bool CommitNoopEntry(std::shared_ptr<eraft::RaftContext> r, std::shared_ptr<eraft::StorageInterface> s) {
+static bool CommitNoopEntry(std::shared_ptr<eraft::RaftContext> r, std::shared_ptr<eraft::MemoryStorage> s) {
     if(r->state_ != eraft::NodeState::StateLeader) {
         return false;
     }
@@ -555,7 +555,7 @@ static bool CommitNoopEntry(std::shared_ptr<eraft::RaftContext> r, std::shared_p
 // Reference: section 5.3
 
 TEST(RaftPaperTests, TestLeaderStartReplication2AB) {
-    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
     std::vector<uint64_t> ids = IdsBySize(3);
     eraft::Config c(1, ids, 10, 1, memSt);
     std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
@@ -602,7 +602,7 @@ TEST(RaftPaperTests, TestLeaderStartReplication2AB) {
 // Reference: section 5.3
 
 TEST(RaftPaperTests, TestLeaderCommitEntry2AB) {
-    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
     std::vector<uint64_t> ids = IdsBySize(3);
     eraft::Config c(1, ids, 10, 1, memSt);
     std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
@@ -660,7 +660,7 @@ TEST(RaftPaperTests, TestLeaderAcknowledgeCommit2AB) {
 
     auto runtest = [](std::vector<TestEntry2> cases) {
         for(auto iter = cases.begin(); iter != cases.end(); iter++) {
-            std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+            std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
             std::vector<uint64_t> ids = IdsBySize(iter->size_);
             eraft::Config c(1, ids, 10, 1, memSt);
             std::shared_ptr<eraft::RaftContext> r = std::make_shared<eraft::RaftContext>(c);
@@ -737,7 +737,7 @@ TEST(RaftPaperTests, TestLeaderCommitPrecedingEntries2AB) {
     // std::vector< std::vector<eraftpb::Entry> > testCases = { ens4 };
 
     for(auto tt: testCases) {
-        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
         memSt->Append(tt);
 
         std::vector<uint64_t> ids = IdsBySize(3);
@@ -878,7 +878,7 @@ TEST(RaftPaperTests, TestFollowerCheckMessageType_MsgAppend2AB) {
     };
 
     for(auto tt : tests) {
-        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
         memSt->Append(ents);
         std::vector<uint64_t> ids = IdsBySize(3);
         eraft::Config c(1, ids, 10, 1, memSt);
@@ -976,7 +976,7 @@ TEST(RaftPaperTests, TestFollowerAppendEntries2AB) {
     };
 
     for(auto tt : tests) {
-        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
         memSt->Append(std::vector<eraftpb::Entry>{ en_1_1, en_2_2 });
         std::vector<uint64_t> ids = IdsBySize(3);
         eraft::Config c(1, ids, 10, 1, memSt);
@@ -1133,7 +1133,7 @@ TEST(RaftPaperTests, TestVoter2AA) {
     };
 
     for(auto tt : tests) {
-        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
         memSt->Append(tt.ents_);
         std::vector<uint64_t> ids = IdsBySize(2);
         eraft::Config c(1, ids, 10, 1, memSt);
@@ -1187,7 +1187,7 @@ TEST(RaftPaperTests, TestLeaderOnlyCommitsLogFromCurrentTerm2AB) {
     };
 
     for(auto tt : tests) {
-        std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+        std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
         memSt->Append(ents);
         std::vector<uint64_t> ids = IdsBySize(2);
         eraft::Config c(1, ids, 10, 1, memSt);

@@ -5,6 +5,7 @@
 #include <RaftCore/Util.h>
 
 #include <memory>
+#include <functional>
 
 namespace eraft
 {
@@ -36,7 +37,7 @@ std::map<Connem, float> dropm;
 
 std::map<eraftpb::MessageType, bool> ignorem;
 
-std::function<bool(eraftpb::Message)> msgHook;
+// std::function<bool(eraftpb::Message)> msgHook;
 
 };
 
@@ -131,7 +132,7 @@ TEST(RaftTests, MemoryStorage) {
     en3.set_term(2);
     en3.set_index(2);
     
-    std::shared_ptr<eraft::StorageInterface> memSt = std::make_shared<eraft::MemoryStorage>();
+    std::shared_ptr<eraft::MemoryStorage> memSt = std::make_shared<eraft::MemoryStorage>();
     std::cout << memSt->Append(std::vector<eraftpb::Entry>{en1}) << std::endl;
     // std::cout << memSt->Append(std::vector<eraftpb::Entry>{en2}) << std::endl;
     // std::cout << memSt->Append(std::vector<eraftpb::Entry>{en3}) << std::endl;

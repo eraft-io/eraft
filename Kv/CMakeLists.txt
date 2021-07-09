@@ -11,7 +11,6 @@ set(Headers
     include/Kv/config.h
     include/Kv/engines.h
     include/Kv/file.h
-    include/Kv/meta.h
     include/Kv/msg.h
     include/Kv/node.h
     include/Kv/peer_msg_handler.h
@@ -56,16 +55,17 @@ set_target_properties(${This} PROPERTIES
 target_include_directories(${This} PUBLIC include)
 
 target_link_libraries(${This} PUBLIC
-    gtest_main
+    gtest
     Logger
-    leveldb
+    rocksdb
     gRPC::grpc++
     Protocol
     RaftCore
+    ${GFLAGS_LIBRARIES}
 )
 
 add_subdirectory(kvserver)
 
-add_subdirectory(test_cli)
-add_subdirectory(test_svr)
-add_subdirectory(test_kvcli)
+# add_subdirectory(test_cli)
+# add_subdirectory(test_svr)
+# add_subdirectory(test_kvcli)

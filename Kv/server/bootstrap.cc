@@ -3,7 +3,7 @@
 namespace kvserver
 {
 
-static bool IsRangeEmpty(std::shared_ptr<leveldb::DB> engine, std::string startKey, std::string endKey)
+static bool IsRangeEmpty(std::shared_ptr<rocksdb::DB> engine, std::string startKey, std::string endKey)
 {
     return true;
 }
@@ -23,12 +23,12 @@ static bool PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared
     return true;
 }
 
-static void WriteInitialApplyState(std::unique_ptr<leveldb::WriteBatch> kvWB, uint64_t regionID)
+static void WriteInitialApplyState(std::unique_ptr<rocksdb::WriteBatch> kvWB, uint64_t regionID)
 {
 
 }
 
-static void WriteInitialRaftState(std::unique_ptr<leveldb::WriteBatch> raftWB, uint64_t regionID)
+static void WriteInitialRaftState(std::unique_ptr<rocksdb::WriteBatch> raftWB, uint64_t regionID)
 {
 
 }

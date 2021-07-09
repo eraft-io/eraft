@@ -63,8 +63,8 @@ public:
 
     std::vector<Peer> LoadPeers();
 
-    void ClearStaleMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, 
-                        std::shared_ptr<leveldb::WriteBatch> raftWB, 
+    void ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, 
+                        std::shared_ptr<rocksdb::WriteBatch> raftWB, 
                         std::shared_ptr<raft_serverpb::RegionLocalState> originState);
     
     bool Start();

@@ -1,12 +1,12 @@
 #include <Kv/peer.h>
 #include <Kv/peer_storage.h>
-#include <Kv/meta.h>
 
 #include <RaftCore/Raft.h>
 #include <RaftCore/RawNode.h>
 #include <rocksdb/write_batch.h>
 
 #include <eraftio/raft_serverpb.pb.h>
+#include <Kv/utils.h>
 
 #include <memory>
 
@@ -214,7 +214,7 @@ void Peer::HeartbeatScheduler()
 
 bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans)
 {
-    std::shared_ptr<raft_serverpb::RaftMessage> sendMsg = std::make_shared<raft_serverpb::RaftMessage>(sendMsg);
+    std::shared_ptr<raft_serverpb::RaftMessage> sendMsg = std::make_shared<raft_serverpb::RaftMessage>();
     sendMsg->set_region_id(this->regionId_);
     metapb::RegionEpoch epoch;
     epoch.set_conf_ver(this->Region()->region_epoch().conf_ver());

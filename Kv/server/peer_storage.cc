@@ -1,16 +1,16 @@
 #include <Kv/peer_storage.h>
-#include <Kv/meta.h>
 #include <RaftCore/Util.h>
 #include <Kv/utils.h>
+
 namespace kvserver {
 
 PeerStorage::PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::Region> region, std::string tag)
 {
     // TODO: log craating storage for region
-    auto raftStatePair = InitRaftLocalState(std::make_shared<rocksdb::DB>(engs->raftDB_), region);
+    auto raftStatePair = InitRaftLocalState(engs->raftDB_, region);
     assert(raftStatePair.second); // if creating error, abort
 
-    auto applyStatePair = InitApplyState(std::make_shared<rocksdb::DB>(engs->kvDB_), region);
+    auto applyStatePair = InitApplyState(engs->kvDB_, region);
     assert(applyStatePair.second); // if creating error, abort
 
     if(raftStatePair.first->last_index() < applyStatePair.first->applied_index())
@@ -88,7 +88,7 @@ uint64_t PeerStorage::Term(uint64_t idx)
         return this->raftState_->last_term();
     }
     eraftpb::Entry* entry;
-    GetMeta(std::make_shared<rocksdb::DB>(this->engines_->raftDB_), std::string(RaftLogKey(this->region_->id(), idx).begin(), RaftLogKey(this->region_->id(), idx).end()), entry);
+    GetMeta(this->engines_->raftDB_, std::string(RaftLogKey(this->region_->id(), idx).begin(), RaftLogKey(this->region_->id(), idx).end()), entry);
     return entry->term();
 }
 
@@ -257,7 +257,7 @@ void PeerStorage::ClearExtraData(std::shared_ptr<metapb::Region> newRegion)
 std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(std::shared_ptr<eraft::DReady> ready)
 {
     std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
-    ApplySnapResult* result;
+    ApplySnapResult result;
     if(!eraft::IsEmptySnap(ready->snapshot))
     {
         // TODO: apply snap

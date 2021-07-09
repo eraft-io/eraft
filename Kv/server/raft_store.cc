@@ -20,8 +20,8 @@ std::vector<Peer> RaftStore::LoadPeers()
 
 }
 
-void RaftStore::ClearStaleMeta(std::shared_ptr<leveldb::WriteBatch> kvWB, 
-                               std::shared_ptr<leveldb::WriteBatch> raftWB, 
+void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, 
+                               std::shared_ptr<rocksdb::WriteBatch> raftWB, 
                                std::shared_ptr<raft_serverpb::RegionLocalState> originState)
 {
 
@@ -29,7 +29,7 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<leveldb::WriteBatch> kvWB,
 
 bool RaftStore::Start()
 {
-    
+
 }
 
 bool RaftStore::StartWorkers(std::vector<Peer> peers)

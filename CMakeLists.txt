@@ -66,8 +66,9 @@ if(ParentDirectory STREQUAL "")
     # Google Test
     set(BUILD_GTEST ON CACHE BOOL "Builds the googletest subproject" FORCE)
     set(BUILD_GMOCK OFF CACHE BOOL "Builds the googlemock subproject" FORCE)
+
     add_subdirectory(googletest)
-    set_target_properties(gtest gtest_main PROPERTIES
+    set_target_properties(gtest_main gtest PROPERTIES
         FOLDER libraries
     )
 
@@ -93,13 +94,22 @@ if(ParentDirectory STREQUAL "")
     find_package(gRPC CONFIG REQUIRED)
     message(STATUS "Using gRPC: ${gRPC_VERSION}")
 
+    find_package(Gflags REQUIRED)
+    include_directories(${GFLAGS_INCLUDE_DIRS})
+
+    add_subdirectory(rocksdb)
+    include_directories(
+        rocksdb/include
+        rocksdb/include/utilities
+    )
+
+
     # add_subdirectory(leveldb)
     add_subdirectory(Logger)
     add_subdirectory(Protocol)
     add_subdirectory(RaftCore)
     add_subdirectory(Kv)
-    add_subdirectory(protobuf)
-    add_subdirectory(rocksdb)
+
 
 endif(ParentDirectory STREQUAL "")
 

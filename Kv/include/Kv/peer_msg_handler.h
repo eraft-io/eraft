@@ -5,7 +5,7 @@
 #include <Kv/raft_store.h>
 #include <Kv/engines.h>
 
-#include <leveldb/write_batch.h>
+#include <rocksdb/write_batch.h>
 
 #include <functional>
 #include <memory>
@@ -29,13 +29,13 @@ public:
 
     void HandleProposal(eraftpb::Entry* entry, std::function<void(Proposal*)>);
 
-    leveldb::WriteBatch* ProcessRequest(eraftpb::Entry* entry, leveldb::WriteBatch* wb);
+    rocksdb::WriteBatch* ProcessRequest(eraftpb::Entry* entry, rocksdb::WriteBatch* wb);
 
-    void ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest, leveldb::WriteBatch* wb);
+    void ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest, rocksdb::WriteBatch* wb);
 
-    void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, leveldb::WriteBatch* wb);
+    void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, rocksdb::WriteBatch* wb);
 
-    leveldb::WriteBatch* Process(eraftpb::Entry* entry, leveldb::WriteBatch* wb);
+    rocksdb::WriteBatch* Process(eraftpb::Entry* entry, rocksdb::WriteBatch* wb);
 
     void HandleRaftReady();
 
