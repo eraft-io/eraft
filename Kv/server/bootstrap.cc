@@ -5,6 +5,7 @@ namespace kvserver
 
 static bool IsRangeEmpty(std::shared_ptr<rocksdb::DB> engine, std::string startKey, std::string endKey)
 {
+    
     return true;
 }
 

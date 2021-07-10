@@ -11,9 +11,12 @@
 #include <Kv/storage.h>
 
 #include <eraftio/metapb.pb.h>
+#include <eraftio/raft_serverpb.pb.h>
 
 #include <deque>
 #include <memory>
+#include <mutex>
+#include <map>
 
 namespace kvserver
 {
@@ -31,6 +34,17 @@ struct StoreState
     std::vector<Msg> receiver_;
 };
 
+struct StoreMeta
+{
+    std::mutex mutex_;
+
+    // region end key -> region id
+    std::map<std::string, uint64_t> regionRanges_;
+
+    std::map<uint64_t, metapb::Region*> regions_;
+
+    std::vector<raft_serverpb::RaftMessage*> pendingVotes_;
+};
 
 struct GlobalContext
 {
@@ -39,7 +53,7 @@ struct GlobalContext
 
     std::shared_ptr<Engines> engine_;
 
-    metapb::Store storeMeta_;
+    StoreMeta* storeMeta_;
 
     std::shared_ptr<Router> router_;
 

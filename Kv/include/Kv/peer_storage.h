@@ -104,8 +104,6 @@ public:
 
     std::shared_ptr<metapb::Region> region_;
 
-private:
-
     raft_serverpb::RaftLocalState* raftState_;
 
     raft_serverpb::RaftApplyState* applyState_;
@@ -114,6 +112,10 @@ private:
     uint64_t snapTriedCnt_;
 
     std::shared_ptr<Engines> engines_;
+
+private:
+
+
 
     std::string tag_;
 };

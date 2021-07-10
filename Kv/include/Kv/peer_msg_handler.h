@@ -10,6 +10,9 @@
 #include <functional>
 #include <memory>
 
+#include <eraftio/raft_cmdpb.pb.h>
+
+
 namespace kvserver
 {
 
@@ -29,13 +32,15 @@ public:
 
     void HandleProposal(eraftpb::Entry* entry, std::function<void(Proposal*)>);
 
-    rocksdb::WriteBatch* ProcessRequest(eraftpb::Entry* entry, rocksdb::WriteBatch* wb);
+    void Handle(Proposal* p);
 
-    void ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest, rocksdb::WriteBatch* wb);
+    std::shared_ptr<rocksdb::WriteBatch> ProcessRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* msg, std::shared_ptr<rocksdb::WriteBatch> wb);
 
-    void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, rocksdb::WriteBatch* wb);
+    void ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* req, std::shared_ptr<rocksdb::WriteBatch> wb);
 
-    rocksdb::WriteBatch* Process(eraftpb::Entry* entry, rocksdb::WriteBatch* wb);
+    void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, std::shared_ptr<rocksdb::WriteBatch> wb);
+
+    std::shared_ptr<rocksdb::WriteBatch> Process(eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb);
 
     void HandleRaftReady();
 
@@ -87,6 +92,17 @@ public:
 
     void OnGCSnap();  //  TODO:
 
+    static std::shared_ptr<std::string> GetRequestKey(raft_cmdpb::Request *req);
+
+    static size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id);
+
+    static bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID);
+
+    static bool CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term);
+
+    static bool CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID);    
+
+    static bool CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region);
 
 private:
 

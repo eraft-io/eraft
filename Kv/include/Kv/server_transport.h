@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 
 namespace kvserver
 {
@@ -34,7 +35,12 @@ public:
     void Flush();
 
 private:
-    
+
+    std::shared_ptr<RaftClient> raftClient_;
+
+    std::shared_ptr<RaftRouter> raftRouter_;
+
+    std::map<uint64_t, void*> resolving_;
 
 };
 

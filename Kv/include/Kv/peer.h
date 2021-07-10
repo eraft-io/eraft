@@ -26,7 +26,7 @@ struct Proposal
 
     uint64_t term_;
 
-    Callback* db_;
+    Callback* cb_;
 };
 
 class Peer
@@ -40,7 +40,7 @@ public:
     Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region, std::shared_ptr<metapb::Peer> meta);
     ~Peer();
 
-    void InsertPeerCache(std::shared_ptr<metapb::Peer> peer);
+    void InsertPeerCache(metapb::Peer* peer);
 
     void RemovePeerCache(uint64_t peerID);
 
@@ -95,13 +95,15 @@ public:
     // TODO: peers start pending time
     bool stopped_;
 
-private:
+    std::vector<Proposal> proposals_;
 
     uint64_t regionId_;
 
-    std::string tag_;
 
-    std::vector<Proposal> proposals_;
+private:
+
+
+    std::string tag_;
 
     uint64_t lastCompactedIdx_;
 

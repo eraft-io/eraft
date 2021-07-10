@@ -42,7 +42,7 @@ Peer::~Peer()
 
 }
 
-void Peer::InsertPeerCache(std::shared_ptr<metapb::Peer> peer)
+void Peer::InsertPeerCache(metapb::Peer* peer)
 {
     this->peerCache_.insert(std::pair<uint64_t, std::shared_ptr<metapb::Peer> >(peer->id(), peer));
 }
@@ -59,7 +59,7 @@ std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID)
     }
     for(auto peer : peerStorage_->region_->peers()) {
         if(peer.id() == peerID) {
-            this->InsertPeerCache(std::make_shared<metapb::Peer>(peer));
+            this->InsertPeerCache(&peer);
             return std::make_shared<metapb::Peer>(peer);
         }
     }

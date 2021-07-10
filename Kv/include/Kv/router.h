@@ -45,7 +45,7 @@ public:
 
     PeerState_* Get(uint64_t regionID);
 
-    void Register(Peer* peer);
+    void Register(std::shared_ptr<Peer> peer);
 
     void Close(uint64_t regionID);
 

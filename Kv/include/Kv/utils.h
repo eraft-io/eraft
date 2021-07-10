@@ -152,7 +152,7 @@ static std::string KeyWithCF(std::string cf, std::string key)
     return cf + "_"  + key ;
 }
 
-static std::string GetCF(std::unique_ptr<rocksdb::DB> db, std::string cf, std::string key) 
+static std::string GetCF(rocksdb::DB* db, std::string cf, std::string key) 
 {
     std::string res;
     rocksdb::Status s = db->Get(rocksdb::ReadOptions(), KeyWithCF(cf, key), &res);

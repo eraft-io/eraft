@@ -16,9 +16,9 @@ PeerState_* Router::Get(uint64_t regionID)
     return nullptr;
 }
 
-void Router::Register(Peer* peer) 
+void Router::Register(std::shared_ptr<Peer> peer) 
 {
-    PeerState_* ps = new PeerState_(std::make_shared<Peer>(peer));
+    PeerState_* ps = new PeerState_(peer);
     this->peers_[peer->regionId_] = ps;
 }
 
