@@ -25,6 +25,8 @@ const uint8_t kRegionRaftPrefixLen = 11;
 
 const uint8_t kRegionRaftLogLen = 19;
 
+const uint64_t kInvalidID = 0;
+
 const std::vector<uint8_t> kRaftLogSuffix = { 0x01 };
 
 const std::vector<uint8_t> kRaftStateSuffix = { 0x02 };
@@ -49,6 +51,11 @@ const std::vector<uint8_t> PrepareBootstrapKey = { 0x01, 0x01 };
 
 const std::vector<uint8_t> StoreIdentKey = { 0x01, 0x02 };
 
+
+static std::string VecToString(std::vector<uint8_t> in) 
+{
+    return std::string(in.begin(), in.end());
+}
 
 static void WriteU8(std::vector< uint8_t >& packet, uint8_t v) 
 {
@@ -86,6 +93,13 @@ static void WriteU64(std::vector< uint8_t >& packet, uint64_t v)
     packet.push_back(static_cast< uint8_t >(v >> 40));     
     packet.push_back(static_cast< uint8_t >(v >> 48));     
     packet.push_back(static_cast< uint8_t >(v >> 56));
+}
+
+static uint64_t MockSchAllocID()
+{
+    static uint64_t gCounter = 0;
+    gCounter++;
+    return gCounter;
 }
 
 static uint8_t ReadU8(std::vector< uint8_t>::iterator& it) 

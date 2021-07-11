@@ -11,22 +11,43 @@
 namespace kvserver
 {
 
-static bool IsRangeEmpty(std::shared_ptr<rocksdb::DB> engine, std::string startKey, std::string endKey);
+class BootHelper
+{
 
-static bool BootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
+protected:
 
-static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
-    std::shared_ptr<Engines> engines, uint64_t storeID, uint64_t regionID, uint64_t peerID);
+    static BootHelper* instance_;
 
-static bool PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
+public:
 
-static void WriteInitialApplyState(std::unique_ptr<rocksdb::WriteBatch> kvWB, uint64_t regionID);
+    static const uint64_t kInitEpochVer = 1;
+    static const uint64_t kInitEpochConfVer = 1;
 
-static void WriteInitialRaftState(std::unique_ptr<rocksdb::WriteBatch> raftWB, uint64_t regionID);
+    BootHelper() {};
 
-static bool ClearPrepareBoostrap(std::shared_ptr<Engines> engines, uint64_t regionID);
+    ~BootHelper() {delete instance_; };
 
-static bool ClearPrepareBoostrapState(std::shared_ptr<Engines> engines);
+    static bool IsRangeEmpty(rocksdb::DB* db, std::string startKey, std::string endKey);
+
+    bool DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
+
+    static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
+        std::shared_ptr<Engines> engines, uint64_t storeID, uint64_t regionID, uint64_t peerID);
+
+    static bool PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
+
+    static void WriteInitialApplyState(std::shared_ptr<rocksdb::WriteBatch> kvWB, uint64_t regionID);
+
+    static void WriteInitialRaftState(std::shared_ptr<rocksdb::WriteBatch> raftWB, uint64_t regionID);
+
+    static bool ClearPrepareBoostrap(std::shared_ptr<Engines> engines, uint64_t regionID);
+
+    static bool ClearPrepareBoostrapState(std::shared_ptr<Engines> engines);
+
+    static BootHelper* GetInstance();
+};
+
+
 
 
 } // namespace kvserver

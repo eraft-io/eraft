@@ -43,9 +43,16 @@ RaftWorker::~RaftWorker()
 
 std::shared_ptr<PeerState_> RaftWorker::GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap, uint64_t regionID)
 {
-
+    if(peersStateMap.find(regionID) == peersStateMap.end())
+    {
+        auto peer = this->pr_->Get(regionID);
+        if(peer == nullptr)
+        {
+            return nullptr;
+        }
+        peersStateMap[regionID] = std::shared_ptr<PeerState_>(peer);
+    }
+    return peersStateMap[regionID];
 }
-
-
 
 } // namespace kvserver

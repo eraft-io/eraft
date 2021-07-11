@@ -19,6 +19,10 @@ class Node
 
 public:
 
+    const uint64_t kMaxCheckClusterBoostrappedRetryCount = 60;
+
+    const uint64_t kCheckClusterBoostrapRetrySeconds = 3;
+
     Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg);
 
     bool Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport>);
@@ -27,6 +31,17 @@ public:
 
     bool BootstrapStore(Engines& engs, uint64_t* storeId);
 
+    uint64_t AllocID();
+
+    std::pair<std::shared_ptr<metapb::Region> , bool> CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines, uint64_t storeID);
+
+    bool CheckClusterBoostrapped();
+
+    std::pair<std::shared_ptr<metapb::Region> , bool> PrepareBootstrapCluster(std::shared_ptr<Engines> engines,  uint64_t storeID);
+
+    bool BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> firstRegion, bool* isNewCluster);
+
+    
     bool StartNode(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> trans);
 
     bool StopNode(uint64_t storeID);

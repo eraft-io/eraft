@@ -132,7 +132,7 @@ bool RaftStorage::Start()
 
 bool RaftStorage::Stop()
 {
-
+    // stop worker
 }
 
 } // namespace kvserver
