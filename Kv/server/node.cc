@@ -87,55 +87,80 @@ bool Node::CheckStore(Engines& engs, uint64_t* storeId)
 
 uint64_t Node::AllocID()
 {
-    return MockSchAllocID();
+    return BootHelper().GetInstance()->MockSchAllocID();
 }
 
 std::pair<std::shared_ptr<metapb::Region> , bool> Node::CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines, uint64_t storeID)
 {
     raft_serverpb::RegionLocalState state;
-    GetMeta(engines->kvDB_, VecToString(PrepareBootstrapKey), &state);
+    if(GetMeta(engines->kvDB_, VecToString(PrepareBootstrapKey), &state).ok())
+    {
+        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(std::make_shared<metapb::Region>(state.region()), true);
+    }
+    if(!this->CheckClusterBoostrapped())
+    {
+        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, false);
+    }
+    else 
+    {
+        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, true);
+    }
+    return this->PrepareBootstrapCluster(engines, storeID);
 }
 
 bool Node::CheckClusterBoostrapped()
 {
+    // call sch to check cluster boostrapped
 
 }
 
 std::pair<std::shared_ptr<metapb::Region> , bool> Node::PrepareBootstrapCluster(std::shared_ptr<Engines> engines,  uint64_t storeID)
 {
-
+    auto regionID = BootHelper().GetInstance()->MockSchAllocID();
+    // TODO: log regionID = , clusterID = , storeID =
+    auto peerID = BootHelper().GetInstance()->MockSchAllocID();
+    // TODO: log peerID =, regionID =
+    return BootHelper().GetInstance()->PrepareBootstrap(engines, storeID, regionID, peerID);
 }
 
 bool Node::BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> firstRegion, bool* isNewCluster)
 {
-
+    auto regionID = firstRegion->id();
+    
+    // TODO: send boostrap to scheduler
+    
 }
 
 
 bool Node::BootstrapStore(Engines& engs, uint64_t* storeId)
 {
     auto storeID = this->AllocID();
-    BootHelper::GetInstance()->DoBootstrapStore(std::make_shared<Engines>(engs), this->clusterID_, storeID);
+    if(!BootHelper::GetInstance()->DoBootstrapStore(std::make_shared<Engines>(engs), this->clusterID_, storeID))
+    {
+        return false;
+    }
+    *storeId = storeID;
+    return true;
 }
 
-bool Node::StartNode(std::shared_ptr<Engines> engines, std::shared_ptr<Transport>)
+bool Node::StartNode(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> trans)
 {
-    
+    return this->system_->Start(this->store_, this->cfg_, engines, trans);
 }
 
 bool Node::StopNode(uint64_t storeID)
 {
-
+    this->system_->ShutDown();
 }
 
 void Node::Stop()
 {
-
+    this->StopNode(this->store_->id());
 }
 
 uint64_t Node::GetStoreID()
 {
-    
+    return this->store_->id();
 }
 
 } // namespace kvserver

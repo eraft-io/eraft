@@ -21,7 +21,14 @@ bool BootHelper::IsRangeEmpty(rocksdb::DB* db, std::string startKey, std::string
     return !hasData;
 }
 
-BootHelper* BootHelper::instance_= nullptr;;
+BootHelper* BootHelper::instance_= nullptr;
+uint64_t BootHelper::gCounter_ = 0;
+
+uint64_t BootHelper::MockSchAllocID()
+{
+    gCounter_++;
+    return gCounter_;
+}
 
 BootHelper* BootHelper::GetInstance()
 {

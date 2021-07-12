@@ -27,7 +27,10 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
 
 }
 
-bool RaftStore::Start()
+bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
+                      std::shared_ptr<Config> cfg,
+                      std::shared_ptr<Engines> engines,
+                      std::shared_ptr<Transport> trans)
 {
 
 }

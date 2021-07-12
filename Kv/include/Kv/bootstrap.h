@@ -18,6 +18,8 @@ protected:
 
     static BootHelper* instance_;
 
+    static uint64_t gCounter_;
+
 public:
 
     static const uint64_t kInitEpochVer = 1;
@@ -29,7 +31,9 @@ public:
 
     static bool IsRangeEmpty(rocksdb::DB* db, std::string startKey, std::string endKey);
 
-    bool DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
+    static bool DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
+
+    static uint64_t MockSchAllocID();
 
     static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
         std::shared_ptr<Engines> engines, uint64_t storeID, uint64_t regionID, uint64_t peerID);

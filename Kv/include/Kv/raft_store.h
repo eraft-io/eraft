@@ -81,7 +81,10 @@ public:
                         std::shared_ptr<rocksdb::WriteBatch> raftWB, 
                         std::shared_ptr<raft_serverpb::RegionLocalState> originState);
     
-    bool Start();
+    bool Start(std::shared_ptr<metapb::Store> meta,
+               std::shared_ptr<Config> cfg,
+               std::shared_ptr<Engines> engines,
+               std::shared_ptr<Transport> trans);
 
     bool StartWorkers(std::vector<Peer> peers);
 
