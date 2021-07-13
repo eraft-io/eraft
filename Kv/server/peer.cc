@@ -13,8 +13,10 @@
 namespace kvserver
 {
 
-Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region, std::shared_ptr<metapb::Peer> meta)
+Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region)
 {
+    std::shared_ptr<metapb::Peer> meta;
+    // find peer
     assert(meta->id() == 0);
     std::string tag = "[region " + std::to_string(region->id()) + " ] " + std::to_string(meta->id());
     // TODO: sprintf to str

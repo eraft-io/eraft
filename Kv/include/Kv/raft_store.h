@@ -36,6 +36,13 @@ struct StoreState
 
 struct StoreMeta
 {
+    StoreMeta()
+    {
+        regions_ = std::map<uint64_t, metapb::Region*>{};
+        pendingVotes_ = std::vector<raft_serverpb::RaftMessage*>{};
+        regionRanges_ = std::map<std::string, uint64_t>{};
+    }
+
     std::mutex mutex_;
 
     // region end key -> region id
@@ -49,11 +56,24 @@ struct StoreMeta
 struct GlobalContext
 {
 
+    GlobalContext(std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engine, std::shared_ptr<metapb::Store> store,
+                  std::shared_ptr<StoreMeta> storeMeta, std::shared_ptr<Router> router, std::shared_ptr<Transport> trans) 
+    {
+        this->cfg_ = cfg;
+        this->engine_ = engine;
+        this->store_ = store;
+        this->storeMeta_ = storeMeta;
+        this->router_ = router;
+        this->trans_ = trans;
+    }
+
     std::shared_ptr<Config> cfg_;
 
     std::shared_ptr<Engines> engine_;
 
-    StoreMeta* storeMeta_;
+    std::shared_ptr<metapb::Store> store_;
+
+    std::shared_ptr<StoreMeta> storeMeta_;
 
     std::shared_ptr<Router> router_;
 

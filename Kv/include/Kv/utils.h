@@ -57,6 +57,11 @@ static std::string VecToString(std::vector<uint8_t> in)
     return std::string(in.begin(), in.end());
 }
 
+static std::vector<uint8_t> StringToVec(std::string in)
+{
+    return std::vector<uint8_t>(in.begin(), in.end());
+}
+
 static void WriteU8(std::vector< uint8_t >& packet, uint8_t v) 
 {
     packet.push_back(v);
@@ -93,13 +98,6 @@ static void WriteU64(std::vector< uint8_t >& packet, uint64_t v)
     packet.push_back(static_cast< uint8_t >(v >> 40));     
     packet.push_back(static_cast< uint8_t >(v >> 48));     
     packet.push_back(static_cast< uint8_t >(v >> 56));
-}
-
-static uint64_t MockSchAllocID()
-{
-    static uint64_t gCounter = 0;
-    gCounter++;
-    return gCounter;
 }
 
 static uint8_t ReadU8(std::vector< uint8_t>::iterator& it) 
@@ -267,19 +265,22 @@ static bool IsRaftStateKey(std::vector<uint8_t> key)
     return (key.size() == 11 && key[0] == kLocalPrefix[0] && key[1] == kRegionRaftPrefix[0]);
 }
 
-static std::pair<uint64_t, std::vector<uint8_t>> DecodeRegionMetaKey(std::vector<uint8_t> key)
+static void DecodeRegionMetaKey(std::vector<uint8_t> key, uint64_t* regionID, uint8_t* suffix)
 {
     if((RegionMetaMinKey.size() + 8 + 1) != (key.size()))
     {
         // TODO: log invalid region meta key length for key
-        return std::pair<uint64_t, std::vector<uint8_t>>(0, std::vector<uint8_t>{});
+        *regionID = 0; *suffix = 0;
+        return;
     }
     if( !((key[0] == RegionMetaMinKey[0]) && (key[1] == RegionMetaMinKey[1])) ) {
         // TODO: invalid region meta key prefix for key
-        return std::pair<uint64_t, std::vector<uint8_t>>(0, std::vector<uint8_t>{});
+        *regionID = 0; *suffix = 0;
+        return;
     }
     std::vector<uint8_t>::iterator it = key.begin() + RegionMetaMinKey.size();
-    uint64_t regionID = ReadU64(it);
+    *regionID = ReadU64(it);
+    *suffix = key[key.size()-1];
 }
 
 static std::vector<uint8_t> RegionMetaPrefixKey(uint64_t regionID)

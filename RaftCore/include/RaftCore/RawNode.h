@@ -38,9 +38,9 @@ public:
     
     eraftpb::HardState hardSt;
 
-    DReady();
+    DReady() {}
 
-    ~DReady();
+    ~DReady() {}
 
 
     // Entries specifies entries to be saved to stable storage BEFORE

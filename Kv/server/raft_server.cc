@@ -1,5 +1,6 @@
 #include <Kv/raft_server.h>
 #include <Kv/engines.h>
+#include <Kv/utils.h>
 
 #include <cassert>
 
@@ -114,7 +115,6 @@ bool RaftStorage::Start()
 
     // raft system init
     this->raftSystem_ = std::make_shared<RaftStore>(this->conf_);
-
     // router init
     this->raftRouter_ =  this->raftSystem_->raftRouter_;
 

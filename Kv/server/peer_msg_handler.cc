@@ -1,5 +1,7 @@
 #include <Kv/peer_msg_handler.h>
 #include <Kv/utils.h>
+#include <RaftCore/RawNode.h>
+
 #include <cassert>
 
 namespace kvserver

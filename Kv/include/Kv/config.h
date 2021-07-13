@@ -108,6 +108,23 @@ struct Config
     {
     }
 
+    bool Validate()
+    {
+        if(this->raftHeartbeatTicks_ == 0)
+        {
+            return false;
+        }
+        if(this->raftElectionTimeoutTicks_ != 10)
+        {
+            //TODO: log warn
+        }
+        if(this->raftElectionTimeoutTicks_ <= this->raftHeartbeatTicks_)
+        {
+            // election tick must be greater than heartbeat tick
+            return false;
+        }
+    }
+
 };
 
 

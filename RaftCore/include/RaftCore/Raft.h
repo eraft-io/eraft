@@ -47,7 +47,10 @@ public:
 
     NodeState raftState;
 
-    bool Equal(std::shared_ptr<ESoftState> b);
+    bool Equal(std::shared_ptr<ESoftState> b) 
+    {
+        return this->lead = b->lead && this->raftState == b->raftState;
+    }
 };
 
 class StateMachine 
