@@ -12,6 +12,8 @@
 #include <cassert>
 #include <eraftio/raft_serverpb.pb.h>
 
+#include <Kv/engines.h>
+
 namespace kvserver
 {
 

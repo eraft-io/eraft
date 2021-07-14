@@ -17,7 +17,7 @@ RaftStore::~RaftStore()
 }
 
 // load peers in this store. It scans the db engine, loads all regions and their peers from it
-std::vector<Peer> RaftStore::LoadPeers()
+std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
 {
     auto startKey = RegionMetaMinKey;
     auto endKey = RegionMetaMaxKey;
@@ -26,7 +26,7 @@ std::vector<Peer> RaftStore::LoadPeers()
     auto storeID = ctx->store_->id();
 
     uint64_t totalCount, tombStoneCount;
-    std::vector<Peer> regionPeers;
+    std::vector<std::shared_ptr<Peer> > regionPeers;
 
     std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
     std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
@@ -59,11 +59,11 @@ std::vector<Peer> RaftStore::LoadPeers()
 
         std::shared_ptr<Peer> peer = std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_, std::make_shared<metapb::Region>(region));
 
-        // store to storeMeta
-        // ctx->storeMeta_->regionRanges_.insert();
+        // TODO: store region range to storeMeta
+        // ctx->storeMeta_->regionRanges_(region);
         ctx->storeMeta_->regions_[regionID] = &region;
 
-        regionPeers.push_back(*peer);
+        regionPeers.push_back(peer);
     }
 
     ctx_->engine_->kvDB_->Write(rocksdb::WriteOptions(),& *kvWB);
@@ -91,12 +91,21 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
     this->ctx_ = std::make_shared<GlobalContext>(cfg, engines, meta, storeMeta, this->router_, trans);
 
     // register peer
+    auto regionPeers = this->LoadPeers();
 
+    for(auto peer : regionPeers)
+    {
+        this->router_->Register(peer);
+    }
+
+    this->StartWorkers(regionPeers);
+
+    return true;
 }
 
-bool RaftStore::StartWorkers(std::vector<Peer> peers)
+bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers)
 {
-
+    
 }
 
 void RaftStore::ShutDown()

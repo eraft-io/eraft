@@ -95,7 +95,7 @@ public:
 
     ~RaftStore();
 
-    std::vector<Peer> LoadPeers();
+    std::vector<std::shared_ptr<Peer> > LoadPeers();
 
     void ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, 
                         std::shared_ptr<rocksdb::WriteBatch> raftWB, 
@@ -106,7 +106,7 @@ public:
                std::shared_ptr<Engines> engines,
                std::shared_ptr<Transport> trans);
 
-    bool StartWorkers(std::vector<Peer> peers);
+    bool StartWorkers(std::vector<std::shared_ptr<Peer> > peers);
 
     void ShutDown();
 
