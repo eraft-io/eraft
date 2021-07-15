@@ -77,7 +77,24 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
                                std::shared_ptr<rocksdb::WriteBatch> raftWB, 
                                std::shared_ptr<raft_serverpb::RegionLocalState> originState)
 {
-
+    auto region = originState->region();
+    auto stateRes = GetRaftLocalState(this->ctx_->engine_->raftDB_, region.id());
+    auto status = stateRes.second;
+    auto raftState = stateRes.first;
+    if(!status.ok())
+    {
+        // it has be cleaned up
+        return;
+    }
+    if(!DoClearMeta(this->ctx_->engine_, kvWB, raftWB, region.id(), raftState->last_index()))
+    {
+        return;
+    }
+    if(!SetMeta(kvWB, VecToString(RegionStateKey(region.id())), *originState))
+    {
+        // TODO log error
+        return;
+    }
 }
 
 bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,

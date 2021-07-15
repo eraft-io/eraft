@@ -21,7 +21,7 @@ set(Headers
     include/Kv/raft_store.h
     include/Kv/raft_worker.h
     include/Kv/router.h
-    include/Kv/server_impl.h
+    include/Kv/server.h
     include/Kv/server_transport.h
     include/Kv/storage.h
     include/Kv/store_worker.h
@@ -42,7 +42,7 @@ set(Sources
     server/raft_store.cc
     server/raft_worker.cc
     server/router.cc
-    server/server_impl.cc
+    server/server.cc
     server/store_worker.cc
     server/server_transport.cc
 )

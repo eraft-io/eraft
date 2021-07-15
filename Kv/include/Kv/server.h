@@ -19,7 +19,7 @@ namespace kvserver
 
 const std::string DEFAULT_ADDR = "127.0.0.1:12306";
 
-class Server
+class Server : public TinyKv::Service
 {
 
 public:
@@ -31,17 +31,6 @@ public:
     bool RunLogic();
 
     ~Server();
-
-private:
-
-    std::string serverAddress_;
-
-};
-
-
-class ServerServiceImpl : public TinyKv::Service {
-
-public:
 
     Status Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) override;
 
@@ -55,9 +44,13 @@ public:
 
     Status Snapshot(ServerContext* context, const raft_serverpb::SnapshotChunk* request, Done* response) override;
 
+
 private:
 
-    // Storage* st_;
+    std::string serverAddress_;
+
+    Storage* st_;
+
 };
 
     

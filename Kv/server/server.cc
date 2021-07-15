@@ -1,4 +1,4 @@
-#include <Kv/server_impl.h>
+#include <Kv/server.h>
 
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
@@ -15,35 +15,33 @@ Server::Server(std::string addr) {
     this->serverAddress_ = addr;
 }
 
-Status ServerServiceImpl::Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) {
+Status Server::Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) {
     std::cout << "start_key: " << request->start_key() << std::endl;
-    
     return Status::OK;
 }
 
-Status ServerServiceImpl::RawGet(ServerContext* context, const kvrpcpb::RawGetRequest* request, kvrpcpb::RawGetResponse* response) {
+Status Server::RawGet(ServerContext* context, const kvrpcpb::RawGetRequest* request, kvrpcpb::RawGetResponse* response) {
     
 }
 
-Status ServerServiceImpl::RawPut(ServerContext* context, const kvrpcpb::RawPutRequest* request, kvrpcpb::RawPutResponse* response) {
+Status Server::RawPut(ServerContext* context, const kvrpcpb::RawPutRequest* request, kvrpcpb::RawPutResponse* response) {
 
 }
 
-Status ServerServiceImpl::RawDelete(ServerContext* context, const kvrpcpb::RawDeleteRequest* request, kvrpcpb::RawDeleteResponse* response) {
+Status Server::RawDelete(ServerContext* context, const kvrpcpb::RawDeleteRequest* request, kvrpcpb::RawDeleteResponse* response) {
 
 }
 
-Status ServerServiceImpl::RawScan(ServerContext* context, const kvrpcpb::RawScanRequest* request, kvrpcpb::RawScanResponse* response) {
+Status Server::RawScan(ServerContext* context, const kvrpcpb::RawScanRequest* request, kvrpcpb::RawScanResponse* response) {
 
 }
 
-Status ServerServiceImpl::Snapshot(ServerContext* context, const raft_serverpb::SnapshotChunk* request, Done* response) {
+Status Server::Snapshot(ServerContext* context, const raft_serverpb::SnapshotChunk* request, Done* response) {
 
 }
 
 bool Server::RunLogic() {
-
-    ServerServiceImpl service;
+    Server service;
     grpc::EnableDefaultHealthCheckService(true);
 
     grpc::ServerBuilder builder;

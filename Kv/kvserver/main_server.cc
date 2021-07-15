@@ -3,7 +3,7 @@
 // This module impl kv main class.
 // 
 
-#include <Kv/server_impl.h>
+#include <Kv/server.h>
 #include <Kv/config.h>
 #include <Kv/raft_store.h>
 #include <Kv/raft_server.h>
