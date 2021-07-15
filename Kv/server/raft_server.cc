@@ -1,6 +1,5 @@
 #include <Kv/raft_server.h>
 #include <Kv/engines.h>
-#include <Kv/utils.h>
 
 #include <cassert>
 

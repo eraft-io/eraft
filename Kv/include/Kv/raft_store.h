@@ -31,7 +31,7 @@ struct StoreState
 {
     uint64_t id_;
 
-    std::vector<Msg> receiver_;
+    std::deque<Msg> receiver_;
 };
 
 struct StoreMeta

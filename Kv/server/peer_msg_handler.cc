@@ -178,7 +178,7 @@ void PeerMsgHandler::ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::Raft
 
 }
 
-static size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id)
+size_t PeerMsgHandler::SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id)
 {
     size_t i = 0;
     for(auto peer: region->peers())
@@ -204,7 +204,7 @@ void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChang
     {
     case eraftpb::ConfChangeType::AddNode:
         {
-            auto n = SearchRegionPeer(region, cc->node_id());
+            auto n = this->SearchRegionPeer(region, cc->node_id());
             if (n == region->peers().size())
             {
                 auto p = msg.admin_request().change_peer().peer();
@@ -232,7 +232,7 @@ void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChang
                 this->DestoryPeer();
                 return;
             }
-            size_t n = SearchRegionPeer(region, cc->node_id());
+            size_t n = this->SearchRegionPeer(region, cc->node_id());
             if (n < region->peers().size())
             {
                 // erase no n peer
@@ -382,7 +382,7 @@ void PeerMsgHandler::HandleMsg(Msg m)
     }
 }
 
-static bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID)
+bool PeerMsgHandler::CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID)
 {
     auto peer = req->header().peer();
     if(peer.store_id() == storeID) {
@@ -394,7 +394,7 @@ static bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID)
 
 bool PeerMsgHandler::PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req)
 {
-    if(!CheckStoreID(req, this->peer_->meta_->store_id()))
+    if(!this->CheckStoreID(req, this->peer_->meta_->store_id()))
     {
         // check store id, make sure that msg is dispatched to the right place
         return false;
@@ -407,19 +407,41 @@ bool PeerMsgHandler::PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req)
         // log err not leader
         return false;
     }
-    if(!CheckPeerID(req, this->peer_->PeerId()))
+    if(!this->CheckPeerID(req, this->peer_->PeerId()))
     {
         // peer_id must be the same as peer's
         return false;
     }
-    if(!CheckTerm(req, this->peer_->Term()))
+    // check whether the term is stale.
+    if(!this->CheckTerm(req, this->peer_->Term()))
     {
         return false;
     }
     return true; // no err
 }
 
-bool CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region)
+bool PeerMsgHandler::CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID)
+{
+    auto peer = req->header().peer();
+    if(peer.id() == peerID)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool PeerMsgHandler::CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term)
+{
+    auto header = req->header();
+    if(header.term() == 0 || term <= header.term() + 1)   
+    {
+        return true;
+    }
+    return false;
+}
+
+
+bool PeerMsgHandler::CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region)
 {
     if(key.compare(region->start_key()) >= 0 && (region->end_key().size() == 0 || key.compare(region->end_key()) < 0))
     {
@@ -431,6 +453,8 @@ bool CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region)
         return false;
     }
 }
+
+
 
 
 void PeerMsgHandler::ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb)

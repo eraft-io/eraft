@@ -1,6 +1,8 @@
 #include <Kv/raft_worker.h>
 #include <Kv/peer_msg_handler.h>
 
+#include <thread>
+
 namespace kvserver
 {
     
@@ -9,6 +11,12 @@ RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Route
     this->raftCh_ = pm->peerSender_;
     this->ctx_ = ctx;
     this->pr_ = pm;
+}
+
+void RaftWorker::BootThread()
+{
+    std::thread th(&RaftWorker::Run, this);
+    th.detach();
 }
 
 void RaftWorker::Run() 

@@ -1,5 +1,6 @@
 #include <Kv/raft_store.h>
 #include <Kv/utils.h>
+#include <Kv/store_worker.h>
 
 namespace kvserver
 {
@@ -105,12 +106,27 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
 
 bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers)
 {
-    
+    auto ctx = this->ctx_;
+    auto router = this->router_;
+    auto state = this->state_;
+    auto rw = RaftWorker(ctx, router);
+    rw.BootThread();
+    auto sw = StoreWorker(ctx, state);
+    sw.BootThread();
+    Msg m(MsgType::MsgTypeStoreStart,& *ctx->store_);
+    router->SendStore(m);
+    for(uint64_t i = 0; i < peers.size(); i++)
+    {
+        auto regionID = peers[i]->regionId_;
+        Msg m(MsgType::MsgTypeStart, & *ctx->store_);
+        router->Send(regionID, m);
+    }
+    // run ticker
 }
 
 void RaftStore::ShutDown()
 {
-
+    
 }
 
 

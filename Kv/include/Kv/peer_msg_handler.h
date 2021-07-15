@@ -92,17 +92,17 @@ public:
 
     void OnGCSnap();  //  TODO:
 
-    static std::shared_ptr<std::string> GetRequestKey(raft_cmdpb::Request *req);
+    std::shared_ptr<std::string> GetRequestKey(raft_cmdpb::Request *req);
 
-    static size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id);
+    size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id);
 
-    static bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID);
+    bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID);
 
-    static bool CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term);
+    bool CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term);
 
-    static bool CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID);    
+    bool CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID);    
 
-    static bool CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region);
+    bool CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region);
 
 private:
 

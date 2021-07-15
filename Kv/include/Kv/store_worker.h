@@ -5,10 +5,12 @@
 #include <atomic>
 #include <mutex>
 #include <memory>
+#include <thread>
 
 #include <eraftio/raft_serverpb.pb.h>
 
 #include <Kv/msg.h>
+#include <Kv/raft_store.h>
 
 namespace kvserver
 {
@@ -20,9 +22,8 @@ class StoreWorker
 
 public:
 
-    StoreWorker(/* args */);
+    StoreWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<StoreState> state);
     ~StoreWorker();
-
 
     bool IsAlive() const { return running_; }
     
@@ -30,15 +31,17 @@ public:
     
     void Run();
 
-    void OnTick(StoreTick tick);
+    void BootThread();
+
+    void OnTick(StoreTick* tick);
 
     void HandleMsg(Msg msg);
 
-    void Start(std::shared_ptr<metapb::Store> store);
+    void Start(metapb::Store* store);
 
     bool CheckMsg(std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
-    bool OnRaftMessage(std::shared_ptr<raft_serverpb::RaftMessage> msg);
+    bool OnRaftMessage(raft_serverpb::RaftMessage* msg);
 
     bool MaybeCreatePeer(uint64_t regionID, std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
@@ -57,9 +60,12 @@ private:
 
     uint64_t id_;
 
-    std::atomic<bool> running_;
+    bool running_;
 
-    std::mutex mutex_;
+    // StoreState
+    std::shared_ptr<StoreState> storeState_;
+
+    std::shared_ptr<GlobalContext> ctx_;
 };
 
 
