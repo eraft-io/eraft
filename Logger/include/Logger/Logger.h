@@ -1,100 +1,56 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef _LOGGER_H_
+#define _LOGGER_H_
 
-#include <string>
-#include <set>
-#include <memory>
-#include <chrono>
-
-enum LogLevel
-{
-    logINFO     = 0x01 << 0,
-    logDEBUG    = 0x01 << 1,
-    logWARN     = 0x01 << 2,
-    logERROR    = 0x01 << 3,
-    logUSR      = 0x01 << 4,
-    logALL      = 0xFFFFFFFF,
-};
-
-enum LogDest
-{
-    logConsole  = 0x01 << 0,
-    logFILE     = 0x01 << 1,
-};
-
-unsigned int ConvertLogLevel(const std::string& level);
+#include <iostream>
+#include <fstream>
+#include <time.h>
 
 class Logger
 {
 public:
 
-    Logger(const Logger& ) = delete;
-    void operator= (const Logger& ) = delete;
+    enum log_level 
+    { 
+        debug, 
+        info, 
+        warning, 
+        error
+    };
 
-    bool Init(unsigned int level = logDEBUG,
-              unsigned int dest = logConsole,
-              const char* pDir  = 0);
+    enum log_target 
+    { 
+        file,
+        terminal,
+        file_and_terminal
+    };
+
+public:
+    Logger();
+    Logger(log_target target, log_level level, const std::string& path);
+    ~Logger();
     
-    void Flush(LogLevel  level);
-    bool IsLevelForbid(unsigned int level)  {  return  !(level & level_); };
+    void DEBUG(const std::string& text);
+    void INFO(const std::string& text);
+    void WARNING(const std::string& text);
+    void ERRORS(const std::string& text);
 
-    Logger&  operator<<(const char* msg);
-    Logger&  operator<<(const unsigned char* msg);
-    Logger&  operator<<(const std::string& msg);
-    Logger&  operator<<(void* );
-    Logger&  operator<<(unsigned char a);
-    Logger&  operator<<(char a);
-    Logger&  operator<<(unsigned short a);
-    Logger&  operator<<(short a);
-    Logger&  operator<<(unsigned int a);
-    Logger&  operator<<(int a);
-    Logger&  operator<<(unsigned long a);
-    Logger&  operator<<(long a);
-    Logger&  operator<<(unsigned long long a);
-    Logger&  operator<<(long long a);
-    Logger&  operator<<(double a);
-
-    Logger& SetCurLevel(unsigned int level)
+    static Logger* GetInstance()
     {
-        curLevel_ = level;
-        return *this;
+        if(instance_ == nullptr)
+        {
+            instance_ = new Logger(Logger::terminal, Logger::debug, "Log.log");
+        }
+        return instance_;
     }
 
-    bool   Update();
+private:
+    static Logger* instance_;
 
-    const std::string& MakeFileName();
-    Logger();
-   ~Logger();
-
-
-    static const size_t MAXLINE_LOG = 2048; // TODO
-    char            tmpBuffer_[MAXLINE_LOG];
-    std::size_t     pos_;
-
-    std::time_t t_;
-    
-    unsigned int    level_;
-    std::string     directory_;
-    unsigned int    dest_;
-    std::string     fileName_;
-
-    unsigned int    curLevel_;
-    
-    // for optimization
-    uint64_t        lastLogSecond_;
-    uint64_t        lastLogMSecond_;
-    
-    std::size_t     Log(const char* data, std::size_t len);
-
-    bool    CheckChangeFile();
-    bool    OpenLogFile(const char* name);
-    void    CloseLogFile();
-    void    WriteLog(int level, std::size_t nLen, const char* data);
-    void    Color(unsigned int color);
-    void    Reset();
+    std::ofstream m_outfile;    // 将日志输出到文件的流对象
+    log_target m_target;        // 日志输出目标
+    std::string m_path;              // 日志文件路径
+    log_level m_level;          // 日志等级
+    void output(const std::string &text, log_level act_level);            // 输出行为
 };
 
-
-
-
-#endif
+#endif//_LOGGER_H_

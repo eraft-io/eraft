@@ -1,5 +1,7 @@
 #include <Kv/raft_server.h>
 #include <Kv/engines.h>
+#include <Kv/utils.h>
+#include <Logger/Logger.h>
 
 #include <cassert>
 
@@ -14,7 +16,7 @@ RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
 
 RaftStorage::~RaftStorage()
 {
-
+    delete regionReader_;
 }
 
 bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
@@ -22,7 +24,7 @@ bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
 
 }
 
-bool RaftStorage::Write(kvrpcpb::Context* ctx, std::vector<Modify> batch) 
+bool RaftStorage::Write(const kvrpcpb::Context& ctx, std::vector<Modify> batch) 
 {
     std::vector<raft_cmdpb::Request> reqs;
 
@@ -35,9 +37,9 @@ bool RaftStorage::Write(kvrpcpb::Context* ctx, std::vector<Modify> batch)
             raft_cmdpb::Request req;
             req.set_cmd_type(raft_cmdpb::CmdType::Put);
             raft_cmdpb::PutRequest putReq;
-            putReq.set_cf(pt->cf);
-            putReq.set_key(pt->key);
-            putReq.set_value(pt->value);
+            putReq.set_cf(pt->cf_);
+            putReq.set_key(pt->key_);
+            putReq.set_value(pt->value_);
             req.set_allocated_put(&putReq);
             reqs.push_back(req);
             break;
@@ -61,10 +63,17 @@ bool RaftStorage::Write(kvrpcpb::Context* ctx, std::vector<Modify> batch)
     }
 
     raft_cmdpb::RaftRequestHeader rqh;
-    rqh.set_region_id(ctx->region_id());
-    rqh.set_allocated_peer(ctx->mutable_peer());
-    rqh.set_allocated_region_epoch(ctx->mutable_region_epoch());
-    rqh.set_term(ctx->term());
+    rqh.set_region_id(ctx.region_id());
+    
+    auto peer = new metapb::Peer(ctx.peer());
+    rqh.set_allocated_peer(peer);
+    auto regionEpoch = new metapb::RegionEpoch(ctx.region_epoch());
+    rqh.set_allocated_region_epoch(regionEpoch);
+
+    rqh.set_term(ctx.term());
+
+    delete peer;
+    delete regionEpoch;
 
     raft_cmdpb::RaftCmdRequest request;
     for(auto r: reqs) {
@@ -79,13 +88,18 @@ bool RaftStorage::Write(kvrpcpb::Context* ctx, std::vector<Modify> batch)
     this->raftRouter_->SendRaftCommand(&request, cb);
 }
 
-StorageReader* RaftStorage::Reader(kvrpcpb::Context* ctx)
+StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx)
 {
     raft_cmdpb::RaftRequestHeader rqh;
-    rqh.set_region_id(ctx->region_id());
-    rqh.set_allocated_peer(ctx->mutable_peer());
-    rqh.set_allocated_region_epoch(ctx->mutable_region_epoch());
-    rqh.set_term(ctx->term());
+    rqh.set_region_id(ctx.region_id());
+    auto peer = new metapb::Peer(ctx.peer());
+    rqh.set_allocated_peer(peer);
+    auto regionEpoch = new metapb::RegionEpoch(ctx.region_epoch());
+    rqh.set_allocated_region_epoch(regionEpoch);
+    rqh.set_term(ctx.term());
+
+    delete peer;
+    delete regionEpoch;
 
     raft_cmdpb::RaftCmdRequest request;
     raft_cmdpb::Request req;
@@ -96,9 +110,14 @@ StorageReader* RaftStorage::Reader(kvrpcpb::Context* ctx)
     Callback* cb;
     
     this->raftRouter_->SendRaftCommand(&request, cb);
-}
+    auto resp = cb->WaitResp();
 
-bool RaftStorage::Raft(raft_serverpb::RaftMessage* msg)
+    RegionReader* regionReader = new RegionReader(this->engs_, resp->responses()[0].snap().region());
+    this->regionReader_ = regionReader;
+    return regionReader;
+}
+ 
+bool RaftStorage::Raft(const raft_serverpb::RaftMessage* msg)
 {
     this->raftRouter_->SendRaftMessage(msg);
 }
@@ -125,13 +144,41 @@ bool RaftStorage::Start()
 
     this->node_ = std::make_shared<Node>(this->raftSystem_, this->conf_);
 
-    assert(this->node_->Start(this->engs_, trans));    
+    auto isStart = this->node_->Start(this->engs_, trans);
+
+    Logger::GetInstance()->INFO("logger is start: " + std::to_string(isStart));
 
 }
 
 bool RaftStorage::Stop()
 {
     // stop worker
+}
+
+RegionReader::RegionReader(std::shared_ptr<Engines> engs, metapb::Region region)
+{
+    this->engs_ = engs;
+    this->region_ = region;
+}
+
+RegionReader::~RegionReader()
+{
+
+}
+
+std::string RegionReader::GetFromCF(std::string cf, std::string key)
+{
+    return GetCF(this->engs_->kvDB_, cf, key);
+}
+
+rocksdb::Iterator* RegionReader::IterCF(std::string cf)
+{
+    return NewCFIterator(this->engs_->kvDB_, cf);
+}
+
+void RegionReader::Close()
+{
+
 }
 
 } // namespace kvserver

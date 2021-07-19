@@ -43,14 +43,14 @@ void Router::SendStore(Msg m)
     this->storeSender_.push_front(m);
 }
 
-bool RaftstoreRouter::Send(uint64_t regionID, Msg m)
+bool RaftstoreRouter::Send(uint64_t regionID, const Msg m)
 {
     this->router_->Send(regionID, m);
 }
 
-bool RaftstoreRouter::SendRaftMessage(raft_serverpb::RaftMessage* msg)
+bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg)
 {
-    Msg m(MsgType::MsgTypeRaftMessage, msg->region_id(), msg);
+    Msg m(MsgType::MsgTypeRaftMessage, msg->region_id(), const_cast<raft_serverpb::RaftMessage*>(msg));
     this->router_->Send(msg->region_id(), m);
 }
 

@@ -428,7 +428,7 @@ static bool DeleteRange(std::shared_ptr<rocksdb::DB> db, std::string startKey, s
     return db->Write(rocksdb::WriteOptions(), & *batch).ok();
 }
 
-static rocksdb::Iterator* NewCFIterator(std::shared_ptr<rocksdb::DB> db, std::string cf)
+static rocksdb::Iterator* NewCFIterator(rocksdb::DB* db, std::string cf)
 {
     rocksdb::ReadOptions read_options;
     read_options.auto_prefix_mode = true;

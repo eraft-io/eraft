@@ -17,6 +17,29 @@
 
 namespace kvserver
 {
+
+class RegionReader : public StorageReader
+{
+public:
+
+    RegionReader(std::shared_ptr<Engines> engs, metapb::Region region);
+
+    ~RegionReader();
+
+    std::string GetFromCF(std::string cf, std::string key);
+
+    rocksdb::Iterator* IterCF(std::string cf);
+
+    void Close();
+
+private:
+
+    std::shared_ptr<Engines> engs_;
+
+    metapb::Region region_;
+
+};
+
     
 class RaftStorage : public Storage
 {
@@ -29,11 +52,11 @@ public:
 
     bool CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount);
 
-    bool Write(kvrpcpb::Context* ctx, std::vector<Modify> batch);
+    bool Write(const kvrpcpb::Context& ctx, std::vector<Modify> batch);
 
-    StorageReader* Reader(kvrpcpb::Context* ctx); 
+    StorageReader* Reader(const kvrpcpb::Context& ctx); 
 
-    bool Raft(raft_serverpb::RaftMessage* msg);
+    bool Raft(const raft_serverpb::RaftMessage* msg);
 
     bool SnapShot(raft_serverpb::RaftSnapshotData* snap);
 
@@ -53,7 +76,9 @@ private:
 
     std::shared_ptr<RaftStore> raftSystem_;
     
+    RegionReader* regionReader_;
 };
+
 
 
 } // namespace kvserver

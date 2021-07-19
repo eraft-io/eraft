@@ -22,13 +22,26 @@ enum class OpType
 
 struct Put
 {
-    std::string key;
-    std::string value;
-    std::string cf;
+    Put(std::string key, std::string value, std::string cf)
+    {
+        this->key_ = key;
+        this->value_ = value;
+        this->cf_ = cf;
+    }
+
+    std::string key_;
+    std::string value_;
+    std::string cf_;
 };
 
 struct Delete
 {
+    Delete(std::string key, std::string cf)
+    {
+        this->key = key;
+        this->cf = cf;
+    }
+
     std::string key;
     std::string cf;
 };
@@ -46,7 +59,7 @@ struct Modify
         case OpType::Put:
             {
                 struct Put* pt = (struct Put*)this->data_;
-                return pt->key;
+                return pt->key_;
             }
         case OpType::Delete:
             {
@@ -62,7 +75,7 @@ struct Modify
     std::string Value() {
         if(ot_ == OpType::Put) {
             struct Put* pt = (struct Put*)this->data_;
-            return pt->value;
+            return pt->value_;
         }
         return "";
     }
@@ -73,7 +86,7 @@ struct Modify
         case OpType::Put:
             {
                 struct Put* pt = (struct Put*)this->data_;
-                return pt->cf;
+                return pt->cf_;
             }
         case OpType::Delete:
             {
@@ -95,11 +108,11 @@ class StorageReader
 {
 public:
     
-    virtual  ~StorageReader();
+    virtual ~StorageReader() {};
 
-    virtual std::vector<uint8_t> GetCF(std::string cf, std::vector<uint8_t> key) = 0;
+    virtual std::string GetFromCF(std::string cf, std::string key) = 0;
 
-    virtual rocksdb::Iterator* IterCF(std::uint8_t cf) = 0;
+    virtual rocksdb::Iterator* IterCF(std::string cf) = 0;
 
     virtual void Close() = 0;
 };
@@ -112,9 +125,9 @@ public:
 
     virtual bool Start() = 0;
 
-    virtual bool Write(kvrpcpb::Context *ctx, std::vector<Modify>) = 0;
+    virtual bool Write(const kvrpcpb::Context& ctx, std::vector<Modify>) = 0;
 
-    virtual StorageReader* Reader(kvrpcpb::Context *ctx) = 0; // TODO: return something
+    virtual StorageReader* Reader(const kvrpcpb::Context& ctx) = 0; // TODO: return something
 
 };
 

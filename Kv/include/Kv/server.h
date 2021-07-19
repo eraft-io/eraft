@@ -26,7 +26,7 @@ public:
 
     Server();
 
-    Server(std::string addr);
+    Server(std::string addr, Storage* st);
 
     bool RunLogic();
 

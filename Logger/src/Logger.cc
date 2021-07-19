@@ -1,236 +1,94 @@
-#include <iostream>
+#include <Logger/Logger.h>
+#include <string>
 
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <cstdarg>
-#include <errno.h>
-#include <sys/stat.h>
+Logger* Logger::instance_ = nullptr;
 
-#include "Logger/Logger.h"
-
-static const size_t DEFAULT_LOGFILESIZE = 32 * 1024 * 1024;
-static const size_t PREFIX_LEVEL_LEN    = 6;
-static const size_t PREFIX_TIME_LEN     = 24;
-
-unsigned int ConvertLogLevel(const std::string& level)
+std::string currTime()
 {
-    unsigned int l = logALL;
-    
-    if (level == "debug")
-    {
-        ;
-    }
-    else if (level == "verbose")
-    {
-        l &= ~logDEBUG;
-    }
-    else if (level == "notice")
-    {
-        l &= ~logDEBUG;
-        l &= ~logINFO;
-    }
-    else if (level == "warning")
-    {
-        l &= ~logDEBUG;
-        l &= ~logINFO;
-        l &= ~logWARN; // redis warning is my error
-    }
-    else if (level == "none")
-    {
-        l = 0;
-    }
-    
-    return l;
+    // 获取当前时间，并规范表示
+    char tmp[64];
+    time_t ptime;
+    time(&ptime);  // time_t time (time_t* timer);
+    strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S", localtime(&ptime));
+    return tmp;
 }
 
-static bool MakeDir(const char* pDir)
+Logger::Logger()
 {
-    if (mkdir(pDir, 0755) != 0)
-    {
-        if (EEXIST != errno)
-            return false;
-    }
-    
-    return true;
+    // 默认构造函数
+    m_target = terminal;
+    m_level = debug;
+    std::cout << /*"[WELCOME] " << __FILE__ << " " <<*/ currTime() << " : " << "=== Start logging ===" << std::endl;
 }
 
-thread_local Logger*  g_log = nullptr;
-thread_local unsigned g_logLevel;
-thread_local unsigned g_logDest;
-
-Logger::Logger() : level_(0),
-                   dest_(0)
+Logger::Logger(log_target target, log_level level, const std::string& path)
 {
-    lastLogMSecond_ = lastLogSecond_ = -1;
+    m_target = target;
+    m_path = path;
+    m_level = level;
+
+    std::string strContent =   currTime() + " : " + "=== Start logging ===\n";
+    if (target != terminal) {
+        m_outfile.open(path, std::ios::out | std::ios::app);   // 打开输出文件
+        m_outfile << strContent;
+    }
+    if (target != file) 
+    {
+        // 如果日志对象不是仅文件
+        std::cout << strContent;
+    }
 }
 
 Logger::~Logger()
 {
-
-}
-
-bool Logger::Init(unsigned int level, unsigned int dest, const char* pDir)
-{
-    level_ = level;
-    dest_ = dest;
-    directory_ = pDir ? pDir : ".";
-
-    if (0 == level_) 
+    std::string  strContent =  currTime() + " : " + "=== End logging ===\r\n";
+    if (m_outfile.is_open())
     {
-        return true;
+        m_outfile << strContent;
     }
+    m_outfile.flush();
+    m_outfile.close();
+    delete instance_;
+}
 
-    if (!(dest_ & logConsole)) 
+void Logger::DEBUG(const std::string& text)
+{
+    output(text, debug);
+}
+
+void Logger::INFO(const std::string& text)
+{
+    output(text, info);
+}
+
+void Logger::WARNING(const std::string& text)
+{
+    output(text, warning);
+}
+
+void Logger::ERRORS(const std::string& text)
+{
+    output(text, error);
+}
+
+void Logger::output(const std::string &text, log_level act_level)
+{
+    std::string prefix;
+    if (act_level == debug) prefix = "[DEBUG] ";
+    else if (act_level == info) prefix = "[INFO] ";
+    else if (act_level == warning) prefix = "[WARNING] ";
+    else if (act_level == error) prefix = "[ERROR] ";
+    //else prefix = "";
+    //prefix += __FILE__;
+    //prefix += " ";
+    std::string outputContent = prefix + currTime() + " : " + text + "\n";
+    if (m_level <= act_level && m_target != file) 
     {
-        std::cerr << "log has no output, but loglevel is " << level << std::endl;
-        return false;
+        // 当前等级设定的等级才会显示在终端，且不能是只文件模式
+        std::cout << outputContent;
     }
+    if (m_target != terminal)
+        m_outfile << outputContent;
 
-    return true;
-}
-
-bool Logger::CheckChangeFile()
-{
-    return false;
-}
-
-const std::string& Logger::MakeFileName()
-{
-    char buf[50]={0};
-
-    std::time_t rawtime=std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    struct std::tm timeinfo;
-
-    ::localtime_r(&rawtime,&timeinfo);
-    ::strftime(buf, 50 , "%F.%T", &timeinfo);
-
-    fileName_ = directory_ + "/" + std::string(buf);
-    fileName_ += ".log";
-
-    return fileName_;
-}
-    
-bool Logger::OpenLogFile(const char* name)
-{
-    return false;
-}
-
-void Logger::CloseLogFile()
-{
-
-}
-
-void Logger::Flush(LogLevel  level)
-{
-
-}
-
-void Logger::Color(unsigned int color)
-{
-
-}
-
-Logger&  Logger::operator<<(const char* msg)
-{
-    return *this;
-}
-
-Logger&  Logger::operator<<(const unsigned char* msg)
-{
-    return *this;
-}
-
-Logger&  Logger::operator<<(const std::string& msg)
-{
-    return *this;
-}
-
-
-Logger& Logger::operator<<(void* )
-{
-    return *this;
-
-}
-
-Logger&  Logger::operator<<(unsigned char a)
-{
-    return *this;
-
-}
-
-Logger&  Logger::operator<<(char a)
-{
-    return *this;
-
-}
-
-Logger&  Logger::operator<<(unsigned short a)
-{
-    return *this;
-
-}
-
-
-Logger&  Logger::operator<<(short a)
-{
-    return *this;
-
-}
-
-Logger&  Logger::operator<<(unsigned int a)
-{
-    return *this;
-
-}
-
-Logger&  Logger::operator<<(int a)
-{
-    return *this;
-}
-
-Logger&  Logger::operator<<(unsigned long a)
-{
-    return *this;
-}
-
-Logger&  Logger::operator<<(long a)
-{
-    return *this;
-
-}
-
-Logger&  Logger::operator<<(unsigned long long a)
-{
-    return *this;
-}
-
-Logger&  Logger::operator<<(long long a)
-{
-    return *this;
-}
-
-Logger&  Logger::operator<<(double a)
-{
-    return *this;
-}
-
-bool Logger::Update()
-{
-    return false;
-}
-
-void Logger::Reset()
-{
-
-}
-
-size_t Logger::Log(const char* data, size_t dataLen)
-{
-    return 0;
-}
-
-void Logger::WriteLog(int level, size_t nLen, const char* data)
-{
-
+    m_outfile.flush();//刷新缓冲区
 }

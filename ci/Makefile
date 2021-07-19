@@ -12,7 +12,7 @@ build-dev:
 	docker run --rm -v $(realpath ..):/eraft cxspace/ti-redis-dev:v0.0.1 /eraft/ci/build-test.sh;
 
 run:
-	docker run -it --rm -v $(realpath ..):/eraft cxspace/ti-redis-dev:v0.0.1 /bin/bash
+	docker run -it --rm -v $(realpath ..):/eraft cxspace/ti-redis-dev:v0.0.1 /eraft/ci/run-server.sh
 
 # clean:
 # 	docker rm $(docker ps -aq)
