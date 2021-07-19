@@ -2,11 +2,14 @@
 #include <Kv/utils.h>
 #include <Kv/store_worker.h>
 
+#include <Logger/Logger.h>
+
 namespace kvserver
 {
     
 RaftStore::RaftStore(std::shared_ptr<Config> cfg)
 {
+    Logger::GetInstance()->INFO("raft store init.");
     std::deque<Msg> storeSender;
     this->router_ = std::make_shared<Router>(storeSender);
     this->raftRouter_ = std::make_shared<RaftstoreRouter>(router_);

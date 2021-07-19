@@ -144,10 +144,14 @@ bool RaftStorage::Start()
 
     this->node_ = std::make_shared<Node>(this->raftSystem_, this->conf_);
 
-    auto isStart = this->node_->Start(this->engs_, trans);
-
-    Logger::GetInstance()->INFO("logger is start: " + std::to_string(isStart));
-
+    if(this->node_->Start(this->engs_, trans))
+    {
+        Logger::GetInstance()->INFO("raft storage start succeed!");
+    } 
+    else 
+    {
+        Logger::GetInstance()->ERRORS("raft storage start error!");
+    }
 }
 
 bool RaftStorage::Stop()

@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
     // start raft store
     kvserver::RaftStorage* storage = new kvserver::RaftStorage(conf);
     storage->Start();
-    Logger::GetInstance()->INFO("test log");
 
     // start rpc service server
     kvserver::Server svr(conf->storeAddr_, storage);

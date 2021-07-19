@@ -3,6 +3,8 @@
 #include <eraftio/raft_serverpb.pb.h>
 #include <eraftio/metapb.pb.h>
 
+#include <Logger/Logger.h>
+
 namespace kvserver
 {
 
@@ -44,12 +46,12 @@ bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clu
     auto ident = raft_serverpb::StoreIdent();
     if(!IsRangeEmpty(engines->kvDB_, std::string(MinKey.begin(), MinKey.end()), std::string(MaxKey.begin(), MaxKey.end())))
     {
-        // log err: kv store is not empty
+        Logger::GetInstance()->ERRORS("kv db is not empty");
         return false;
     }
     if(!IsRangeEmpty(engines->raftDB_, std::string(MinKey.begin(), MinKey.end()), std::string(MaxKey.begin(), MaxKey.end())))
     {
-        // log err: raft store is not empty
+        Logger::GetInstance()->ERRORS("raft db is not empty");
         return false;
     }
     ident.set_cluster_id(clusterID);

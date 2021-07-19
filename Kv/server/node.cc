@@ -1,6 +1,7 @@
 #include <Kv/node.h>
 #include <Kv/utils.h>
 #include <Kv/bootstrap.h>
+#include <Logger/Logger.h>
 
 #include <eraftio/raft_serverpb.pb.h>
 
@@ -31,7 +32,8 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     uint64_t storeID;
     if(!this->CheckStore(*engines, &storeID))
     {
-        return false;
+        Logger::GetInstance()->ERRORS("store id: " + std::to_string(storeID) + " not found");
+        // return false;
     }
     if(storeID == kInvalidID)
     {
@@ -68,7 +70,6 @@ bool Node::CheckStore(Engines& engs, uint64_t* storeId)
     {
         // hey store ident meta key error
         *storeId = 0;
-        return false;
     }
     if(ident.cluster_id() != this->clusterID_)
     {
@@ -135,8 +136,10 @@ bool Node::BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<met
 bool Node::BootstrapStore(Engines& engs, uint64_t* storeId)
 {
     auto storeID = this->AllocID();
+    Logger::GetInstance()->INFO("boostrap store with storeID: " + std::to_string(storeID));
     if(!BootHelper::GetInstance()->DoBootstrapStore(std::make_shared<Engines>(engs), this->clusterID_, storeID))
     {
+        Logger::GetInstance()->ERRORS("do bootstrap store error");
         return false;
     }
     *storeId = storeID;

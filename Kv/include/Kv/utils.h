@@ -13,6 +13,7 @@
 #include <eraftio/raft_serverpb.pb.h>
 
 #include <Kv/engines.h>
+#include <Logger/Logger.h>
 
 namespace kvserver
 {
@@ -194,6 +195,7 @@ static bool PutMeta(rocksdb::DB* db, std::string key, google::protobuf::Message&
 {
     std::string val;
     msg.SerializeToString(&val);
+    Logger::GetInstance()->INFO("put key: " + key + " val: " + val + " to db");
     return (db->Put(rocksdb::WriteOptions(), key, val)).ok();
 }
 
