@@ -66,10 +66,10 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(st
     region->set_id(regionID);
     region->set_start_key("");
     region->set_end_key("");
-    metapb::RegionEpoch* epoch = new metapb::RegionEpoch();
-    epoch->set_version(kInitEpochVer);
-    epoch->set_conf_ver(kInitEpochConfVer);
-    region->set_allocated_region_epoch(epoch);
+    metapb::RegionEpoch epoch;
+    epoch.set_version(kInitEpochVer);
+    epoch.set_conf_ver(kInitEpochConfVer);
+    region->set_allocated_region_epoch(&epoch);
     auto addPeer = region->add_peers();
     addPeer->set_id(peerID);
     addPeer->set_store_id(storeID);
@@ -83,12 +83,13 @@ bool BootHelper::PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::s
     state.set_allocated_region(& *region);
     std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
     SetMeta(kvWB, std::string(PrepareBootstrapKey.begin(), PrepareBootstrapKey.end()), state);
-    SetMeta(kvWB, std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end()), state);
-    WriteInitialApplyState(kvWB, region->id());
-    engines->kvDB_->Write(rocksdb::WriteOptions(),& *kvWB);
-    std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
-    WriteInitialRaftState(raftWB, region->id());
-    engines->raftDB_->Write(rocksdb::WriteOptions(),& *raftWB);
+    auto stateKey = std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end());
+    SetMeta(kvWB, "test", state);
+    // WriteInitialApplyState(kvWB, region->id());
+    // engines->kvDB_->Write(rocksdb::WriteOptions(),& *kvWB);
+    // std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
+    // WriteInitialRaftState(raftWB, region->id());
+    // engines->raftDB_->Write(rocksdb::WriteOptions(),& *raftWB);
     return true;
 }
 

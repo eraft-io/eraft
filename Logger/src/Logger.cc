@@ -79,9 +79,9 @@ void Logger::output(const std::string &text, log_level act_level)
     else if (act_level == warning) prefix = "[WARNING] ";
     else if (act_level == error) prefix = "[ERROR] ";
     //else prefix = "";
-    //prefix += __FILE__;
+    // prefix += __FILE__;
     //prefix += " ";
-    std::string outputContent = prefix + currTime() + " : " + text + "\n";
+    std::string outputContent = prefix + " " + currTime() + " : " + text + "\n";
     if (m_level <= act_level && m_target != file) 
     {
         // 当前等级设定的等级才会显示在终端，且不能是只文件模式

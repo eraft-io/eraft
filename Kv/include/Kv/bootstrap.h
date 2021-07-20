@@ -16,19 +16,24 @@ class BootHelper
 
 protected:
 
+    // single instance
     static BootHelper* instance_;
 
+    // counter
     static uint64_t gCounter_;
 
 public:
 
+    // epoch version
     static const uint64_t kInitEpochVer = 1;
+    // epoch config version
     static const uint64_t kInitEpochConfVer = 1;
 
     BootHelper() {};
 
-    ~BootHelper() {delete instance_; };
+    ~BootHelper() {};
 
+    // is (startKey, endKey) empty in db
     static bool IsRangeEmpty(rocksdb::DB* db, std::string startKey, std::string endKey);
 
     static bool DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
@@ -48,6 +53,7 @@ public:
 
     static bool ClearPrepareBoostrapState(std::shared_ptr<Engines> engines);
 
+    // get instance
     static BootHelper* GetInstance();
 };
 

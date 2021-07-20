@@ -19,7 +19,7 @@ namespace kvserver
     }
 
     Engines::~Engines() {
-        this->Close();
+        // this->Close();
     }
 
     bool Engines::Close() {

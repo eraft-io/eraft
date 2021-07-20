@@ -148,7 +148,7 @@ bool RaftStorage::Start()
     {
         Logger::GetInstance()->INFO("raft storage start succeed!");
     } 
-    else 
+    else
     {
         Logger::GetInstance()->ERRORS("raft storage start error!");
     }

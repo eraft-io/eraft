@@ -33,7 +33,6 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     if(!this->CheckStore(*engines, &storeID))
     {
         Logger::GetInstance()->ERRORS("store id: " + std::to_string(storeID) + " not found");
-        // return false;
     }
     if(storeID == kInvalidID)
     {
@@ -43,7 +42,7 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     auto checkRes = this->CheckOrPrepareBoostrapCluster(engines, storeID);
     if(!checkRes.second)
     {
-        // check boostrap error
+        Logger::GetInstance()->ERRORS("check or prepare boostrap cluster error");
         return false;
     }
     bool newCluster = (checkRes.first != nullptr);
@@ -52,12 +51,14 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
         // try to boostrap cluster
         if(!this->BoostrapCluster(engines, checkRes.first, &newCluster))
         {
-           return false;
+            Logger::GetInstance()->ERRORS("boostrap cluster error");
+            return false;
         }
     }
     // TODO: put scheduler store
     if(!this->StartNode(engines, trans))
     {
+        Logger::GetInstance()->ERRORS("start node error");
         return false;
     }
     return true;
@@ -88,6 +89,7 @@ bool Node::CheckStore(Engines& engs, uint64_t* storeId)
 
 uint64_t Node::AllocID()
 {
+    Logger::GetInstance()->INFO("start alloc id");
     return BootHelper().GetInstance()->MockSchAllocID();
 }
 
@@ -98,29 +100,29 @@ std::pair<std::shared_ptr<metapb::Region> , bool> Node::CheckOrPrepareBoostrapCl
     {
         return std::make_pair<std::shared_ptr<metapb::Region> , bool>(std::make_shared<metapb::Region>(state.region()), true);
     }
-    if(!this->CheckClusterBoostrapped())
-    {
-        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, false);
-    }
-    else 
-    {
-        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, true);
-    }
+    // if(!this->CheckClusterBoostrapped())
+    // {
+    //     return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, false);
+    // }
+    // else
+    // {
+    //     return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, true);
+    // }
     return this->PrepareBootstrapCluster(engines, storeID);
 }
 
 bool Node::CheckClusterBoostrapped()
 {
     // call sch to check cluster boostrapped
-
+    return false;
 }
 
 std::pair<std::shared_ptr<metapb::Region> , bool> Node::PrepareBootstrapCluster(std::shared_ptr<Engines> engines,  uint64_t storeID)
 {
     auto regionID = BootHelper().GetInstance()->MockSchAllocID();
-    // TODO: log regionID = , clusterID = , storeID =
     auto peerID = BootHelper().GetInstance()->MockSchAllocID();
-    // TODO: log peerID =, regionID =
+    Logger::GetInstance()->INFO("bootstrap node with regionID: " + std::to_string(regionID) + 
+    "  storeID: " + std::to_string(storeID) + " peerID: " + std::to_string(peerID) + " clusterID: " + std::to_string(this->clusterID_));
     return BootHelper().GetInstance()->PrepareBootstrap(engines, storeID, regionID, peerID);
 }
 

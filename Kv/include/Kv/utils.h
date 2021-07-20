@@ -196,13 +196,16 @@ static bool PutMeta(rocksdb::DB* db, std::string key, google::protobuf::Message&
     std::string val;
     msg.SerializeToString(&val);
     Logger::GetInstance()->INFO("put key: " + key + " val: " + val + " to db");
-    return (db->Put(rocksdb::WriteOptions(), key, val)).ok();
+    auto status = db->Put(rocksdb::WriteOptions(), key, val);
+
+    return status.ok();
 }
 
 static bool SetMeta(std::shared_ptr<rocksdb::WriteBatch> batch, std::string key, google::protobuf::Message& msg)
 {
     std::string val;
     msg.SerializeToString(&val);
+    Logger::GetInstance()->INFO("put key: " + key + " val: " + val + " to db");
     batch->Put(key, val).ok();
 }
 
