@@ -165,7 +165,7 @@ bool PeerStorage::Append(std::vector<eraftpb::Entry> entries, std::shared_ptr<ro
     uint64_t regionId = this->region_->id();
     for(auto entry : entries) 
     {
-        SetMeta(raftWB, std::string( RaftLogKey(regionId, entry.index()).begin(), RaftLogKey(regionId, entry.index()).end() ), entry);   
+        SetMeta(raftWB.get(), std::string( RaftLogKey(regionId, entry.index()).begin(), RaftLogKey(regionId, entry.index()).end() ), entry);   
     }
 
     uint64_t prevLast = this->LastIndex();
@@ -269,7 +269,7 @@ std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(std::shared_ptr<era
     {
         this->raftState_->set_allocated_hard_state(&ready->hardSt);
     }
-    SetMeta(raftWB, std::string(RaftStateKey(this->region_->id()).begin(), RaftStateKey(this->region_->id()).end()), *this->raftState_);
+    SetMeta(raftWB.get(), std::string(RaftStateKey(this->region_->id()).begin(), RaftStateKey(this->region_->id()).end()), *this->raftState_);
     this->engines_->raftDB_->Write(rocksdb::WriteOptions(), & *raftWB);
     return std::make_shared<ApplySnapResult>(result);
 }

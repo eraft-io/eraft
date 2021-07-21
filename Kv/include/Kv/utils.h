@@ -14,6 +14,7 @@
 
 #include <Kv/engines.h>
 #include <Logger/Logger.h>
+#include <google/protobuf/text_format.h>
 
 namespace kvserver
 {
@@ -194,21 +195,20 @@ static rocksdb::Status GetMeta(rocksdb::DB* db, std::string key, google::protobu
 static bool PutMeta(rocksdb::DB* db, std::string key, google::protobuf::Message& msg)
 {
     std::string val;
-    msg.SerializeToString(&val);
+    google::protobuf::TextFormat::PrintToString(msg, &val);
     Logger::GetInstance()->INFO("put key: " + key + " val: " + val + " to db");
     auto status = db->Put(rocksdb::WriteOptions(), key, val);
 
     return status.ok();
 }
 
-static bool SetMeta(std::shared_ptr<rocksdb::WriteBatch> batch, std::string key, google::protobuf::Message& msg)
+static bool SetMeta(rocksdb::WriteBatch* batch, std::string key, google::protobuf::Message& msg)
 {
     std::string val;
-    msg.SerializeToString(&val);
+    google::protobuf::TextFormat::PrintToString(msg, &val);
     Logger::GetInstance()->INFO("put key: " + key + " val: " + val + " to db");
-    batch->Put(key, val).ok();
+    return batch->Put(key, val).ok();
 }
-
 
 //
 // RegionPrefix: kLocalPrefix + kRegionRaftPrefix + regionID + suffix
@@ -407,8 +407,8 @@ static void WriteRegionState(std::shared_ptr<rocksdb::WriteBatch> kvWB, std::sha
 {
     raft_serverpb::RegionLocalState regionState;
     regionState.set_state(state);
-    regionState.set_allocated_region(& *region);
-    SetMeta(kvWB, std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end()), regionState);
+    regionState.set_allocated_region(region.get());
+    SetMeta(kvWB.get(), std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end()), regionState);
 }
 
 

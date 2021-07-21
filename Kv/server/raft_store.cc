@@ -93,7 +93,7 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
     {
         return;
     }
-    if(!SetMeta(kvWB, VecToString(RegionStateKey(region.id())), *originState))
+    if(!SetMeta(kvWB.get(), VecToString(RegionStateKey(region.id())), *originState))
     {
         // TODO log error
         return;

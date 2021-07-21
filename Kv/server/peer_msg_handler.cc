@@ -131,7 +131,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(eraftpb::Ent
                     this->peer_->peerStorage_->applyState_->set_applied_index(entry->index());
                     std::string applyKey(ApplyStateKey(this->peer_->regionId_).begin(), 
                     ApplyStateKey(this->peer_->regionId_).end());
-                    SetMeta(wb, applyKey, *this->peer_->peerStorage_->applyState_);
+                    SetMeta(wb.get(), applyKey, *this->peer_->peerStorage_->applyState_);
                     this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),& *wb);
                     // get value from db
                     std::string value = GetCF(this->peer_->peerStorage_->engines_->kvDB_, req.get().cf(), req.get().key());
@@ -321,7 +321,7 @@ void PeerMsgHandler::HandleRaftReady()
             }
             this->peer_->peerStorage_->applyState_->set_applied_index(rd.committedEntries[rd.committedEntries.size() - 1].index());
             std::string key(ApplyStateKey(this->peer_->regionId_).begin(), ApplyStateKey(this->peer_->regionId_).end());
-            SetMeta(kvWB, key, *this->peer_->peerStorage_->applyState_);
+            SetMeta(kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
             this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(), & *kvWB);
             if (oldProposal.size() > this->peer_->proposals_.size())
             {

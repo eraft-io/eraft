@@ -80,16 +80,16 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(st
 bool BootHelper::PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region)
 {
     raft_serverpb::RegionLocalState state;
-    state.set_allocated_region(& *region);
+    state.set_allocated_region(region.get());
     std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
-    SetMeta(kvWB, std::string(PrepareBootstrapKey.begin(), PrepareBootstrapKey.end()), state);
+    SetMeta(kvWB.get(), std::string(PrepareBootstrapKey.begin(), PrepareBootstrapKey.end()), state);
     auto stateKey = std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end());
-    SetMeta(kvWB, "test", state);
-    // WriteInitialApplyState(kvWB, region->id());
-    // engines->kvDB_->Write(rocksdb::WriteOptions(),& *kvWB);
-    // std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
-    // WriteInitialRaftState(raftWB, region->id());
-    // engines->raftDB_->Write(rocksdb::WriteOptions(),& *raftWB);
+    SetMeta(kvWB.get(), stateKey, state);
+    WriteInitialApplyState(kvWB, region->id());
+    engines->kvDB_->Write(rocksdb::WriteOptions(), kvWB.get());
+    std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
+    WriteInitialRaftState(raftWB, region->id());
+    engines->raftDB_->Write(rocksdb::WriteOptions(), raftWB.get());
     return true;
 }
 
@@ -100,7 +100,7 @@ void BootHelper::WriteInitialApplyState(std::shared_ptr<rocksdb::WriteBatch> kvW
     applyState.set_applied_index(kRaftInitLogIndex);
     truncatedState.set_index(kRaftInitLogIndex);
     truncatedState.set_term(kRaftInitLogTerm);
-    SetMeta(kvWB, std::string(ApplyStateKey(regionID).begin(), ApplyStateKey(regionID).end()), applyState);
+    SetMeta(kvWB.get(), std::string(ApplyStateKey(regionID).begin(), ApplyStateKey(regionID).end()), applyState);
 }
 
 void BootHelper::WriteInitialRaftState(std::shared_ptr<rocksdb::WriteBatch> raftWB, uint64_t regionID)
@@ -110,7 +110,7 @@ void BootHelper::WriteInitialRaftState(std::shared_ptr<rocksdb::WriteBatch> raft
     hardState.set_term(kRaftInitLogTerm);
     hardState.set_commit(kRaftInitLogIndex);
     raftState.set_last_index(kRaftInitLogIndex);
-    SetMeta(raftWB, std::string(RaftStateKey(regionID).begin(), RaftStateKey(regionID).end()), raftState);
+    SetMeta(raftWB.get(), std::string(RaftStateKey(regionID).begin(), RaftStateKey(regionID).end()), raftState);
 }
 
 bool BootHelper::ClearPrepareBoostrap(std::shared_ptr<Engines> engines, uint64_t regionID)
