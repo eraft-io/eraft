@@ -16,7 +16,7 @@ RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
 
 RaftStorage::~RaftStorage()
 {
-    delete regionReader_;
+    // delete regionReader_;
 }
 
 bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
@@ -72,8 +72,8 @@ bool RaftStorage::Write(const kvrpcpb::Context& ctx, std::vector<Modify> batch)
 
     rqh.set_term(ctx.term());
 
-    delete peer;
-    delete regionEpoch;
+    // delete peer;
+    // delete regionEpoch;
 
     raft_cmdpb::RaftCmdRequest request;
     for(auto r: reqs) {
@@ -172,12 +172,12 @@ RegionReader::~RegionReader()
 
 std::string RegionReader::GetFromCF(std::string cf, std::string key)
 {
-    return GetCF(this->engs_->kvDB_, cf, key);
+    return Assistant::GetInstance()->GetCF(this->engs_->kvDB_, cf, key);
 }
 
 rocksdb::Iterator* RegionReader::IterCF(std::string cf)
 {
-    return NewCFIterator(this->engs_->kvDB_, cf);
+    return Assistant::GetInstance()->NewCFIterator(this->engs_->kvDB_, cf);
 }
 
 void RegionReader::Close()

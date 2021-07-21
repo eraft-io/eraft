@@ -34,40 +34,40 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     {
         Logger::GetInstance()->ERRORS("store id: " + std::to_string(storeID) + " not found");
     }
-    if(storeID == kInvalidID)
+    if(storeID == Assistant::GetInstance()->kInvalidID)
     {
         this->BootstrapStore(*engines, &storeID);
     }
     this->store_->set_id(storeID);
     auto checkRes = this->CheckOrPrepareBoostrapCluster(engines, storeID);
-    if(!checkRes.second)
-    {
-        Logger::GetInstance()->ERRORS("check or prepare boostrap cluster error");
-        return false;
-    }
-    bool newCluster = (checkRes.first != nullptr);
-    if(newCluster)
-    {
-        // try to boostrap cluster
-        if(!this->BoostrapCluster(engines, checkRes.first, &newCluster))
-        {
-            Logger::GetInstance()->ERRORS("boostrap cluster error");
-            return false;
-        }
-    }
-    // TODO: put scheduler store
-    if(!this->StartNode(engines, trans))
-    {
-        Logger::GetInstance()->ERRORS("start node error");
-        return false;
-    }
+    // if(!checkRes.second)
+    // {
+    //     Logger::GetInstance()->ERRORS("check or prepare boostrap cluster error");
+    //     return false;
+    // }
+    // bool newCluster = (checkRes.first != nullptr);
+    // if(newCluster)
+    // {
+    //     // try to boostrap cluster
+    //     if(!this->BoostrapCluster(engines, checkRes.first, &newCluster))
+    //     {
+    //         Logger::GetInstance()->ERRORS("boostrap cluster error");
+    //         return false;
+    //     }
+    // }
+    // // TODO: put scheduler store
+    // if(!this->StartNode(engines, trans))
+    // {
+    //     Logger::GetInstance()->ERRORS("start node error");
+    //     return false;
+    // }
     return true;
 }
 
 bool Node::CheckStore(Engines& engs, uint64_t* storeId)
 {
     raft_serverpb::StoreIdent ident;
-    if(!GetMeta(engs.kvDB_, VecToString(StoreIdentKey), &ident).ok())
+    if(!Assistant::GetInstance()->GetMeta(engs.kvDB_, Assistant::GetInstance()->VecToString(Assistant::GetInstance()->StoreIdentKey), &ident).ok())
     {
         // hey store ident meta key error
         *storeId = 0;
@@ -78,7 +78,7 @@ bool Node::CheckStore(Engines& engs, uint64_t* storeId)
         //TODO: log cluster id mismatch
         return false;
     }
-    if(ident.store_id() == kInvalidID)
+    if(ident.store_id() == Assistant::GetInstance()->kInvalidID)
     {
         *storeId = 0;
         return false;
@@ -95,10 +95,10 @@ uint64_t Node::AllocID()
 
 std::pair<std::shared_ptr<metapb::Region> , bool> Node::CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines, uint64_t storeID)
 {
-    raft_serverpb::RegionLocalState state;
-    if(GetMeta(engines->kvDB_, VecToString(PrepareBootstrapKey), &state).ok())
+    raft_serverpb::RegionLocalState* state = new raft_serverpb::RegionLocalState();
+    if(Assistant::GetInstance()->GetMeta(engines->kvDB_, Assistant::GetInstance()->VecToString(Assistant::GetInstance()->PrepareBootstrapKey), state).ok())
     {
-        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(std::make_shared<metapb::Region>(state.region()), true);
+        return std::make_pair<std::shared_ptr<metapb::Region> , bool>(std::make_shared<metapb::Region>(state->region()), true);
     }
     // if(!this->CheckClusterBoostrapped())
     // {

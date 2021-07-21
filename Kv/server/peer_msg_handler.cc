@@ -92,12 +92,12 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(eraftpb::Ent
         }
     case raft_cmdpb::CmdType::Put:
         {
-            wb->Put(KeyWithCF(req.put().cf(), req.put().key()), req.put().value());
+            wb->Put(Assistant::GetInstance()->KeyWithCF(req.put().cf(), req.put().key()), req.put().value());
             break;
         }
     case raft_cmdpb::CmdType::Delete:
         {
-            wb->Delete(KeyWithCF(req.delete_().cf(), req.delete_().key()));
+            wb->Delete(Assistant::GetInstance()->KeyWithCF(req.delete_().cf(), req.delete_().key()));
             break;
         }
     case raft_cmdpb::CmdType::Snap:
@@ -129,12 +129,12 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(eraftpb::Ent
                 {
                     // update apply state to db
                     this->peer_->peerStorage_->applyState_->set_applied_index(entry->index());
-                    std::string applyKey(ApplyStateKey(this->peer_->regionId_).begin(), 
-                    ApplyStateKey(this->peer_->regionId_).end());
-                    SetMeta(wb.get(), applyKey, *this->peer_->peerStorage_->applyState_);
+                    std::string applyKey(Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).begin(), 
+                    Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).end());
+                    Assistant::GetInstance()->SetMeta(wb.get(), applyKey, *this->peer_->peerStorage_->applyState_);
                     this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),& *wb);
                     // get value from db
-                    std::string value = GetCF(this->peer_->peerStorage_->engines_->kvDB_, req.get().cf(), req.get().key());
+                    std::string value = Assistant::GetInstance()->GetCF(this->peer_->peerStorage_->engines_->kvDB_, req.get().cf(), req.get().key());
                     raft_cmdpb::Response* sp = resp->add_responses();                    
                     sp->set_cmd_type(raft_cmdpb::CmdType::Get);
                     raft_cmdpb::GetResponse* gsp = new raft_cmdpb::GetResponse();
@@ -216,7 +216,7 @@ void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChang
                 auto epoch = region->mutable_region_epoch();
                 epoch->set_conf_ver(confVer++);
                 // store region state
-                WriteRegionState(wb, region, raft_serverpb::PeerState::Normal);
+                Assistant::GetInstance()->WriteRegionState(wb, region, raft_serverpb::PeerState::Normal);
                 auto storeMeta = this->ctx_->storeMeta_;
                 storeMeta->mutex_.lock();
                 storeMeta->regions_[region->id()] = & *region;
@@ -243,7 +243,7 @@ void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChang
                 auto epoch = region->mutable_region_epoch();
                 epoch->set_conf_ver(confVer++);
                 // store region state
-                WriteRegionState(wb, region, raft_serverpb::PeerState::Normal);
+                Assistant::GetInstance()->WriteRegionState(wb, region, raft_serverpb::PeerState::Normal);
                 auto storeMeta = this->ctx_->storeMeta_;
                 storeMeta->mutex_.lock();
                 storeMeta->regions_[region->id()] = & *region;
@@ -320,9 +320,9 @@ void PeerMsgHandler::HandleRaftReady()
                 }
             }
             this->peer_->peerStorage_->applyState_->set_applied_index(rd.committedEntries[rd.committedEntries.size() - 1].index());
-            std::string key(ApplyStateKey(this->peer_->regionId_).begin(), ApplyStateKey(this->peer_->regionId_).end());
-            SetMeta(kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
-            this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(), & *kvWB);
+            std::string key(Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).begin(), Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).end());
+            Assistant::GetInstance()->SetMeta(kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
+            this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(), kvWB.get());
             if (oldProposal.size() > this->peer_->proposals_.size())
             {
                 // TODO:

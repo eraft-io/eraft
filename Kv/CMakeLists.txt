@@ -45,6 +45,7 @@ set(Sources
     server/server.cc
     server/store_worker.cc
     server/server_transport.cc
+    server/utils.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})

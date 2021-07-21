@@ -10,24 +10,29 @@ using tinykvpb::TinyKv;
 namespace kvserver
 {
 
-RaftConn::RaftConn(std::string addr_, std::shared_ptr<Config>) {
+RaftConn::RaftConn(std::string addr_, std::shared_ptr<Config>) 
+{
     this->chan_ = grpc::CreateChannel(addr_, grpc::InsecureChannelCredentials());
 }
 
 RaftConn::~RaftConn() 
 {
-}
-
-void RaftConn::Stop() {
 
 }
 
-std::shared_ptr<grpc::Channel> RaftConn::GetChan() {
+void RaftConn::Stop() 
+{
+
+}
+
+std::shared_ptr<grpc::Channel> RaftConn::GetChan() 
+{
     return this->chan_;
 }
 
 
-RaftClient::RaftClient(std::shared_ptr<Config> c){
+RaftClient::RaftClient(std::shared_ptr<Config> c)
+{
     this->conf_ = c;
 }
 
@@ -41,8 +46,10 @@ RaftClient::~RaftClient()
  *  a new one and insert it to cache map
  */
 
-std::shared_ptr<RaftConn> RaftClient::GetConn(std::string addr, uint64_t regionID) {
-    if(this->conns_.find(addr) != this->conns_.end()) {
+std::shared_ptr<RaftConn> RaftClient::GetConn(std::string addr, uint64_t regionID) 
+{
+    if(this->conns_.find(addr) != this->conns_.end()) 
+    {
         return this->conns_[addr];
     }
     std::shared_ptr<RaftConn> newConn = std::make_shared<RaftConn>(addr, this->conf_);

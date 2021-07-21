@@ -48,7 +48,6 @@ Logger::~Logger()
     }
     m_outfile.flush();
     m_outfile.close();
-    delete instance_;
 }
 
 void Logger::DEBUG(const std::string& text)

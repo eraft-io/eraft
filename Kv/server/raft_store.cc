@@ -23,8 +23,8 @@ RaftStore::~RaftStore()
 // load peers in this store. It scans the db engine, loads all regions and their peers from it
 std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
 {
-    auto startKey = RegionMetaMinKey;
-    auto endKey = RegionMetaMaxKey;
+    auto startKey = Assistant::GetInstance()->RegionMetaMinKey;
+    auto endKey = Assistant::GetInstance()->RegionMetaMaxKey;
     auto ctx = this->ctx_;
     auto kvEngine = ctx->engine_->kvDB_;
     auto storeID = ctx->store_->id();
@@ -36,16 +36,17 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
     std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
 
     auto iter = kvEngine->NewIterator(rocksdb::ReadOptions());
-    for(iter->Seek(VecToString(startKey)); iter->Valid(); iter->Next())
+    for(iter->Seek(Assistant::GetInstance()->VecToString(startKey)); iter->Valid(); iter->Next())
     {
-        if(iter->key().ToString().compare(VecToString(endKey)) >= 0)
+        if(iter->key().ToString().compare(Assistant::GetInstance()->VecToString(endKey)) >= 0)
         {
             break;
         }
         uint64_t regionID; 
         uint8_t suffix;
-        DecodeRegionMetaKey(StringToVec(iter->key().ToString()), &regionID, &suffix);
-        if(suffix != kRegionStateSuffix[0]) // filter other key
+        Assistant::GetInstance()->DecodeRegionMetaKey(Assistant::GetInstance()->StringToVec(iter->key().ToString()), 
+            &regionID, &suffix);
+        if(suffix != Assistant::GetInstance()->kRegionStateSuffix[0]) // filter other key
         {
             continue;
         }
@@ -81,7 +82,7 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
                                std::shared_ptr<raft_serverpb::RegionLocalState> originState)
 {
     auto region = originState->region();
-    auto stateRes = GetRaftLocalState(this->ctx_->engine_->raftDB_, region.id());
+    auto stateRes = Assistant::GetInstance()->GetRaftLocalState(this->ctx_->engine_->raftDB_, region.id());
     auto status = stateRes.second;
     auto raftState = stateRes.first;
     if(!status.ok())
@@ -89,11 +90,11 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
         // it has be cleaned up
         return;
     }
-    if(!DoClearMeta(this->ctx_->engine_, kvWB, raftWB, region.id(), raftState->last_index()))
+    if(!Assistant::GetInstance()->DoClearMeta(this->ctx_->engine_, kvWB, raftWB, region.id(), raftState->last_index()))
     {
         return;
     }
-    if(!SetMeta(kvWB.get(), VecToString(RegionStateKey(region.id())), *originState))
+    if(!Assistant::GetInstance()->SetMeta(kvWB.get(), Assistant::GetInstance()->VecToString(Assistant::GetInstance()->RegionStateKey(region.id())), *originState))
     {
         // TODO log error
         return;
@@ -119,7 +120,7 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
         this->router_->Register(peer);
     }
 
-    this->StartWorkers(regionPeers);
+    // this->StartWorkers(regionPeers);
 
     return true;
 }

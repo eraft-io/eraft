@@ -7,10 +7,10 @@ namespace kvserver {
 PeerStorage::PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::Region> region, std::string tag)
 {
     // TODO: log craating storage for region
-    auto raftStatePair = InitRaftLocalState(engs->raftDB_, region);
+    auto raftStatePair = Assistant::GetInstance()->InitRaftLocalState(engs->raftDB_, region);
     assert(raftStatePair.second); // if creating error, abort
 
-    auto applyStatePair = InitApplyState(engs->kvDB_, region);
+    auto applyStatePair = Assistant::GetInstance()->InitApplyState(engs->kvDB_, region);
     assert(applyStatePair.second); // if creating error, abort
 
     if(raftStatePair.first->last_index() < applyStatePair.first->applied_index())
@@ -39,7 +39,7 @@ std::pair<eraftpb::HardState, eraftpb::ConfState> PeerStorage::InitialState()
     {
         return std::pair<eraftpb::HardState, eraftpb::ConfState>(eraftpb::HardState(), eraftpb::ConfState());
     }
-    return std::pair<eraftpb::HardState, eraftpb::ConfState> (this->raftState_->hard_state(), ConfStateFromRegion(this->region_));
+    return std::pair<eraftpb::HardState, eraftpb::ConfState> (this->raftState_->hard_state(), Assistant::GetInstance()->ConfStateFromRegion(this->region_));
 }
 
 // Entries implements the Storage interface.
@@ -48,15 +48,15 @@ std::vector<eraftpb::Entry> PeerStorage::Entries(uint64_t lo, uint64_t hi)
     // TODO: check range
     std::vector<eraftpb::Entry> ents;
 
-    std::string startKey = std::string(RaftLogKey(this->region_->id(), lo).begin(), RaftLogKey(this->region_->id(), lo).end());
-    std::string endKey = std::string(RaftLogKey(this->region_->id(), hi).begin(), RaftLogKey(this->region_->id(), hi).end());
+    std::string startKey = std::string(Assistant::GetInstance()->RaftLogKey(this->region_->id(), lo).begin(), Assistant::GetInstance()->RaftLogKey(this->region_->id(), lo).end());
+    std::string endKey = std::string(Assistant::GetInstance()->RaftLogKey(this->region_->id(), hi).begin(), Assistant::GetInstance()->RaftLogKey(this->region_->id(), hi).end());
 
     uint64_t nextIndex = lo;
 
     auto iter = this->engines_->raftDB_->NewIterator(rocksdb::ReadOptions());
     for(iter->Seek(startKey); iter->Valid(); iter->Next())
     {
-        if(ExceedEndKey(iter->key().ToString(), endKey))
+        if(Assistant::GetInstance()->ExceedEndKey(iter->key().ToString(), endKey))
         {
             break;
         }
@@ -88,7 +88,8 @@ uint64_t PeerStorage::Term(uint64_t idx)
         return this->raftState_->last_term();
     }
     eraftpb::Entry* entry;
-    GetMeta(this->engines_->raftDB_, std::string(RaftLogKey(this->region_->id(), idx).begin(), RaftLogKey(this->region_->id(), idx).end()), entry);
+    Assistant::GetInstance()->GetMeta(this->engines_->raftDB_, std::string(Assistant::GetInstance()->RaftLogKey(this->region_->id(), idx).begin(), 
+        Assistant::GetInstance()->RaftLogKey(this->region_->id(), idx).end()), entry);
     return entry->term();
 }
 
@@ -165,7 +166,7 @@ bool PeerStorage::Append(std::vector<eraftpb::Entry> entries, std::shared_ptr<ro
     uint64_t regionId = this->region_->id();
     for(auto entry : entries) 
     {
-        SetMeta(raftWB.get(), std::string( RaftLogKey(regionId, entry.index()).begin(), RaftLogKey(regionId, entry.index()).end() ), entry);   
+        Assistant::GetInstance()->SetMeta(raftWB.get(), std::string(Assistant::GetInstance()->RaftLogKey(regionId, entry.index()).begin(), Assistant::GetInstance()->RaftLogKey(regionId, entry.index()).end() ), entry);   
     }
 
     uint64_t prevLast = this->LastIndex();
@@ -173,7 +174,7 @@ bool PeerStorage::Append(std::vector<eraftpb::Entry> entries, std::shared_ptr<ro
     {
         for(uint64_t i = last + 1; i <= prevLast; i++)
         {
-            raftWB->Delete(std::string(RaftLogKey(regionId, i).begin(), RaftLogKey(regionId, i).end()));
+            raftWB->Delete(std::string(Assistant::GetInstance()->RaftLogKey(regionId, i).begin(), Assistant::GetInstance()->RaftLogKey(regionId, i).end()));
         }
     }
 
@@ -237,7 +238,7 @@ bool PeerStorage::ValidateSnap(std::shared_ptr<eraftpb::Snapshot> snap)
 
 bool PeerStorage::ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, std::shared_ptr<rocksdb::WriteBatch> raftWB)
 {
-    return DoClearMeta(this->engines_, kvWB, raftWB, this->region_->id(), this->raftState_->last_index());
+    return Assistant::GetInstance()->DoClearMeta(this->engines_, kvWB, raftWB, this->region_->id(), this->raftState_->last_index());
 }
 
 // delete all data that is not covered by new_region
@@ -269,7 +270,7 @@ std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(std::shared_ptr<era
     {
         this->raftState_->set_allocated_hard_state(&ready->hardSt);
     }
-    SetMeta(raftWB.get(), std::string(RaftStateKey(this->region_->id()).begin(), RaftStateKey(this->region_->id()).end()), *this->raftState_);
+    Assistant::GetInstance()->SetMeta(raftWB.get(), std::string(Assistant::GetInstance()->RaftStateKey(this->region_->id()).begin(), Assistant::GetInstance()->RaftStateKey(this->region_->id()).end()), *this->raftState_);
     this->engines_->raftDB_->Write(rocksdb::WriteOptions(), & *raftWB);
     return std::make_shared<ApplySnapResult>(result);
 }

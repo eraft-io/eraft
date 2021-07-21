@@ -97,7 +97,7 @@ bool Peer::Destory(std::shared_ptr<Engines> engine, bool keepData)
     }
 
     // write region state
-    WriteRegionState(kvWB, region, raft_serverpb::PeerState::Tombstone);
+    Assistant::GetInstance()->WriteRegionState(kvWB, region, raft_serverpb::PeerState::Tombstone);
 
     // write state to real db
     engine->kvDB_->Write(rocksdb::WriteOptions(), & *kvWB);
@@ -235,7 +235,7 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
     sendMsg->set_allocated_from_peer(& *fromPeer);
     sendMsg->set_allocated_to_peer(& *toPeer);
 
-    if(this->peerStorage_->IsInitialized() && IsInitialMsg(msg))
+    if(this->peerStorage_->IsInitialized() && Assistant::GetInstance()->IsInitialMsg(msg))
     {
         sendMsg->set_start_key(this->Region()->start_key());
         sendMsg->set_end_key(this->Region()->end_key());
