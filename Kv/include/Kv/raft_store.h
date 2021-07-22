@@ -97,8 +97,8 @@ public:
 
     std::vector<std::shared_ptr<Peer> > LoadPeers();
 
-    void ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, 
-                        std::shared_ptr<rocksdb::WriteBatch> raftWB, 
+    void ClearStaleMeta(rocksdb::WriteBatch* kvWB, 
+                        rocksdb::WriteBatch* raftWB, 
                         std::shared_ptr<raft_serverpb::RegionLocalState> originState);
     
     bool Start(std::shared_ptr<metapb::Store> meta,

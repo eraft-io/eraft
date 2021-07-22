@@ -31,6 +31,7 @@ const std::vector<uint8_t> Assistant::LocalMinKey = { 0x01 };
 
 const std::vector<uint8_t> Assistant::LocalMaxKey = { 0x02 };
 
+// need to scan [RegionMetaMinKey, RegionMetaMaxKey]
 const std::vector<uint8_t> Assistant::RegionMetaMinKey = { 0x01, 0x03 };
 
 const std::vector<uint8_t> Assistant::RegionMetaMaxKey = { 0x01, 0x04 };

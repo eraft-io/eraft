@@ -8,11 +8,11 @@ NPROC=$(nproc || grep -c ^processor /proc/cpuinfo)
 
 # cd "$SRCPATH/rocksdb" && make static_lib && cd -
 
-if [ -d "$SRCPATH/Protocol" ]; then
-  cd "$SRCPATH/Protocol"
-  ./scripts/generate_cpp.sh
-  cd -
-fi
+# if [ -d "$SRCPATH/Protocol" ]; then
+#   cd "$SRCPATH/Protocol"
+#   ./scripts/generate_cpp.sh
+#   cd -
+# fi
 
 build_dir="$SRCPATH/build_"
 mkdir -p $build_dir && cd $build_dir

@@ -60,6 +60,7 @@ bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clu
     ident->set_cluster_id(clusterID);
     ident->set_store_id(storeID);
     Assistant::GetInstance()->PutMeta(engines->kvDB_, std::string(Assistant::GetInstance()->StoreIdentKey.begin(), Assistant::GetInstance()->StoreIdentKey.end()), *ident);
+    Logger::GetInstance()->INFO("do bootstrap store successful");
     return true;
 }
 
@@ -91,14 +92,13 @@ bool BootHelper::PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::s
     rocksdb::WriteBatch kvWB;
     std::string prepareBootstrapKey(Assistant::GetInstance()->PrepareBootstrapKey.begin(), Assistant::GetInstance()->PrepareBootstrapKey.end());
     Assistant::GetInstance()->SetMeta(&kvWB, prepareBootstrapKey, *state);
-    auto regionStateKey = Assistant::GetInstance()->RegionStateKey(region->id());
-    std::string stateKey(regionStateKey.begin(), regionStateKey.end());
-    Assistant::GetInstance()->SetMeta(&kvWB, stateKey, *state);
+    Assistant::GetInstance()->SetMeta(&kvWB, Assistant::GetInstance()->RegionStateKey(region->id()), *state);
     WriteInitialApplyState(&kvWB, region->id());
     engines->kvDB_->Write(rocksdb::WriteOptions(), &kvWB);
     rocksdb::WriteBatch raftWB;
     WriteInitialRaftState(&raftWB, region->id());
     engines->raftDB_->Write(rocksdb::WriteOptions(), &raftWB);
+    Logger::GetInstance()->INFO("do prepare boostrap cluster successful");
     return true;
 }
 
@@ -111,8 +111,7 @@ void BootHelper::WriteInitialApplyState(rocksdb::WriteBatch* kvWB, uint64_t regi
     truncatedState->set_index(Assistant::GetInstance()->kRaftInitLogIndex);
     truncatedState->set_term(Assistant::GetInstance()->kRaftInitLogTerm);
     applyState->set_allocated_truncated_state(truncatedState);
-    Assistant::GetInstance()->SetMeta(kvWB, std::string(Assistant::GetInstance()->ApplyStateKey(regionID).begin(), 
-        Assistant::GetInstance()->ApplyStateKey(regionID).end()), *applyState);
+    Assistant::GetInstance()->SetMeta(kvWB, Assistant::GetInstance()->ApplyStateKey(regionID), *applyState);
 }
 
 // write initial raft state to raft batch, logindex = 5, logterm = 5
@@ -123,17 +122,16 @@ void BootHelper::WriteInitialRaftState(rocksdb::WriteBatch* raftWB, uint64_t reg
     hardState.set_term(Assistant::GetInstance()->kRaftInitLogTerm);
     hardState.set_commit(Assistant::GetInstance()->kRaftInitLogIndex);
     raftState->set_last_index(Assistant::GetInstance()->kRaftInitLogIndex);
-    Assistant::GetInstance()->SetMeta(raftWB, std::string(Assistant::GetInstance()->RaftStateKey(regionID).begin(), 
-        Assistant::GetInstance()->RaftStateKey(regionID).end()), *raftState);
+    Assistant::GetInstance()->SetMeta(raftWB, Assistant::GetInstance()->RaftStateKey(regionID), *raftState);
 }
 
 bool BootHelper::ClearPrepareBoostrap(std::shared_ptr<Engines> engines, uint64_t regionID)
 {
-    engines->raftDB_->Delete(rocksdb::WriteOptions(), std::string(Assistant::GetInstance()->RaftStateKey(regionID).begin(), Assistant::GetInstance()->RaftStateKey(regionID).end()));
+    engines->raftDB_->Delete(rocksdb::WriteOptions(), Assistant::GetInstance()->RaftStateKey(regionID));
     std::shared_ptr<rocksdb::WriteBatch> wb = std::make_shared<rocksdb::WriteBatch>();
     wb->Delete(Assistant::GetInstance()->VecToString(Assistant::GetInstance()->PrepareBootstrapKey));
-    wb->Delete(Assistant::GetInstance()->VecToString(Assistant::GetInstance()->RegionStateKey(regionID)));
-    wb->Delete(Assistant::GetInstance()->VecToString(Assistant::GetInstance()->ApplyStateKey(regionID)));
+    wb->Delete(Assistant::GetInstance()->RegionStateKey(regionID));
+    wb->Delete(Assistant::GetInstance()->ApplyStateKey(regionID));
     engines->kvDB_->Write(rocksdb::WriteOptions(),& *wb);
     return true;
 }

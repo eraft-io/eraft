@@ -56,6 +56,7 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
         }
     }
     // // TODO: put scheduler store
+    Logger::GetInstance()->INFO("*** start node ***");
     if(!this->StartNode(engines, trans))
     {
         Logger::GetInstance()->ERRORS("start node error");

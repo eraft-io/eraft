@@ -28,57 +28,65 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
     auto ctx = this->ctx_;
     auto kvEngine = ctx->engine_->kvDB_;
     auto storeID = ctx->store_->id();
-
+    Logger::GetInstance()->INFO("raft store store id: "  + std::to_string(storeID) + " load peers");
     uint64_t totalCount, tombStoneCount;
     std::vector<std::shared_ptr<Peer> > regionPeers;
 
-    std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
-    std::shared_ptr<rocksdb::WriteBatch> raftWB = std::make_shared<rocksdb::WriteBatch>();
+    rocksdb::WriteBatch kvWB;
+    rocksdb::WriteBatch raftWB;
 
     auto iter = kvEngine->NewIterator(rocksdb::ReadOptions());
     for(iter->Seek(Assistant::GetInstance()->VecToString(startKey)); iter->Valid(); iter->Next())
     {
+        Logger::GetInstance()->INFO("iter region meta key: " + iter->key().ToString());
         if(iter->key().ToString().compare(Assistant::GetInstance()->VecToString(endKey)) >= 0)
         {
             break;
         }
         uint64_t regionID; 
         uint8_t suffix;
+        Logger::GetInstance()->INFO("iter region meta key size: " + std::to_string(iter->key().ToString().size()));
         Assistant::GetInstance()->DecodeRegionMetaKey(Assistant::GetInstance()->StringToVec(iter->key().ToString()), 
             &regionID, &suffix);
         if(suffix != Assistant::GetInstance()->kRegionStateSuffix[0]) // filter other key
         {
             continue;
         }
+        Logger::GetInstance()->INFO("load peer region id: " + std::to_string(regionID) + " suffix: " + std::to_string(suffix));
         auto val = iter->value().ToString();
         totalCount++;
-        std::shared_ptr<raft_serverpb::RegionLocalState> localState = std::make_shared<raft_serverpb::RegionLocalState>();
+        raft_serverpb::RegionLocalState* localState = new raft_serverpb::RegionLocalState();
         localState->ParseFromString(val);
+
+        // debug msg
+        std::string debugVal;
+        google::protobuf::TextFormat::PrintToString(*localState, &debugVal);
+        Logger::GetInstance()->INFO("local state: " + debugVal);
         auto region = localState->region();
-        if(localState->state() == raft_serverpb::PeerState::Tombstone)
-        {
-            tombStoneCount++;
-            this->ClearStaleMeta(kvWB, raftWB, localState);
-            continue;
-        }
+        // if(localState->state() == raft_serverpb::PeerState::Tombstone)
+        // {
+        //     tombStoneCount++;
+        //     this->ClearStaleMeta(&kvWB, &raftWB, localState);
+        //     continue;
+        // }
 
         std::shared_ptr<Peer> peer = std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_, std::make_shared<metapb::Region>(region));
 
-        // TODO: store region range to storeMeta
-        // ctx->storeMeta_->regionRanges_(region);
-        ctx->storeMeta_->regions_[regionID] = &region;
+        // // TODO: store region range to storeMeta
+        // // ctx->storeMeta_->regionRanges_(region);
+        // ctx->storeMeta_->regions_[regionID] = &region;
 
-        regionPeers.push_back(peer);
+        // regionPeers.push_back(peer);
     }
 
-    ctx_->engine_->kvDB_->Write(rocksdb::WriteOptions(), kvWB.get());
-    ctx_->engine_->raftDB_->Write(rocksdb::WriteOptions(), raftWB.get());
+    ctx_->engine_->kvDB_->Write(rocksdb::WriteOptions(), &kvWB);
+    ctx_->engine_->raftDB_->Write(rocksdb::WriteOptions(), &raftWB);
 
     return regionPeers;
 }
 
-void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, 
-                               std::shared_ptr<rocksdb::WriteBatch> raftWB, 
+void RaftStore::ClearStaleMeta(rocksdb::WriteBatch* kvWB, 
+                               rocksdb::WriteBatch* raftWB, 
                                std::shared_ptr<raft_serverpb::RegionLocalState> originState)
 {
     auto region = originState->region();
@@ -94,7 +102,7 @@ void RaftStore::ClearStaleMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
     {
         return;
     }
-    if(!Assistant::GetInstance()->SetMeta(kvWB.get(), Assistant::GetInstance()->VecToString(Assistant::GetInstance()->RegionStateKey(region.id())), *originState))
+    if(!Assistant::GetInstance()->SetMeta(kvWB, Assistant::GetInstance()->RegionStateKey(region.id()), *originState))
     {
         // TODO log error
         return;
@@ -113,7 +121,7 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
     this->ctx_ = std::make_shared<GlobalContext>(cfg, engines, meta, storeMeta, this->router_, trans);
 
     // register peer
-    // auto regionPeers = this->LoadPeers();
+    auto regionPeers = this->LoadPeers();
 
     // for(auto peer : regionPeers)
     // {

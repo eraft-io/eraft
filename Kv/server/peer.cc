@@ -8,6 +8,8 @@
 #include <eraftio/raft_serverpb.pb.h>
 #include <Kv/utils.h>
 
+#include <Logger/Logger.h>
+
 #include <memory>
 
 namespace kvserver
@@ -15,11 +17,21 @@ namespace kvserver
 
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region)
 {
+    Logger::GetInstance()->INFO("new peer start");
     std::shared_ptr<metapb::Peer> meta;
     // find peer
+    for(auto peer : region->peers())
+    {
+        if(peer.store_id() == storeID)
+        {
+           meta = std::make_shared<metapb::Peer>(peer); 
+        }
+    }
+
     assert(meta->id() == 0);
     std::string tag = "[region " + std::to_string(region->id()) + " ] " + std::to_string(meta->id());
     // TODO: sprintf to str
+    Logger::GetInstance()->INFO("new peer");
     std::shared_ptr<PeerStorage> ps = std::make_shared<PeerStorage>(engines, region, tag);
     
     uint64_t appliedIndex = ps->AppliedIndex();

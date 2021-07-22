@@ -1,7 +1,14 @@
+// Copyright (c) 2011 The LevelDB Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+//
+// 
+
 #ifndef ERAFT_KV_UTIL_H_
 #define ERAFT_KV_UTIL_H_
 
 #include <string>
+#include <cstring>
 #include <memory>
 #include <vector>
 #include <stdint.h>
@@ -97,42 +104,46 @@ public:
         return std::vector<uint8_t>(in.begin(), in.end());
     }
 
-    static void WriteU8(std::vector< uint8_t >& packet, uint8_t v) 
+    static void EncodeFixed8(char* dst, uint8_t value)
     {
-        packet.push_back(v);
+        uint8_t* const buffer = reinterpret_cast<uint8_t*>(dst);
+        std::memcpy(buffer, &value, sizeof(uint8_t));
     }
 
-    static void WriteU16(std::vector< uint8_t >& packet, uint16_t v) 
+    static void EncodeFixed64(char* dst, uint64_t value)
     {
-        packet.push_back(static_cast< uint8_t >(v));
-        packet.push_back(static_cast< uint8_t >(v >> 8));
+        uint8_t* const buffer = reinterpret_cast<uint8_t*>(dst);
+        std::memcpy(buffer, &value, sizeof(uint64_t));
     }
 
-    static void WriteU24(std::vector< uint8_t >& packet, uint32_t v) 
+    static uint8_t DecodeFixed8(const char* ptr)
     {
-        packet.push_back(static_cast< uint8_t >(v));
-        packet.push_back(static_cast< uint8_t >(v >> 8));
-        packet.push_back(static_cast< uint8_t >(v >> 16));          
+        const uint8_t* const buffer = reinterpret_cast<const uint8_t*>(ptr);
+        uint8_t result;
+        std::memcpy(&result, buffer, sizeof(uint8_t));
+        return result;
     }
 
-    static void WriteU32(std::vector< uint8_t >& packet, uint32_t v) 
+    static uint64_t DecodeFixed64(const char* ptr)
     {
-        packet.push_back(static_cast< uint8_t >(v));
-        packet.push_back(static_cast< uint8_t >(v >> 8));
-        packet.push_back(static_cast< uint8_t >(v >> 16));     
-        packet.push_back(static_cast< uint8_t >(v >> 24));              
+        const uint8_t* const buffer = reinterpret_cast<const uint8_t*>(ptr);
+        uint64_t result;
+        std::memcpy(&result, buffer, sizeof(uint64_t));
+        return result;
     }
 
-    static void WriteU64(std::vector< uint8_t >& packet, uint64_t v) 
+    static void PutFixed8(std::string* dst, uint8_t value)
     {
-        packet.push_back(static_cast< uint8_t >(v));
-        packet.push_back(static_cast< uint8_t >(v >> 8));
-        packet.push_back(static_cast< uint8_t >(v >> 16));     
-        packet.push_back(static_cast< uint8_t >(v >> 24));
-        packet.push_back(static_cast< uint8_t >(v >> 32));
-        packet.push_back(static_cast< uint8_t >(v >> 40));     
-        packet.push_back(static_cast< uint8_t >(v >> 48));     
-        packet.push_back(static_cast< uint8_t >(v >> 56));
+        char buf[sizeof(value)];
+        EncodeFixed8(buf, value);
+        dst->append(buf, sizeof(buf));
+    }
+
+    static void PutFixed64(std::string* dst, uint64_t value)
+    {
+        char buf[sizeof(value)];
+        EncodeFixed64(buf, value);
+        dst->append(buf, sizeof(buf));
     }
 
     static uint8_t ReadU8(std::vector< uint8_t>::iterator& it) 
@@ -209,7 +220,6 @@ public:
     static rocksdb::Status GetMeta(rocksdb::DB* db, std::string key, google::protobuf::Message* msg)
     {
         std::string res;
-        key.push_back('\0');
         rocksdb::Status s = db->Get(rocksdb::ReadOptions(), key, &res);
         msg->ParseFromString(res);
         return s;
@@ -218,10 +228,11 @@ public:
     static bool PutMeta(rocksdb::DB* db, std::string key, google::protobuf::Message& msg)
     {
         std::string val;
-        // google::protobuf::TextFormat::PrintToString(msg, &val);
+        // debug msg
+        std::string debugVal;
+        google::protobuf::TextFormat::PrintToString(msg, &debugVal);
+        Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
         val = msg.SerializeAsString();
-        key.push_back('\0');
-        // Logger::GetInstance()->INFO(" val: " + val + " to db");
         auto status = db->Put(rocksdb::WriteOptions(), key, val);
         return status.ok();
     }
@@ -229,67 +240,66 @@ public:
     static bool SetMeta(rocksdb::WriteBatch* batch, std::string key, google::protobuf::Message& msg)
     {
         std::string val;
-        key.push_back('\0');
-        // google::protobuf::TextFormat::PrintToString(msg, &val);
+        // debug msg
+        std::string debugVal;
+        google::protobuf::TextFormat::PrintToString(msg, &debugVal);
+        Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
         val = msg.SerializeAsString();
-        // Logger::GetInstance()->INFO(" val: " + val + " to db");
         return batch->Put(key, val).ok();
     }
 
     //
     // RegionPrefix: kLocalPrefix + kRegionRaftPrefix + regionID + suffix
     //
-    static std::vector<uint8_t> MakeRegionPrefix(uint64_t regionID, uint8_t suffix) 
+    static std::string MakeRegionPrefix(uint64_t regionID, uint8_t suffix) 
     {
-        std::vector<uint8_t> packet;
-        packet.push_back(kLocalPrefix[0]);
-        packet.push_back(kRegionRaftPrefix[0]);
-        WriteU64(packet, regionID);
-        // packet.insert(packet.end(), suffix.begin(), suffix.end());
-        packet.push_back(suffix);
-        return packet;
+        std::string dst;
+        PutFixed8(&dst, kLocalPrefix[0]);
+        PutFixed8(&dst, kRegionRaftPrefix[0]);
+        PutFixed64(&dst, regionID);
+        PutFixed8(&dst, suffix);
+        return dst;
     }
 
     //
     // RegionKey: kLocalPrefix + kRegionRaftPrefix + regionID + suffix + subID
     //
 
-    static std::vector<uint8_t> MakeRegionKey(uint64_t regionID, uint8_t suffix, uint64_t subID)
+    static std::string MakeRegionKey(uint64_t regionID, uint8_t suffix, uint64_t subID)
     {
-        std::vector<uint8_t> packet;
-        packet.insert(packet.begin(), kLocalPrefix.begin(), kLocalPrefix.end());
-        packet.insert(packet.end(), kRegionRaftPrefix.begin(), kRegionRaftPrefix.end());
-        WriteU64(packet, regionID);
-        // packet.insert(packet.end(), suffix.begin(), suffix.end());
-        packet.push_back(suffix);
-        WriteU64(packet, subID);
-        return packet;
+        std::string dst;
+        PutFixed8(&dst, kLocalPrefix[0]);
+        PutFixed8(&dst, kRegionRaftPrefix[0]);
+        PutFixed64(&dst, regionID);
+        PutFixed8(&dst, suffix);
+        PutFixed64(&dst, subID);
+        return dst;
     }
 
     //
     //  RegionRaftPrefixKey: kLocalPrefix + kRegionRaftPrefix + regionID
     //
 
-    static std::vector<uint8_t> RegionRaftPrefixKey(uint64_t regionID)
+    static std::string RegionRaftPrefixKey(uint64_t regionID)
     {
-        std::vector<uint8_t> packet;
-        packet.insert(packet.begin(), kLocalPrefix.begin(), kLocalPrefix.end());
-        packet.insert(packet.end(), kRegionRaftPrefix.begin(), kRegionRaftPrefix.end());
-        WriteU64(packet, regionID);
-        return packet;
+        std::string dst;
+        PutFixed8(&dst, kLocalPrefix[0]);
+        PutFixed8(&dst, kRegionRaftPrefix[1]);
+        PutFixed64(&dst, regionID);
+        return dst;
     }
 
-    static std::vector<uint8_t> RaftLogKey(uint64_t regionID, uint64_t index)
+    static std::string RaftLogKey(uint64_t regionID, uint64_t index)
     {
         return MakeRegionKey(regionID, kRaftLogSuffix[0], index);
     }
 
-    static std::vector<uint8_t> RaftStateKey(uint64_t regionID)
+    static std::string RaftStateKey(uint64_t regionID)
     {
         return MakeRegionPrefix(regionID, kRaftStateSuffix[0]);
     }
 
-    static std::vector<uint8_t> ApplyStateKey(uint64_t regionID)
+    static std::string ApplyStateKey(uint64_t regionID)
     {
         return MakeRegionPrefix(regionID, kApplyStateSuffix[0]);
     }
@@ -313,29 +323,29 @@ public:
             *regionID = 0; *suffix = 0;
             return;
         }
-        std::vector<uint8_t>::iterator it = key.begin() + RegionMetaMinKey.size();
+        std::vector<uint8_t>::iterator it = key.begin() + 2;
         *regionID = ReadU64(it);
         *suffix = key[key.size()-1];
     }
 
-    static std::vector<uint8_t> RegionMetaPrefixKey(uint64_t regionID)
+    static std::string RegionMetaPrefixKey(uint64_t regionID)
     {
-        std::vector<uint8_t> packet;
-        packet.insert(packet.begin(), kLocalPrefix.begin(), kLocalPrefix.end());
-        packet.insert(packet.end(), kRegionMetaPrefix.begin(), kRegionMetaPrefix.end());
-        WriteU64(packet, regionID);
-        return packet;
+        std::string dst;
+        PutFixed8(&dst, kLocalPrefix[0]);
+        PutFixed8(&dst, kRegionMetaPrefix[0]);
+        PutFixed64(&dst, regionID);
+        return dst;
     }
 
     // kLocalPrefix + kRegionMetaPrefix + regionID + kRegionStateSuffix
-    static std::vector<uint8_t> RegionStateKey(uint64_t regionID)
+    static std::string RegionStateKey(uint64_t regionID)
     {
-        std::vector<uint8_t> packet;
-        packet.push_back(kLocalPrefix[0]);
-        packet.push_back(kRegionMetaPrefix[0]);
-        WriteU64(packet, regionID);
-        packet.push_back(kRegionStateSuffix[0]);
-        return packet;
+        std::string dst;
+        PutFixed8(&dst, kLocalPrefix[0]);
+        PutFixed8(&dst, kRegionMetaPrefix[0]);
+        PutFixed64(&dst, regionID);
+        PutFixed8(&dst, kRegionStateSuffix[0]);
+        return dst;
     }
 
     /// RaftLogIndex gets the log index from raft log key generated by RaftLogKey.
@@ -353,28 +363,28 @@ public:
     static raft_serverpb::RegionLocalState* GetRegionLocalState(rocksdb::DB* db, uint64_t regionId)
     {
         raft_serverpb::RegionLocalState* regionLocalState;
-        GetMeta(db, std::string(RegionStateKey(regionId).begin(), RegionStateKey(regionId).end()), regionLocalState);
+        GetMeta(db, RegionStateKey(regionId), regionLocalState);
         return regionLocalState;
     }
 
     static std::pair<raft_serverpb::RaftLocalState*, rocksdb::Status> GetRaftLocalState(rocksdb::DB* db, uint64_t regionId)
     {
         raft_serverpb::RaftLocalState* raftLocalState;
-        rocksdb::Status s = GetMeta(db, std::string(RaftStateKey(regionId).begin(), RaftStateKey(regionId).end()), raftLocalState);
+        rocksdb::Status s = GetMeta(db, RaftStateKey(regionId), raftLocalState);
         return std::pair<raft_serverpb::RaftLocalState*, rocksdb::Status> (raftLocalState, s);
     }
 
     static std::pair<raft_serverpb::RaftApplyState*, rocksdb::Status> GetApplyState(rocksdb::DB* db, uint64_t regionId)
     {
         raft_serverpb::RaftApplyState* applyState;
-        rocksdb::Status s = GetMeta(db, std::string(ApplyStateKey(regionId).begin(), ApplyStateKey(regionId).end()), applyState);
+        rocksdb::Status s = GetMeta(db, ApplyStateKey(regionId), applyState);
         return std::pair<raft_serverpb::RaftApplyState*, rocksdb::Status> (applyState, s);   
     }
 
     static eraftpb::Entry* GetRaftEntry(rocksdb::DB* db, uint64_t regionId, uint64_t idx)
     {
         eraftpb::Entry* entry;
-        GetMeta(db, std::string(RaftLogKey(regionId, idx).begin(), RaftLogKey(regionId, idx).end()), entry);
+        GetMeta(db, RaftLogKey(regionId, idx), entry);
         return entry;
     }
 
@@ -386,6 +396,7 @@ public:
     // 
     static std::pair<raft_serverpb::RaftLocalState*, bool> InitRaftLocalState(rocksdb::DB* raftEngine, std::shared_ptr<metapb::Region> region)
     {
+        Logger::GetInstance()->INFO("init raft local state");
         auto lst = GetRaftLocalState(raftEngine, region->id());
         if(lst.second.IsNotFound()) 
         {
@@ -398,7 +409,7 @@ public:
                 raftState.set_last_term(kRaftInitLogTerm);
                 raftState.mutable_hard_state()->set_term(kRaftInitLogTerm);
                 raftState.mutable_hard_state()->set_commit(kRaftInitLogIndex);
-                if(!PutMeta(raftEngine, std::string(RaftStateKey(region->id()).begin(), RaftStateKey(region->id()).end()), raftState))
+                if(!PutMeta(raftEngine, RaftStateKey(region->id()), raftState))
                 {
                     return std::pair<raft_serverpb::RaftLocalState*, bool>(&raftState, false);
                 }
@@ -409,6 +420,7 @@ public:
 
     static std::pair<raft_serverpb::RaftApplyState*, bool> InitApplyState(rocksdb::DB* kvEngine, std::shared_ptr<metapb::Region> region)
     {
+        Logger::GetInstance()->INFO("init apply state");
         auto ast = GetApplyState(kvEngine, region->id());
         if(ast.second.IsNotFound()) 
         {
@@ -420,7 +432,7 @@ public:
                 applyState.mutable_truncated_state()->set_index(kRaftInitLogIndex);
                 applyState.mutable_truncated_state()->set_term(kRaftInitLogTerm);
             }
-            if(!PutMeta(kvEngine, std::string(ApplyStateKey(region->id()).begin(), ApplyStateKey(region->id()).end()), applyState))
+            if(!PutMeta(kvEngine, ApplyStateKey(region->id()), applyState))
             {
                 return std::pair<raft_serverpb::RaftApplyState*, bool>(&applyState, false);
             }
@@ -433,12 +445,11 @@ public:
     //
     static void WriteRegionState(std::shared_ptr<rocksdb::WriteBatch> kvWB, std::shared_ptr<metapb::Region> region, const raft_serverpb::PeerState& state)
     {
-        raft_serverpb::RegionLocalState regionState;
-        regionState.set_state(state);
-        regionState.set_allocated_region(region.get());
-        SetMeta(kvWB.get(), std::string(RegionStateKey(region->id()).begin(), RegionStateKey(region->id()).end()), regionState);
+        raft_serverpb::RegionLocalState* regionState = new raft_serverpb::RegionLocalState();
+        regionState->set_state(state);
+        regionState->set_allocated_region(region.get());
+        SetMeta(kvWB.get(), RegionStateKey(region->id()), *regionState);
     }
-
 
 
     static bool DeleteCF(std::unique_ptr<rocksdb::DB> db, std::string cf, std::string key)
@@ -497,31 +508,31 @@ public:
         return confState;
     }
 
-    static bool DoClearMeta(std::shared_ptr<Engines> engines, std::shared_ptr<rocksdb::WriteBatch> kvWB,
-                            std::shared_ptr<rocksdb::WriteBatch> raftWB, uint64_t regionID, uint64_t lastIndex)
+    static bool DoClearMeta(std::shared_ptr<Engines> engines, rocksdb::WriteBatch* kvWB,
+                            rocksdb::WriteBatch* raftWB, uint64_t regionID, uint64_t lastIndex)
     {
         // TODO: stat cost time
-        kvWB->Delete(std::string(RegionStateKey(regionID).begin(), RegionStateKey(regionID).end()));
-        kvWB->Delete(std::string(ApplyStateKey(regionID).begin(), ApplyStateKey(regionID).end()));
+        kvWB->Delete(RegionStateKey(regionID));
+        kvWB->Delete(ApplyStateKey(regionID));
 
         uint64_t firstIndex = lastIndex + 1;
-        std::string beginLogKey(RaftLogKey(regionID, 0).begin(), RaftLogKey(regionID, 0).end());
-        std::string endLogKey(RaftLogKey(regionID, firstIndex).begin(), RaftLogKey(regionID, firstIndex).end());
+        std::string beginLogKey(RaftLogKey(regionID, 0));
+        std::string endLogKey(RaftLogKey(regionID, firstIndex));
 
         auto iter = engines->raftDB_->NewIterator(rocksdb::ReadOptions());
         iter->Seek(beginLogKey);
         if(iter->Valid() && iter->key().ToString().compare(endLogKey) < 0) 
         {
-        uint64_t logIdx = RaftLogIndex(std::vector<uint8_t>{iter->key().ToString().begin(), iter->key().ToString().end()});
-        firstIndex = logIdx;
+            uint64_t logIdx = RaftLogIndex(std::vector<uint8_t>{iter->key().ToString().begin(), iter->key().ToString().end()});
+            firstIndex = logIdx;
         }
 
         for(uint64_t i = firstIndex; i <= lastIndex; i ++)
         {
-            raftWB->Delete(std::string(RaftLogKey(regionID, i).begin(), RaftLogKey(regionID, i).end()));
+            raftWB->Delete(RaftLogKey(regionID, i));
         }
 
-        raftWB->Delete(std::string(RaftStateKey(regionID).begin(), RaftStateKey(regionID).end()));
+        raftWB->Delete(RaftStateKey(regionID));
 
         return true;
     }
