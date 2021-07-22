@@ -45,9 +45,9 @@ public:
 
     static bool PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
 
-    static void WriteInitialApplyState(std::shared_ptr<rocksdb::WriteBatch> kvWB, uint64_t regionID);
+    static void WriteInitialApplyState(rocksdb::WriteBatch* kvWB, uint64_t regionID);
 
-    static void WriteInitialRaftState(std::shared_ptr<rocksdb::WriteBatch> raftWB, uint64_t regionID);
+    static void WriteInitialRaftState(rocksdb::WriteBatch* raftWB, uint64_t regionID);
 
     static bool ClearPrepareBoostrap(std::shared_ptr<Engines> engines, uint64_t regionID);
 

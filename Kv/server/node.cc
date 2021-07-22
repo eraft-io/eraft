@@ -40,27 +40,27 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     }
     this->store_->set_id(storeID);
     auto checkRes = this->CheckOrPrepareBoostrapCluster(engines, storeID);
-    // if(!checkRes.second)
-    // {
-    //     Logger::GetInstance()->ERRORS("check or prepare boostrap cluster error");
-    //     return false;
-    // }
-    // bool newCluster = (checkRes.first != nullptr);
-    // if(newCluster)
-    // {
-    //     // try to boostrap cluster
-    //     if(!this->BoostrapCluster(engines, checkRes.first, &newCluster))
-    //     {
-    //         Logger::GetInstance()->ERRORS("boostrap cluster error");
-    //         return false;
-    //     }
-    // }
+    if(!checkRes.second)
+    {
+        Logger::GetInstance()->ERRORS("check or prepare boostrap cluster error");
+        return false;
+    }
+    bool newCluster = (checkRes.first != nullptr);
+    if(newCluster)
+    {
+        // try to boostrap cluster
+        if(!this->BoostrapCluster(engines, checkRes.first, &newCluster))
+        {
+            Logger::GetInstance()->ERRORS("boostrap cluster error");
+            return false;
+        }
+    }
     // // TODO: put scheduler store
-    // if(!this->StartNode(engines, trans))
-    // {
-    //     Logger::GetInstance()->ERRORS("start node error");
-    //     return false;
-    // }
+    if(!this->StartNode(engines, trans))
+    {
+        Logger::GetInstance()->ERRORS("start node error");
+        return false;
+    }
     return true;
 }
 
@@ -131,7 +131,7 @@ bool Node::BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<met
     auto regionID = firstRegion->id();
     
     // TODO: send boostrap to scheduler
-    
+    return true;
 }
 
 

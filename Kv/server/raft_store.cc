@@ -71,8 +71,8 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
         regionPeers.push_back(peer);
     }
 
-    ctx_->engine_->kvDB_->Write(rocksdb::WriteOptions(),& *kvWB);
-    ctx_->engine_->raftDB_->Write(rocksdb::WriteOptions(),& *raftWB);
+    ctx_->engine_->kvDB_->Write(rocksdb::WriteOptions(), kvWB.get());
+    ctx_->engine_->raftDB_->Write(rocksdb::WriteOptions(), raftWB.get());
 
     return regionPeers;
 }
@@ -113,12 +113,12 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
     this->ctx_ = std::make_shared<GlobalContext>(cfg, engines, meta, storeMeta, this->router_, trans);
 
     // register peer
-    auto regionPeers = this->LoadPeers();
+    // auto regionPeers = this->LoadPeers();
 
-    for(auto peer : regionPeers)
-    {
-        this->router_->Register(peer);
-    }
+    // for(auto peer : regionPeers)
+    // {
+    //     this->router_->Register(peer);
+    // }
 
     // this->StartWorkers(regionPeers);
 

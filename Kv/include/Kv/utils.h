@@ -209,6 +209,7 @@ public:
     static rocksdb::Status GetMeta(rocksdb::DB* db, std::string key, google::protobuf::Message* msg)
     {
         std::string res;
+        key.push_back('\0');
         rocksdb::Status s = db->Get(rocksdb::ReadOptions(), key, &res);
         msg->ParseFromString(res);
         return s;
@@ -217,32 +218,35 @@ public:
     static bool PutMeta(rocksdb::DB* db, std::string key, google::protobuf::Message& msg)
     {
         std::string val;
-        google::protobuf::TextFormat::PrintToString(msg, &val);
-        Logger::GetInstance()->INFO(" val: " + val + " to db");
+        // google::protobuf::TextFormat::PrintToString(msg, &val);
+        val = msg.SerializeAsString();
+        key.push_back('\0');
+        // Logger::GetInstance()->INFO(" val: " + val + " to db");
         auto status = db->Put(rocksdb::WriteOptions(), key, val);
-
         return status.ok();
     }
 
     static bool SetMeta(rocksdb::WriteBatch* batch, std::string key, google::protobuf::Message& msg)
     {
         std::string val;
-        google::protobuf::TextFormat::PrintToString(msg, &val);
-        Logger::GetInstance()->INFO(" key: ");
-        Logger::GetInstance()->INFO(" val: " + val + " to db");
+        key.push_back('\0');
+        // google::protobuf::TextFormat::PrintToString(msg, &val);
+        val = msg.SerializeAsString();
+        // Logger::GetInstance()->INFO(" val: " + val + " to db");
         return batch->Put(key, val).ok();
     }
 
     //
     // RegionPrefix: kLocalPrefix + kRegionRaftPrefix + regionID + suffix
     //
-    static std::vector<uint8_t> MakeRegionPrefix(uint64_t regionID, std::vector<uint8_t> suffix) 
+    static std::vector<uint8_t> MakeRegionPrefix(uint64_t regionID, uint8_t suffix) 
     {
         std::vector<uint8_t> packet;
         packet.push_back(kLocalPrefix[0]);
         packet.push_back(kRegionRaftPrefix[0]);
         WriteU64(packet, regionID);
-        packet.insert(packet.end(), suffix.begin(), suffix.end());
+        // packet.insert(packet.end(), suffix.begin(), suffix.end());
+        packet.push_back(suffix);
         return packet;
     }
 
@@ -250,13 +254,14 @@ public:
     // RegionKey: kLocalPrefix + kRegionRaftPrefix + regionID + suffix + subID
     //
 
-    static std::vector<uint8_t> MakeRegionKey(uint64_t regionID, std::vector<uint8_t> suffix, uint64_t subID)
+    static std::vector<uint8_t> MakeRegionKey(uint64_t regionID, uint8_t suffix, uint64_t subID)
     {
         std::vector<uint8_t> packet;
         packet.insert(packet.begin(), kLocalPrefix.begin(), kLocalPrefix.end());
         packet.insert(packet.end(), kRegionRaftPrefix.begin(), kRegionRaftPrefix.end());
         WriteU64(packet, regionID);
-        packet.insert(packet.end(), suffix.begin(), suffix.end());
+        // packet.insert(packet.end(), suffix.begin(), suffix.end());
+        packet.push_back(suffix);
         WriteU64(packet, subID);
         return packet;
     }
@@ -276,17 +281,17 @@ public:
 
     static std::vector<uint8_t> RaftLogKey(uint64_t regionID, uint64_t index)
     {
-        return MakeRegionKey(regionID, kRaftLogSuffix, index);
+        return MakeRegionKey(regionID, kRaftLogSuffix[0], index);
     }
 
     static std::vector<uint8_t> RaftStateKey(uint64_t regionID)
     {
-        return MakeRegionPrefix(regionID, kRaftStateSuffix);
+        return MakeRegionPrefix(regionID, kRaftStateSuffix[0]);
     }
 
     static std::vector<uint8_t> ApplyStateKey(uint64_t regionID)
     {
-        return MakeRegionPrefix(regionID, kApplyStateSuffix);
+        return MakeRegionPrefix(regionID, kApplyStateSuffix[0]);
     }
 
     static bool IsRaftStateKey(std::vector<uint8_t> key)
