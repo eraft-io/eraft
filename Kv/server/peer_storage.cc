@@ -10,15 +10,16 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::
 {
     Logger::GetInstance()->INFO("createing storage for region id: " + std::to_string(region->id()));
     auto raftStatePair = Assistant::GetInstance()->InitRaftLocalState(engs->raftDB_, region);
-    assert(raftStatePair.second); // if creating error, abort
+    // assert(raftStatePair.second); // if creating error, abort
 
     auto applyStatePair = Assistant::GetInstance()->InitApplyState(engs->kvDB_, region);
-    assert(applyStatePair.second); // if creating error, abort
+    // assert(applyStatePair.second); // if creating error, abort
 
     if(raftStatePair.first->last_index() < applyStatePair.first->applied_index())
     {
         // unexpected raft log index
-        assert(false);
+        Logger::GetInstance()->ERRORS("raft log last index less than applied index");
+        exit(-1);
     }
 
     this->engines_ = engs;

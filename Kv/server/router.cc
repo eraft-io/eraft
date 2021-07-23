@@ -3,11 +3,10 @@
 namespace kvserver
 {
 
-Router::Router(std::deque<Msg> storeSender) 
+Router::Router() 
 {
-    this->storeSender_ = storeSender;
 }
-    
+
 PeerState_* Router::Get(uint64_t regionID)
 {
     if(this->peers_.find(regionID) != this->peers_.end()) {
@@ -35,12 +34,12 @@ bool Router::Send(uint64_t regionID, Msg msg)
     if(ps == nullptr) {
         return false; // TODO: log peer not fount
     }
-    this->peerSender_.push_back(msg);
+    QueueContext::GetInstance()->peerSender_.Push(msg);
 }
 
 void Router::SendStore(Msg m) 
 {
-    this->storeSender_.push_front(m);
+    QueueContext::GetInstance()->storeSender_.Push(m);
 }
 
 bool RaftstoreRouter::Send(uint64_t regionID, const Msg m)

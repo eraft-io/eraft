@@ -4,14 +4,15 @@
 
 #include <Logger/Logger.h>
 
+#include <RaftCore/Util.h>
+
 namespace kvserver
 {
     
 RaftStore::RaftStore(std::shared_ptr<Config> cfg)
 {
     Logger::GetInstance()->INFO("raft store init.");
-    std::deque<Msg> storeSender;
-    this->router_ = std::make_shared<Router>(storeSender);
+    this->router_ = std::make_shared<Router>();
     this->raftRouter_ = std::make_shared<RaftstoreRouter>(router_);
 }
 
@@ -63,20 +64,24 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
         google::protobuf::TextFormat::PrintToString(*localState, &debugVal);
         Logger::GetInstance()->INFO("local state: " + debugVal);
         auto region = localState->region();
-        // if(localState->state() == raft_serverpb::PeerState::Tombstone)
-        // {
-        //     tombStoneCount++;
-        //     this->ClearStaleMeta(&kvWB, &raftWB, localState);
-        //     continue;
-        // }
+
+        Logger::GetInstance()->INFO("region id:" + std::to_string(region.id()));
+        Logger::GetInstance()->INFO("region epoch conf_ver: " + std::to_string(region.region_epoch().conf_ver()));
+        Logger::GetInstance()->INFO(std::to_string(region.peers().size()));
+        if(localState->state() == raft_serverpb::PeerState::Tombstone)
+        {
+            tombStoneCount++;
+            this->ClearStaleMeta(&kvWB, &raftWB, localState);
+            continue;
+        }
 
         std::shared_ptr<Peer> peer = std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_, std::make_shared<metapb::Region>(region));
 
         // // TODO: store region range to storeMeta
         // // ctx->storeMeta_->regionRanges_(region);
-        // ctx->storeMeta_->regions_[regionID] = &region;
+        ctx->storeMeta_->regions_[regionID] = &region;
 
-        // regionPeers.push_back(peer);
+        regionPeers.push_back(peer);
     }
 
     ctx_->engine_->kvDB_->Write(rocksdb::WriteOptions(), &kvWB);
@@ -87,7 +92,7 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
 
 void RaftStore::ClearStaleMeta(rocksdb::WriteBatch* kvWB, 
                                rocksdb::WriteBatch* raftWB, 
-                               std::shared_ptr<raft_serverpb::RegionLocalState> originState)
+                                raft_serverpb::RegionLocalState* originState)
 {
     auto region = originState->region();
     auto stateRes = Assistant::GetInstance()->GetRaftLocalState(this->ctx_->engine_->raftDB_, region.id());
@@ -123,12 +128,12 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
     // register peer
     auto regionPeers = this->LoadPeers();
 
-    // for(auto peer : regionPeers)
-    // {
-    //     this->router_->Register(peer);
-    // }
+    for(auto peer : regionPeers)
+    {
+        this->router_->Register(peer);
+    }
 
-    // this->StartWorkers(regionPeers);
+    this->StartWorkers(regionPeers);
 
     return true;
 }
@@ -142,15 +147,18 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers)
     rw.BootThread();
     auto sw = StoreWorker(ctx, state);
     sw.BootThread();
-    Msg m(MsgType::MsgTypeStoreStart,& *ctx->store_);
+    Msg m(MsgType::MsgTypeStoreStart, ctx->store_.get());
     router->SendStore(m);
     for(uint64_t i = 0; i < peers.size(); i++)
     {
         auto regionID = peers[i]->regionId_;
-        Msg m(MsgType::MsgTypeStart, & *ctx->store_);
+        Msg m(MsgType::MsgTypeStart, ctx->store_.get());
         router->Send(regionID, m);
     }
+    Msg m_(MsgType::MsgTypeStart, ctx->store_.get());
+    router->Send(2, m_); // for test
     // run ticker
+    return true;
 }
 
 void RaftStore::ShutDown()

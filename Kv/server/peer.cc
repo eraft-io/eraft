@@ -18,17 +18,26 @@ namespace kvserver
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region)
 {
     Logger::GetInstance()->INFO("new peer start");
-    std::shared_ptr<metapb::Peer> meta;
+    std::shared_ptr<metapb::Peer> meta = std::make_shared<metapb::Peer>();
     // find peer
     for(auto peer : region->peers())
     {
+        Logger::GetInstance()->INFO(std::to_string(storeID));
+        Logger::GetInstance()->INFO(std::to_string(peer.id()));
         if(peer.store_id() == storeID)
         {
-           meta = std::make_shared<metapb::Peer>(peer); 
+            Logger::GetInstance()->INFO("find store");
+            meta->set_id(peer.id());
+            meta->set_store_id(peer.store_id());
         }
     }
 
-    assert(meta->id() == 0);
+    Logger::GetInstance()->INFO("new peer a");
+    if(meta->id() == 0)
+    {
+        Logger::GetInstance()->ERRORS("invliad id!");
+        exit(-1);
+    }
     std::string tag = "[region " + std::to_string(region->id()) + " ] " + std::to_string(meta->id());
     // TODO: sprintf to str
     Logger::GetInstance()->INFO("new peer");

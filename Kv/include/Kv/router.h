@@ -14,6 +14,8 @@
 #include <atomic>
 #include <memory>
 
+#include <Kv/concurrency_queue.h>
+
 namespace kvserver
 {
 
@@ -41,7 +43,7 @@ friend class RaftWorker;
 
 public:
 
-    Router(std::deque<Msg> storeSender);
+    Router();
 
     PeerState_* Get(uint64_t regionID);
 
@@ -61,9 +63,9 @@ private:
 
     std::map<uint64_t, PeerState_*> peers_;
 
-    std::deque<Msg> peerSender_;
+    Queue<Msg> peerSender_;
 
-    std::deque<Msg> storeSender_;
+    Queue<Msg> storeSender_;
 
 };
 

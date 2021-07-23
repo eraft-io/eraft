@@ -30,8 +30,7 @@ class RaftRouter;
 struct StoreState
 {
     uint64_t id_;
-
-    std::deque<Msg> receiver_;
+    
 };
 
 struct StoreMeta
@@ -99,7 +98,7 @@ public:
 
     void ClearStaleMeta(rocksdb::WriteBatch* kvWB, 
                         rocksdb::WriteBatch* raftWB, 
-                        std::shared_ptr<raft_serverpb::RegionLocalState> originState);
+                        raft_serverpb::RegionLocalState* originState);
     
     bool Start(std::shared_ptr<metapb::Store> meta,
                std::shared_ptr<Config> cfg,

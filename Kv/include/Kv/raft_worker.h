@@ -4,6 +4,7 @@
 #include <Kv/raft_store.h>
 #include <Kv/msg.h>
 #include <Kv/router.h>
+#include <Kv/concurrency_queue.h>
 
 #include <deque>
 #include <memory>
@@ -24,7 +25,7 @@ public:
     RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm);
     ~RaftWorker();
 
-    void Run();
+    static void Run(Queue<Msg>& qu);
 
     void BootThread();
 
@@ -34,8 +35,6 @@ private:
 
     std::shared_ptr<Router> pr_;
     
-    std::deque<Msg> raftCh_;
-
     std::shared_ptr<GlobalContext> ctx_;
 
 };

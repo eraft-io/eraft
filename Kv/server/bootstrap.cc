@@ -84,11 +84,7 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(st
 bool BootHelper::PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region)
 {
     raft_serverpb::RegionLocalState* state = new raft_serverpb::RegionLocalState();
-    metapb::Region* region_ = new metapb::Region();
-    region_->set_id(region->id());
-    region_->set_start_key(region->start_key());
-    region_->set_end_key(region->end_key());
-    state->set_allocated_region(region_);
+    state->set_allocated_region(region.get());
     rocksdb::WriteBatch kvWB;
     std::string prepareBootstrapKey(Assistant::GetInstance()->PrepareBootstrapKey.begin(), Assistant::GetInstance()->PrepareBootstrapKey.end());
     Assistant::GetInstance()->SetMeta(&kvWB, prepareBootstrapKey, *state);

@@ -37,10 +37,28 @@ struct Msg
     {
     }
 
+    Msg()
+    {
+    }
+
     Msg(MsgType tp, uint64_t regionId, void *data)
     : type_(tp), regionId_(regionId), data_(data)
     {
     }
+
+    // std::string MsgToString()
+    // {
+    //     switch (type_)
+    //     {
+    //     case MsgType::MsgTypeNull:
+    //         {
+    //             return "MsgTypeNull";
+    //             break;
+    //         }
+    //     default:
+    //         break;
+    //     }
+    // }
 };
 
 struct MsgRaftCmd {

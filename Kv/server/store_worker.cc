@@ -1,4 +1,5 @@
 #include <Kv/store_worker.h>
+#include <Logger/Logger.h>
 
 namespace kvserver
 {
@@ -7,6 +8,7 @@ StoreWorker::StoreWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Sto
 {
     this->storeState_ = state;
     this->ctx_ = ctx;
+    this->running_ = true;
 }
 
 StoreWorker::~StoreWorker()
@@ -21,14 +23,16 @@ void StoreWorker::BootThread()
 }
 
 void StoreWorker::Run() {
+    Logger::GetInstance()->INFO("store worker running!");
     while (IsAlive())
     {
-        while (this->storeState_->receiver_.size() > 0)
-        {
-            Msg m = *this->storeState_->receiver_.end();
-            this->HandleMsg(m);
-            this->storeState_->receiver_.pop_back();
-        }
+        // Logger::GetInstance()->INFO("pop new messsage with region id: " + std::to_string(msg.regionId_));
+        // while (this->storeState_->receiver_.size() > 0)
+        // {
+        //     Msg m = *this->storeState_->receiver_.end();
+        //     this->HandleMsg(m);
+        //     this->storeState_->receiver_.pop_back();
+        // }
     }
 }
 

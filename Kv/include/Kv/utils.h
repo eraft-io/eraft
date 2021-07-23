@@ -369,21 +369,21 @@ public:
 
     static std::pair<raft_serverpb::RaftLocalState*, rocksdb::Status> GetRaftLocalState(rocksdb::DB* db, uint64_t regionId)
     {
-        raft_serverpb::RaftLocalState* raftLocalState;
+        raft_serverpb::RaftLocalState* raftLocalState = new raft_serverpb::RaftLocalState();
         rocksdb::Status s = GetMeta(db, RaftStateKey(regionId), raftLocalState);
         return std::pair<raft_serverpb::RaftLocalState*, rocksdb::Status> (raftLocalState, s);
     }
 
     static std::pair<raft_serverpb::RaftApplyState*, rocksdb::Status> GetApplyState(rocksdb::DB* db, uint64_t regionId)
     {
-        raft_serverpb::RaftApplyState* applyState;
+        raft_serverpb::RaftApplyState* applyState = new raft_serverpb::RaftApplyState();
         rocksdb::Status s = GetMeta(db, ApplyStateKey(regionId), applyState);
         return std::pair<raft_serverpb::RaftApplyState*, rocksdb::Status> (applyState, s);   
     }
 
     static eraftpb::Entry* GetRaftEntry(rocksdb::DB* db, uint64_t regionId, uint64_t idx)
     {
-        eraftpb::Entry* entry;
+        eraftpb::Entry* entry = new eraftpb::Entry();
         GetMeta(db, RaftLogKey(regionId, idx), entry);
         return entry;
     }
@@ -400,18 +400,18 @@ public:
         auto lst = GetRaftLocalState(raftEngine, region->id());
         if(lst.second.IsNotFound()) 
         {
-            raft_serverpb::RaftLocalState raftState;
-            raftState.set_allocated_hard_state(new eraftpb::HardState);
+            raft_serverpb::RaftLocalState* raftState = new raft_serverpb::RaftLocalState();
+            raftState->set_allocated_hard_state(new eraftpb::HardState);
             // new split region
             if (region->peers().size() > 0)
             {
-                raftState.set_last_index(kRaftInitLogIndex);
-                raftState.set_last_term(kRaftInitLogTerm);
-                raftState.mutable_hard_state()->set_term(kRaftInitLogTerm);
-                raftState.mutable_hard_state()->set_commit(kRaftInitLogIndex);
-                if(!PutMeta(raftEngine, RaftStateKey(region->id()), raftState))
+                raftState->set_last_index(kRaftInitLogIndex);
+                raftState->set_last_term(kRaftInitLogTerm);
+                raftState->mutable_hard_state()->set_term(kRaftInitLogTerm);
+                raftState->mutable_hard_state()->set_commit(kRaftInitLogIndex);
+                if(!PutMeta(raftEngine, RaftStateKey(region->id()), *raftState))
                 {
-                    return std::pair<raft_serverpb::RaftLocalState*, bool>(&raftState, false);
+                    return std::pair<raft_serverpb::RaftLocalState*, bool>(raftState, false);
                 }
             }
         }
@@ -424,17 +424,17 @@ public:
         auto ast = GetApplyState(kvEngine, region->id());
         if(ast.second.IsNotFound()) 
         {
-            raft_serverpb::RaftApplyState applyState;
-            applyState.set_allocated_truncated_state(new raft_serverpb::RaftTruncatedState);
+            raft_serverpb::RaftApplyState* applyState = new raft_serverpb::RaftApplyState();
+            applyState->set_allocated_truncated_state(new raft_serverpb::RaftTruncatedState);
             if(region->peers().size() > 0)
             {
-                applyState.set_applied_index(kRaftInitLogIndex);
-                applyState.mutable_truncated_state()->set_index(kRaftInitLogIndex);
-                applyState.mutable_truncated_state()->set_term(kRaftInitLogTerm);
+                applyState->set_applied_index(kRaftInitLogIndex);
+                applyState->mutable_truncated_state()->set_index(kRaftInitLogIndex);
+                applyState->mutable_truncated_state()->set_term(kRaftInitLogTerm);
             }
-            if(!PutMeta(kvEngine, ApplyStateKey(region->id()), applyState))
+            if(!PutMeta(kvEngine, ApplyStateKey(region->id()), *applyState))
             {
-                return std::pair<raft_serverpb::RaftApplyState*, bool>(&applyState, false);
+                return std::pair<raft_serverpb::RaftApplyState*, bool>(applyState, false);
             }
         }
         return std::pair<raft_serverpb::RaftApplyState*, bool>(ast.first, false);
