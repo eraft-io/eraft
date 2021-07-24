@@ -507,6 +507,7 @@ void PeerMsgHandler::OnTick()
 void PeerMsgHandler::StartTicker()
 {
     // add task to ticker
+    
 }
 
 void PeerMsgHandler::OnRaftBaseTick()

@@ -45,7 +45,7 @@ public:
 
     Router();
 
-    PeerState_* Get(uint64_t regionID);
+    std::shared_ptr<PeerState_> Get(uint64_t regionID);
 
     void Register(std::shared_ptr<Peer> peer);
 
@@ -61,12 +61,7 @@ protected:
 
 private:
 
-    std::map<uint64_t, PeerState_*> peers_;
-
-    Queue<Msg> peerSender_;
-
-    Queue<Msg> storeSender_;
-
+    std::map<uint64_t, std::shared_ptr<PeerState_> > peers_;
 };
 
 class RaftRouter

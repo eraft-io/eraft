@@ -27,15 +27,15 @@ public:
 
     static void Run(Queue<Msg>& qu);
 
-    void BootThread();
+    static void BootThread();
 
-    std::shared_ptr<PeerState_> GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap, uint64_t regionID);
+    static std::shared_ptr<PeerState_> GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap, uint64_t regionID);
 
 private:
 
-    std::shared_ptr<Router> pr_;
+    static std::shared_ptr<Router> pr_;
     
-    std::shared_ptr<GlobalContext> ctx_;
+    static std::shared_ptr<GlobalContext> ctx_;
 
 };
 

@@ -8,12 +8,14 @@
 
 namespace kvserver
 {
+
+std::shared_ptr<GlobalContext> RaftWorker::ctx_ = nullptr;
+std::shared_ptr<Router> RaftWorker::pr_ = nullptr;
     
 RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm) 
 {
-    // this->raftCh_ = pm->peerSender_;
-    this->ctx_ = ctx;
-    this->pr_ = pm;
+    RaftWorker::ctx_ = ctx;
+    RaftWorker::pr_ = pm;
 }
 
 void RaftWorker::BootThread()
@@ -31,32 +33,28 @@ void RaftWorker::Run(Queue<Msg>& qu)
     {
         auto msg = qu.Pop();
         Logger::GetInstance()->INFO("pop new messsage with region id: " + std::to_string(msg.regionId_));
+
+        // get msg from raft router, and handler it.
+
+        // handle m, call PeerMessageHandler
+        std::shared_ptr<PeerState_> peerState = RaftWorker::GetPeerState(peerStMap, msg.regionId_);
+        if(peerState == nullptr)
+        {
+            continue;
+        }
+        PeerMsgHandler pmHandler(peerState->peer_, RaftWorker::ctx_);
+        pmHandler.HandleMsg(msg);
+        
+        // get peer state, and handle raft ready
+        for(auto peerState : peerStMap) 
+        {
+            if(peerState.second != nullptr) 
+            {
+                PeerMsgHandler pmHandler(peerState.second->peer_, RaftWorker::ctx_);
+                pmHandler.HandleRaftReady();
+            }
+        }
     }
-    
-    // get msg from raft router, and handler it.
-    // Logger::GetInstance()->INFO("this->raftCh_.size() = " + std::to_string(qu.size()));
-    // while (this->raftCh_.size() > 0)
-    // {
-    //     Msg m = *this->raftCh_.end();
-    //     // handle m, call PeerMessageHandler
-    //     std::shared_ptr<PeerState_> peerState = this->GetPeerState(peerStMap, m.regionId_);
-    //     if(peerState == nullptr)
-    //     {
-    //         continue;
-    //     }
-    //     PeerMsgHandler pmHandler(peerState->peer_, this->ctx_);
-    //     pmHandler.HandleMsg(m);
-    //     this->raftCh_.pop_back();
-    // }
-    // get peer state, and handle raft ready
-    // for(auto peerState : peerStMap) 
-    // {
-    //     if(peerState.second != nullptr) 
-    //     {
-    //         PeerMsgHandler pmHandler(peerState.second->peer_, this->ctx_);
-    //         // pmHandler.HandleRaftReady();
-    //     }
-    // }
 }
 
 RaftWorker::~RaftWorker()
@@ -68,12 +66,12 @@ std::shared_ptr<PeerState_> RaftWorker::GetPeerState(std::map<uint64_t, std::sha
 {
     if(peersStateMap.find(regionID) == peersStateMap.end())
     {
-        auto peer = this->pr_->Get(regionID);
+        auto peer = RaftWorker::pr_->Get(regionID);
         if(peer == nullptr)
         {
             return nullptr;
         }
-        peersStateMap[regionID] = std::shared_ptr<PeerState_>(peer);
+        peersStateMap[regionID] = peer;
     }
     return peersStateMap[regionID];
 }

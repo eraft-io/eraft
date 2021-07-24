@@ -11,6 +11,7 @@
 
 #include <Kv/msg.h>
 #include <Kv/raft_store.h>
+#include <Kv/concurrency_queue.h>
 
 namespace kvserver
 {
@@ -25,47 +26,47 @@ public:
     StoreWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<StoreState> state);
     ~StoreWorker();
 
-    bool IsAlive() const { return running_; }
+    static bool IsAlive() { return running_; }
     
-    void Stop() { running_ = false; }
+    static void Stop() { running_ = false; }
     
-    void Run();
+    static void Run(Queue<Msg>& qu);
 
-    void BootThread();
+    static void BootThread();
 
-    void OnTick(StoreTick* tick);
+    static void OnTick(StoreTick* tick);
 
-    void HandleMsg(Msg msg);
+    static void HandleMsg(Msg msg);
 
-    void Start(metapb::Store* store);
+    static void Start(metapb::Store* store);
 
-    bool CheckMsg(std::shared_ptr<raft_serverpb::RaftMessage> msg);
+    static bool CheckMsg(std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
-    bool OnRaftMessage(raft_serverpb::RaftMessage* msg);
+    static bool OnRaftMessage(raft_serverpb::RaftMessage* msg);
 
-    bool MaybeCreatePeer(uint64_t regionID, std::shared_ptr<raft_serverpb::RaftMessage> msg);
+    static bool MaybeCreatePeer(uint64_t regionID, std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
-    void StoreHeartbeatScheduler();
+    static void StoreHeartbeatScheduler();
 
-    void OnSchedulerStoreHeartbeatTick();
+    static void OnSchedulerStoreHeartbeatTick();
 
-    bool HandleSnapMgrGC();
+    static bool HandleSnapMgrGC();
 
-    bool ScheduleGCSnap();  //  TODO:
+    static bool ScheduleGCSnap();  //  TODO:
 
 
 protected:
 
 private:
 
-    uint64_t id_;
+    static uint64_t id_;
 
-    bool running_;
+    static bool running_;
 
     // StoreState
-    std::shared_ptr<StoreState> storeState_;
+    static std::shared_ptr<StoreState> storeState_;
 
-    std::shared_ptr<GlobalContext> ctx_;
+    static std::shared_ptr<GlobalContext> ctx_;
 };
 
 

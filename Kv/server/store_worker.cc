@@ -4,11 +4,19 @@
 namespace kvserver
 {
 
+uint64_t StoreWorker::id_ = 0;
+
+bool StoreWorker::running_ = true;
+
+// StoreState
+std::shared_ptr<StoreState> StoreWorker::storeState_ = nullptr;
+
+std::shared_ptr<GlobalContext> StoreWorker::ctx_ = nullptr;
+
 StoreWorker::StoreWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<StoreState> state)
 {
-    this->storeState_ = state;
-    this->ctx_ = ctx;
-    this->running_ = true;
+    StoreWorker::storeState_ = state;
+    StoreWorker::ctx_ = ctx;
 }
 
 StoreWorker::~StoreWorker()
@@ -18,21 +26,17 @@ StoreWorker::~StoreWorker()
 
 void StoreWorker::BootThread()
 {
-    std::thread th(&StoreWorker::Run, this);
+    std::thread th(std::bind(&Run, std::ref(QueueContext::GetInstance()->storeSender_)));
     th.detach();
 }
 
-void StoreWorker::Run() {
+void StoreWorker::Run(Queue<Msg>& qu) {
     Logger::GetInstance()->INFO("store worker running!");
     while (IsAlive())
     {
-        // Logger::GetInstance()->INFO("pop new messsage with region id: " + std::to_string(msg.regionId_));
-        // while (this->storeState_->receiver_.size() > 0)
-        // {
-        //     Msg m = *this->storeState_->receiver_.end();
-        //     this->HandleMsg(m);
-        //     this->storeState_->receiver_.pop_back();
-        // }
+        auto msg = qu.Pop();
+        Logger::GetInstance()->INFO("pop new messsage from store sender");
+        StoreWorker::HandleMsg(msg);
     }
 }
 
@@ -47,7 +51,7 @@ void StoreWorker::HandleMsg(Msg msg)
     {
     case MsgType::MsgTypeStoreRaftMessage:
         {
-            if(!this->OnRaftMessage(static_cast<raft_serverpb::RaftMessage*>(msg.data_)))
+            if(!StoreWorker::OnRaftMessage(static_cast<raft_serverpb::RaftMessage*>(msg.data_)))
             {
                 // TODO: log handle raft message failed store id
             }
@@ -55,12 +59,12 @@ void StoreWorker::HandleMsg(Msg msg)
         }
     case MsgType::MsgTypeStoreTick:
         {
-            this->OnTick(static_cast<StoreTick*>(msg.data_));
+            StoreWorker::OnTick(static_cast<StoreTick*>(msg.data_));
             break;
         }
     case MsgType::MsgTypeStoreStart:
         {
-            this->Start(static_cast<metapb::Store*>(msg.data_));
+            StoreWorker::Start(static_cast<metapb::Store*>(msg.data_));
             break;
         }
     default:

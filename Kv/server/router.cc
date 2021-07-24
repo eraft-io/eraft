@@ -7,7 +7,7 @@ Router::Router()
 {
 }
 
-PeerState_* Router::Get(uint64_t regionID)
+std::shared_ptr<PeerState_> Router::Get(uint64_t regionID)
 {
     if(this->peers_.find(regionID) != this->peers_.end()) {
         return this->peers_[regionID];
@@ -17,7 +17,7 @@ PeerState_* Router::Get(uint64_t regionID)
 
 void Router::Register(std::shared_ptr<Peer> peer) 
 {
-    PeerState_* ps = new PeerState_(peer);
+    std::shared_ptr<PeerState_> ps = std::make_shared<PeerState_>(peer);
     this->peers_[peer->regionId_] = ps;
 }
 
@@ -30,7 +30,7 @@ void Router::Close(uint64_t regionID)
 bool Router::Send(uint64_t regionID, Msg msg) 
 {
     msg.regionId_ = regionID;
-    PeerState_* ps = this->Get(regionID);
+    std::shared_ptr<PeerState_> ps = this->Get(regionID);
     if(ps == nullptr) {
         return false; // TODO: log peer not fount
     }

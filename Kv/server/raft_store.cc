@@ -155,9 +155,6 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers)
         Msg m(MsgType::MsgTypeStart, ctx->store_.get());
         router->Send(regionID, m);
     }
-    Msg m_(MsgType::MsgTypeStart, ctx->store_.get());
-    router->Send(2, m_); // for test
-    // run ticker
     return true;
 }
 
