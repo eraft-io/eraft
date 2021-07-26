@@ -119,7 +119,7 @@ StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx)
  
 bool RaftStorage::Raft(const raft_serverpb::RaftMessage* msg)
 {
-    this->raftRouter_->SendRaftMessage(msg);
+    return this->raftRouter_->SendRaftMessage(msg);
 }
 
 bool RaftStorage::SnapShot(raft_serverpb::RaftSnapshotData* snap)
@@ -139,18 +139,18 @@ bool RaftStorage::Start()
     // raft client init
     std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(this->conf_);
 
+    this->node_ = std::make_shared<Node>(this->raftSystem_, this->conf_);
+
     // server transport init
     std::shared_ptr<ServerTransport> trans = std::make_shared<ServerTransport>(raftClient, raftRouter_);
 
-    this->node_ = std::make_shared<Node>(this->raftSystem_, this->conf_);
-
     if(this->node_->Start(this->engs_, trans))
     {
-        Logger::GetInstance()->INFO("raft storage start succeed!");
-    } 
+        Logger::GetInstance()->DEBUG_NEW("raft storage start succeed!", __FILE__, __LINE__, "RaftStorage::Start");
+    }
     else
     {
-        Logger::GetInstance()->ERRORS("raft storage start error!");
+        Logger::GetInstance()->DEBUG_NEW("err: raft storage start error!", __FILE__, __LINE__, "RaftStorage::Start");
     }
 }
 

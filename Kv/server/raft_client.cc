@@ -1,4 +1,5 @@
 #include <Kv/raft_client.h>
+#include <Logger/Logger.h>
 
 #include <grpcpp/grpcpp.h>
 #include <eraftio/tinykvpb.grpc.pb.h>
@@ -66,12 +67,15 @@ bool RaftClient::Send(uint64_t storeID, std::string addr, raft_serverpb::RaftMes
     std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
     Done done;
     grpc::ClientContext context;
-    stub_->Raft(&context, msg, &done);
+    auto status = stub_->Raft(&context, msg, &done);
     {
         std::lock_guard<std::mutex> lck (this->mu_);
         conns_.erase(addr);
     }
-    
+    if(!status.ok()) {
+        Logger::GetInstance()->DEBUG_NEW("err: send msg to peer " + addr + " error! ", __FILE__, __LINE__, "RaftClient::Send");
+        return false;
+    }
     return true;
 }
 

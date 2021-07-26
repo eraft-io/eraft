@@ -308,6 +308,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_raft_5fserverpb_2eproto::offse
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::StoreIdent, cluster_id_),
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::StoreIdent, store_id_),
+  PROTOBUF_FIELD_OFFSET(::raft_serverpb::StoreIdent, addr_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::KeyValue, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -358,12 +359,12 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 28, -1, sizeof(::raft_serverpb::RaftTruncatedState)},
   { 35, -1, sizeof(::raft_serverpb::RegionLocalState)},
   { 42, -1, sizeof(::raft_serverpb::StoreIdent)},
-  { 49, -1, sizeof(::raft_serverpb::KeyValue)},
-  { 56, -1, sizeof(::raft_serverpb::RaftSnapshotData)},
-  { 65, -1, sizeof(::raft_serverpb::SnapshotCFFile)},
-  { 73, -1, sizeof(::raft_serverpb::SnapshotMeta)},
-  { 79, -1, sizeof(::raft_serverpb::SnapshotChunk)},
-  { 86, -1, sizeof(::raft_serverpb::Done)},
+  { 50, -1, sizeof(::raft_serverpb::KeyValue)},
+  { 57, -1, sizeof(::raft_serverpb::RaftSnapshotData)},
+  { 66, -1, sizeof(::raft_serverpb::SnapshotCFFile)},
+  { 74, -1, sizeof(::raft_serverpb::SnapshotMeta)},
+  { 80, -1, sizeof(::raft_serverpb::SnapshotChunk)},
+  { 87, -1, sizeof(::raft_serverpb::Done)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -398,19 +399,20 @@ const char descriptor_table_protodef_raft_5fserverpb_2eproto[] =
   "\022\r\n\005index\030\001 \001(\004\022\014\n\004term\030\002 \001(\004\"[\n\020RegionL"
   "ocalState\022\'\n\005state\030\001 \001(\0162\030.raft_serverpb"
   ".PeerState\022\036\n\006region\030\002 \001(\0132\016.metapb.Regi"
-  "on\"2\n\nStoreIdent\022\022\n\ncluster_id\030\001 \001(\004\022\020\n\010"
-  "store_id\030\002 \001(\004\"&\n\010KeyValue\022\013\n\003key\030\001 \001(\014\022"
-  "\r\n\005value\030\002 \001(\014\"\227\001\n\020RaftSnapshotData\022\036\n\006r"
-  "egion\030\001 \001(\0132\016.metapb.Region\022\021\n\tfile_size"
-  "\030\002 \001(\004\022%\n\004data\030\003 \003(\0132\027.raft_serverpb.Key"
-  "Value\022)\n\004meta\030\005 \001(\0132\033.raft_serverpb.Snap"
-  "shotMeta\"<\n\016SnapshotCFFile\022\n\n\002cf\030\001 \001(\t\022\014"
-  "\n\004size\030\002 \001(\004\022\020\n\010checksum\030\003 \001(\r\"\?\n\014Snapsh"
-  "otMeta\022/\n\010cf_files\030\001 \003(\0132\035.raft_serverpb"
-  ".SnapshotCFFile\"J\n\rSnapshotChunk\022+\n\007mess"
-  "age\030\001 \001(\0132\032.raft_serverpb.RaftMessage\022\014\n"
-  "\004data\030\002 \001(\014\"\006\n\004Done*&\n\tPeerState\022\n\n\006Norm"
-  "al\020\000\022\r\n\tTombstone\020\002b\006proto3"
+  "on\"@\n\nStoreIdent\022\022\n\ncluster_id\030\001 \001(\004\022\020\n\010"
+  "store_id\030\002 \001(\004\022\014\n\004addr\030\003 \001(\t\"&\n\010KeyValue"
+  "\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\"\227\001\n\020RaftSna"
+  "pshotData\022\036\n\006region\030\001 \001(\0132\016.metapb.Regio"
+  "n\022\021\n\tfile_size\030\002 \001(\004\022%\n\004data\030\003 \003(\0132\027.raf"
+  "t_serverpb.KeyValue\022)\n\004meta\030\005 \001(\0132\033.raft"
+  "_serverpb.SnapshotMeta\"<\n\016SnapshotCFFile"
+  "\022\n\n\002cf\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\020\n\010checksum\030\003"
+  " \001(\r\"\?\n\014SnapshotMeta\022/\n\010cf_files\030\001 \003(\0132\035"
+  ".raft_serverpb.SnapshotCFFile\"J\n\rSnapsho"
+  "tChunk\022+\n\007message\030\001 \001(\0132\032.raft_serverpb."
+  "RaftMessage\022\014\n\004data\030\002 \001(\014\"\006\n\004Done*&\n\tPee"
+  "rState\022\n\n\006Normal\020\000\022\r\n\tTombstone\020\002b\006proto"
+  "3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_raft_5fserverpb_2eproto_deps[2] = {
   &::descriptor_table_eraftpb_2eproto,
@@ -433,7 +435,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_raf
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_raft_5fserverpb_2eproto_once;
 static bool descriptor_table_raft_5fserverpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_raft_5fserverpb_2eproto = {
-  &descriptor_table_raft_5fserverpb_2eproto_initialized, descriptor_table_protodef_raft_5fserverpb_2eproto, "raft_serverpb.proto", 1147,
+  &descriptor_table_raft_5fserverpb_2eproto_initialized, descriptor_table_protodef_raft_5fserverpb_2eproto, "raft_serverpb.proto", 1161,
   &descriptor_table_raft_5fserverpb_2eproto_once, descriptor_table_raft_5fserverpb_2eproto_sccs, descriptor_table_raft_5fserverpb_2eproto_deps, 12, 2,
   schemas, file_default_instances, TableStruct_raft_5fserverpb_2eproto::offsets,
   file_level_metadata_raft_5fserverpb_2eproto, 12, file_level_enum_descriptors_raft_5fserverpb_2eproto, file_level_service_descriptors_raft_5fserverpb_2eproto,
@@ -2466,6 +2468,7 @@ class StoreIdent::HasBitSetters {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int StoreIdent::kClusterIdFieldNumber;
 const int StoreIdent::kStoreIdFieldNumber;
+const int StoreIdent::kAddrFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 StoreIdent::StoreIdent()
@@ -2477,6 +2480,10 @@ StoreIdent::StoreIdent(const StoreIdent& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  addr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from.addr().size() > 0) {
+    addr_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.addr_);
+  }
   ::memcpy(&cluster_id_, &from.cluster_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&store_id_) -
     reinterpret_cast<char*>(&cluster_id_)) + sizeof(store_id_));
@@ -2484,6 +2491,8 @@ StoreIdent::StoreIdent(const StoreIdent& from)
 }
 
 void StoreIdent::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_StoreIdent_raft_5fserverpb_2eproto.base);
+  addr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&cluster_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&store_id_) -
       reinterpret_cast<char*>(&cluster_id_)) + sizeof(store_id_));
@@ -2495,6 +2504,7 @@ StoreIdent::~StoreIdent() {
 }
 
 void StoreIdent::SharedDtor() {
+  addr_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void StoreIdent::SetCachedSize(int size) const {
@@ -2512,6 +2522,7 @@ void StoreIdent::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  addr_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&cluster_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&store_id_) -
       reinterpret_cast<char*>(&cluster_id_)) + sizeof(store_id_));
@@ -2537,6 +2548,13 @@ const char* StoreIdent::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           store_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string addr = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_addr(), ptr, ctx, "raft_serverpb.StoreIdent.addr");
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2596,6 +2614,21 @@ bool StoreIdent::MergePartialFromCodedStream(
         break;
       }
 
+      // string addr = 3;
+      case 3: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (26 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadString(
+                input, this->mutable_addr()));
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+            this->addr().data(), static_cast<int>(this->addr().length()),
+            ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE,
+            "raft_serverpb.StoreIdent.addr"));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2633,6 +2666,16 @@ void StoreIdent::SerializeWithCachedSizes(
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64(2, this->store_id(), output);
   }
 
+  // string addr = 3;
+  if (this->addr().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->addr().data(), static_cast<int>(this->addr().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "raft_serverpb.StoreIdent.addr");
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->addr(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2656,6 +2699,17 @@ void StoreIdent::SerializeWithCachedSizes(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->store_id(), target);
   }
 
+  // string addr = 3;
+  if (this->addr().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->addr().data(), static_cast<int>(this->addr().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "raft_serverpb.StoreIdent.addr");
+    target =
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
+        3, this->addr(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2676,6 +2730,13 @@ size_t StoreIdent::ByteSizeLong() const {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
+
+  // string addr = 3;
+  if (this->addr().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->addr());
+  }
 
   // uint64 cluster_id = 1;
   if (this->cluster_id() != 0) {
@@ -2718,6 +2779,10 @@ void StoreIdent::MergeFrom(const StoreIdent& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  if (from.addr().size() > 0) {
+
+    addr_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.addr_);
+  }
   if (from.cluster_id() != 0) {
     set_cluster_id(from.cluster_id());
   }
@@ -2751,6 +2816,8 @@ void StoreIdent::Swap(StoreIdent* other) {
 void StoreIdent::InternalSwap(StoreIdent* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
+  addr_.Swap(&other->addr_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(cluster_id_, other->cluster_id_);
   swap(store_id_, other->store_id_);
 }

@@ -805,6 +805,18 @@ class Peer :
 
   // accessors -------------------------------------------------------
 
+  // string addr = 3;
+  void clear_addr();
+  static const int kAddrFieldNumber = 3;
+  const std::string& addr() const;
+  void set_addr(const std::string& value);
+  void set_addr(std::string&& value);
+  void set_addr(const char* value);
+  void set_addr(const char* value, size_t size);
+  std::string* mutable_addr();
+  std::string* release_addr();
+  void set_allocated_addr(std::string* addr);
+
   // uint64 id = 1;
   void clear_id();
   static const int kIdFieldNumber = 1;
@@ -822,6 +834,7 @@ class Peer :
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr addr_;
   ::PROTOBUF_NAMESPACE_ID::uint64 id_;
   ::PROTOBUF_NAMESPACE_ID::uint64 store_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -1212,6 +1225,57 @@ inline void Peer::set_store_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   store_id_ = value;
   // @@protoc_insertion_point(field_set:metapb.Peer.store_id)
+}
+
+// string addr = 3;
+inline void Peer::clear_addr() {
+  addr_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Peer::addr() const {
+  // @@protoc_insertion_point(field_get:metapb.Peer.addr)
+  return addr_.GetNoArena();
+}
+inline void Peer::set_addr(const std::string& value) {
+  
+  addr_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:metapb.Peer.addr)
+}
+inline void Peer::set_addr(std::string&& value) {
+  
+  addr_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:metapb.Peer.addr)
+}
+inline void Peer::set_addr(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  addr_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:metapb.Peer.addr)
+}
+inline void Peer::set_addr(const char* value, size_t size) {
+  
+  addr_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:metapb.Peer.addr)
+}
+inline std::string* Peer::mutable_addr() {
+  
+  // @@protoc_insertion_point(field_mutable:metapb.Peer.addr)
+  return addr_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Peer::release_addr() {
+  // @@protoc_insertion_point(field_release:metapb.Peer.addr)
+  
+  return addr_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Peer::set_allocated_addr(std::string* addr) {
+  if (addr != nullptr) {
+    
+  } else {
+    
+  }
+  addr_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), addr);
+  // @@protoc_insertion_point(field_set_allocated:metapb.Peer.addr)
 }
 
 #ifdef __GNUC__

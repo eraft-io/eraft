@@ -994,6 +994,18 @@ class StoreIdent :
 
   // accessors -------------------------------------------------------
 
+  // string addr = 3;
+  void clear_addr();
+  static const int kAddrFieldNumber = 3;
+  const std::string& addr() const;
+  void set_addr(const std::string& value);
+  void set_addr(std::string&& value);
+  void set_addr(const char* value);
+  void set_addr(const char* value, size_t size);
+  std::string* mutable_addr();
+  std::string* release_addr();
+  void set_allocated_addr(std::string* addr);
+
   // uint64 cluster_id = 1;
   void clear_cluster_id();
   static const int kClusterIdFieldNumber = 1;
@@ -1011,6 +1023,7 @@ class StoreIdent :
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr addr_;
   ::PROTOBUF_NAMESPACE_ID::uint64 cluster_id_;
   ::PROTOBUF_NAMESPACE_ID::uint64 store_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -2451,6 +2464,57 @@ inline void StoreIdent::set_store_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   
   store_id_ = value;
   // @@protoc_insertion_point(field_set:raft_serverpb.StoreIdent.store_id)
+}
+
+// string addr = 3;
+inline void StoreIdent::clear_addr() {
+  addr_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& StoreIdent::addr() const {
+  // @@protoc_insertion_point(field_get:raft_serverpb.StoreIdent.addr)
+  return addr_.GetNoArena();
+}
+inline void StoreIdent::set_addr(const std::string& value) {
+  
+  addr_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_serverpb.StoreIdent.addr)
+}
+inline void StoreIdent::set_addr(std::string&& value) {
+  
+  addr_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:raft_serverpb.StoreIdent.addr)
+}
+inline void StoreIdent::set_addr(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  addr_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_serverpb.StoreIdent.addr)
+}
+inline void StoreIdent::set_addr(const char* value, size_t size) {
+  
+  addr_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_serverpb.StoreIdent.addr)
+}
+inline std::string* StoreIdent::mutable_addr() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_serverpb.StoreIdent.addr)
+  return addr_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* StoreIdent::release_addr() {
+  // @@protoc_insertion_point(field_release:raft_serverpb.StoreIdent.addr)
+  
+  return addr_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void StoreIdent::set_allocated_addr(std::string* addr) {
+  if (addr != nullptr) {
+    
+  } else {
+    
+  }
+  addr_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), addr);
+  // @@protoc_insertion_point(field_set_allocated:raft_serverpb.StoreIdent.addr)
 }
 
 // -------------------------------------------------------------------

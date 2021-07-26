@@ -52,6 +52,8 @@ public:
 
     ~Node();
 
+    std::shared_ptr<Engines> engs_;
+
 private:
     
     uint64_t clusterID_;

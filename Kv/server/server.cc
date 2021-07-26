@@ -4,6 +4,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 #include <iostream>
+#include <Logger/Logger.h>
 
 namespace kvserver
 {
@@ -12,16 +13,14 @@ Server::Server() {
     this->serverAddress_ = DEFAULT_ADDR;
 }
 
-Server::Server(std::string addr, Storage* st) {
+Server::Server(std::string addr, RaftStorage* st) {
     this->serverAddress_ = addr;
     this->st_ = st;
 }
 
 Status Server::Raft(ServerContext* context, const raft_serverpb::RaftMessage* request, Done* response) 
 {
-    std::cout << "start_key: " << request->start_key() << std::endl;
-    auto raftStorage = static_cast<RaftStorage*>(this->st_);
-    if(raftStorage->Raft(request))
+    if(this->st_->Raft(request))
     {
         return Status::OK;
     }
@@ -29,6 +28,7 @@ Status Server::Raft(ServerContext* context, const raft_serverpb::RaftMessage* re
     {
         return Status::CANCELLED;
     }
+    return Status::OK;
 }
 
 Status Server::RawGet(ServerContext* context, const kvrpcpb::RawGetRequest* request, kvrpcpb::RawGetResponse* response) 
@@ -86,8 +86,8 @@ bool Server::RunLogic() {
 
     std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
 
-    // TODO: print log (server listening on server address)
-    std::cout << "server listening on: " << this->serverAddress_ << std::endl;
+    Logger::GetInstance()->DEBUG_NEW("server listening on: " + this->serverAddress_, __FILE__, __LINE__, "Server::RunLogic");
+
     server->Wait();
 }
 

@@ -50,8 +50,25 @@ Logger::~Logger()
     m_outfile.close();
 }
 
+
 void Logger::DEBUG(const std::string& text)
 {
+    output(text, debug);
+}
+
+void Logger::DEBUG_NEW(const std::string& in, const std::string& file, uint64_t line, const std::string& function)
+{
+    std::string text;
+    text.append(" [ ");
+    text.append(file);
+    text.append(":");
+    text.append(std::to_string(line));
+    text.append(" ]");
+    text.append(" ");
+    text.append(function);
+    text.append(" [ ");
+    text.append(std::string(in));
+    text.append(" ]");
     output(text, debug);
 }
 

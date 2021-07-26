@@ -63,10 +63,11 @@ public:
     bool Start();
 
     bool Stop();
+    
+    std::shared_ptr<Engines> engs_;
 
 private:
 
-    std::shared_ptr<Engines> engs_;
 
     std::shared_ptr<Config> conf_;
 

@@ -15,34 +15,32 @@
 namespace kvserver
 {
 
+std::map<uint64_t, std::shared_ptr<metapb::Peer> > Peer::peerCache_ = {};
+
+std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
+
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region)
 {
-    Logger::GetInstance()->INFO("new peer start");
     std::shared_ptr<metapb::Peer> meta = std::make_shared<metapb::Peer>();
     // find peer
     for(auto peer : region->peers())
     {
-        Logger::GetInstance()->INFO(std::to_string(storeID));
-        Logger::GetInstance()->INFO(std::to_string(peer.id()));
         if(peer.store_id() == storeID)
         {
-            Logger::GetInstance()->INFO("find store");
             meta->set_id(peer.id());
             meta->set_store_id(peer.store_id());
+            meta->set_addr(peer.addr());
         }
     }
 
-    Logger::GetInstance()->INFO("new peer a");
     if(meta->id() == 0)
     {
-        Logger::GetInstance()->ERRORS("invliad id!");
+        Logger::GetInstance()->DEBUG_NEW("err: meta id can not be 0! ", __FILE__, __LINE__, "Peer::Peer");
         exit(-1);
     }
-    std::string tag = "[region " + std::to_string(region->id()) + " ] " + std::to_string(meta->id());
-    // TODO: sprintf to str
-    Logger::GetInstance()->INFO("new peer");
-    std::shared_ptr<PeerStorage> ps = std::make_shared<PeerStorage>(engines, region, tag);
-    
+
+    std::string tag = "peer-" + std::to_string(meta->id()); 
+    std::shared_ptr<PeerStorage> ps = std::make_shared<PeerStorage>(engines, region, tag);    
     uint64_t appliedIndex = ps->AppliedIndex();
 
     eraft::Config nodeConf(meta->id(), cfg->raftElectionTimeoutTicks_, cfg->raftHeartbeatTicks_, appliedIndex, ps);
@@ -53,8 +51,11 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engine
     this->raftGroup_ = raftGroup;
     this->peerStorage_ = ps;
     this->tag_ = tag;
+    this->stopped_ = false;
 
-    // TODO: ticker
+    Logger::GetInstance()->DEBUG_NEW("init peer with peer id = " + std::to_string(this->meta_->id()) + " store id = " + 
+     std::to_string(this->meta_->store_id()) + " region id " + std::to_string(this->regionId_), __FILE__, __LINE__, "Peer::Peer");
+
     if(region->peers().size() == 1 && region->peers(0).store_id() == storeID) {
         this->raftGroup_->Campaign();
     }
@@ -67,22 +68,22 @@ Peer::~Peer()
 
 void Peer::InsertPeerCache(metapb::Peer* peer)
 {
-    this->peerCache_.insert(std::pair<uint64_t, std::shared_ptr<metapb::Peer> >(peer->id(), peer));
+    Peer::peerCache_.insert(std::pair<uint64_t, std::shared_ptr<metapb::Peer> >(peer->id(), peer));
 }
 
 void Peer::RemovePeerCache(uint64_t peerID)
 {
-    this->peerCache_.erase(peerID);
+    Peer::peerCache_.erase(peerID);
 }
 
 std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID)
 {
-    if(this->peerCache_.find(peerID) != this->peerCache_.end()) {
-        return this->peerCache_[peerID];
-    }
+    // if(Peer::peerCache_.find(peerID) != Peer::peerCache_.end()) { // peer cache has err
+    //     return Peer::peerCache_[peerID];
+    // }
     for(auto peer : peerStorage_->region_->peers()) {
         if(peer.id() == peerID) {
-            this->InsertPeerCache(&peer);
+            // Peer::InsertPeerCache(&peer);
             return std::make_shared<metapb::Peer>(peer);
         }
     }
@@ -239,22 +240,22 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
 {
     std::shared_ptr<raft_serverpb::RaftMessage> sendMsg = std::make_shared<raft_serverpb::RaftMessage>();
     sendMsg->set_region_id(this->regionId_);
-    metapb::RegionEpoch epoch;
-    epoch.set_conf_ver(this->Region()->region_epoch().conf_ver());
-    epoch.set_version(this->Region()->region_epoch().version());
-    sendMsg->set_allocated_region_epoch(&epoch);
+    sendMsg->mutable_region_epoch()->set_conf_ver(this->Region()->region_epoch().conf_ver());
+    sendMsg->mutable_region_epoch()->set_version(this->Region()->region_epoch().version());
 
     auto fromPeer = this->meta_;
     auto toPeer = this->GetPeerFromCache(msg.to());
     if(toPeer == nullptr)
     {
-        // TODO: failed to lookup recipient peer
         return false;
     }
-    // TODO: log send raft msg from %v to %v
+    sendMsg->mutable_from_peer()->set_id(fromPeer->id());
+    sendMsg->mutable_from_peer()->set_store_id(fromPeer->store_id());
+    sendMsg->mutable_from_peer()->set_addr(fromPeer->addr());
 
-    sendMsg->set_allocated_from_peer(& *fromPeer);
-    sendMsg->set_allocated_to_peer(& *toPeer);
+    sendMsg->mutable_to_peer()->set_id(toPeer->id());
+    sendMsg->mutable_to_peer()->set_store_id(toPeer->store_id());
+    sendMsg->mutable_to_peer()->set_addr(toPeer->addr());
 
     if(this->peerStorage_->IsInitialized() && Assistant::GetInstance()->IsInitialMsg(msg))
     {
@@ -262,9 +263,25 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
         sendMsg->set_end_key(this->Region()->end_key());
     }
 
-    sendMsg->set_allocated_message(&msg);
+    sendMsg->mutable_message()->set_from(msg.from());
+    sendMsg->mutable_message()->set_to(msg.to());
+    sendMsg->mutable_message()->set_index(msg.index());
+    sendMsg->mutable_message()->set_term(msg.term());
+    sendMsg->mutable_message()->set_commit(msg.commit());
+    sendMsg->mutable_message()->set_log_term(msg.log_term());
+    sendMsg->mutable_message()->set_reject(msg.reject());
+    sendMsg->mutable_message()->set_msg_type(msg.msg_type());
+
+    for(auto ent: msg.entries())
+    {
+        eraftpb::Entry* e = sendMsg->mutable_message()->add_entries();
+        e->set_entry_type(ent.entry_type());
+        e->set_index(ent.index());
+        e->set_term(ent.term());
+        e->set_data(ent.data());
+    }
 
     return trans->Send(sendMsg);
 }
-    
+
 } // namespace kvserver

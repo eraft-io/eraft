@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <stdint.h>
 
 class Logger
 {
@@ -29,6 +30,7 @@ public:
     Logger(log_target target, log_level level, const std::string& path);
     ~Logger();
     
+    void DEBUG_NEW(const std::string& in, const std::string& file, uint64_t line, const std::string& function);
     void DEBUG(const std::string& text);
     void INFO(const std::string& text);
     void WARNING(const std::string& text);

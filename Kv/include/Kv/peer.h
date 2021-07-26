@@ -40,11 +40,11 @@ public:
     Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
     ~Peer();
 
-    void InsertPeerCache(metapb::Peer* peer);
+    static void InsertPeerCache(metapb::Peer* peer);
 
-    void RemovePeerCache(uint64_t peerID);
+    static void RemovePeerCache(uint64_t peerID);
 
-    std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerID);
+    static std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerID);
 
     uint64_t NextProposalIndex();
 
@@ -88,7 +88,7 @@ public:
     std::shared_ptr<eraft::RawNode> raftGroup_;
 
     // peer storage
-    std::shared_ptr<PeerStorage> peerStorage_;
+    static std::shared_ptr<PeerStorage> peerStorage_;
 
     std::shared_ptr<metapb::Peer> meta_;
 
@@ -100,14 +100,14 @@ public:
     uint64_t regionId_;
 
 
+    static std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
+
 private:
 
 
     std::string tag_;
 
     uint64_t lastCompactedIdx_;
-
-    std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
     
     uint64_t sizeDiffHint_;
 

@@ -47,4 +47,5 @@ message Region {
 message Peer {      
     uint64 id = 1;
     uint64 store_id = 2;
+    string addr = 3;
 }

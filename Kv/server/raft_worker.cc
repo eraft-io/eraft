@@ -26,15 +26,14 @@ void RaftWorker::BootThread()
 
 void RaftWorker::Run(Queue<Msg>& qu) 
 {
-    Logger::GetInstance()->INFO("raft worker start running!");
+    Logger::GetInstance()->DEBUG_NEW("raft worker start running!", __FILE__, __LINE__, "RaftWorker::Run");
+
     std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap;
 
     while (true)
     {
         auto msg = qu.Pop();
-        Logger::GetInstance()->INFO("pop new messsage with region id: " + std::to_string(msg.regionId_));
-
-        // get msg from raft router, and handler it.
+        Logger::GetInstance()->DEBUG_NEW("pop new messsage with type: " + msg.MsgToString(), __FILE__, __LINE__, "RaftWorker::Run");
 
         // handle m, call PeerMessageHandler
         std::shared_ptr<PeerState_> peerState = RaftWorker::GetPeerState(peerStMap, msg.regionId_);
@@ -46,14 +45,9 @@ void RaftWorker::Run(Queue<Msg>& qu)
         pmHandler.HandleMsg(msg);
         
         // get peer state, and handle raft ready
-        for(auto peerState : peerStMap) 
-        {
-            if(peerState.second != nullptr) 
-            {
-                PeerMsgHandler pmHandler(peerState.second->peer_, RaftWorker::ctx_);
-                pmHandler.HandleRaftReady();
-            }
-        }
+        PeerMsgHandler pmHandlerRaftRd(peerState->peer_, RaftWorker::ctx_);
+        pmHandlerRaftRd.HandleRaftReady();
+
     }
 }
 

@@ -26,9 +26,15 @@
 #include <stdlib.h>
 #include <random>
 #include <google/protobuf/text_format.h>
+#include <RaftCore/Log.h>
 
 namespace eraft
 {
+
+static std::string BoolToString(bool b)
+{
+  return b ? "true" : "false";
+}
 
 static std::string MsgTypeToString(eraftpb::MessageType t) {
     switch (t)

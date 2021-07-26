@@ -4,6 +4,10 @@
 #include <string>
 #include <stdint.h>
 #include <iostream>
+#include <vector>
+#include <map>
+#include <Logger/Logger.h>
+#include <RaftCore/Util.h>
 
 namespace kvserver
 {
@@ -18,6 +22,8 @@ struct Config
     std::string storeAddr_;
 
     bool raft_;
+
+    std::map<std::string, int> peerAddrMaps_;
 
     std::string schedulerAddr_;
 
@@ -46,15 +52,15 @@ struct Config
     uint64_t regionSplitSize_;
 
     // default config
-    Config() 
+    Config(std::string storeAddr, std::string dbPath, int id) 
     {
         this->schedulerAddr_ = "127.0.0.1:2379";
-        this->storeAddr_ = "127.0.0.1:20160";
+        this->storeAddr_ = storeAddr;
         this->logLevel_ = "info";
         this->raft_ = true;
         this->raftBaseTickInterval_ = 1; // 1s
-        this->raftHeartbeatTicks_ = 2;
-        this->raftElectionTimeoutTicks_ = 10;
+        this->raftHeartbeatTicks_ = 2; // 2s
+        this->raftElectionTimeoutTicks_ = 10; // 10s
         this->raftLogGCTickInterval_ = 10; // 10s
         this->raftLogGcCountLimit_ = 128000;
         this->splitRegionCheckTickInterval_ = 10; // 10s
@@ -62,27 +68,30 @@ struct Config
         this->schedulerStoreHeartbeatTickInterval_ = 10; // 10s
         this->regionMaxSize_ = 144 * MB;
         this->regionSplitSize_ = 96 * MB;
-        this->dbPath_ = "/tmp/eraft_data";
+        this->dbPath_ = dbPath;
+        this->peerAddrMaps_ = { {"127.0.0.1:20160", 1}, {"127.0.0.1:20161", 2}, {"127.0.0.1:20162", 3} };
     }
 
     void PrintConfigToConsole() 
     {
-          std::cout << "\n Current StoreConfig: \n { schedulerAddr_: " << this->schedulerAddr_ << " \n "
-                    << " storeAddr_: " << this->storeAddr_ << " \n " 
-                    << " logLevel_: " << this->logLevel_ << " \n "
-                    << " raft_: " << this->raft_ << " \n "
-                    << " raftBaseTickInterval_: " << this->raftBaseTickInterval_ << " \n "
-                    << " raftHeartbeatTicks_: " << this->raftHeartbeatTicks_ << " \n "
-                    << " raftElectionTimeoutTicks_: " << this->raftElectionTimeoutTicks_ << " \n "
-                    << " raftLogGCTickInterval_: " << this->raftLogGCTickInterval_ << " \n "
-                    << " raftLogGcCountLimit_: " << this->raftLogGcCountLimit_ << " \n "
-                    << " splitRegionCheckTickInterval_: " << this->splitRegionCheckTickInterval_ << " \n "
-                    << " schedulerHeartbeatTickInterval_: " << this->schedulerHeartbeatTickInterval_ << " \n "
-                    << " schedulerStoreHeartbeatTickInterval_: " << this->schedulerStoreHeartbeatTickInterval_ << " \n "
-                    << " regionMaxSize_: " << this->regionMaxSize_ << " \n "
-                    << " regionSplitSize_: " << this->regionSplitSize_ << " \n "
-                    << " dbPath_: " << this->dbPath_ << "\n"
-                    << " } "; 
+          std::string output = "\n Current StoreConfig: \n { schedulerAddr_: " + this->schedulerAddr_ + " \n "
+                    + " storeAddr_: " +  this->storeAddr_ +  " \n " 
+                    +  " logLevel_: " +  this->logLevel_ +  " \n "
+                    +  " raft_: " +  eraft::BoolToString(this->raft_) +  " \n "
+                    +  " raftBaseTickInterval_: " +  std::to_string(this->raftBaseTickInterval_) +  " \n "
+                    +  " raftHeartbeatTicks_: " +  std::to_string(this->raftHeartbeatTicks_) +  " \n "
+                    +  " raftElectionTimeoutTicks_: " +  std::to_string(this->raftElectionTimeoutTicks_) +  " \n "
+                    +  " raftLogGCTickInterval_: " +  std::to_string(this->raftLogGCTickInterval_) +  " \n "
+                    +  " raftLogGcCountLimit_: " +  std::to_string(this->raftLogGcCountLimit_) +  " \n "
+                    +  " splitRegionCheckTickInterval_: " +  std::to_string(this->splitRegionCheckTickInterval_) +  " \n "
+                    +  " schedulerHeartbeatTickInterval_: " +  std::to_string(this->schedulerHeartbeatTickInterval_) +  " \n "
+                    +  " schedulerStoreHeartbeatTickInterval_: " +  std::to_string(this->schedulerStoreHeartbeatTickInterval_) +  " \n "
+                    +  " regionMaxSize_: " +  std::to_string(this->regionMaxSize_) +  " \n "
+                    +  " regionSplitSize_: " +  std::to_string(this->regionSplitSize_) +  " \n "
+                    +  " dbPath_: " +  this->dbPath_ +  "\n"
+                    +  " } ";
+    
+        Logger::GetInstance()->DEBUG_NEW(output, __FILE__, __LINE__, "PrintConfigToConsole");
     }
 
     Config(std::string storeAddr, bool raft, std::string schedulerAddr, std::string logLevel, 

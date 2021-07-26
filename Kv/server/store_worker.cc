@@ -31,11 +31,12 @@ void StoreWorker::BootThread()
 }
 
 void StoreWorker::Run(Queue<Msg>& qu) {
-    Logger::GetInstance()->INFO("store worker running!");
+    Logger::GetInstance()->DEBUG_NEW("store worker running!", __FILE__, __LINE__, "StoreWorker::Run");
+
     while (IsAlive())
     {
         auto msg = qu.Pop();
-        Logger::GetInstance()->INFO("pop new messsage from store sender");
+        Logger::GetInstance()->DEBUG_NEW("pop new messsage from store sender", __FILE__, __LINE__, "StoreWorker::Run");
         StoreWorker::HandleMsg(msg);
     }
 }

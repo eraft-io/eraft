@@ -47,6 +47,7 @@ set(Sources
     server/server.cc
     server/store_worker.cc
     server/server_transport.cc
+    server/ticker.cc
     server/utils.cc
 )
 

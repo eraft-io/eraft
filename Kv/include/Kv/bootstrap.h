@@ -36,12 +36,12 @@ public:
     // is (startKey, endKey) empty in db
     static bool IsRangeEmpty(rocksdb::DB* db, std::string startKey, std::string endKey);
 
-    static bool DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID);
+    static bool DoBootstrapStore(std::shared_ptr<Engines> engines, uint64_t clusterID, uint64_t storeID, std::string storeAddr);
 
     static uint64_t MockSchAllocID();
 
     static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
-        std::shared_ptr<Engines> engines, uint64_t storeID, uint64_t regionID, uint64_t peerID);
+        std::shared_ptr<Engines> engines, std::string storeAddr, std::map<std::string, int> peerAddrMaps);
 
     static bool PrepareBoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
 

@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include <Kv/storage.h>
+#include <Kv/raft_server.h>
 
 using tinykvpb::TinyKv;
 using grpc::Status;
@@ -26,7 +27,7 @@ public:
 
     Server();
 
-    Server(std::string addr, Storage* st);
+    Server(std::string addr, RaftStorage* st);
 
     bool RunLogic();
 
@@ -49,7 +50,7 @@ private:
 
     std::string serverAddress_;
 
-    Storage* st_;
+    RaftStorage* st_;
 
 };
 

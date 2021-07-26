@@ -1,6 +1,9 @@
 #include <Kv/raft_store.h>
 #include <Kv/utils.h>
 #include <Kv/store_worker.h>
+#include <Kv/ticker.h>
+
+#include <chrono>
 
 #include <Logger/Logger.h>
 
@@ -11,9 +14,9 @@ namespace kvserver
     
 RaftStore::RaftStore(std::shared_ptr<Config> cfg)
 {
-    Logger::GetInstance()->INFO("raft store init.");
     this->router_ = std::make_shared<Router>();
     this->raftRouter_ = std::make_shared<RaftstoreRouter>(router_);
+    Logger::GetInstance()->DEBUG_NEW("raft store init success", __FILE__, __LINE__, "RaftStore::RaftStore");
 }
 
 RaftStore::~RaftStore()
@@ -29,7 +32,7 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
     auto ctx = this->ctx_;
     auto kvEngine = ctx->engine_->kvDB_;
     auto storeID = ctx->store_->id();
-    Logger::GetInstance()->INFO("raft store store id: "  + std::to_string(storeID) + " load peers");
+    Logger::GetInstance()->DEBUG_NEW("raft store store id: "  + std::to_string(storeID) + " load peers", __FILE__, __LINE__, "RaftStore::LoadPeers");
     uint64_t totalCount, tombStoneCount;
     std::vector<std::shared_ptr<Peer> > regionPeers;
 
@@ -39,21 +42,18 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
     auto iter = kvEngine->NewIterator(rocksdb::ReadOptions());
     for(iter->Seek(Assistant::GetInstance()->VecToString(startKey)); iter->Valid(); iter->Next())
     {
-        Logger::GetInstance()->INFO("iter region meta key: " + iter->key().ToString());
         if(iter->key().ToString().compare(Assistant::GetInstance()->VecToString(endKey)) >= 0)
         {
             break;
         }
         uint64_t regionID; 
         uint8_t suffix;
-        Logger::GetInstance()->INFO("iter region meta key size: " + std::to_string(iter->key().ToString().size()));
         Assistant::GetInstance()->DecodeRegionMetaKey(Assistant::GetInstance()->StringToVec(iter->key().ToString()), 
             &regionID, &suffix);
         if(suffix != Assistant::GetInstance()->kRegionStateSuffix[0]) // filter other key
         {
             continue;
-        }
-        Logger::GetInstance()->INFO("load peer region id: " + std::to_string(regionID) + " suffix: " + std::to_string(suffix));
+        }        
         auto val = iter->value().ToString();
         totalCount++;
         raft_serverpb::RegionLocalState* localState = new raft_serverpb::RegionLocalState();
@@ -62,12 +62,10 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
         // debug msg
         std::string debugVal;
         google::protobuf::TextFormat::PrintToString(*localState, &debugVal);
-        Logger::GetInstance()->INFO("local state: " + debugVal);
+        Logger::GetInstance()->DEBUG_NEW("local state: " + debugVal, __FILE__, __LINE__, "RaftStore::LoadPeers");
+
         auto region = localState->region();
 
-        Logger::GetInstance()->INFO("region id:" + std::to_string(region.id()));
-        Logger::GetInstance()->INFO("region epoch conf_ver: " + std::to_string(region.region_epoch().conf_ver()));
-        Logger::GetInstance()->INFO(std::to_string(region.peers().size()));
         if(localState->state() == raft_serverpb::PeerState::Tombstone)
         {
             tombStoneCount++;
@@ -77,10 +75,7 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers()
 
         std::shared_ptr<Peer> peer = std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_, std::make_shared<metapb::Region>(region));
 
-        // // TODO: store region range to storeMeta
-        // // ctx->storeMeta_->regionRanges_(region);
         ctx->storeMeta_->regions_[regionID] = &region;
-
         regionPeers.push_back(peer);
     }
 
@@ -155,13 +150,17 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers)
         Msg m(MsgType::MsgTypeStart, ctx->store_.get());
         router->Send(regionID, m);
     }
+
+    // ticker start
+    std::chrono::duration<int, std::milli> timer_duration1(1000); // 1s
+    Ticker::GetInstance(std::function<void()>(Ticker::Run), router ,timer_duration1)->Start();
+
     return true;
 }
 
 void RaftStore::ShutDown()
 {
-    
-}
 
+}
 
 } // namespace kvserver

@@ -4,6 +4,7 @@
 #include <Kv/transport.h>
 #include <Kv/raft_client.h>
 #include <Kv/router.h>
+#include <Kv/engines.h>
 
 #include <memory>
 #include <string>
@@ -24,7 +25,7 @@ public:
 
     bool Send(std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
-    void SendStore(uint64_t storeID, std::shared_ptr<raft_serverpb::RaftMessage> msg);
+    void SendStore(uint64_t storeID, std::shared_ptr<raft_serverpb::RaftMessage> msg, std::string addr);
 
     void Resolve(uint64_t storeID, std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
@@ -41,6 +42,8 @@ private:
     std::shared_ptr<RaftRouter> raftRouter_;
 
     std::map<uint64_t, void*> resolving_;
+
+    std::shared_ptr<Engines> engine_;
 
 };
 

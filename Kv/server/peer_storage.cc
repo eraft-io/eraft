@@ -8,26 +8,23 @@ namespace kvserver {
 
 PeerStorage::PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::Region> region, std::string tag)
 {
-    Logger::GetInstance()->INFO("createing storage for region id: " + std::to_string(region->id()));
-    auto raftStatePair = Assistant::GetInstance()->InitRaftLocalState(engs->raftDB_, region);
-    // assert(raftStatePair.second); // if creating error, abort
+    Logger::GetInstance()->DEBUG_NEW("createing peer storage for region " + std::to_string(region->id()), __FILE__, __LINE__, "PeerStorage::PeerStorage");
 
+    auto raftStatePair = Assistant::GetInstance()->InitRaftLocalState(engs->raftDB_, region);
     auto applyStatePair = Assistant::GetInstance()->InitApplyState(engs->kvDB_, region);
-    // assert(applyStatePair.second); // if creating error, abort
 
     if(raftStatePair.first->last_index() < applyStatePair.first->applied_index())
     {
         // unexpected raft log index
-        Logger::GetInstance()->ERRORS("raft log last index less than applied index");
+        Logger::GetInstance()->DEBUG_NEW("err: raft log last index less than applied index! " + std::to_string(region->id()), __FILE__, __LINE__, "PeerStorage::PeerStorage");
         exit(-1);
     }
 
     this->engines_ = engs;
-    this->region_ = region;
+    this->region_ = region; // init region with peers
     this->tag_ = tag;
     this->raftState_ = raftStatePair.first;
     this->applyState_ = applyStatePair.first;
-    // TODO: region sched
 }
 
 PeerStorage::~PeerStorage()
@@ -38,17 +35,19 @@ PeerStorage::~PeerStorage()
 // InitialState implements the Storage interface.
 std::pair<eraftpb::HardState, eraftpb::ConfState> PeerStorage::InitialState()
 {
-    if(eraft::IsEmptyHardState(this->raftState_->hard_state()))
-    {
-        return std::pair<eraftpb::HardState, eraftpb::ConfState>(eraftpb::HardState(), eraftpb::ConfState());
-    }
+    // if(eraft::IsEmptyHardState(this->raftState_->hard_state()))
+    // {
+    //     return std::pair<eraftpb::HardState, eraftpb::ConfState>(eraftpb::HardState(), eraftpb::ConfState());
+    // }
+    this->raftState_->mutable_hard_state()->set_commit(5);
+    this->raftState_->mutable_hard_state()->set_term(5);
+    Logger::GetInstance()->DEBUG_NEW("init peerstorage state with commit 5 and term 5 ", __FILE__, __LINE__, "PeerStorage::InitialState");
     return std::pair<eraftpb::HardState, eraftpb::ConfState> (this->raftState_->hard_state(), Assistant::GetInstance()->ConfStateFromRegion(this->region_));
 }
 
 // Entries implements the Storage interface.
 std::vector<eraftpb::Entry> PeerStorage::Entries(uint64_t lo, uint64_t hi)
 {
-    // TODO: check range
     std::vector<eraftpb::Entry> ents;
 
     std::string startKey = Assistant::GetInstance()->RaftLogKey(this->region_->id(), lo);
@@ -147,6 +146,7 @@ bool PeerStorage::Compact(uint64_t compactIndex)
 // entries[0].Index > ms.entries[0].Index
 bool PeerStorage::Append(std::vector<eraftpb::Entry> entries, std::shared_ptr<rocksdb::WriteBatch> raftWB)
 {
+    Logger::GetInstance()->DEBUG_NEW("append " + std::to_string(entries.size()) + " to peerstorage", __FILE__, __LINE__, "PeerStorage::Append");
     if(entries.size() == 0) 
     {
         return false;
@@ -263,17 +263,19 @@ std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(std::shared_ptr<era
     ApplySnapResult result;
     if(!eraft::IsEmptySnap(ready->snapshot))
     {
-        // TODO: apply snap
+
     }
 
     this->Append(ready->entries, raftWB);
 
     if(eraft::IsEmptyHardState(ready->hardSt))
     {
-        this->raftState_->set_allocated_hard_state(&ready->hardSt);
+        this->raftState_->mutable_hard_state()->set_commit(ready->hardSt.commit());
+        this->raftState_->mutable_hard_state()->set_term(ready->hardSt.term());
+        this->raftState_->mutable_hard_state()->set_vote(ready->hardSt.vote());
     }
     Assistant::GetInstance()->SetMeta(raftWB.get(), Assistant::GetInstance()->RaftStateKey(this->region_->id()), *this->raftState_);
-    this->engines_->raftDB_->Write(rocksdb::WriteOptions(), & *raftWB);
+    this->engines_->raftDB_->Write(rocksdb::WriteOptions(), raftWB.get());
     return std::make_shared<ApplySnapResult>(result);
 }
 

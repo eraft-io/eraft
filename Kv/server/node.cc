@@ -32,7 +32,7 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     uint64_t storeID;
     if(!this->CheckStore(*engines, &storeID))
     {
-        Logger::GetInstance()->ERRORS("store id: " + std::to_string(storeID) + " not found");
+        Logger::GetInstance()->DEBUG_NEW("err: store id " + std::to_string(storeID) + " not found", __FILE__, __LINE__, "Node::Start");
     }
     if(storeID == Assistant::GetInstance()->kInvalidID)
     {
@@ -42,7 +42,7 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
     auto checkRes = this->CheckOrPrepareBoostrapCluster(engines, storeID);
     if(!checkRes.second)
     {
-        Logger::GetInstance()->ERRORS("check or prepare boostrap cluster error");
+        Logger::GetInstance()->DEBUG_NEW("err: check or prepare boostrap cluster " + std::to_string(storeID) + " not found", __FILE__, __LINE__, "Node::Start");
         return false;
     }
     bool newCluster = (checkRes.first != nullptr);
@@ -51,17 +51,17 @@ bool Node::Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> tr
         // try to boostrap cluster
         if(!this->BoostrapCluster(engines, checkRes.first, &newCluster))
         {
-            Logger::GetInstance()->ERRORS("boostrap cluster error");
+            Logger::GetInstance()->DEBUG_NEW("err: boostrap cluster error " + std::to_string(storeID) + " not found", __FILE__, __LINE__, "Node::Start");
             return false;
         }
     }
     // // TODO: put scheduler store
-    Logger::GetInstance()->INFO("*** start node ***");
     if(!this->StartNode(engines, trans))
     {
-        Logger::GetInstance()->ERRORS("start node error");
+        Logger::GetInstance()->DEBUG_NEW("err: start node error", __FILE__, __LINE__, "Node::Start");
         return false;
     }
+    Logger::GetInstance()->DEBUG_NEW("node start success! ", __FILE__, __LINE__, "Node::Start");
     return true;
 }
 
@@ -90,7 +90,6 @@ bool Node::CheckStore(Engines& engs, uint64_t* storeId)
 
 uint64_t Node::AllocID()
 {
-    Logger::GetInstance()->INFO("start alloc id");
     return BootHelper().GetInstance()->MockSchAllocID();
 }
 
@@ -109,6 +108,7 @@ std::pair<std::shared_ptr<metapb::Region> , bool> Node::CheckOrPrepareBoostrapCl
     // {
     //     return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr, true);
     // }
+    // TODO: delete state
     return this->PrepareBootstrapCluster(engines, storeID);
 }
 
@@ -120,11 +120,7 @@ bool Node::CheckClusterBoostrapped()
 
 std::pair<std::shared_ptr<metapb::Region> , bool> Node::PrepareBootstrapCluster(std::shared_ptr<Engines> engines,  uint64_t storeID)
 {
-    auto regionID = BootHelper().GetInstance()->MockSchAllocID();
-    auto peerID = BootHelper().GetInstance()->MockSchAllocID();
-    Logger::GetInstance()->INFO("bootstrap node with regionID: " + std::to_string(regionID) + 
-    "  storeID: " + std::to_string(storeID) + " peerID: " + std::to_string(peerID) + " clusterID: " + std::to_string(this->clusterID_));
-    return BootHelper().GetInstance()->PrepareBootstrap(engines, storeID, regionID, peerID);
+    return BootHelper().GetInstance()->PrepareBootstrap(engines, this->store_->address(), this->cfg_->peerAddrMaps_);
 }
 
 bool Node::BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> firstRegion, bool* isNewCluster)
@@ -138,11 +134,11 @@ bool Node::BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<met
 
 bool Node::BootstrapStore(Engines& engs, uint64_t* storeId)
 {
-    auto storeID = this->AllocID();
-    Logger::GetInstance()->INFO("boostrap store with storeID: " + std::to_string(storeID));
-    if(!BootHelper::GetInstance()->DoBootstrapStore(std::make_shared<Engines>(engs), this->clusterID_, storeID))
+    auto storeID = this->cfg_->peerAddrMaps_[this->cfg_->storeAddr_];
+    Logger::GetInstance()->DEBUG_NEW("boostrap store with storeID: " + std::to_string(storeID), __FILE__, __LINE__, "Node::BootstrapStore");
+    if(!BootHelper::GetInstance()->DoBootstrapStore(std::make_shared<Engines>(engs), this->clusterID_, storeID, this->store_->address()))
     {
-        Logger::GetInstance()->ERRORS("do bootstrap store error");
+        Logger::GetInstance()->DEBUG_NEW("do bootstrap store error", __FILE__, __LINE__, "Node::BootstrapStore");
         return false;
     }
     *storeId = storeID;

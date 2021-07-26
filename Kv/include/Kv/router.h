@@ -4,6 +4,7 @@
 #include <Kv/peer.h>
 #include <Kv/msg.h>
 #include <Kv/raft_worker.h>
+#include <Kv/server_transport.h>
 
 #include <eraftio/raft_serverpb.pb.h>
 #include <eraftio/raft_cmdpb.pb.h>
@@ -40,6 +41,7 @@ class Router
 {
 
 friend class RaftWorker;
+friend class ServerTransport;
 
 public:
 
@@ -59,9 +61,11 @@ public:
 
 protected:
 
+    std::map<uint64_t, std::shared_ptr<PeerState_> > peers_;
+
 private:
 
-    std::map<uint64_t, std::shared_ptr<PeerState_> > peers_;
+
 };
 
 class RaftRouter

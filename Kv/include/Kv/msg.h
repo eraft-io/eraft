@@ -46,19 +46,41 @@ struct Msg
     {
     }
 
-    // std::string MsgToString()
-    // {
-    //     switch (type_)
-    //     {
-    //     case MsgType::MsgTypeNull:
-    //         {
-    //             return "MsgTypeNull";
-    //             break;
-    //         }
-    //     default:
-    //         break;
-    //     }
-    // }
+    std::string MsgToString()
+    {
+        switch (type_)
+        {
+        case MsgType::MsgTypeNull:
+            {
+                return "MsgTypeNull";
+                break;
+            }
+        case MsgType::MsgTypeStart:
+            {
+                return "MsgTypeStart";
+                break;      
+            }
+        case MsgType::MsgTypeTick:
+            {
+                return "MsgTypeTick";
+                break;      
+            }
+        case MsgType::MsgTypeRaftMessage:
+            {
+                return "MsgTypeRaftMessage";
+                break;      
+            }
+        case MsgType::MsgTypeRaftCmd:
+            {
+                return "MsgTypeRaftCmd";
+                break;      
+            }
+        // TODO: more msg support for Multi-Raft
+        default:
+            break;
+        }
+        return "unknow";
+    }
 };
 
 struct MsgRaftCmd {

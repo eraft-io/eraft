@@ -33,6 +33,11 @@
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
+#include <memory>
+#include <map>
+
+#include <Kv/router.h>
+
 
 namespace kvserver
 {
@@ -45,8 +50,10 @@ public:
     typedef std::chrono::duration<int64_t, std::nano> tick_interval_t;
     typedef std::function<void()> on_tick_t;
 
-    Ticker (std::function<void()> onTick, std::chrono::duration<int64_t, std::nano> tickInterval);
+    Ticker(std::function<void()> onTick, std::shared_ptr<Router> router, std::chrono::duration<int64_t, std::nano> tickInterval);
     ~Ticker();
+
+    static void Run();
 
     void Start();
     void Stop();
@@ -55,8 +62,22 @@ public:
 
     void TimerLoop();
 
-private:
+    static Ticker* GetInstance(std::function<void()> onTick, std::shared_ptr<Router> router, std::chrono::duration<int64_t, std::nano> tickInterval)
+    {
+        if(instance_ == nullptr)
+        {
+            instance_ = new Ticker(onTick, router, tickInterval);
+            router_ = router;
+        }
+        return instance_;
+    }
 
+    static std::shared_ptr<Router> router_;
+
+private:
+    static Ticker* instance_;
+
+    static std::map<uint64_t, void*> regions_;
     on_tick_t onTick_;
     tick_interval_t tickInterval_;
     volatile bool running_;

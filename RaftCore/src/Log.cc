@@ -7,6 +7,7 @@
 #include <RaftCore/Log.h>
 #include <RaftCore/Util.h>
 #include <algorithm>
+#include <Logger/Logger.h>
 
 // RaftLog manage the log entries, its struct look like:
 //
@@ -24,15 +25,15 @@ namespace eraft
     RaftLog::RaftLog(StorageInterface &st) {
         uint64_t lo = st.FirstIndex();
         uint64_t hi = st.LastIndex();
-        // std::cout << "RaftLog::st.FirstIndex() = " << st.FirstIndex() << std::endl;
         std::vector<eraftpb::Entry> entries = st.Entries(lo, hi + 1);
         this->storage_ = &st;
         this->entries_ = entries;
         this->applied_ = lo - 1;
-        // std::cout << "RaftLog::applied_ = " << this->applied_ << std::endl;
         this->stabled_ = hi;
         this->firstIndex_ = lo;
-        this->commited_ = 0;
+        this->commited_ = 5;
+        Logger::GetInstance()->DEBUG_NEW("init raft log with firstIndex " + std::to_string(this->firstIndex_) + " applied " + std::to_string(this->applied_) 
+        + " stabled " + std::to_string(this->stabled_) + " commited " + std::to_string(this->commited_), __FILE__, __LINE__, "RaftLog::RaftLog");
     }
 
     RaftLog::~RaftLog() {}
@@ -59,17 +60,19 @@ namespace eraft
     }
 
     std::vector<eraftpb::Entry> RaftLog::NextEnts() {
+        Logger::GetInstance()->DEBUG_NEW("raftlog next ents l.applied: " + std::to_string(this->applied_)
+            + " l.firstIndex: " + std::to_string(this->firstIndex_) + " l.commited: " + std::to_string(this->commited_), __FILE__, __LINE__, "RaftLog::NextEnts");
+
         if(this->entries_.size() > 0) {
             return std::vector<eraftpb::Entry> (this->entries_.begin() + (this->applied_ - this->firstIndex_ + 1), 
             this->entries_.begin() + this->commited_ - this->firstIndex_ + 1);
         }
-        return this->entries_;
+        return std::vector<eraftpb::Entry>{};
     }
 
     uint64_t RaftLog::ToSliceIndex(uint64_t i) {
         uint64_t idx = i - this->firstIndex_;
         if(idx < 0) {
-            // TODO: log panic
             exit(-1);
         }
         return idx;

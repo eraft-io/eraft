@@ -97,6 +97,8 @@ public:
 
     Queue<Msg> storeSender_;
 
+    Queue<uint64_t> regionIdCh_;
+
 };
 
 

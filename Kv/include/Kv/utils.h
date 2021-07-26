@@ -124,9 +124,8 @@ public:
         return result;
     }
 
-    static uint64_t DecodeFixed64(const char* ptr)
+    static uint64_t DecodeFixed64(const uint8_t* buffer)
     {
-        const uint8_t* const buffer = reinterpret_cast<const uint8_t*>(ptr);
         uint64_t result;
         std::memcpy(&result, buffer, sizeof(uint64_t));
         return result;
@@ -144,56 +143,6 @@ public:
         char buf[sizeof(value)];
         EncodeFixed64(buf, value);
         dst->append(buf, sizeof(buf));
-    }
-
-    static uint8_t ReadU8(std::vector< uint8_t>::iterator& it) 
-    {
-        // packet end check, TODO
-        uint8_t v;
-        v = *it;
-        return v;
-    }
-
-    static uint16_t ReadU16(std::vector< uint8_t>::iterator& it) {
-        // packet end check, TODO
-        uint16_t v;
-        v = static_cast< uint16_t >(*it) |
-            static_cast< uint16_t >(*(it + 1) << 8);
-        return v;
-    }
-
-    static uint16_t ReadU24(std::vector< uint8_t>::iterator& it) 
-    {
-        uint32_t v;
-        v = static_cast< uint32_t >(*it) |
-            static_cast< uint32_t >(*(it + 1) << 8) |
-            static_cast< uint32_t >(*(it + 2) << 16);
-        return v;
-    }
-
-    static uint32_t ReadU32(std::vector< uint8_t>::iterator& it) 
-    {
-        // packet end check, TODO
-        uint32_t v;
-        v = static_cast< uint32_t >(*it) |
-            static_cast< uint32_t >(*(it + 1) << 8) |
-            static_cast< uint32_t >(*(it + 2) << 16) |
-            static_cast< uint32_t >(*(it + 3) << 24);
-        return v;
-    }
-
-    static uint64_t ReadU64(std::vector< uint8_t>::iterator& it) 
-    {
-        uint64_t v;
-        v = static_cast< uint64_t >(*it) |
-            static_cast< uint64_t >(*(it + 1) << 8) |
-            static_cast< uint64_t >(*(it + 2) << 16) |
-            static_cast< uint64_t >(*(it + 3) << 24) |
-            static_cast< uint64_t >(*(it + 4) << 32) |
-            static_cast< uint64_t >(*(it + 5) << 40) |
-            static_cast< uint64_t >(*(it + 6) << 48) |
-            static_cast< uint64_t >(*(it + 7) << 56);
-        return v;         
     }
 
     static std::string KeyWithCF(std::string cf, std::string key) 
@@ -231,7 +180,7 @@ public:
         // debug msg
         std::string debugVal;
         google::protobuf::TextFormat::PrintToString(msg, &debugVal);
-        Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
+        // Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
         val = msg.SerializeAsString();
         auto status = db->Put(rocksdb::WriteOptions(), key, val);
         return status.ok();
@@ -243,7 +192,7 @@ public:
         // debug msg
         std::string debugVal;
         google::protobuf::TextFormat::PrintToString(msg, &debugVal);
-        Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
+        // Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
         val = msg.SerializeAsString();
         return batch->Put(key, val).ok();
     }
@@ -323,8 +272,7 @@ public:
             *regionID = 0; *suffix = 0;
             return;
         }
-        std::vector<uint8_t>::iterator it = key.begin() + 2;
-        *regionID = ReadU64(it);
+        *regionID = DecodeFixed64(&key[2]);
         *suffix = key[key.size()-1];
     }
 
@@ -356,8 +304,7 @@ public:
             // log key is not a valid raft log key
             return 0;
         }
-        std::vector<uint8_t>::iterator it = key.begin() + (kRegionRaftLogLen - 8);
-        return ReadU64(it);
+        return DecodeFixed64(&key[kRegionRaftLogLen - 8]);
     }
 
     static raft_serverpb::RegionLocalState* GetRegionLocalState(rocksdb::DB* db, uint64_t regionId)
@@ -396,7 +343,7 @@ public:
     // 
     static std::pair<raft_serverpb::RaftLocalState*, bool> InitRaftLocalState(rocksdb::DB* raftEngine, std::shared_ptr<metapb::Region> region)
     {
-        Logger::GetInstance()->INFO("init raft local state");
+        Logger::GetInstance()->DEBUG_NEW("init raft local state", __FILE__, __LINE__, "Assistant()->InitRaftLocalState");
         auto lst = GetRaftLocalState(raftEngine, region->id());
         if(lst.second.IsNotFound()) 
         {
@@ -420,7 +367,7 @@ public:
 
     static std::pair<raft_serverpb::RaftApplyState*, bool> InitApplyState(rocksdb::DB* kvEngine, std::shared_ptr<metapb::Region> region)
     {
-        Logger::GetInstance()->INFO("init apply state");
+        Logger::GetInstance()->DEBUG_NEW("init apply state", __FILE__, __LINE__, "Assistant()->InitApplyState");
         auto ast = GetApplyState(kvEngine, region->id());
         if(ast.second.IsNotFound()) 
         {

@@ -6,6 +6,7 @@
 
 #include <RaftCore/RawNode.h>
 #include <RaftCore/Util.h>
+#include <Logger/Logger.h>
 
 namespace eraft
 {
@@ -21,6 +22,7 @@ namespace eraft
     }
 
     void RawNode::Campaign() {
+        Logger::GetInstance()->DEBUG_NEW("rawnode start campaign", __FILE__, __LINE__, "RawNode::Campaign");
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgHup);
         this->raft->Step(msg);
@@ -83,18 +85,18 @@ namespace eraft
         rd.entries = r->raftLog_->UnstableEntries();
         rd.committedEntries = r->raftLog_->NextEnts();
         rd.messages = r->msgs_;
-        if(!r->SoftState()->Equal(this->prevSoftSt)) {
-            this->prevSoftSt = r->SoftState();
-            rd.softSt = r->SoftState();
-        }
-        if(!IsHardStateEqual(*r->HardState(), *this->prevHardSt)) {
-            rd.hardSt = *r->HardState();
-        }
+        // if(!r->SoftState()->Equal(this->prevSoftSt)) {
+        //     this->prevSoftSt = r->SoftState();
+        //     rd.softSt = r->SoftState();
+        // }
+        // if(!IsHardStateEqual(*r->HardState(), *this->prevHardSt)) {
+        //     rd.hardSt = *r->HardState();
+        // }
         this->raft->msgs_.clear();
-        if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
-            rd.snapshot = r->raftLog_->pendingSnapshot_;
-            r->raftLog_->pendingSnapshot_.clear_data();
-        }
+        // if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
+        //     rd.snapshot = r->raftLog_->pendingSnapshot_;
+        //     r->raftLog_->pendingSnapshot_.clear_data();
+        // }
         return rd;
     }
 

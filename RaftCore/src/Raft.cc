@@ -9,31 +9,32 @@
 #include <algorithm>
 #include <assert.h>
 #include <google/protobuf/text_format.h>
+#include <Logger/Logger.h>
 
 namespace eraft
 {
     bool Config::Validate() {
         if(this->id == 0) {
-            // TODO: log cannot use none as id
+            Logger::GetInstance()->DEBUG_NEW("err: can't use none as id!", __FILE__, __LINE__, "Config::Validate");
             return false;
         }
         if(this->heartbeatTick <= 0) {
-            // TODO: log heartbeat tick must be greater than 0
+            Logger::GetInstance()->DEBUG_NEW("log heartbeat tick must be greater than 0!", __FILE__, __LINE__, "Config::Validate");
             return false;
         }
         if(this->electionTick <= this->heartbeatTick) {
-            // TODO: election tick must be greater than heartbeat tick
+            Logger::GetInstance()->DEBUG_NEW("election tick must be greater than heartbeat tick!", __FILE__, __LINE__, "Config::Validate");
             return false;
         }
         if(this->storage == nullptr) {
-            // TODO: log storage cannot be nil
+            Logger::GetInstance()->DEBUG_NEW("log storage cannot be nil!", __FILE__, __LINE__, "Config::Validate");
             return false;
         }
         return true;
     }
 
     RaftContext::RaftContext(Config &c) {
-        assert(c.Validate()); // if Validate config is false, terminating the program execution.
+        assert(c.Validate());
         this->id_ = c.id;
         this->prs_ = std::map<uint64_t, std::shared_ptr<Progress> > {};
         this->votes_ = std::map<uint64_t, bool> {};
@@ -48,6 +49,7 @@ namespace eraft
         if(c.peers.size() == 0) {
             std::vector<uint64_t> peersTp;
             for(auto node: confSt.nodes()) {
+                Logger::GetInstance()->DEBUG_NEW("push node to region with peer id " + std::to_string(node), __FILE__, __LINE__, "RaftContext::RaftContext");
                 peersTp.push_back(node);
             }
             c.peers = peersTp;
@@ -59,11 +61,10 @@ namespace eraft
             } else {
                 this->prs_[iter] = std::make_shared<Progress>(lastIndex + 1);
             }
-            // std::cout << "node_id: " << iter << ", this->prs_[iter]->match: " << this->prs_[iter]->match << "this->prs_[iter]->next: " << this->prs_[iter]->next << std::endl; 
         }
-        // std::cout << "c.peers.size(): " << c.peers.size() << std::endl; 
         this->BecomeFollower(0, NONE);
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
+        Logger::GetInstance()->DEBUG_NEW("random election timeout is " + std::to_string(this->randomElectionTimeout_) + " s", __FILE__, __LINE__, "RaftContext::RaftContext");
         this->term_ = hardSt.term();
         this->vote_ = hardSt.vote();
         this->raftLog_->commited_ = hardSt.commit();
@@ -87,11 +88,13 @@ namespace eraft
     bool RaftContext::SendAppend(uint64_t to) {
         uint64_t prevIndex = this->prs_[to]->next - 1;
         uint64_t prevLogTerm = this->raftLog_->Term(prevIndex);
-        // TODO: if Term() has error
-        std::vector<eraftpb::Entry*> entries;
-        uint64_t n = this->raftLog_->entries_.size();
+        std::vector<eraftpb::Entry> entries;
+        uint64_t n = this->raftLog_->entries_.size() - 1;
+        Logger::GetInstance()->DEBUG_NEW("prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " + std::to_string(prevLogTerm) 
+         + "entries_.size: " + std::to_string(n), __FILE__, __LINE__, "RaftContext::SendAppend");
+
         for(uint64_t i = this->raftLog_->ToSliceIndex(prevIndex + 1); i < n; i++) {
-            entries.push_back(&this->raftLog_->entries_[i]);
+            entries.push_back(this->raftLog_->entries_[i]);
         }
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgAppend);
@@ -102,12 +105,11 @@ namespace eraft
         msg.set_log_term(prevLogTerm);
         msg.set_index(prevIndex);
         for(auto ent: entries) {
-            // https://stackoverflow.com/questions/1770707/how-do-you-add-a-repeated-field-using-googles-protocol-buffer-in-c
             eraftpb::Entry* e = msg.add_entries();
-            e->set_entry_type(ent->entry_type());
-            e->set_index(ent->index());
-            e->set_term(ent->term());
-            e->set_data(ent->data());
+            e->set_entry_type(ent.entry_type());
+            e->set_index(ent.index());
+            e->set_term(ent.term());
+            e->set_data(ent.data());
         }
         this->msgs_.push_back(msg);
         return true;
@@ -122,10 +124,13 @@ namespace eraft
         msg.set_reject(reject);
         msg.set_log_term(term);
         msg.set_index(index);
+        Logger::GetInstance()->DEBUG_NEW("send append response to -> " + std::to_string(to) + " reject -> " + 
+        BoolToString(reject) + " term -> " + std::to_string(term) + " index -> " + std::to_string(index), __FILE__, __LINE__, "RaftContext::SendAppendResponse");
         this->msgs_.push_back(msg);
     }
 
     void RaftContext::SendHeartbeat(uint64_t to) {
+        Logger::GetInstance()->DEBUG_NEW("send heartbeat to -> " + std::to_string(to), __FILE__, __LINE__, "RaftContext::SendHeartbeat");
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgHeartbeat);
         msg.set_from(this->id_);
@@ -135,6 +140,8 @@ namespace eraft
     }
 
     void RaftContext::SendHeartbeatResponse(uint64_t to, bool reject) {
+        Logger::GetInstance()->DEBUG_NEW("send heartbeat response to -> " + std::to_string(to) + 
+        " reject -> " + BoolToString(reject), __FILE__, __LINE__, "RaftContext::SendHeartbeatResponse");
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgHeartbeatResponse);
         msg.set_from(this->id_);
@@ -145,6 +152,9 @@ namespace eraft
     }
 
     void RaftContext::SendRequestVote(uint64_t to, uint64_t index, uint64_t term) {
+        Logger::GetInstance()->DEBUG_NEW("send request vote to -> " + std::to_string(to) + " index -> " + std::to_string(index) + 
+        " term -> " + std::to_string(term), __FILE__, __LINE__, "RaftContext::SendRequestVote");
+
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgRequestVote);
         msg.set_from(this->id_);
@@ -156,6 +166,9 @@ namespace eraft
     }
 
     void RaftContext::SendRequestVoteResponse(uint64_t to, bool reject) {
+        Logger::GetInstance()->DEBUG_NEW("send request vote response to -> " + std::to_string(to) + " reject -> " 
+        + BoolToString(reject), __FILE__, __LINE__, "RaftContext::SendRequestVoteResponse");
+
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgRequestVoteResponse);
         msg.set_from(this->id_);
@@ -166,6 +179,7 @@ namespace eraft
     }
 
     void RaftContext::SendTimeoutNow(uint64_t to) {
+        Logger::GetInstance()->DEBUG_NEW( "timeout now send to -> " + std::to_string(to), __FILE__, __LINE__, "RaftContext::SendTimeoutNow");
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgTimeoutNow);
         msg.set_from(this->id_);
@@ -199,7 +213,8 @@ namespace eraft
 
     void RaftContext::TickElection() {
         this->electionElapsed_++;
-        if(this->electionElapsed_ >= this->randomElectionTimeout_) {
+        if(this->electionElapsed_ >= this->randomElectionTimeout_) { // election timeout
+            Logger::GetInstance()->DEBUG_NEW( "election timeout", __FILE__, __LINE__, "RaftContext::TickElection");
             this->electionElapsed_ = 0;
             eraftpb::Message msg;
             msg.set_msg_type(eraftpb::MsgHup);
@@ -210,6 +225,7 @@ namespace eraft
     void RaftContext::TickHeartbeat() {
         this->heartbeatElapsed_++;
         if(this->heartbeatElapsed_ >= this->heartbeatTimeout_) {
+            Logger::GetInstance()->DEBUG_NEW( "heartbeat timeout", __FILE__, __LINE__, "RaftContext::TickHeartbeat");
             this->heartbeatElapsed_ = 0;
             eraftpb::Message msg;
             msg.set_msg_type(eraftpb::MsgBeat);
@@ -230,6 +246,7 @@ namespace eraft
         this->lead_ = lead;
         this->term_ = term;
         this->vote_ = NONE;
+        Logger::GetInstance()->DEBUG_NEW("node become follower at term " + std::to_string(term), __FILE__, __LINE__, "RaftContext::BecomeFollower");
     }
 
     void RaftContext::BecomeCandidate() {
@@ -237,15 +254,15 @@ namespace eraft
         this->lead_ = NONE;
         this->term_++;
         this->vote_ = this->id_;
-        this->votes_ = std::map<uint64_t, bool>{}; // init
+        this->votes_ = std::map<uint64_t, bool>{}; 
         this->votes_[this->id_] = true; // vote for self
+        Logger::GetInstance()->DEBUG_NEW("node become candidate at term " + std::to_string(this->term_), __FILE__, __LINE__, "RaftContext::BecomeCandidate");
     }
 
     void RaftContext::BecomeLeader() {
         this->state_ = NodeState::StateLeader;
         this->lead_ = this->id_;
         uint64_t lastIndex = this->raftLog_->LastIndex();
-        // std::cout << "BecomeLeader lastIndex: " << lastIndex << std::endl;
         this->heartbeatElapsed_ = 0;
         for(auto peer : this->prs_) {
             if(peer.first == this->id_) {
@@ -263,13 +280,13 @@ namespace eraft
         if(this->prs_.size() == 1) {
             this->raftLog_->commited_ = this->prs_[this->id_]->match;
         }
+        Logger::GetInstance()->DEBUG_NEW("node become leader at term " + std::to_string(this->term_), __FILE__, __LINE__, "RaftContext::BecomeLeader");
     }
 
     bool RaftContext::Step(eraftpb::Message m) {
         if(this->prs_.find(this->id_) == this->prs_.end() && m.msg_type() == eraftpb::MsgTimeoutNow) {
             return false;
         }
-        // m term bigger than self -> become follower
         if(m.term() > this->term_) {
             this->leadTransferee_ = NONE;
             this->BecomeFollower(m.term(), NONE);
@@ -477,6 +494,7 @@ namespace eraft
     }
 
     bool RaftContext::DoElection() {
+        Logger::GetInstance()->DEBUG_NEW("node start do election", __FILE__, __LINE__, "RaftContext::BecomeLeader");
         this->BecomeCandidate();
         this->heartbeatElapsed_ = 0;
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
@@ -495,25 +513,29 @@ namespace eraft
     }
 
     void RaftContext::BcastHeartbeat() {
+        Logger::GetInstance()->DEBUG_NEW("bcast heartbeat ", __FILE__, __LINE__, "RaftContext::BcastHeartbeat");
         for(auto peer: this->prs_) {
             if(peer.first == this->id_) {
                 continue;
             }
+            Logger::GetInstance()->DEBUG_NEW("send heartbeat to peer " + std::to_string(peer.first), __FILE__, __LINE__, "RaftContext::BcastHeartbeat");
             this->SendHeartbeat(peer.first);
         }
     }
 
     void RaftContext::BcastAppend() {
+        Logger::GetInstance()->DEBUG_NEW("bcast append ", __FILE__, __LINE__, "RaftContext::BcastAppend");
         for(auto peer: this->prs_) {
             if(peer.first == this->id_) {
                 continue;
             }
-            // send append to peer
             this->SendAppend(peer.first);
         }
     }
 
-    bool RaftContext::HandleRequestVote(eraftpb::Message m) {
+    bool RaftContext::HandleRequestVote(eraftpb::Message m) {    
+        Logger::GetInstance()->DEBUG_NEW("handle request vote from " + std::to_string(m.from()), __FILE__, __LINE__, "RaftContext::HandleRequestVote");
+
         if(m.term() != NONE && m.term() < this->term_) {
             this->SendRequestVoteResponse(m.from(), true);
             return true;
@@ -536,6 +558,7 @@ namespace eraft
     }
 
     bool RaftContext::HandleRequestVoteResponse(eraftpb::Message m) {
+        Logger::GetInstance()->DEBUG_NEW("handle request vote response from peer " + std::to_string(m.from()), __FILE__, __LINE__, "RaftContext::HandleRequestVoteResponse");
         if(m.term() != NONE && m.term() < this->term_) {
             return false;
         }
@@ -556,6 +579,7 @@ namespace eraft
     }
 
     bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
+        Logger::GetInstance()->DEBUG_NEW("handle append entries " + MessageToString(m), __FILE__, __LINE__, "RaftContext::HandleAppendEntries");
         // std::cout << "HandleAppendEntries " << MessageToString(m) << std::endl;
         // this->term_ = 2, 
         if(m.term() != NONE && m.term() < this->term_) {
@@ -615,6 +639,7 @@ namespace eraft
     }
 
     bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
+        Logger::GetInstance()->DEBUG_NEW("handle append entries response from" + std::to_string(m.from()), __FILE__, __LINE__, "RaftContext::HandleAppendEntriesResponse");
         // std::string str1;
         // google::protobuf::TextFormat::PrintToString(m, &str1);
         // std::cout << "HandleAppendEntriesResponse: " << str1 << " this->term_:  " << this->term_ <<std::endl;
@@ -655,7 +680,6 @@ namespace eraft
     }
 
     void RaftContext::LeaderCommit() {
-        // std::cout << "LeaderCommit()" << std::endl;
         std::vector<uint64_t> match;
         match.resize(this->prs_.size());
         uint64_t i = 0;
@@ -672,9 +696,11 @@ namespace eraft
                 this->BcastAppend();
             }
         }
+        Logger::GetInstance()->DEBUG_NEW("leader commit on log index " + std::to_string(this->raftLog_->commited_), __FILE__, __LINE__, "RaftContext::LeaderCommit");
     }
 
     bool RaftContext::HandleHeartbeat(eraftpb::Message m) {
+        Logger::GetInstance()->DEBUG("raft_context::handle_heart_beat");
         if(m.term() != NONE && m.term() < this->term_) {
             this->SendHeartbeatResponse(m.from(), true);
             return false;
@@ -686,6 +712,7 @@ namespace eraft
     }
 
     void RaftContext::AppendEntries(std::vector<std::shared_ptr<eraftpb::Entry> > entries) {
+        Logger::GetInstance()->DEBUG_NEW("append entries size " + std::to_string(entries.size()), __FILE__, __LINE__, "RaftContext::AppendEntries");
         uint64_t lastIndex = this->raftLog_->LastIndex();
         uint64_t i = 0;
         // push entries to raftLog
@@ -762,6 +789,7 @@ namespace eraft
     }
 
     void RaftContext::AddNode(uint64_t id) {
+        Logger::GetInstance()->DEBUG_NEW("add node id " + std::to_string(id), __FILE__, __LINE__, "RaftContext::AddNode");
         if(this->prs_[id] == nullptr) {
             this->prs_[id] = std::make_shared<Progress>(1);
         }
@@ -769,6 +797,7 @@ namespace eraft
     }
 
     void RaftContext::RemoveNode(uint64_t id) {
+        Logger::GetInstance()->DEBUG_NEW("remove node id " + std::to_string(id), __FILE__, __LINE__, "RaftContext::RemoveNode");
         if(this->prs_[id] != nullptr) {
             this->prs_.erase(id);
             if(this->state_ == NodeState::StateLeader) {

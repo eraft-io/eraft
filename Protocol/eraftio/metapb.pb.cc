@@ -155,6 +155,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_metapb_2eproto::offsets[] PROT
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::metapb::Peer, id_),
   PROTOBUF_FIELD_OFFSET(::metapb::Peer, store_id_),
+  PROTOBUF_FIELD_OFFSET(::metapb::Peer, addr_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::metapb::Cluster)},
@@ -181,9 +182,9 @@ const char descriptor_table_protodef_metapb_2eproto[] =
   "ion\022\n\n\002id\030\001 \001(\004\022\021\n\tstart_key\030\002 \001(\014\022\017\n\007en"
   "d_key\030\003 \001(\014\022)\n\014region_epoch\030\004 \001(\0132\023.meta"
   "pb.RegionEpoch\022\033\n\005peers\030\005 \003(\0132\014.metapb.P"
-  "eer\"$\n\004Peer\022\n\n\002id\030\001 \001(\004\022\020\n\010store_id\030\002 \001("
-  "\004*0\n\nStoreState\022\006\n\002Up\020\000\022\013\n\007Offline\020\001\022\r\n\t"
-  "Tombstone\020\002b\006proto3"
+  "eer\"2\n\004Peer\022\n\n\002id\030\001 \001(\004\022\020\n\010store_id\030\002 \001("
+  "\004\022\014\n\004addr\030\003 \001(\t*0\n\nStoreState\022\006\n\002Up\020\000\022\013\n"
+  "\007Offline\020\001\022\r\n\tTombstone\020\002b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_metapb_2eproto_deps[1] = {
 };
@@ -197,7 +198,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_met
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_metapb_2eproto_once;
 static bool descriptor_table_metapb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_metapb_2eproto = {
-  &descriptor_table_metapb_2eproto_initialized, descriptor_table_protodef_metapb_2eproto, "metapb.proto", 419,
+  &descriptor_table_metapb_2eproto_initialized, descriptor_table_protodef_metapb_2eproto, "metapb.proto", 433,
   &descriptor_table_metapb_2eproto_once, descriptor_table_metapb_2eproto_sccs, descriptor_table_metapb_2eproto_deps, 5, 0,
   schemas, file_default_instances, TableStruct_metapb_2eproto::offsets,
   file_level_metadata_metapb_2eproto, 5, file_level_enum_descriptors_metapb_2eproto, file_level_service_descriptors_metapb_2eproto,
@@ -1696,6 +1697,7 @@ class Peer::HasBitSetters {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Peer::kIdFieldNumber;
 const int Peer::kStoreIdFieldNumber;
+const int Peer::kAddrFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Peer::Peer()
@@ -1707,6 +1709,10 @@ Peer::Peer(const Peer& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  addr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from.addr().size() > 0) {
+    addr_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.addr_);
+  }
   ::memcpy(&id_, &from.id_,
     static_cast<size_t>(reinterpret_cast<char*>(&store_id_) -
     reinterpret_cast<char*>(&id_)) + sizeof(store_id_));
@@ -1714,6 +1720,8 @@ Peer::Peer(const Peer& from)
 }
 
 void Peer::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Peer_metapb_2eproto.base);
+  addr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&store_id_) -
       reinterpret_cast<char*>(&id_)) + sizeof(store_id_));
@@ -1725,6 +1733,7 @@ Peer::~Peer() {
 }
 
 void Peer::SharedDtor() {
+  addr_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void Peer::SetCachedSize(int size) const {
@@ -1742,6 +1751,7 @@ void Peer::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  addr_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&store_id_) -
       reinterpret_cast<char*>(&id_)) + sizeof(store_id_));
@@ -1767,6 +1777,13 @@ const char* Peer::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inter
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           store_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string addr = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_addr(), ptr, ctx, "metapb.Peer.addr");
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1826,6 +1843,21 @@ bool Peer::MergePartialFromCodedStream(
         break;
       }
 
+      // string addr = 3;
+      case 3: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (26 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadString(
+                input, this->mutable_addr()));
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+            this->addr().data(), static_cast<int>(this->addr().length()),
+            ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE,
+            "metapb.Peer.addr"));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1863,6 +1895,16 @@ void Peer::SerializeWithCachedSizes(
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64(2, this->store_id(), output);
   }
 
+  // string addr = 3;
+  if (this->addr().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->addr().data(), static_cast<int>(this->addr().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "metapb.Peer.addr");
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->addr(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1886,6 +1928,17 @@ void Peer::SerializeWithCachedSizes(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->store_id(), target);
   }
 
+  // string addr = 3;
+  if (this->addr().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->addr().data(), static_cast<int>(this->addr().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "metapb.Peer.addr");
+    target =
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
+        3, this->addr(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -1906,6 +1959,13 @@ size_t Peer::ByteSizeLong() const {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
+
+  // string addr = 3;
+  if (this->addr().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->addr());
+  }
 
   // uint64 id = 1;
   if (this->id() != 0) {
@@ -1948,6 +2008,10 @@ void Peer::MergeFrom(const Peer& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  if (from.addr().size() > 0) {
+
+    addr_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.addr_);
+  }
   if (from.id() != 0) {
     set_id(from.id());
   }
@@ -1981,6 +2045,8 @@ void Peer::Swap(Peer* other) {
 void Peer::InternalSwap(Peer* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
+  addr_.Swap(&other->addr_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(id_, other->id_);
   swap(store_id_, other->store_id_);
 }
