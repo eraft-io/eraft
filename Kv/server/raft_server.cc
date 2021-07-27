@@ -24,68 +24,67 @@ bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
 
 }
 
-bool RaftStorage::Write(const kvrpcpb::Context& ctx, std::vector<Modify> batch) 
+bool RaftStorage::Write(const kvrpcpb::Context& ctx, const kvrpcpb::RawPutRequest* put) 
 {
-    std::vector<raft_cmdpb::Request> reqs;
+    // std::vector<raft_cmdpb::Request>* reqs = new std::vector<raft_cmdpb::Request>{};
 
-    for(auto b: batch) {
-        switch (b.ot_)
-        {
-        case OpType::Put:
-        {
-            struct Put* pt = (struct Put*)b.data_;
-            raft_cmdpb::Request req;
-            req.set_cmd_type(raft_cmdpb::CmdType::Put);
-            raft_cmdpb::PutRequest putReq;
-            putReq.set_cf(pt->cf_);
-            putReq.set_key(pt->key_);
-            putReq.set_value(pt->value_);
-            req.set_allocated_put(&putReq);
-            reqs.push_back(req);
-            break;
-        }    
+    // for(auto b: batch) {
+    //     switch (b.ot_)
+    //     {
+    //     case OpType::Put:
+    //     {
+    //         struct Put* pt = (struct Put*)b.data_;
+    //         raft_cmdpb::Request req;
+    //         req.set_cmd_type(raft_cmdpb::CmdType::Put);
+    //         raft_cmdpb::PutRequest* putReq = new raft_cmdpb::PutRequest();
+    //         putReq->set_cf(pt->cf_);
+    //         putReq->set_key(pt->key_);
+    //         putReq->set_value(pt->value_);
+    //         req.set_allocated_put(putReq);
+    //         reqs->push_back(req);
+    //         break;
+    //     }    
 
-        case OpType::Delete:
-        {
-            struct Delete* dt = (struct Delete*)b.data_;
-            raft_cmdpb::Request req;
-            req.set_cmd_type(raft_cmdpb::CmdType::Delete);
-            raft_cmdpb::DeleteRequest dtReq;
-            dtReq.set_cf(dt->cf);
-            dtReq.set_key(dt->key);
-            req.set_allocated_delete_(&dtReq);
-            reqs.push_back(req);
-            break;
-        }
-        default:
-            break;
-        }
-    }
+    //     case OpType::Delete:
+    //     {
+    //         struct Delete* dt = (struct Delete*)b.data_;
+    //         raft_cmdpb::Request req;
+    //         req.set_cmd_type(raft_cmdpb::CmdType::Delete);
+    //         raft_cmdpb::DeleteRequest* dtReq = new raft_cmdpb::DeleteRequest();
+    //         dtReq->set_cf(dt->cf);
+    //         dtReq->set_key(dt->key);
+    //         req.set_allocated_delete_(dtReq);
+    //         reqs->push_back(req);
+    //         break;
+    //     }
+    //     default:
+    //         break;
+    //     }
+    // }
 
-    raft_cmdpb::RaftRequestHeader rqh;
-    rqh.set_region_id(ctx.region_id());
+    // raft_cmdpb::RaftRequestHeader* rqh = new raft_cmdpb::RaftRequestHeader();
+    // rqh->set_region_id(ctx.region_id());  
     
-    auto peer = new metapb::Peer(ctx.peer());
-    rqh.set_allocated_peer(peer);
-    auto regionEpoch = new metapb::RegionEpoch(ctx.region_epoch());
-    rqh.set_allocated_region_epoch(regionEpoch);
+    // auto peer = new metapb::Peer(ctx.peer());
+    // peer->set_store_id(1);
+    // rqh->set_allocated_peer(peer);
+    // auto regionEpoch = new metapb::RegionEpoch(ctx.region_epoch());
+    // rqh->set_allocated_region_epoch(regionEpoch);
+    // rqh->set_term(ctx.term());
 
-    rqh.set_term(ctx.term());
+    // // delete peer;
+    // // delete regionEpoch;
 
-    // delete peer;
-    // delete regionEpoch;
+    // raft_cmdpb::RaftCmdRequest* request = new raft_cmdpb::RaftCmdRequest();
+    // for(auto r: *reqs) {
+    //     request->set_allocated_header(rqh);
+    //     raft_cmdpb::Request* rq = request->add_requests();
+    //     rq = &r;
+    // }
 
-    raft_cmdpb::RaftCmdRequest request;
-    for(auto r: reqs) {
-        request.set_allocated_header(&rqh);
-        raft_cmdpb::Request* rq = request.add_requests();
-        rq = &r;
-    }
-
-    Callback* cb;
-
+    // Callback* cb = new Callback();
     // send batch request to router
-    this->raftRouter_->SendRaftCommand(&request, cb);
+    return this->raftRouter_->SendRaftCommand(put);
 }
 
 StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx)
@@ -109,7 +108,7 @@ StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx)
 
     Callback* cb;
     
-    this->raftRouter_->SendRaftCommand(&request, cb);
+    this->raftRouter_->SendRaftCommand(nullptr);
     auto resp = cb->WaitResp();
 
     RegionReader* regionReader = new RegionReader(this->engs_, resp->responses()[0].snap().region());

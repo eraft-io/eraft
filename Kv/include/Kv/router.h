@@ -77,7 +77,7 @@ public:
 
     virtual bool SendRaftMessage(const raft_serverpb::RaftMessage* msg) = 0;
 
-    virtual bool SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback* cb) = 0;
+    virtual bool SendRaftCommand(const kvrpcpb::RawPutRequest* put) = 0;
 
 };
 
@@ -93,7 +93,7 @@ public:
 
     bool SendRaftMessage(const raft_serverpb::RaftMessage* msg) override;
 
-    bool SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback* cb) override;
+    bool SendRaftCommand(const kvrpcpb::RawPutRequest* put) override;
 
 private:
 

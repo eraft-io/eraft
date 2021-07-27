@@ -50,9 +50,9 @@ public:
 
     void ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb);
 
-    void ProposeRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb);
+    void ProposeRequest(kvrpcpb::RawPutRequest* put);
 
-    void ProposeRaftCommand(raft_cmdpb::RaftCmdRequest* msg, Callback* cb);
+    void ProposeRaftCommand(kvrpcpb::RawPutRequest* put);
 
     void OnTick();
 

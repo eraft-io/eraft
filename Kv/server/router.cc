@@ -40,7 +40,7 @@ bool Router::Send(uint64_t regionID, Msg msg)
     // if(ps == nullptr) {
     //     return false; // TODO: log peer not found
     // }
-    Logger::GetInstance()->DEBUG_NEW("push raft msg to peer sender, type" + msg.MsgToString() , __FILE__, __LINE__, "Router::Register");
+    Logger::GetInstance()->DEBUG_NEW("push raft msg to peer sender, type " + msg.MsgToString() , __FILE__, __LINE__, "Router::Register");
     QueueContext::GetInstance()->peerSender_.Push(msg);
     return true;
 }
@@ -62,11 +62,12 @@ bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg)
     return this->router_->Send(msg->region_id(), m);
 }
 
-bool RaftstoreRouter::SendRaftCommand(raft_cmdpb::RaftCmdRequest* req, Callback* cb)
+bool RaftstoreRouter::SendRaftCommand(const kvrpcpb::RawPutRequest* put)
 {
-    MsgRaftCmd* cmd = new MsgRaftCmd(req, cb);
-    Msg m(MsgType::MsgTypeRaftCmd, req->header().region_id(), cmd);
-    this->router_->Send(req->header().region_id(), m);
+    Logger::GetInstance()->DEBUG_NEW("send raft cmd message" , __FILE__, __LINE__, "RaftstoreRouter::SendRaftCommand");
+    // MsgRaftCmd* cmd = new MsgRaftCmd(req, cb);
+    Msg m(MsgType::MsgTypeRaftCmd, 1, const_cast<kvrpcpb::RawPutRequest*>(put));
+    return this->router_->Send(1, m);
 }
 
 RaftstoreRouter::RaftstoreRouter(std::shared_ptr<Router> r)

@@ -125,7 +125,7 @@ public:
 
     virtual bool Start() = 0;
 
-    virtual bool Write(const kvrpcpb::Context& ctx, std::vector<Modify>) = 0;
+    virtual bool Write(const kvrpcpb::Context& ctx, const kvrpcpb::RawPutRequest* put) = 0;
 
     virtual StorageReader* Reader(const kvrpcpb::Context& ctx) = 0; // TODO: return something
 

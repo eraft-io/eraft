@@ -70,7 +70,7 @@ public:
     void Campaign();
 
     // Propose proposes data be appended to the raft log.
-    void Propose(std::vector<uint8_t>* data);
+    void Propose(std::string data);
 
     // ProposeConfChange proposes a config change.
     void ProposeConfChange(eraftpb::ConfChange cc);

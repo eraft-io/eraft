@@ -52,7 +52,7 @@ public:
 
     bool CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount);
 
-    bool Write(const kvrpcpb::Context& ctx, std::vector<Modify> batch);
+    bool Write(const kvrpcpb::Context& ctx, const kvrpcpb::RawPutRequest* put);
 
     StorageReader* Reader(const kvrpcpb::Context& ctx); 
 

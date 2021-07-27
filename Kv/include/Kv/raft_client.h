@@ -50,7 +50,9 @@ public:
     bool Send(uint64_t storeID, std::string addr, raft_serverpb::RaftMessage& msg);
 
     std::string GetAddr(uint64_t storeID);
-    
+
+    bool PutRaw(std::string addr, kvrpcpb::RawPutRequest& request);
+
     void InsertAddr(uint64_t storeID, std::string addr);
 
     void Flush();

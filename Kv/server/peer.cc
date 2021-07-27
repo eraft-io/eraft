@@ -271,6 +271,7 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
     sendMsg->mutable_message()->set_log_term(msg.log_term());
     sendMsg->mutable_message()->set_reject(msg.reject());
     sendMsg->mutable_message()->set_msg_type(msg.msg_type());
+    sendMsg->mutable_message()->set_data(msg.data());
 
     for(auto ent: msg.entries())
     {
@@ -278,7 +279,7 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
         e->set_entry_type(ent.entry_type());
         e->set_index(ent.index());
         e->set_term(ent.term());
-        e->set_data(ent.data());
+        e->set_data(msg.data());
     }
 
     return trans->Send(sendMsg);

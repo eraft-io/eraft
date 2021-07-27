@@ -41,12 +41,15 @@ Status Server::RawGet(ServerContext* context, const kvrpcpb::RawGetRequest* requ
 
 Status Server::RawPut(ServerContext* context, const kvrpcpb::RawPutRequest* request, kvrpcpb::RawPutResponse* response) 
 {
-    Put* pt = new Put(request->key(), request->value(), request->cf());
-    std::vector<Modify> batchs;
-    Modify modify(pt, OpType::Put);
-    batchs.push_back(modify);
-    if(!this->st_->Write(request->context(), batchs))
+    // Put* pt = new Put(request->key(), request->value(), request->cf());
+    Logger::GetInstance()->DEBUG_NEW("handle raw put with key " + request->key() + " value " + 
+    request->value() + " cf " + request->cf() + " region id " + std::to_string(request->context().region_id()), __FILE__, __LINE__, "Server::RawPut");
+    // std::vector<Modify> batchs;
+    // Modify modify(pt, OpType::Put);
+    // batchs.push_back(modify);
+    if(!this->st_->Write(request->context(), request))
     {
+        Logger::GetInstance()->DEBUG_NEW("err: st write error!", __FILE__, __LINE__, "Server::RawPut");
         return Status::CANCELLED;
     }
     return Status::OK;
@@ -58,10 +61,10 @@ Status Server::RawDelete(ServerContext* context, const kvrpcpb::RawDeleteRequest
     std::vector<Modify> batchs;
     Modify modify(dt, OpType::Delete);
     batchs.push_back(modify);
-    if(!this->st_->Write(request->context(), batchs))
-    {
-        return Status::CANCELLED;
-    }
+    // if(!this->st_->Write(request->context(), batchs))
+    // {
+    //     return Status::CANCELLED;
+    // }
     return Status::OK;
 }
 

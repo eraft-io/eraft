@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.8)
 set(This TestsCli)
 
 set(Sources 
-    TestsCli.cc
+    kv_cli.cc
 )
 
 add_executable(${This} ${Sources})
@@ -17,6 +17,7 @@ set_target_properties(${This} PROPERTIES
 target_link_libraries(${This} PUBLIC
     gtest_main
     Logger
+    Kv
     gRPC::grpc++
     Protocol
 )

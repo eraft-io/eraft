@@ -316,24 +316,25 @@ void PeerMsgHandler::HandleRaftReady()
         this->peer_->Send(this->ctx_->trans_, rd.messages);
         if(rd.committedEntries.size() > 0)
         {
-            std::vector<Proposal> oldProposal = this->peer_->proposals_;   
-            std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
-            for( auto entry: rd.committedEntries)
-            {
-                kvWB = this->Process(&entry, kvWB);
-                if (this->peer_->stopped_)
-                {
-                    return;
-                }
-            }
-            this->peer_->peerStorage_->applyState_->set_applied_index(rd.committedEntries[rd.committedEntries.size() - 1].index());
-            std::string key(Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).begin(), Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).end());
-            Assistant::GetInstance()->SetMeta(kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
-            this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(), kvWB.get());
-            if (oldProposal.size() > this->peer_->proposals_.size())
-            {
-                // TODO:
-            }
+            Logger::GetInstance()->DEBUG_NEW("rd.committedEntries.size() " + std::to_string(rd.committedEntries.size()), __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
+            // std::vector<Proposal> oldProposal = this->peer_->proposals_;   
+            // std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
+            // for( auto entry: rd.committedEntries)
+            // {
+            //     kvWB = this->Process(&entry, kvWB);
+            //     if (this->peer_->stopped_)
+            //     {
+            //         return;
+            //     }
+            // }
+            // this->peer_->peerStorage_->applyState_->set_applied_index(rd.committedEntries[rd.committedEntries.size() - 1].index());
+            // std::string key(Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).begin(), Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).end());
+            // Assistant::GetInstance()->SetMeta(kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
+            // this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(), kvWB.get());
+            // if (oldProposal.size() > this->peer_->proposals_.size())
+            // {
+            //     // TODO:
+            // }
         }
         this->peer_->raftGroup_->Advance(rd);
     }
@@ -348,24 +349,38 @@ void PeerMsgHandler::HandleMsg(Msg m)
         {
             if(m.data_ != nullptr)
             {
-                auto raftMsg = static_cast<raft_serverpb::RaftMessage*>(m.data_);
+                try
+                {
+                    auto raftMsg = reinterpret_cast<raft_serverpb::RaftMessage*>(m.data_);
 
-                if(raftMsg == nullptr)
-                {
-                    Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
-                    return;
+                    if(raftMsg == nullptr)
+                    {
+                        Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+                        return;
+                    }
+                    if(!this->OnRaftMsg(raftMsg)) 
+                    {
+                        Logger::GetInstance()->DEBUG_NEW("err: on handle raft msg", __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+                    }
                 }
-                if(!this->OnRaftMsg(raftMsg)) 
+                catch(const std::exception& e)
                 {
-                    Logger::GetInstance()->DEBUG_NEW("err: on handle raft msg", __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+                    std::cerr << e.what() << '\n';
                 }
             }
             break;
         }
     case MsgType::MsgTypeRaftCmd:
         {
-            auto raftCmd = static_cast<MsgRaftCmd*>(m.data_);
-            this->ProposeRaftCommand(raftCmd->request_, raftCmd->callback_);
+            try
+            {
+                auto put = reinterpret_cast<kvrpcpb::RawPutRequest*>(m.data_);
+                this->ProposeRaftCommand(put);
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
             break;
         }
     case MsgType::MsgTypeTick:
@@ -476,36 +491,38 @@ void PeerMsgHandler::ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg, Callba
     
 }
 
-void PeerMsgHandler::ProposeRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb)
+void PeerMsgHandler::ProposeRequest(kvrpcpb::RawPutRequest* put)
 {
-    auto req = msg->requests()[0];
-    std::shared_ptr<std::string> key = GetRequestKey(&req);
-    Logger::GetInstance()->DEBUG_NEW("propose request " + *key, __FILE__, __LINE__, "PeerMsgHandler::ProposeRequest");
-    if(*key != "")
-    {
-        assert(CheckKeyInRegion(*key, this->peer_->Region()));
-    }
-    std::string data = msg->SerializeAsString();
-    // add proposal to peer
-    Proposal p;
-    p.index_ = this->peer_->NextProposalIndex();
-    p.term_ = this->peer_->Term();
-    p.cb_ = cb;
-    this->peer_->proposals_.push_back(p);
-    std::vector<uint8_t> prop_(data.begin(), data.end());
-    this->peer_->raftGroup_->Propose(&prop_);
+    // auto req = msg->requests()[0];
+    // std::shared_ptr<std::string> key = GetRequestKey(&req);
+    Logger::GetInstance()->DEBUG_NEW("propose test data: ", __FILE__, __LINE__, "PeerMsgHandler::ProposeRequest");
+    // if(*key != "")
+    // {
+    //     assert(CheckKeyInRegion(*key, this->peer_->Region()));
+    // }
+    std::string data = "test propose";
+    // std::string data = put->key();
+    // // add proposal to peer
+    // Proposal p;
+    // p.index_ = this->peer_->NextProposalIndex();
+    // p.term_ = this->peer_->Term();
+    // p.cb_ = cb;
+    // this->peer_->proposals_.push_back(p);
+    // std::vector<uint8_t> prop_(data.begin(), data.end());
+    this->peer_->raftGroup_->Propose(data);
 }
 
-void PeerMsgHandler::ProposeRaftCommand(raft_cmdpb::RaftCmdRequest* msg, Callback* cb)
+void PeerMsgHandler::ProposeRaftCommand(kvrpcpb::RawPutRequest* put)
 {
-    assert(this->PreProposeRaftCommand(msg));
+
+    // assert(this->PreProposeRaftCommand(msg));
 
     // 
     // TODO: check if msg is admin req
     //
     // this->ProposeAdminRequest(msg, cb);
     // 
-    this->ProposeRequest(msg, cb);
+    this->ProposeRequest(put);
 }
 
 void PeerMsgHandler::OnTick()
@@ -544,7 +561,8 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     // }
     Logger::GetInstance()->DEBUG_NEW("on raft msg from " + std::to_string(msg->message().from()) 
         + " to " + std::to_string(msg->message().to()) + " index " + std::to_string(msg->message().index()) 
-        + " term " + std::to_string(msg->message().term()) + " type " + eraft::MsgTypeToString(msg->message().msg_type()),
+        + " term " + std::to_string(msg->message().term()) + " type " + eraft::MsgTypeToString(msg->message().msg_type())
+        + " ents.size " + std::to_string(msg->message().entries_size()),
          __FILE__, __LINE__, "PeerMsgHandler::OnRaftMsg");
 
     if(!msg->has_message())
@@ -559,6 +577,7 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     // }
 
     // make new msg
+    Logger::GetInstance()->DEBUG_NEW("start make new msg", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
     eraftpb::Message newMsg;
     newMsg.set_from(msg->message().from());
     newMsg.set_to(msg->message().to());
@@ -568,14 +587,18 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     newMsg.set_log_term(msg->message().log_term());
     newMsg.set_reject(msg->message().reject());
     newMsg.set_msg_type(msg->message().msg_type());
-    for(auto ent: msg->message().entries())
+    newMsg.set_data(msg->message().data());
+    Logger::GetInstance()->DEBUG_NEW("make new msg going", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
+
+    for(uint32_t i = 0; i < msg->mutable_message()->entries_size(); i++)
     {
         eraftpb::Entry* e = newMsg.add_entries();
-        e->set_entry_type(ent.entry_type());
-        e->set_index(ent.index());
-        e->set_term(ent.term());
-        e->set_data(ent.data());
+        e->set_entry_type(eraftpb::EntryNormal);
+        e->set_index(msg->message().index());
+        e->set_term(msg->message().term());
+        e->set_data(msg->message().data());
     }
+    Logger::GetInstance()->DEBUG_NEW("make new msg end", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
 
     this->peer_->raftGroup_->Step(newMsg);
 
