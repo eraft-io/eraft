@@ -89,12 +89,7 @@ namespace eraft
     bool RaftContext::SendAppend(uint64_t to) {
         uint64_t prevIndex = this->prs_[to]->next - 1;
         uint64_t prevLogTerm = this->raftLog_->Term(prevIndex);
-        // std::vector<eraftpb::Entry> entries;
         int64_t n = this->raftLog_->entries_.size();
-        // if(this->raftLog_->entries_.size() > 0)
-        // {
-        //     n = this->raftLog_->entries_.size();
-        // }
         Logger::GetInstance()->DEBUG_NEW("prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " + std::to_string(prevLogTerm) 
          + " entries_.size: " + std::to_string(n), __FILE__, __LINE__, "RaftContext::SendAppend");
 
@@ -111,7 +106,6 @@ namespace eraft
             n = 0;
         }
         for(uint64_t i = this->raftLog_->ToSliceIndex(prevIndex + 1); i < n; i++) {
-            // entries.push_back(this->raftLog_->entries_[i]);
             eraftpb::Entry* e = msg.add_entries();
             e->set_entry_type(this->raftLog_->entries_[i].entry_type());
             e->set_index(this->raftLog_->entries_[i].index());
@@ -119,9 +113,6 @@ namespace eraft
             e->set_data(this->raftLog_->entries_[i].data());
             msg.set_temp_data(this->raftLog_->entries_[i].data());
             Logger::GetInstance()->DEBUG_NEW("SET ENTRY DATA =============================" + std::to_string(this->raftLog_->entries_[i].data()), __FILE__, __LINE__, "RaftContext::SendAppend");
-            // msg.set_entry_data(this->raftLog_->entries_[i].data());
-            // msg.set_entry_index(this->raftLog_->entries_[i].index());
-            // msg.set_entry_term(this->raftLog_->entries_[i].term());
         }
         this->msgs_.push_back(msg);
         return true;
@@ -456,11 +447,7 @@ namespace eraft
             case eraftpb::MsgPropose:
                 {
                     if(this->leadTransferee_ == NONE) {
-                        Logger::GetInstance()->DEBUG_NEW("StepLeader -> m.entries_size() " + std::to_string(m.entries_size()), __FILE__, __LINE__, "RaftContext::StepLeader");
-                        // std::vector<std::shared_ptr<eraftpb::Entry> > ents;
-                        // for(auto iter = m.mutable_entries()->begin(); iter != m.mutable_entries()->end(); iter ++) {
-                        //     ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
-                        // }
+                        Logger::GetInstance()->DEBUG_NEW("StepLeader -> m.data() " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::StepLeader");
                         // append one
                         this->AppendEntry(m);
                     }
@@ -550,7 +537,6 @@ namespace eraft
 
     bool RaftContext::HandleRequestVote(eraftpb::Message m) {    
         Logger::GetInstance()->DEBUG_NEW("handle request vote from " + std::to_string(m.from()), __FILE__, __LINE__, "RaftContext::HandleRequestVote");
-
         if(m.term() != NONE && m.term() < this->term_) {
             this->SendRequestVoteResponse(m.from(), true);
             return true;
@@ -595,8 +581,6 @@ namespace eraft
 
     bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
         Logger::GetInstance()->DEBUG_NEW("handle append entries " + MessageToString(m), __FILE__, __LINE__, "RaftContext::HandleAppendEntries");
-        // std::cout << "HandleAppendEntries " << MessageToString(m) << std::endl;
-        // this->term_ = 2, 
         if(m.term() != NONE && m.term() < this->term_) {
             this->SendAppendResponse(m.from(), true, NONE, NONE);
             return false;
@@ -605,17 +589,14 @@ namespace eraft
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
         this->lead_ = m.from();
         uint64_t lastIndex = this->raftLog_->LastIndex();
-        // std::cout << "lastIndex: " << lastIndex << std::endl;
         if(m.index() > lastIndex) {
             this->SendAppendResponse(m.from(), true, NONE, lastIndex+1);
             return false;
         }
-        // std::cout << "firstIndex_: " << this->raftLog_->firstIndex_ << std::endl;
         if(m.index() >= this->raftLog_->firstIndex_) {
             uint64_t logTerm = this->raftLog_->Term(m.index());
             if(logTerm != m.log_term()) {
                 uint64_t index = 0;
-                // TODO: need to change to binary search.
                 for(uint64_t i = 0; i < this->raftLog_->ToSliceIndex(m.index() + 1); i++) {
                     if(this->raftLog_->entries_[i].term() == logTerm) {
                         index = i;
@@ -655,10 +636,6 @@ namespace eraft
 
     bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
         Logger::GetInstance()->DEBUG_NEW("handle append entries response from" + std::to_string(m.from()), __FILE__, __LINE__, "RaftContext::HandleAppendEntriesResponse");
-        // std::string str1;
-        // google::protobuf::TextFormat::PrintToString(m, &str1);
-        // std::cout << "HandleAppendEntriesResponse: " << str1 << " this->term_:  " << this->term_ <<std::endl;
-        // std::cout << "this->prs_[m.from()]->match(): " << this->prs_[m.from()]->match << std::endl;
         if(m.term() != NONE && m.term() < this->term_) {
             return false;
         }
@@ -727,7 +704,7 @@ namespace eraft
     }
 
     void RaftContext::AppendEntry(eraftpb::Message m) {
-        Logger::GetInstance()->DEBUG_NEW("append entry M TEMP DATA: " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::AppendEntries");
+        Logger::GetInstance()->DEBUG_NEW("append entry TEMP DATA: " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::AppendEntry");
         uint64_t lastIndex = this->raftLog_->LastIndex();
         eraftpb::Entry entry;
         if(m.temp_data() != 0)
@@ -736,6 +713,7 @@ namespace eraft
             entry.set_index(lastIndex + 1);
             entry.set_data(m.temp_data());
             this->raftLog_->entries_.push_back(entry);
+            Logger::GetInstance()->DEBUG_NEW("push on entry to raftlog: " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::AppendEntry");
         }
         this->prs_[this->id_]->match = this->raftLog_->LastIndex();
         this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;

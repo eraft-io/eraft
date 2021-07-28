@@ -1,16 +1,14 @@
 #ifndef ERAFT_KV_PEER_MSG_HANDLER_H_
 #define ERAFT_KV_PEER_MSG_HANDLER_H_
 
-#include <Kv/peer.h>
-#include <Kv/raft_store.h>
-#include <Kv/engines.h>
-
-#include <rocksdb/write_batch.h>
-
 #include <functional>
 #include <memory>
 
+#include <rocksdb/write_batch.h>
 #include <eraftio/raft_cmdpb.pb.h>
+#include <Kv/peer.h>
+#include <Kv/raft_store.h>
+#include <Kv/engines.h>
 
 
 namespace kvserver

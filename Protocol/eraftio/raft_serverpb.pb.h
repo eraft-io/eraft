@@ -313,6 +313,12 @@ class RaftMessage :
   ::PROTOBUF_NAMESPACE_ID::uint64 region_id() const;
   void set_region_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
+  // uint64 data = 9;
+  void clear_data();
+  static const int kDataFieldNumber = 9;
+  ::PROTOBUF_NAMESPACE_ID::uint64 data() const;
+  void set_data(::PROTOBUF_NAMESPACE_ID::uint64 value);
+
   // bool is_tombstone = 6;
   void clear_is_tombstone();
   static const int kIsTombstoneFieldNumber = 6;
@@ -331,6 +337,7 @@ class RaftMessage :
   ::eraftpb::Message* message_;
   ::metapb::RegionEpoch* region_epoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 region_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 data_;
   bool is_tombstone_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_raft_5fserverpb_2eproto;
@@ -2191,6 +2198,20 @@ inline void RaftMessage::set_allocated_end_key(std::string* end_key) {
   }
   end_key_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), end_key);
   // @@protoc_insertion_point(field_set_allocated:raft_serverpb.RaftMessage.end_key)
+}
+
+// uint64 data = 9;
+inline void RaftMessage::clear_data() {
+  data_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftMessage::data() const {
+  // @@protoc_insertion_point(field_get:raft_serverpb.RaftMessage.data)
+  return data_;
+}
+inline void RaftMessage::set_data(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  data_ = value;
+  // @@protoc_insertion_point(field_set:raft_serverpb.RaftMessage.data)
 }
 
 // -------------------------------------------------------------------

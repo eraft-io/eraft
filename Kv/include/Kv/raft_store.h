@@ -1,6 +1,11 @@
 #ifndef ERAFT_KV_RAFTSTORE_H_
 #define ERAFT_KV_RAFTSTORE_H_
 
+#include <deque>
+#include <memory>
+#include <mutex>
+#include <map>
+
 #include <Kv/config.h>
 #include <Kv/engines.h>
 #include <Kv/router.h>
@@ -9,14 +14,9 @@
 #include <Kv/msg.h>
 #include <Kv/peer.h>
 #include <Kv/storage.h>
-
 #include <eraftio/metapb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 
-#include <deque>
-#include <memory>
-#include <mutex>
-#include <map>
 
 namespace kvserver
 {

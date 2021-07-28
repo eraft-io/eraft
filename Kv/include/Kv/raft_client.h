@@ -1,16 +1,15 @@
 #ifndef ERAFT_KV_RAFT_CLIENT_H_
 #define ERAFT_KV_RAFT_CLIENT_H_
 
-#include <grpcpp/grpcpp.h>
-#include <eraftio/tinykvpb.grpc.pb.h>
-#include <eraftio/raft_serverpb.pb.h>
 #include <mutex>
 #include <memory>
 #include <string>
 #include <map>
 
+#include <grpcpp/grpcpp.h>
+#include <eraftio/tinykvpb.grpc.pb.h>
+#include <eraftio/raft_serverpb.pb.h>
 #include <Kv/config.h>
-
 namespace kvserver
 {
 

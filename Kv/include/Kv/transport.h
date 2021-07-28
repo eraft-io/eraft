@@ -1,10 +1,9 @@
 #ifndef ERAFT_KV_TRANSPORT_H_
 #define ERAFT_KV_TRANSPORT_H_
 
-#include <eraftio/raft_serverpb.pb.h>
-
 #include <memory>
 
+#include <eraftio/raft_serverpb.pb.h>
 namespace kvserver
 {
 

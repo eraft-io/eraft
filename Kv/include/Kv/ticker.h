@@ -1,29 +1,6 @@
 #ifndef ERAFT_KV_TICKER_H_
 #define ERAFT_KV_TICKER_H_
 
-//
-// Usage example
-//
-// void tick()
-// {
-//     std::cout << "tick\n";
-// }
-
-// void main()
-// {
-//     std::chrono::duration<int, std::milli> timer_duration1(1000);
-//     std::chrono::duration<int, std::milli> timer_duration2(500);
-//     std::chrono::duration<int> main_wait(5);
-
-//     Ticker ticker(std::function<void()>(tick), timer_duration1);
-//     ticker.start();
-
-//     std::this_thread::sleep_for(main_wait);
-//     ticker.setDuration(timer_duration2);
-//     std::this_thread::sleep_for(main_wait);
-//     ticker.stop();
-// }
-// 
 
 #include <cstdint>
 #include <functional>
@@ -37,7 +14,6 @@
 #include <map>
 
 #include <Kv/router.h>
-
 
 namespace kvserver
 {

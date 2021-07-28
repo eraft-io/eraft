@@ -179,7 +179,7 @@ void Peer::Send(std::shared_ptr<Transport> trans, std::vector<eraftpb::Message> 
     {
         if(!this->SendRaftMessage(msg, trans)) 
         {
-            // TODO: log send message err
+            Logger::GetInstance()->DEBUG_NEW("err: send raft msg to trans error! ", __FILE__, __LINE__, "Peer::Send");
         }
     }
 }
@@ -199,7 +199,6 @@ std::vector<std::shared_ptr<metapb::Peer> > Peer::CollectPendingPeers()
             if(peer != nullptr)
             {
                 pendingPeers.push_back(peer);
-                // TODO: stat peer start pending time
             }
         }
     }
@@ -208,7 +207,7 @@ std::vector<std::shared_ptr<metapb::Peer> > Peer::CollectPendingPeers()
 
 void Peer::ClearPeersStartPendingTime()
 {
-    //TODO: clear peers start pending time map
+
 }
 
 bool Peer::AnyNewPeerCatchUp(uint64_t peerId)
@@ -233,7 +232,6 @@ uint64_t Peer::Term()
 
 void Peer::HeartbeatScheduler()
 {
-    // TODO: tick scheduler heartbeat
 }
 
 bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans)
@@ -252,17 +250,9 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
     sendMsg->mutable_from_peer()->set_id(fromPeer->id());
     sendMsg->mutable_from_peer()->set_store_id(fromPeer->store_id());
     sendMsg->mutable_from_peer()->set_addr(fromPeer->addr());
-
     sendMsg->mutable_to_peer()->set_id(toPeer->id());
     sendMsg->mutable_to_peer()->set_store_id(toPeer->store_id());
     sendMsg->mutable_to_peer()->set_addr(toPeer->addr());
-
-    // if(this->peerStorage_->IsInitialized() && Assistant::GetInstance()->IsInitialMsg(msg))
-    // {
-    //     sendMsg->set_start_key(this->Region()->start_key());
-    //     sendMsg->set_end_key(this->Region()->end_key());
-    // }
-
     sendMsg->mutable_message()->set_from(msg.from());
     sendMsg->mutable_message()->set_to(msg.to());
     sendMsg->mutable_message()->set_index(msg.index());

@@ -1,12 +1,11 @@
 #ifndef ERAFT_KV_BOOTSTRAP_H
 #define ERAFT_KV_BOOTSTRAP_H
 
-#include <rocksdb/db.h>
 #include <memory>
 
-#include <Kv/engines.h>
-
+#include <rocksdb/db.h>
 #include <eraftio/metapb.pb.h>
+#include <Kv/engines.h>
 
 namespace kvserver
 {
@@ -56,9 +55,6 @@ public:
     // get instance
     static BootHelper* GetInstance();
 };
-
-
-
 
 } // namespace kvserver
 

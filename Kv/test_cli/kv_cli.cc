@@ -18,9 +18,9 @@ int main(int argc, char** argv) {
   std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
   kvrpcpb::RawPutRequest request;
   request.mutable_context()->set_region_id(1);
-  request.set_cf("test");
-  request.set_key("hello");
-  request.set_value("eraft");
+  request.set_cf(std::string(argv[2]));
+  request.set_value(std::string(argv[2]));
+  request.set_key(std::string(argv[2]));
   raftClient->PutRaw(std::string(argv[1]), request);
 
   return 0;

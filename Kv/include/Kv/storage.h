@@ -1,10 +1,12 @@
 #ifndef ERAFT_KV_STORAGE_H_
 #define ERAFT_KV_STORAGE_H_
 
-#include <eraftio/kvrpcpb.pb.h>
-#include <vector>
 #include <stdint.h>
+
+#include <vector>
 #include <string>
+
+#include <eraftio/kvrpcpb.pb.h>
 #include <rocksdb/db.h>
 
 namespace kvserver

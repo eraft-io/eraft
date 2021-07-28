@@ -1,11 +1,13 @@
 #ifndef ERAFT_KV_CONFIG_H_
 #define ERAFT_KV_CONFIG_H_
 
-#include <string>
 #include <stdint.h>
+
+#include <string>
 #include <iostream>
 #include <vector>
 #include <map>
+
 #include <Logger/Logger.h>
 #include <RaftCore/Util.h>
 

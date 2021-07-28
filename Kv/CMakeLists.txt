@@ -68,7 +68,7 @@ target_link_libraries(${This} PUBLIC
     ${GFLAGS_LIBRARIES}
 )
 
-add_subdirectory(kvserver)
+# add_subdirectory(kvserver)
 
 add_subdirectory(test_cli)
 add_subdirectory(test_svr)

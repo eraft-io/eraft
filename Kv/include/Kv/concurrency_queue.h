@@ -1,14 +1,14 @@
 #ifndef ERAFT_KV_QUEUE_H_
 #define ERAFT_KV_QUEUE_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <stdint.h>
-#include <Kv/msg.h>
 
-// https://github.com/juanchopanza/cppblog/blob/master/Concurrency/Queue/Queue.h
+#include <Kv/msg.h>
 
 namespace kvserver
 {

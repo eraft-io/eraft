@@ -116,16 +116,6 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(eraftpb::Ent
         break;
     }
 
-    //
-    // [capture list] (params list) mutable exception-> return type { function body }
-    // 各项具体含义如下
-    // capture list：捕获外部变量列表
-    // params list：形参列表
-    // mutable指示符：用来说用是否可以修改捕获的变量
-    // exception：异常设定
-    // return type：返回类型
-    // function body：函数体
-    //
 
     this->HandleProposal(
         entry,
@@ -309,10 +299,7 @@ void PeerMsgHandler::HandleRaftReady()
         Logger::GetInstance()->DEBUG_NEW("raft group is ready!", __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
         eraft::DReady rd = this->peer_->raftGroup_->EReady();
         auto result = this->peer_->peerStorage_->SaveReadyState(std::make_shared<eraft::DReady>(rd));
-        if(result != nullptr)
-        {
-            // TODO: snapshot
-        }
+        if(result != nullptr) { }
         this->peer_->Send(this->ctx_->trans_, rd.messages);
         if(rd.committedEntries.size() > 0)
         {
@@ -351,7 +338,16 @@ void PeerMsgHandler::HandleMsg(Msg m)
             {
                 try
                 {
-                    auto raftMsg = reinterpret_cast<raft_serverpb::RaftMessage*>(m.data_);
+                    auto raftMsg = static_cast<raft_serverpb::RaftMessage*>(m.data_);
+
+                    if(raftMsg->data() != 0)
+                    {
+                        kvrpcpb::RawPutRequest* put = new kvrpcpb::RawPutRequest();
+                        put->set_key(std::to_string(raftMsg->data()));
+                        Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(), __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+                        this->ProposeRaftCommand(put);
+                        return;
+                    }
 
                     if(raftMsg == nullptr)
                     {
@@ -372,15 +368,6 @@ void PeerMsgHandler::HandleMsg(Msg m)
         }
     case MsgType::MsgTypeRaftCmd:
         {
-            try
-            {
-                auto put = reinterpret_cast<kvrpcpb::RawPutRequest*>(m.data_);
-                this->ProposeRaftCommand(put);
-            }
-            catch(const std::exception& e)
-            {
-                std::cerr << e.what() << '\n';
-            }
             break;
         }
     case MsgType::MsgTypeTick:
@@ -390,18 +377,14 @@ void PeerMsgHandler::HandleMsg(Msg m)
         }
     case MsgType::MsgTypeSplitRegion:
         {
-            // TODO: split region
-            // auto split = static_cast<Msg>
             break;
         }
     case MsgType::MsgTypeRegionApproximateSize:
         {
-            // TODO:
             break;
         }
     case MsgType::MsgTypeGcSnap:
         {
-            // TODO:
             break;
         }
     case MsgType::MsgTypeStart:
@@ -488,40 +471,19 @@ bool PeerMsgHandler::CheckKeyInRegion(std::string key, std::shared_ptr<metapb::R
 
 void PeerMsgHandler::ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb)
 {
-    
+
 }
 
 void PeerMsgHandler::ProposeRequest(kvrpcpb::RawPutRequest* put)
 {
-    // auto req = msg->requests()[0];
-    // std::shared_ptr<std::string> key = GetRequestKey(&req);
-    Logger::GetInstance()->DEBUG_NEW("propose test data: ", __FILE__, __LINE__, "PeerMsgHandler::ProposeRequest");
-    // if(*key != "")
-    // {
-    //     assert(CheckKeyInRegion(*key, this->peer_->Region()));
-    // }
-    std::string data = "test propose";
-    // std::string data = put->key();
-    // // add proposal to peer
-    // Proposal p;
-    // p.index_ = this->peer_->NextProposalIndex();
-    // p.term_ = this->peer_->Term();
-    // p.cb_ = cb;
-    // this->peer_->proposals_.push_back(p);
-    // std::vector<uint8_t> prop_(data.begin(), data.end());
+    Logger::GetInstance()->DEBUG_NEW("PROPOSE TEST KEY ================= " + put->key(), __FILE__, __LINE__, "PeerMsgHandler::ProposeRequest");
+    std::string data = put->key();
     this->peer_->raftGroup_->Propose(data);
 }
 
 void PeerMsgHandler::ProposeRaftCommand(kvrpcpb::RawPutRequest* put)
 {
-
-    // assert(this->PreProposeRaftCommand(msg));
-
-    // 
-    // TODO: check if msg is admin req
-    //
-    // this->ProposeAdminRequest(msg, cb);
-    // 
+    // TODO: check put
     this->ProposeRequest(put);
 }
 
@@ -575,8 +537,6 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     {
         return false;
     }
-    // // make new msg
-    // Logger::GetInstance()->DEBUG_NEW("start make new msg", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
     eraftpb::Message newMsg;
     newMsg.set_from(msg->message().from());
     newMsg.set_to(msg->message().to());
@@ -588,17 +548,6 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     newMsg.set_msg_type(msg->message().msg_type());
     newMsg.set_temp_data(msg->message().temp_data());
     Logger::GetInstance()->DEBUG_NEW("RECIVED ENTRY DATA = " + std::to_string(msg->message().temp_data()), __FILE__, __LINE__, "RaftContext::OnRaftMsg");
-
-    // for(uint32_t i = 0; i < msg->mutable_message()->entries_size(); i++)
-    // {
-    //     eraftpb::Entry* e = newMsg.add_entries();
-    //     e->set_entry_type(eraftpb::EntryNormal);
-    //     e->set_index(msg->message().index());
-    //     e->set_term(msg->message().term());
-    //     e->set_data(msg->message().data());
-    // }
-    // Logger::GetInstance()->DEBUG_NEW("make new msg end", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
-
     this->peer_->raftGroup_->Step(newMsg);
 
     return true;
@@ -634,7 +583,6 @@ bool PeerMsgHandler::CheckMessage(raft_serverpb::RaftMessage* msg)
     }
     else if(target.id() > this->peer_->PeerId())
     {
-
         return true;
     }
 
@@ -650,7 +598,6 @@ void PeerMsgHandler::HandleStaleMsg(Transport& trans, raft_serverpb::RaftMessage
 
     if(!needGC) 
     {
-        // ignore
         return;
     }
 

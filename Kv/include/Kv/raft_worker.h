@@ -1,14 +1,14 @@
 #ifndef ERAFT_KV_RAFT_WORKER_H_
 #define ERAFT_KV_RAFT_WORKER_H_
 
+#include <deque>
+#include <memory>
+#include <map>
+
 #include <Kv/raft_store.h>
 #include <Kv/msg.h>
 #include <Kv/router.h>
 #include <Kv/concurrency_queue.h>
-
-#include <deque>
-#include <memory>
-#include <map>
 
 namespace kvserver
 {

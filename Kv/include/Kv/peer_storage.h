@@ -6,7 +6,6 @@
 
 #include <eraftio/metapb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
-
 #include <Kv/engines.h>
 #include <RaftCore/Storage.h>
 #include <RaftCore/RawNode.h>

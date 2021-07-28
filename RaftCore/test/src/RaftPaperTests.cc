@@ -531,7 +531,7 @@ static bool CommitNoopEntry(std::shared_ptr<eraft::RaftContext> r, std::shared_p
     // simulate the response of MessageType_MsgAppend
     std::vector<eraftpb::Message> msgs = r->ReadMessage();
     for(auto m : msgs) {
-        if(m.msg_type() != eraftpb::MsgAppend || m.entries().size() != 1 || !m.entries()[0].data().empty()) {
+        if(m.msg_type() != eraftpb::MsgAppend || m.entries().size() != 1 || !m.entries()[0].data() != 0) {
             return false;
         }
         // std::cout << "AcceptAndReply " << "m.from(): " << m.from() << "m.to() " << m.to() << std::endl;
@@ -570,7 +570,7 @@ TEST(RaftPaperTests, TestLeaderStartReplication2AB) {
     proposeMsg.set_to(1);
     proposeMsg.set_msg_type(eraftpb::MsgPropose);
     eraftpb::Entry* eptr = proposeMsg.add_entries();
-    eptr->set_data("some data");
+    eptr->set_data(12306);
 
     r->Step(proposeMsg);
 
@@ -615,7 +615,7 @@ TEST(RaftPaperTests, TestLeaderCommitEntry2AB) {
     proposeMsg.set_to(1);
     proposeMsg.set_msg_type(eraftpb::MsgPropose);
     eraftpb::Entry* eptr = proposeMsg.add_entries();
-    eptr->set_data("some data");
+    eptr->set_data(12306);
     r->Step(proposeMsg);
 
     std::vector<eraftpb::Message> msgs = r->ReadMessage();
@@ -674,7 +674,7 @@ TEST(RaftPaperTests, TestLeaderAcknowledgeCommit2AB) {
             proposeMsg.set_msg_type(eraftpb::MsgPropose);
             eraftpb::Entry* eptr = proposeMsg.add_entries();
             
-            eptr->set_data("some data");
+            eptr->set_data(12306);
             r->Step(proposeMsg);
 
             std::vector<eraftpb::Message> msgs = r->ReadMessage();
@@ -753,7 +753,7 @@ TEST(RaftPaperTests, TestLeaderCommitPrecedingEntries2AB) {
         proposeMsg.set_msg_type(eraftpb::MsgPropose);
         eraftpb::Entry* eptr = proposeMsg.add_entries();
         
-        eptr->set_data("some data");
+        eptr->set_data(12306);
         r->Step(proposeMsg);
 
         std::vector<eraftpb::Message> msgs = r->ReadMessage();
@@ -780,10 +780,10 @@ TEST(RaftPaperTests, TestLeaderCommitPrecedingEntries2AB) {
 // Reference: section 5.3
 TEST(RaftPaperTests, TestFollowerCommitEntry2AB) {
     eraftpb::Entry en1, en2, en3, en4;
-    en1.set_term(1); en1.set_index(1);  en1.set_data("some data");
-    en2.set_term(1); en2.set_index(2);  en2.set_data("some data2");
-    en3.set_term(1); en3.set_index(1);  en3.set_data("some data2");
-    en4.set_term(1); en4.set_index(2); en4.set_data("some data");
+    en1.set_term(1); en1.set_index(1);  en1.set_data(12333);
+    en2.set_term(1); en2.set_index(2);  en2.set_data(2333);
+    en3.set_term(1); en3.set_index(1);  en3.set_data(2445);
+    en4.set_term(1); en4.set_index(2); en4.set_data(12233);
 
     std::vector<eraftpb::Entry* > ens1, ens2, ens3, ens4;
     ens1.push_back(&en1);

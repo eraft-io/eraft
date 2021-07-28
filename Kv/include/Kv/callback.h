@@ -1,8 +1,9 @@
 #ifndef ERAFT_KV_CALLBACK_H_
 #define ERAFT_KV_CALLBACK_H_
 
-#include <eraftio/raft_cmdpb.pb.h>
 #include <atomic>
+
+#include <eraftio/raft_cmdpb.pb.h>
 
 namespace kvserver
 {
@@ -40,7 +41,7 @@ struct Callback
     raft_cmdpb::RaftCmdResponse* WaitRespWithTimeout() 
     {
         if(this->done_) 
-        { // TODO: with time check
+        {
         }
     }
 };

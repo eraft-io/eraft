@@ -2,13 +2,13 @@
 #define ERAFT_KV_STORE_WORKER_H_
 
 #include <stdint.h>
+
 #include <atomic>
 #include <mutex>
 #include <memory>
 #include <thread>
 
 #include <eraftio/raft_serverpb.pb.h>
-
 #include <Kv/msg.h>
 #include <Kv/raft_store.h>
 #include <Kv/concurrency_queue.h>

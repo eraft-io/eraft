@@ -1,12 +1,10 @@
+#include <chrono>
+
 #include <Kv/raft_store.h>
 #include <Kv/utils.h>
 #include <Kv/store_worker.h>
 #include <Kv/ticker.h>
-
-#include <chrono>
-
 #include <Logger/Logger.h>
-
 #include <RaftCore/Util.h>
 
 namespace kvserver
@@ -95,7 +93,6 @@ void RaftStore::ClearStaleMeta(rocksdb::WriteBatch* kvWB,
     auto raftState = stateRes.first;
     if(!status.ok())
     {
-        // it has be cleaned up
         return;
     }
     if(!Assistant::GetInstance()->DoClearMeta(this->ctx_->engine_, kvWB, raftWB, region.id(), raftState->last_index()))
@@ -104,7 +101,6 @@ void RaftStore::ClearStaleMeta(rocksdb::WriteBatch* kvWB,
     }
     if(!Assistant::GetInstance()->SetMeta(kvWB, Assistant::GetInstance()->RegionStateKey(region.id()), *originState))
     {
-        // TODO log error
         return;
     }
 }

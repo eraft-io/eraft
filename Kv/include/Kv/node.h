@@ -2,14 +2,14 @@
 #define ERAFT_KV_NODE_H_
 
 #include <stdint.h>
-#include <eraftio/metapb.pb.h>
 
+#include <memory>
+
+#include <eraftio/metapb.pb.h>
 #include <Kv/config.h>
 #include <Kv/raft_store.h>
 #include <Kv/engines.h>
 #include <Kv/transport.h>
-
-#include <memory>
 
 namespace kvserver
 {

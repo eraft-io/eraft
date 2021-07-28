@@ -54,7 +54,6 @@ void StoreWorker::HandleMsg(Msg msg)
         {
             if(!StoreWorker::OnRaftMessage(static_cast<raft_serverpb::RaftMessage*>(msg.data_)))
             {
-                // TODO: log handle raft message failed store id
             }
             break;
         }

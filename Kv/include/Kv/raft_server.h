@@ -56,6 +56,11 @@ public:
 
     StorageReader* Reader(const kvrpcpb::Context& ctx); 
 
+    //
+    // raft message passing between peer nodes.
+    //
+    // msg definition is in eraft/Protocol/proto/raft_serverpb.proto
+    //
     bool Raft(const raft_serverpb::RaftMessage* msg);
 
     bool SnapShot(raft_serverpb::RaftSnapshotData* snap);
@@ -67,7 +72,6 @@ public:
     std::shared_ptr<Engines> engs_;
 
 private:
-
 
     std::shared_ptr<Config> conf_;
 

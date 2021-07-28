@@ -1,22 +1,21 @@
+#include <cassert>
+
 #include <Kv/raft_server.h>
 #include <Kv/engines.h>
 #include <Kv/utils.h>
 #include <Logger/Logger.h>
 
-#include <cassert>
-
 namespace kvserver
 {
 
 RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
-    // TODO: snap
     this->engs_ = std::make_shared<Engines>(conf->dbPath_ + "_raft", conf->dbPath_ + "_kv");
     this->conf_ = conf;
 }
 
 RaftStorage::~RaftStorage()
 {
-    // delete regionReader_;
+
 }
 
 bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
@@ -26,65 +25,11 @@ bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp, int reqCount)
 
 bool RaftStorage::Write(const kvrpcpb::Context& ctx, const kvrpcpb::RawPutRequest* put) 
 {
-    // std::vector<raft_cmdpb::Request>* reqs = new std::vector<raft_cmdpb::Request>{};
-
-    // for(auto b: batch) {
-    //     switch (b.ot_)
-    //     {
-    //     case OpType::Put:
-    //     {
-    //         struct Put* pt = (struct Put*)b.data_;
-    //         raft_cmdpb::Request req;
-    //         req.set_cmd_type(raft_cmdpb::CmdType::Put);
-    //         raft_cmdpb::PutRequest* putReq = new raft_cmdpb::PutRequest();
-    //         putReq->set_cf(pt->cf_);
-    //         putReq->set_key(pt->key_);
-    //         putReq->set_value(pt->value_);
-    //         req.set_allocated_put(putReq);
-    //         reqs->push_back(req);
-    //         break;
-    //     }    
-
-    //     case OpType::Delete:
-    //     {
-    //         struct Delete* dt = (struct Delete*)b.data_;
-    //         raft_cmdpb::Request req;
-    //         req.set_cmd_type(raft_cmdpb::CmdType::Delete);
-    //         raft_cmdpb::DeleteRequest* dtReq = new raft_cmdpb::DeleteRequest();
-    //         dtReq->set_cf(dt->cf);
-    //         dtReq->set_key(dt->key);
-    //         req.set_allocated_delete_(dtReq);
-    //         reqs->push_back(req);
-    //         break;
-    //     }
-    //     default:
-    //         break;
-    //     }
-    // }
-
-    // raft_cmdpb::RaftRequestHeader* rqh = new raft_cmdpb::RaftRequestHeader();
-    // rqh->set_region_id(ctx.region_id());  
-    
-    // auto peer = new metapb::Peer(ctx.peer());
-    // peer->set_store_id(1);
-    // rqh->set_allocated_peer(peer);
-    // auto regionEpoch = new metapb::RegionEpoch(ctx.region_epoch());
-    // rqh->set_allocated_region_epoch(regionEpoch);
-    // rqh->set_term(ctx.term());
-
-    // // delete peer;
-    // // delete regionEpoch;
-
-    // raft_cmdpb::RaftCmdRequest* request = new raft_cmdpb::RaftCmdRequest();
-    // for(auto r: *reqs) {
-    //     request->set_allocated_header(rqh);
-    //     raft_cmdpb::Request* rq = request->add_requests();
-    //     rq = &r;
-    // }
-
-    // Callback* cb = new Callback();
-    // send batch request to router
-    return this->raftRouter_->SendRaftCommand(put);
+    raft_serverpb::RaftMessage* sendMsg = new raft_serverpb::RaftMessage();
+    // send raft message
+    sendMsg->set_data(std::atoi(put->key().c_str()));
+    sendMsg->set_region_id(1);
+    return this->Raft(sendMsg);
 }
 
 StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx)
@@ -128,7 +73,6 @@ bool RaftStorage::SnapShot(raft_serverpb::RaftSnapshotData* snap)
 
 bool RaftStorage::Start()
 {
-    // TODO: schedulerClient
 
     // raft system init
     this->raftSystem_ = std::make_shared<RaftStore>(this->conf_);

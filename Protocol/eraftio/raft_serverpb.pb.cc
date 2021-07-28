@@ -272,6 +272,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_raft_5fserverpb_2eproto::offse
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::RaftMessage, is_tombstone_),
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::RaftMessage, start_key_),
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::RaftMessage, end_key_),
+  PROTOBUF_FIELD_OFFSET(::raft_serverpb::RaftMessage, data_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::raft_serverpb::RaftLocalState, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -354,17 +355,17 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_raft_5fserverpb_2eproto::offse
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::raft_serverpb::RaftMessage)},
-  { 13, -1, sizeof(::raft_serverpb::RaftLocalState)},
-  { 21, -1, sizeof(::raft_serverpb::RaftApplyState)},
-  { 28, -1, sizeof(::raft_serverpb::RaftTruncatedState)},
-  { 35, -1, sizeof(::raft_serverpb::RegionLocalState)},
-  { 42, -1, sizeof(::raft_serverpb::StoreIdent)},
-  { 50, -1, sizeof(::raft_serverpb::KeyValue)},
-  { 57, -1, sizeof(::raft_serverpb::RaftSnapshotData)},
-  { 66, -1, sizeof(::raft_serverpb::SnapshotCFFile)},
-  { 74, -1, sizeof(::raft_serverpb::SnapshotMeta)},
-  { 80, -1, sizeof(::raft_serverpb::SnapshotChunk)},
-  { 87, -1, sizeof(::raft_serverpb::Done)},
+  { 14, -1, sizeof(::raft_serverpb::RaftLocalState)},
+  { 22, -1, sizeof(::raft_serverpb::RaftApplyState)},
+  { 29, -1, sizeof(::raft_serverpb::RaftTruncatedState)},
+  { 36, -1, sizeof(::raft_serverpb::RegionLocalState)},
+  { 43, -1, sizeof(::raft_serverpb::StoreIdent)},
+  { 51, -1, sizeof(::raft_serverpb::KeyValue)},
+  { 58, -1, sizeof(::raft_serverpb::RaftSnapshotData)},
+  { 67, -1, sizeof(::raft_serverpb::SnapshotCFFile)},
+  { 75, -1, sizeof(::raft_serverpb::SnapshotMeta)},
+  { 81, -1, sizeof(::raft_serverpb::SnapshotChunk)},
+  { 88, -1, sizeof(::raft_serverpb::Done)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -384,35 +385,35 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 
 const char descriptor_table_protodef_raft_5fserverpb_2eproto[] =
   "\n\023raft_serverpb.proto\022\rraft_serverpb\032\rer"
-  "aftpb.proto\032\014metapb.proto\"\350\001\n\013RaftMessag"
+  "aftpb.proto\032\014metapb.proto\"\366\001\n\013RaftMessag"
   "e\022\021\n\tregion_id\030\001 \001(\004\022\037\n\tfrom_peer\030\002 \001(\0132"
   "\014.metapb.Peer\022\035\n\007to_peer\030\003 \001(\0132\014.metapb."
   "Peer\022!\n\007message\030\004 \001(\0132\020.eraftpb.Message\022"
   ")\n\014region_epoch\030\005 \001(\0132\023.metapb.RegionEpo"
   "ch\022\024\n\014is_tombstone\030\006 \001(\010\022\021\n\tstart_key\030\007 "
-  "\001(\014\022\017\n\007end_key\030\010 \001(\014\"_\n\016RaftLocalState\022&"
-  "\n\nhard_state\030\001 \001(\0132\022.eraftpb.HardState\022\022"
-  "\n\nlast_index\030\002 \001(\004\022\021\n\tlast_term\030\003 \001(\004\"c\n"
-  "\016RaftApplyState\022\025\n\rapplied_index\030\001 \001(\004\022:"
-  "\n\017truncated_state\030\002 \001(\0132!.raft_serverpb."
-  "RaftTruncatedState\"1\n\022RaftTruncatedState"
-  "\022\r\n\005index\030\001 \001(\004\022\014\n\004term\030\002 \001(\004\"[\n\020RegionL"
-  "ocalState\022\'\n\005state\030\001 \001(\0162\030.raft_serverpb"
-  ".PeerState\022\036\n\006region\030\002 \001(\0132\016.metapb.Regi"
-  "on\"@\n\nStoreIdent\022\022\n\ncluster_id\030\001 \001(\004\022\020\n\010"
-  "store_id\030\002 \001(\004\022\014\n\004addr\030\003 \001(\t\"&\n\010KeyValue"
-  "\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\"\227\001\n\020RaftSna"
-  "pshotData\022\036\n\006region\030\001 \001(\0132\016.metapb.Regio"
-  "n\022\021\n\tfile_size\030\002 \001(\004\022%\n\004data\030\003 \003(\0132\027.raf"
-  "t_serverpb.KeyValue\022)\n\004meta\030\005 \001(\0132\033.raft"
-  "_serverpb.SnapshotMeta\"<\n\016SnapshotCFFile"
-  "\022\n\n\002cf\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\020\n\010checksum\030\003"
-  " \001(\r\"\?\n\014SnapshotMeta\022/\n\010cf_files\030\001 \003(\0132\035"
-  ".raft_serverpb.SnapshotCFFile\"J\n\rSnapsho"
-  "tChunk\022+\n\007message\030\001 \001(\0132\032.raft_serverpb."
-  "RaftMessage\022\014\n\004data\030\002 \001(\014\"\006\n\004Done*&\n\tPee"
-  "rState\022\n\n\006Normal\020\000\022\r\n\tTombstone\020\002b\006proto"
-  "3"
+  "\001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\004\"_\n\016Ra"
+  "ftLocalState\022&\n\nhard_state\030\001 \001(\0132\022.eraft"
+  "pb.HardState\022\022\n\nlast_index\030\002 \001(\004\022\021\n\tlast"
+  "_term\030\003 \001(\004\"c\n\016RaftApplyState\022\025\n\rapplied"
+  "_index\030\001 \001(\004\022:\n\017truncated_state\030\002 \001(\0132!."
+  "raft_serverpb.RaftTruncatedState\"1\n\022Raft"
+  "TruncatedState\022\r\n\005index\030\001 \001(\004\022\014\n\004term\030\002 "
+  "\001(\004\"[\n\020RegionLocalState\022\'\n\005state\030\001 \001(\0162\030"
+  ".raft_serverpb.PeerState\022\036\n\006region\030\002 \001(\013"
+  "2\016.metapb.Region\"@\n\nStoreIdent\022\022\n\ncluste"
+  "r_id\030\001 \001(\004\022\020\n\010store_id\030\002 \001(\004\022\014\n\004addr\030\003 \001"
+  "(\t\"&\n\010KeyValue\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001"
+  "(\014\"\227\001\n\020RaftSnapshotData\022\036\n\006region\030\001 \001(\0132"
+  "\016.metapb.Region\022\021\n\tfile_size\030\002 \001(\004\022%\n\004da"
+  "ta\030\003 \003(\0132\027.raft_serverpb.KeyValue\022)\n\004met"
+  "a\030\005 \001(\0132\033.raft_serverpb.SnapshotMeta\"<\n\016"
+  "SnapshotCFFile\022\n\n\002cf\030\001 \001(\t\022\014\n\004size\030\002 \001(\004"
+  "\022\020\n\010checksum\030\003 \001(\r\"\?\n\014SnapshotMeta\022/\n\010cf"
+  "_files\030\001 \003(\0132\035.raft_serverpb.SnapshotCFF"
+  "ile\"J\n\rSnapshotChunk\022+\n\007message\030\001 \001(\0132\032."
+  "raft_serverpb.RaftMessage\022\014\n\004data\030\002 \001(\014\""
+  "\006\n\004Done*&\n\tPeerState\022\n\n\006Normal\020\000\022\r\n\tTomb"
+  "stone\020\002b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_raft_5fserverpb_2eproto_deps[2] = {
   &::descriptor_table_eraftpb_2eproto,
@@ -435,7 +436,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_raf
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_raft_5fserverpb_2eproto_once;
 static bool descriptor_table_raft_5fserverpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_raft_5fserverpb_2eproto = {
-  &descriptor_table_raft_5fserverpb_2eproto_initialized, descriptor_table_protodef_raft_5fserverpb_2eproto, "raft_serverpb.proto", 1161,
+  &descriptor_table_raft_5fserverpb_2eproto_initialized, descriptor_table_protodef_raft_5fserverpb_2eproto, "raft_serverpb.proto", 1175,
   &descriptor_table_raft_5fserverpb_2eproto_once, descriptor_table_raft_5fserverpb_2eproto_sccs, descriptor_table_raft_5fserverpb_2eproto_deps, 12, 2,
   schemas, file_default_instances, TableStruct_raft_5fserverpb_2eproto::offsets,
   file_level_metadata_raft_5fserverpb_2eproto, 12, file_level_enum_descriptors_raft_5fserverpb_2eproto, file_level_service_descriptors_raft_5fserverpb_2eproto,
@@ -528,6 +529,7 @@ const int RaftMessage::kRegionEpochFieldNumber;
 const int RaftMessage::kIsTombstoneFieldNumber;
 const int RaftMessage::kStartKeyFieldNumber;
 const int RaftMessage::kEndKeyFieldNumber;
+const int RaftMessage::kDataFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 RaftMessage::RaftMessage()
@@ -699,6 +701,13 @@ const char* RaftMessage::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
+      // uint64 data = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
+          data_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -821,6 +830,19 @@ bool RaftMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // uint64 data = 9;
+      case 9: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (72 & 0xFF)) {
+
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   ::PROTOBUF_NAMESPACE_ID::uint64, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &data_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -894,6 +916,11 @@ void RaftMessage::SerializeWithCachedSizes(
       8, this->end_key(), output);
   }
 
+  // uint64 data = 9;
+  if (this->data() != 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64(9, this->data(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -957,6 +984,11 @@ void RaftMessage::SerializeWithCachedSizes(
     target =
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesToArray(
         8, this->end_key(), target);
+  }
+
+  // uint64 data = 9;
+  if (this->data() != 0) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(9, this->data(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1029,6 +1061,13 @@ size_t RaftMessage::ByteSizeLong() const {
         this->region_id());
   }
 
+  // uint64 data = 9;
+  if (this->data() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->data());
+  }
+
   // bool is_tombstone = 6;
   if (this->is_tombstone() != 0) {
     total_size += 1 + 1;
@@ -1084,6 +1123,9 @@ void RaftMessage::MergeFrom(const RaftMessage& from) {
   if (from.region_id() != 0) {
     set_region_id(from.region_id());
   }
+  if (from.data() != 0) {
+    set_data(from.data());
+  }
   if (from.is_tombstone() != 0) {
     set_is_tombstone(from.is_tombstone());
   }
@@ -1123,6 +1165,7 @@ void RaftMessage::InternalSwap(RaftMessage* other) {
   swap(message_, other->message_);
   swap(region_epoch_, other->region_epoch_);
   swap(region_id_, other->region_id_);
+  swap(data_, other->data_);
   swap(is_tombstone_, other->is_tombstone_);
 }
 

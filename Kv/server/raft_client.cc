@@ -1,9 +1,8 @@
-#include <Kv/raft_client.h>
-#include <Logger/Logger.h>
-
 #include <grpcpp/grpcpp.h>
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
+#include <Kv/raft_client.h>
+#include <Logger/Logger.h>
 
 using raft_serverpb::Done;
 using tinykvpb::TinyKv;

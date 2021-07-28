@@ -32,9 +32,7 @@ namespace eraft
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         msg.set_from(this->raft->id_);
-        msg.set_temp_data(888888);
-        // eraftpb::Entry* en = msg.add_entries();
-        // en->set_data(888888);
+        msg.set_temp_data(std::atoi(data.c_str()));
         this->raft->Step(msg);
     }
 

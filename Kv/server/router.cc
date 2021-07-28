@@ -1,6 +1,5 @@
 #include <Kv/router.h>
 #include <Logger/Logger.h>
-
 #include <RaftCore/Util.h>
 
 namespace kvserver
@@ -33,6 +32,7 @@ void Router::Close(uint64_t regionID)
     this->peers_.erase(regionID);
 }
 
+// 
 bool Router::Send(uint64_t regionID, Msg msg) 
 {
     msg.regionId_ = regionID;
@@ -57,7 +57,7 @@ bool RaftstoreRouter::Send(uint64_t regionID, const Msg m)
 
 bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg)
 {
-    Logger::GetInstance()->DEBUG_NEW("send raft message type " + eraft::MsgTypeToString(msg->message().msg_type()) , __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
+    Logger::GetInstance()->DEBUG_NEW("send raft message type " + eraft::MsgTypeToString(msg->message().msg_type()) + " MSG_DATA: " + std::to_string(msg->data()) , __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
     Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), const_cast<raft_serverpb::RaftMessage*>(msg));
     return this->router_->Send(msg->region_id(), m);
 }
@@ -67,7 +67,6 @@ bool RaftstoreRouter::SendRaftCommand(const kvrpcpb::RawPutRequest* put)
     Logger::GetInstance()->DEBUG_NEW("send raft cmd message" , __FILE__, __LINE__, "RaftstoreRouter::SendRaftCommand");
     // MsgRaftCmd* cmd = new MsgRaftCmd(req, cb);
     Msg m(MsgType::MsgTypeRaftCmd, 1, const_cast<kvrpcpb::RawPutRequest*>(put));
-    
     return this->router_->Send(1, m);
 }
 

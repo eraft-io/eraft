@@ -1,10 +1,11 @@
 #ifndef ERAFT_KV_ENGINES_H_
 #define ERAFT_KV_ENGINES_H_
 
-#include <rocksdb/db.h>
-#include <rocksdb/write_batch.h>
 #include <memory>
 #include <cassert>
+
+#include <rocksdb/db.h>
+#include <rocksdb/write_batch.h>
 
 namespace kvserver
 {

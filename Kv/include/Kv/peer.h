@@ -1,14 +1,15 @@
 #ifndef ERAFT_KV_PEER_H_
 #define ERAFT_KV_PEER_H_
 
-#include <RaftCore/RawNode.h>
-#include <eraftio/metapb.pb.h>
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
 
+#include <RaftCore/RawNode.h>
+#include <eraftio/metapb.pb.h>
 #include <Kv/callback.h>
 #include <Kv/engines.h>
 #include <Kv/transport.h>
