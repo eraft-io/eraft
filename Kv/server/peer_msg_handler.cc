@@ -340,10 +340,10 @@ void PeerMsgHandler::HandleMsg(Msg m)
                 {
                     auto raftMsg = static_cast<raft_serverpb::RaftMessage*>(m.data_);
 
-                    if(raftMsg->data() != 0)
+                    if(!raftMsg->data().empty())
                     {
                         kvrpcpb::RawPutRequest* put = new kvrpcpb::RawPutRequest();
-                        put->set_key(std::to_string(raftMsg->data()));
+                        put->set_key(raftMsg->data());
                         Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(), __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
                         this->ProposeRaftCommand(put);
                         return;
@@ -547,7 +547,16 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     newMsg.set_reject(msg->message().reject());
     newMsg.set_msg_type(msg->message().msg_type());
     newMsg.set_temp_data(msg->message().temp_data());
-    Logger::GetInstance()->DEBUG_NEW("RECIVED ENTRY DATA = " + std::to_string(msg->message().temp_data()), __FILE__, __LINE__, "RaftContext::OnRaftMsg");
+    Logger::GetInstance()->DEBUG_NEW("RECIVED ENTRY DATA = " + msg->message().temp_data(), __FILE__, __LINE__, "RaftContext::OnRaftMsg");
+    for(auto e: msg->message().entries())
+    {
+        eraftpb::Entry* newE = newMsg.add_entries();
+        newE->set_index(e.index());
+        newE->set_data(e.data());
+        newE->set_entry_type(e.entry_type());
+        newE->set_term(e.term());
+    }
+
     this->peer_->raftGroup_->Step(newMsg);
 
     return true;

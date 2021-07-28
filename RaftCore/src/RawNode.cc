@@ -32,7 +32,7 @@ namespace eraft
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         msg.set_from(this->raft->id_);
-        msg.set_temp_data(std::atoi(data.c_str()));
+        msg.set_temp_data(data);
         this->raft->Step(msg);
     }
 
@@ -40,7 +40,7 @@ namespace eraft
         std::string data = cc.SerializeAsString();
         eraftpb::Entry ent;
         ent.set_entry_type(eraftpb::EntryConfChange);
-        ent.set_data(8888);
+        ent.set_data("conf");
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         this->raft->Step(msg);

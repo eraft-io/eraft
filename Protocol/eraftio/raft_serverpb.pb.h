@@ -271,6 +271,18 @@ class RaftMessage :
   std::string* release_end_key();
   void set_allocated_end_key(std::string* end_key);
 
+  // string data = 9;
+  void clear_data();
+  static const int kDataFieldNumber = 9;
+  const std::string& data() const;
+  void set_data(const std::string& value);
+  void set_data(std::string&& value);
+  void set_data(const char* value);
+  void set_data(const char* value, size_t size);
+  std::string* mutable_data();
+  std::string* release_data();
+  void set_allocated_data(std::string* data);
+
   // .metapb.Peer from_peer = 2;
   bool has_from_peer() const;
   void clear_from_peer();
@@ -313,12 +325,6 @@ class RaftMessage :
   ::PROTOBUF_NAMESPACE_ID::uint64 region_id() const;
   void set_region_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // uint64 data = 9;
-  void clear_data();
-  static const int kDataFieldNumber = 9;
-  ::PROTOBUF_NAMESPACE_ID::uint64 data() const;
-  void set_data(::PROTOBUF_NAMESPACE_ID::uint64 value);
-
   // bool is_tombstone = 6;
   void clear_is_tombstone();
   static const int kIsTombstoneFieldNumber = 6;
@@ -332,12 +338,12 @@ class RaftMessage :
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr start_key_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr end_key_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
   ::metapb::Peer* from_peer_;
   ::metapb::Peer* to_peer_;
   ::eraftpb::Message* message_;
   ::metapb::RegionEpoch* region_epoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 region_id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 data_;
   bool is_tombstone_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_raft_5fserverpb_2eproto;
@@ -2200,18 +2206,55 @@ inline void RaftMessage::set_allocated_end_key(std::string* end_key) {
   // @@protoc_insertion_point(field_set_allocated:raft_serverpb.RaftMessage.end_key)
 }
 
-// uint64 data = 9;
+// string data = 9;
 inline void RaftMessage::clear_data() {
-  data_ = PROTOBUF_ULONGLONG(0);
+  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 RaftMessage::data() const {
+inline const std::string& RaftMessage::data() const {
   // @@protoc_insertion_point(field_get:raft_serverpb.RaftMessage.data)
-  return data_;
+  return data_.GetNoArena();
 }
-inline void RaftMessage::set_data(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void RaftMessage::set_data(const std::string& value) {
   
-  data_ = value;
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:raft_serverpb.RaftMessage.data)
+}
+inline void RaftMessage::set_data(std::string&& value) {
+  
+  data_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:raft_serverpb.RaftMessage.data)
+}
+inline void RaftMessage::set_data(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_serverpb.RaftMessage.data)
+}
+inline void RaftMessage::set_data(const char* value, size_t size) {
+  
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_serverpb.RaftMessage.data)
+}
+inline std::string* RaftMessage::mutable_data() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_serverpb.RaftMessage.data)
+  return data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* RaftMessage::release_data() {
+  // @@protoc_insertion_point(field_release:raft_serverpb.RaftMessage.data)
+  
+  return data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void RaftMessage::set_allocated_data(std::string* data) {
+  if (data != nullptr) {
+    
+  } else {
+    
+  }
+  data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data);
+  // @@protoc_insertion_point(field_set_allocated:raft_serverpb.RaftMessage.data)
 }
 
 // -------------------------------------------------------------------

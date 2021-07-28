@@ -20,7 +20,7 @@ message Entry {
     EntryType entry_type = 1;
     uint64 term = 2;
     uint64 index = 3;
-    uint64 data = 4;
+    string data = 4;
 }
 
 // SnapshotMetadata contains the log index and term of the last log applied to this
@@ -79,7 +79,7 @@ message Message {
     uint64 commit = 8;
     Snapshot snapshot = 9;
     bool reject = 10;
-    uint64 temp_data = 11;
+    string temp_data = 11;
 }
 
 // HardState contains the state of a node need to be peristed, including the current term, commit index 

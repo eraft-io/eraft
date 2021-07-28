@@ -266,7 +266,7 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
     Logger::GetInstance()->DEBUG_NEW("on peer send msg" + std::to_string(msg.from()) 
         + " to " + std::to_string(msg.to()) + " index " + std::to_string(msg.index()) 
         + " term " + std::to_string(msg.term()) + " type " + eraft::MsgTypeToString(msg.msg_type())
-        + " temp_data  " + std::to_string(msg.temp_data()),
+        + " temp_data  " + msg.temp_data(),
          __FILE__, __LINE__, "Peer::SendRaftMessage");
 
     for(auto ent: msg.entries())

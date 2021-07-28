@@ -285,6 +285,18 @@ class Entry :
 
   // accessors -------------------------------------------------------
 
+  // string data = 4;
+  void clear_data();
+  static const int kDataFieldNumber = 4;
+  const std::string& data() const;
+  void set_data(const std::string& value);
+  void set_data(std::string&& value);
+  void set_data(const char* value);
+  void set_data(const char* value, size_t size);
+  std::string* mutable_data();
+  std::string* release_data();
+  void set_allocated_data(std::string* data);
+
   // uint64 term = 2;
   void clear_term();
   static const int kTermFieldNumber = 2;
@@ -297,12 +309,6 @@ class Entry :
   ::PROTOBUF_NAMESPACE_ID::uint64 index() const;
   void set_index(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // uint64 data = 4;
-  void clear_data();
-  static const int kDataFieldNumber = 4;
-  ::PROTOBUF_NAMESPACE_ID::uint64 data() const;
-  void set_data(::PROTOBUF_NAMESPACE_ID::uint64 value);
-
   // .eraftpb.EntryType entry_type = 1;
   void clear_entry_type();
   static const int kEntryTypeFieldNumber = 1;
@@ -314,9 +320,9 @@ class Entry :
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
   ::PROTOBUF_NAMESPACE_ID::uint64 term_;
   ::PROTOBUF_NAMESPACE_ID::uint64 index_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 data_;
   int entry_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftpb_2eproto;
@@ -729,6 +735,18 @@ class Message :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftpb::Entry >&
       entries() const;
 
+  // string temp_data = 11;
+  void clear_temp_data();
+  static const int kTempDataFieldNumber = 11;
+  const std::string& temp_data() const;
+  void set_temp_data(const std::string& value);
+  void set_temp_data(std::string&& value);
+  void set_temp_data(const char* value);
+  void set_temp_data(const char* value, size_t size);
+  std::string* mutable_temp_data();
+  std::string* release_temp_data();
+  void set_allocated_temp_data(std::string* temp_data);
+
   // .eraftpb.Snapshot snapshot = 9;
   bool has_snapshot() const;
   void clear_snapshot();
@@ -786,18 +804,13 @@ class Message :
   ::PROTOBUF_NAMESPACE_ID::uint64 commit() const;
   void set_commit(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // uint64 temp_data = 11;
-  void clear_temp_data();
-  static const int kTempDataFieldNumber = 11;
-  ::PROTOBUF_NAMESPACE_ID::uint64 temp_data() const;
-  void set_temp_data(::PROTOBUF_NAMESPACE_ID::uint64 value);
-
   // @@protoc_insertion_point(class_scope:eraftpb.Message)
  private:
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftpb::Entry > entries_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr temp_data_;
   ::eraftpb::Snapshot* snapshot_;
   ::PROTOBUF_NAMESPACE_ID::uint64 to_;
   ::PROTOBUF_NAMESPACE_ID::uint64 from_;
@@ -807,7 +820,6 @@ class Message :
   bool reject_;
   ::PROTOBUF_NAMESPACE_ID::uint64 index_;
   ::PROTOBUF_NAMESPACE_ID::uint64 commit_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 temp_data_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftpb_2eproto;
 };
@@ -1283,18 +1295,55 @@ inline void Entry::set_index(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   // @@protoc_insertion_point(field_set:eraftpb.Entry.index)
 }
 
-// uint64 data = 4;
+// string data = 4;
 inline void Entry::clear_data() {
-  data_ = PROTOBUF_ULONGLONG(0);
+  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Entry::data() const {
+inline const std::string& Entry::data() const {
   // @@protoc_insertion_point(field_get:eraftpb.Entry.data)
-  return data_;
+  return data_.GetNoArena();
 }
-inline void Entry::set_data(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Entry::set_data(const std::string& value) {
   
-  data_ = value;
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:eraftpb.Entry.data)
+}
+inline void Entry::set_data(std::string&& value) {
+  
+  data_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftpb.Entry.data)
+}
+inline void Entry::set_data(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftpb.Entry.data)
+}
+inline void Entry::set_data(const char* value, size_t size) {
+  
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftpb.Entry.data)
+}
+inline std::string* Entry::mutable_data() {
+  
+  // @@protoc_insertion_point(field_mutable:eraftpb.Entry.data)
+  return data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Entry::release_data() {
+  // @@protoc_insertion_point(field_release:eraftpb.Entry.data)
+  
+  return data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Entry::set_allocated_data(std::string* data) {
+  if (data != nullptr) {
+    
+  } else {
+    
+  }
+  data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data);
+  // @@protoc_insertion_point(field_set_allocated:eraftpb.Entry.data)
 }
 
 // -------------------------------------------------------------------
@@ -1683,18 +1732,55 @@ inline void Message::set_reject(bool value) {
   // @@protoc_insertion_point(field_set:eraftpb.Message.reject)
 }
 
-// uint64 temp_data = 11;
+// string temp_data = 11;
 inline void Message::clear_temp_data() {
-  temp_data_ = PROTOBUF_ULONGLONG(0);
+  temp_data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Message::temp_data() const {
+inline const std::string& Message::temp_data() const {
   // @@protoc_insertion_point(field_get:eraftpb.Message.temp_data)
-  return temp_data_;
+  return temp_data_.GetNoArena();
 }
-inline void Message::set_temp_data(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void Message::set_temp_data(const std::string& value) {
   
-  temp_data_ = value;
+  temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:eraftpb.Message.temp_data)
+}
+inline void Message::set_temp_data(std::string&& value) {
+  
+  temp_data_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftpb.Message.temp_data)
+}
+inline void Message::set_temp_data(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftpb.Message.temp_data)
+}
+inline void Message::set_temp_data(const char* value, size_t size) {
+  
+  temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftpb.Message.temp_data)
+}
+inline std::string* Message::mutable_temp_data() {
+  
+  // @@protoc_insertion_point(field_mutable:eraftpb.Message.temp_data)
+  return temp_data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Message::release_temp_data() {
+  // @@protoc_insertion_point(field_release:eraftpb.Message.temp_data)
+  
+  return temp_data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Message::set_allocated_temp_data(std::string* temp_data) {
+  if (temp_data != nullptr) {
+    
+  } else {
+    
+  }
+  temp_data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), temp_data);
+  // @@protoc_insertion_point(field_set_allocated:eraftpb.Message.temp_data)
 }
 
 // -------------------------------------------------------------------

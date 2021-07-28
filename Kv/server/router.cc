@@ -57,8 +57,9 @@ bool RaftstoreRouter::Send(uint64_t regionID, const Msg m)
 
 bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg)
 {
-    Logger::GetInstance()->DEBUG_NEW("send raft message type " + eraft::MsgTypeToString(msg->message().msg_type()) + " MSG_DATA: " + std::to_string(msg->data()) , __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
-    Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), const_cast<raft_serverpb::RaftMessage*>(msg));
+    raft_serverpb::RaftMessage* newRaftMsg = new raft_serverpb::RaftMessage(*msg);
+    Logger::GetInstance()->DEBUG_NEW("send raft message type " + eraft::MsgTypeToString(newRaftMsg->message().msg_type()) + " MSG_DATA: " + newRaftMsg->message().temp_data() , __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
+    Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), newRaftMsg);
     return this->router_->Send(msg->region_id(), m);
 }
 

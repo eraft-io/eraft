@@ -391,7 +391,7 @@ const char descriptor_table_protodef_raft_5fserverpb_2eproto[] =
   "Peer\022!\n\007message\030\004 \001(\0132\020.eraftpb.Message\022"
   ")\n\014region_epoch\030\005 \001(\0132\023.metapb.RegionEpo"
   "ch\022\024\n\014is_tombstone\030\006 \001(\010\022\021\n\tstart_key\030\007 "
-  "\001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\004\"_\n\016Ra"
+  "\001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\t\"_\n\016Ra"
   "ftLocalState\022&\n\nhard_state\030\001 \001(\0132\022.eraft"
   "pb.HardState\022\022\n\nlast_index\030\002 \001(\004\022\021\n\tlast"
   "_term\030\003 \001(\004\"c\n\016RaftApplyState\022\025\n\rapplied"
@@ -549,6 +549,10 @@ RaftMessage::RaftMessage(const RaftMessage& from)
   if (from.end_key().size() > 0) {
     end_key_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.end_key_);
   }
+  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from.data().size() > 0) {
+    data_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.data_);
+  }
   if (from.has_from_peer()) {
     from_peer_ = new ::metapb::Peer(*from.from_peer_);
   } else {
@@ -579,6 +583,7 @@ void RaftMessage::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_RaftMessage_raft_5fserverpb_2eproto.base);
   start_key_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   end_key_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&from_peer_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&is_tombstone_) -
       reinterpret_cast<char*>(&from_peer_)) + sizeof(is_tombstone_));
@@ -592,6 +597,7 @@ RaftMessage::~RaftMessage() {
 void RaftMessage::SharedDtor() {
   start_key_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   end_key_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  data_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete from_peer_;
   if (this != internal_default_instance()) delete to_peer_;
   if (this != internal_default_instance()) delete message_;
@@ -615,6 +621,7 @@ void RaftMessage::Clear() {
 
   start_key_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   end_key_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == nullptr && from_peer_ != nullptr) {
     delete from_peer_;
   }
@@ -701,10 +708,10 @@ const char* RaftMessage::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // uint64 data = 9;
+      // string data = 9;
       case 9:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
-          data_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_data(), ptr, ctx, "raft_serverpb.RaftMessage.data");
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -830,13 +837,15 @@ bool RaftMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // uint64 data = 9;
+      // string data = 9;
       case 9: {
-        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (72 & 0xFF)) {
-
-          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
-                   ::PROTOBUF_NAMESPACE_ID::uint64, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64>(
-                 input, &data_)));
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (74 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadString(
+                input, this->mutable_data()));
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+            this->data().data(), static_cast<int>(this->data().length()),
+            ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE,
+            "raft_serverpb.RaftMessage.data"));
         } else {
           goto handle_unusual;
         }
@@ -916,9 +925,14 @@ void RaftMessage::SerializeWithCachedSizes(
       8, this->end_key(), output);
   }
 
-  // uint64 data = 9;
-  if (this->data() != 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64(9, this->data(), output);
+  // string data = 9;
+  if (this->data().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->data().data(), static_cast<int>(this->data().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "raft_serverpb.RaftMessage.data");
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringMaybeAliased(
+      9, this->data(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -986,9 +1000,15 @@ void RaftMessage::SerializeWithCachedSizes(
         8, this->end_key(), target);
   }
 
-  // uint64 data = 9;
-  if (this->data() != 0) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(9, this->data(), target);
+  // string data = 9;
+  if (this->data().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->data().data(), static_cast<int>(this->data().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "raft_serverpb.RaftMessage.data");
+    target =
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
+        9, this->data(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1026,6 +1046,13 @@ size_t RaftMessage::ByteSizeLong() const {
         this->end_key());
   }
 
+  // string data = 9;
+  if (this->data().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->data());
+  }
+
   // .metapb.Peer from_peer = 2;
   if (this->has_from_peer()) {
     total_size += 1 +
@@ -1059,13 +1086,6 @@ size_t RaftMessage::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
         this->region_id());
-  }
-
-  // uint64 data = 9;
-  if (this->data() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
-        this->data());
   }
 
   // bool is_tombstone = 6;
@@ -1108,6 +1128,10 @@ void RaftMessage::MergeFrom(const RaftMessage& from) {
 
     end_key_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.end_key_);
   }
+  if (from.data().size() > 0) {
+
+    data_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.data_);
+  }
   if (from.has_from_peer()) {
     mutable_from_peer()->::metapb::Peer::MergeFrom(from.from_peer());
   }
@@ -1122,9 +1146,6 @@ void RaftMessage::MergeFrom(const RaftMessage& from) {
   }
   if (from.region_id() != 0) {
     set_region_id(from.region_id());
-  }
-  if (from.data() != 0) {
-    set_data(from.data());
   }
   if (from.is_tombstone() != 0) {
     set_is_tombstone(from.is_tombstone());
@@ -1160,12 +1181,13 @@ void RaftMessage::InternalSwap(RaftMessage* other) {
     GetArenaNoVirtual());
   end_key_.Swap(&other->end_key_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  data_.Swap(&other->data_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(from_peer_, other->from_peer_);
   swap(to_peer_, other->to_peer_);
   swap(message_, other->message_);
   swap(region_epoch_, other->region_epoch_);
   swap(region_id_, other->region_id_);
-  swap(data_, other->data_);
   swap(is_tombstone_, other->is_tombstone_);
 }
 

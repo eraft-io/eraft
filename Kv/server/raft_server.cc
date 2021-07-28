@@ -27,7 +27,7 @@ bool RaftStorage::Write(const kvrpcpb::Context& ctx, const kvrpcpb::RawPutReques
 {
     raft_serverpb::RaftMessage* sendMsg = new raft_serverpb::RaftMessage();
     // send raft message
-    sendMsg->set_data(std::atoi(put->key().c_str()));
+    sendMsg->set_data(put->key());
     sendMsg->set_region_id(1);
     return this->Raft(sendMsg);
 }

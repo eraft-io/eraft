@@ -16,7 +16,7 @@ message RaftMessage {
     // Region key range [start_key, end_key). (Used in 3B)
     bytes start_key = 7;
     bytes end_key = 8;
-    uint64 data = 9;
+    string data = 9;
 }
 
 // Used to store the persistent state for Raft, including the hard state for raft and the last index of the raft log.

@@ -112,7 +112,7 @@ namespace eraft
             e->set_term(this->raftLog_->entries_[i].term());
             e->set_data(this->raftLog_->entries_[i].data());
             msg.set_temp_data(this->raftLog_->entries_[i].data());
-            Logger::GetInstance()->DEBUG_NEW("SET ENTRY DATA =============================" + std::to_string(this->raftLog_->entries_[i].data()), __FILE__, __LINE__, "RaftContext::SendAppend");
+            Logger::GetInstance()->DEBUG_NEW("SET ENTRY DATA =============================" + this->raftLog_->entries_[i].data(), __FILE__, __LINE__, "RaftContext::SendAppend");
         }
         this->msgs_.push_back(msg);
         return true;
@@ -447,7 +447,7 @@ namespace eraft
             case eraftpb::MsgPropose:
                 {
                     if(this->leadTransferee_ == NONE) {
-                        Logger::GetInstance()->DEBUG_NEW("StepLeader -> m.data() " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::StepLeader");
+                        Logger::GetInstance()->DEBUG_NEW("StepLeader -> m.data() " + m.temp_data(), __FILE__, __LINE__, "RaftContext::StepLeader");
                         // append one
                         this->AppendEntry(m);
                     }
@@ -704,16 +704,16 @@ namespace eraft
     }
 
     void RaftContext::AppendEntry(eraftpb::Message m) {
-        Logger::GetInstance()->DEBUG_NEW("append entry TEMP DATA: " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::AppendEntry");
+        Logger::GetInstance()->DEBUG_NEW("append entry TEMP DATA: " + m.temp_data(), __FILE__, __LINE__, "RaftContext::AppendEntry");
         uint64_t lastIndex = this->raftLog_->LastIndex();
         eraftpb::Entry entry;
-        if(m.temp_data() != 0)
+        if(m.temp_data() != "")
         {
             entry.set_term(this->term_);
             entry.set_index(lastIndex + 1);
             entry.set_data(m.temp_data());
             this->raftLog_->entries_.push_back(entry);
-            Logger::GetInstance()->DEBUG_NEW("push on entry to raftlog: " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::AppendEntry");
+            Logger::GetInstance()->DEBUG_NEW("push on entry to raftlog: " + m.temp_data(), __FILE__, __LINE__, "RaftContext::AppendEntry");
         }
         this->prs_[this->id_]->match = this->raftLog_->LastIndex();
         this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
