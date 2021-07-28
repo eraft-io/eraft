@@ -67,6 +67,7 @@ bool RaftstoreRouter::SendRaftCommand(const kvrpcpb::RawPutRequest* put)
     Logger::GetInstance()->DEBUG_NEW("send raft cmd message" , __FILE__, __LINE__, "RaftstoreRouter::SendRaftCommand");
     // MsgRaftCmd* cmd = new MsgRaftCmd(req, cb);
     Msg m(MsgType::MsgTypeRaftCmd, 1, const_cast<kvrpcpb::RawPutRequest*>(put));
+    
     return this->router_->Send(1, m);
 }
 

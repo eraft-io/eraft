@@ -257,11 +257,11 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
     sendMsg->mutable_to_peer()->set_store_id(toPeer->store_id());
     sendMsg->mutable_to_peer()->set_addr(toPeer->addr());
 
-    if(this->peerStorage_->IsInitialized() && Assistant::GetInstance()->IsInitialMsg(msg))
-    {
-        sendMsg->set_start_key(this->Region()->start_key());
-        sendMsg->set_end_key(this->Region()->end_key());
-    }
+    // if(this->peerStorage_->IsInitialized() && Assistant::GetInstance()->IsInitialMsg(msg))
+    // {
+    //     sendMsg->set_start_key(this->Region()->start_key());
+    //     sendMsg->set_end_key(this->Region()->end_key());
+    // }
 
     sendMsg->mutable_message()->set_from(msg.from());
     sendMsg->mutable_message()->set_to(msg.to());
@@ -271,7 +271,13 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
     sendMsg->mutable_message()->set_log_term(msg.log_term());
     sendMsg->mutable_message()->set_reject(msg.reject());
     sendMsg->mutable_message()->set_msg_type(msg.msg_type());
-    sendMsg->mutable_message()->set_data(msg.data());
+    sendMsg->mutable_message()->set_temp_data(msg.temp_data());
+
+    Logger::GetInstance()->DEBUG_NEW("on peer send msg" + std::to_string(msg.from()) 
+        + " to " + std::to_string(msg.to()) + " index " + std::to_string(msg.index()) 
+        + " term " + std::to_string(msg.term()) + " type " + eraft::MsgTypeToString(msg.msg_type())
+        + " temp_data  " + std::to_string(msg.temp_data()),
+         __FILE__, __LINE__, "Peer::SendRaftMessage");
 
     for(auto ent: msg.entries())
     {
@@ -279,7 +285,7 @@ bool Peer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> tran
         e->set_entry_type(ent.entry_type());
         e->set_index(ent.index());
         e->set_term(ent.term());
-        e->set_data(msg.data());
+        e->set_data(msg.temp_data());
     }
 
     return trans->Send(sendMsg);

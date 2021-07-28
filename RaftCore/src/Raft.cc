@@ -89,8 +89,8 @@ namespace eraft
     bool RaftContext::SendAppend(uint64_t to) {
         uint64_t prevIndex = this->prs_[to]->next - 1;
         uint64_t prevLogTerm = this->raftLog_->Term(prevIndex);
-        std::vector<eraftpb::Entry> entries;
-        uint64_t n = this->raftLog_->entries_.size() - 1;
+        // std::vector<eraftpb::Entry> entries;
+        int64_t n = this->raftLog_->entries_.size();
         // if(this->raftLog_->entries_.size() > 0)
         // {
         //     n = this->raftLog_->entries_.size();
@@ -98,9 +98,6 @@ namespace eraft
         Logger::GetInstance()->DEBUG_NEW("prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " + std::to_string(prevLogTerm) 
          + " entries_.size: " + std::to_string(n), __FILE__, __LINE__, "RaftContext::SendAppend");
 
-        for(uint64_t i = this->raftLog_->ToSliceIndex(prevIndex + 1); i < n; i++) {
-            entries.push_back(this->raftLog_->entries_[i]);
-        }
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgAppend);
         msg.set_from(this->id_);
@@ -109,13 +106,22 @@ namespace eraft
         msg.set_commit(this->raftLog_->commited_);
         msg.set_log_term(prevLogTerm);
         msg.set_index(prevIndex);
-        for(auto ent: entries) {
-            msg.set_data(ent.data());
+        if(n < 0)
+        {
+            n = 0;
+        }
+        for(uint64_t i = this->raftLog_->ToSliceIndex(prevIndex + 1); i < n; i++) {
+            // entries.push_back(this->raftLog_->entries_[i]);
             eraftpb::Entry* e = msg.add_entries();
-            e->set_entry_type(ent.entry_type());
-            e->set_index(ent.index());
-            e->set_term(ent.term());
-            e->set_allocated_data(new std::string(ent.data()));
+            e->set_entry_type(this->raftLog_->entries_[i].entry_type());
+            e->set_index(this->raftLog_->entries_[i].index());
+            e->set_term(this->raftLog_->entries_[i].term());
+            e->set_data(this->raftLog_->entries_[i].data());
+            msg.set_temp_data(this->raftLog_->entries_[i].data());
+            Logger::GetInstance()->DEBUG_NEW("SET ENTRY DATA =============================" + std::to_string(this->raftLog_->entries_[i].data()), __FILE__, __LINE__, "RaftContext::SendAppend");
+            // msg.set_entry_data(this->raftLog_->entries_[i].data());
+            // msg.set_entry_index(this->raftLog_->entries_[i].index());
+            // msg.set_entry_term(this->raftLog_->entries_[i].term());
         }
         this->msgs_.push_back(msg);
         return true;
@@ -282,7 +288,7 @@ namespace eraft
         ent.set_term(this->term_);
         ent.set_index(this->raftLog_->LastIndex() + 1);
         ent.set_entry_type(eraftpb::EntryNormal);
-        ent.set_data("");
+        ent.set_data(0);
         this->raftLog_->entries_.push_back(ent);
         this->BcastAppend();
         if(this->prs_.size() == 1) {
@@ -450,12 +456,13 @@ namespace eraft
             case eraftpb::MsgPropose:
                 {
                     if(this->leadTransferee_ == NONE) {
-                        Logger::GetInstance()->DEBUG_NEW("StepLeader -> ents.size() " + std::to_string(m.entries().size()), __FILE__, __LINE__, "RaftContext::StepLeader");
-                        std::vector<std::shared_ptr<eraftpb::Entry> > ents;
-                        for(auto iter = m.mutable_entries()->begin(); iter != m.mutable_entries()->end(); iter ++) {
-                            ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
-                        }
-                        this->AppendEntries(ents);
+                        Logger::GetInstance()->DEBUG_NEW("StepLeader -> m.entries_size() " + std::to_string(m.entries_size()), __FILE__, __LINE__, "RaftContext::StepLeader");
+                        // std::vector<std::shared_ptr<eraftpb::Entry> > ents;
+                        // for(auto iter = m.mutable_entries()->begin(); iter != m.mutable_entries()->end(); iter ++) {
+                        //     ents.push_back(std::make_shared<eraftpb::Entry>(*iter));
+                        // }
+                        // append one
+                        this->AppendEntry(m);
                     }
                     break;
                 }
@@ -717,6 +724,25 @@ namespace eraft
         this->electionElapsed_ = 0;
         this->randomElectionTimeout_ = this->electionTimeout_ + RandIntn(this->electionTimeout_);
         this->SendHeartbeatResponse(m.from(), false);
+    }
+
+    void RaftContext::AppendEntry(eraftpb::Message m) {
+        Logger::GetInstance()->DEBUG_NEW("append entry M TEMP DATA: " + std::to_string(m.temp_data()), __FILE__, __LINE__, "RaftContext::AppendEntries");
+        uint64_t lastIndex = this->raftLog_->LastIndex();
+        eraftpb::Entry entry;
+        if(m.temp_data() != 0)
+        {
+            entry.set_term(this->term_);
+            entry.set_index(lastIndex + 1);
+            entry.set_data(m.temp_data());
+            this->raftLog_->entries_.push_back(entry);
+        }
+        this->prs_[this->id_]->match = this->raftLog_->LastIndex();
+        this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
+        this->BcastAppend();
+        if(this->prs_.size() == 1) {
+            this->raftLog_->commited_ = this->prs_[this->id_]->match;
+        }
     }
 
     void RaftContext::AppendEntries(std::vector<std::shared_ptr<eraftpb::Entry> > entries) {

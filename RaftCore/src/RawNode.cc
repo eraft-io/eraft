@@ -32,9 +32,9 @@ namespace eraft
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         msg.set_from(this->raft->id_);
-        msg.set_data(data);
-        eraftpb::Entry* ent = msg.add_entries();
-        ent->set_data(data.c_str());
+        msg.set_temp_data(888888);
+        // eraftpb::Entry* en = msg.add_entries();
+        // en->set_data(888888);
         this->raft->Step(msg);
     }
 
@@ -42,7 +42,7 @@ namespace eraft
         std::string data = cc.SerializeAsString();
         eraftpb::Entry ent;
         ent.set_entry_type(eraftpb::EntryConfChange);
-        ent.set_data(data);
+        ent.set_data(8888);
         eraftpb::Message msg;
         msg.set_msg_type(eraftpb::MsgPropose);
         this->raft->Step(msg);

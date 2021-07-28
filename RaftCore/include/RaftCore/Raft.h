@@ -253,6 +253,8 @@ private:
 
     void AppendEntries(std::vector<std::shared_ptr<eraftpb::Entry> > entries);
 
+    void AppendEntry(eraftpb::Message m);
+
     std::shared_ptr<ESoftState> SoftState();
 
     std::shared_ptr<eraftpb::HardState> HardState();

@@ -274,24 +274,24 @@ void PeerMsgHandler::ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChang
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb)
 {
-    if (entry->entry_type() == eraftpb::EntryType::EntryConfChange)
-    {
-        eraftpb::ConfChange* cc = new eraftpb::ConfChange();
-        cc->ParseFromString(entry->data());
-        this->ProcessConfChange(entry, cc, wb);
-        return wb;
-    }
-    raft_cmdpb::RaftCmdRequest* msg = new raft_cmdpb::RaftCmdRequest();
-    msg->ParseFromString(entry->data());
-    if (msg->requests().size() > 0)
-    {
-        this->ProcessRequest(entry, msg, wb);
-    }
-    if (msg->mutable_admin_request() != nullptr)
-    {
-        this->ProcessAdminRequest(entry, msg, wb);
-        return wb;
-    }
+    // if (entry->entry_type() == eraftpb::EntryType::EntryConfChange)
+    // {
+    //     eraftpb::ConfChange* cc = new eraftpb::ConfChange();
+    //     // cc->ParseFromString(entry->data());
+    //     this->ProcessConfChange(entry, cc, wb);
+    //     return wb;
+    // }
+    // raft_cmdpb::RaftCmdRequest* msg = new raft_cmdpb::RaftCmdRequest();
+    // msg->ParseFromString(entry->data());
+    // if (msg->requests().size() > 0)
+    // {
+    //     this->ProcessRequest(entry, msg, wb);
+    // }
+    // if (msg->mutable_admin_request() != nullptr)
+    // {
+    //     this->ProcessAdminRequest(entry, msg, wb);
+    //     return wb;
+    // }
 
     // no op entry
     return wb;
@@ -571,13 +571,12 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
         return false;
     }
 
-    // if(this->peer_->stopped_)
-    // {
-    //     return false;
-    // }
-
-    // make new msg
-    Logger::GetInstance()->DEBUG_NEW("start make new msg", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
+    if(this->peer_->stopped_)
+    {
+        return false;
+    }
+    // // make new msg
+    // Logger::GetInstance()->DEBUG_NEW("start make new msg", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
     eraftpb::Message newMsg;
     newMsg.set_from(msg->message().from());
     newMsg.set_to(msg->message().to());
@@ -587,18 +586,18 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg)
     newMsg.set_log_term(msg->message().log_term());
     newMsg.set_reject(msg->message().reject());
     newMsg.set_msg_type(msg->message().msg_type());
-    newMsg.set_data(msg->message().data());
-    Logger::GetInstance()->DEBUG_NEW("make new msg going", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
+    newMsg.set_temp_data(msg->message().temp_data());
+    Logger::GetInstance()->DEBUG_NEW("RECIVED ENTRY DATA = " + std::to_string(msg->message().temp_data()), __FILE__, __LINE__, "RaftContext::OnRaftMsg");
 
-    for(uint32_t i = 0; i < msg->mutable_message()->entries_size(); i++)
-    {
-        eraftpb::Entry* e = newMsg.add_entries();
-        e->set_entry_type(eraftpb::EntryNormal);
-        e->set_index(msg->message().index());
-        e->set_term(msg->message().term());
-        e->set_data(msg->message().data());
-    }
-    Logger::GetInstance()->DEBUG_NEW("make new msg end", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
+    // for(uint32_t i = 0; i < msg->mutable_message()->entries_size(); i++)
+    // {
+    //     eraftpb::Entry* e = newMsg.add_entries();
+    //     e->set_entry_type(eraftpb::EntryNormal);
+    //     e->set_index(msg->message().index());
+    //     e->set_term(msg->message().term());
+    //     e->set_data(msg->message().data());
+    // }
+    // Logger::GetInstance()->DEBUG_NEW("make new msg end", __FILE__, __LINE__, "RaftContext::OnRaftMsg");
 
     this->peer_->raftGroup_->Step(newMsg);
 
