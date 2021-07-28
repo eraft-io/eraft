@@ -306,14 +306,16 @@ void PeerMsgHandler::HandleRaftReady()
             Logger::GetInstance()->DEBUG_NEW("rd.committedEntries.size() " + std::to_string(rd.committedEntries.size()), __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
             // std::vector<Proposal> oldProposal = this->peer_->proposals_;   
             // std::shared_ptr<rocksdb::WriteBatch> kvWB = std::make_shared<rocksdb::WriteBatch>();
-            // for( auto entry: rd.committedEntries)
-            // {
-            //     kvWB = this->Process(&entry, kvWB);
-            //     if (this->peer_->stopped_)
-            //     {
-            //         return;
-            //     }
-            // }
+            for( auto entry: rd.committedEntries)
+            {
+                ;
+                Logger::GetInstance()->DEBUG_NEW("COMMIT_ENTRY" + eraft::EntryToString(entry), __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
+                // kvWB = this->Process(&entry, kvWB);
+                // if (this->peer_->stopped_)
+                // {
+                //     return;
+                // }
+            }
             // this->peer_->peerStorage_->applyState_->set_applied_index(rd.committedEntries[rd.committedEntries.size() - 1].index());
             // std::string key(Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).begin(), Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).end());
             // Assistant::GetInstance()->SetMeta(kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
