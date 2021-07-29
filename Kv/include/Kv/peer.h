@@ -1,123 +1,138 @@
+// MIT License
+
+// Copyright (c) 2021 Colin
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ERAFT_KV_PEER_H_
 #define ERAFT_KV_PEER_H_
 
-#include <stdint.h>
-
-#include <string>
-#include <vector>
-#include <map>
-#include <memory>
-
+#include <Kv/callback.h>
+#include <Kv/config.h>
+#include <Kv/engines.h>
+#include <Kv/peer_storage.h>
+#include <Kv/transport.h>
 #include <RaftCore/RawNode.h>
 #include <eraftio/metapb.pb.h>
-#include <Kv/callback.h>
-#include <Kv/engines.h>
-#include <Kv/transport.h>
-#include <Kv/config.h>
-#include <Kv/peer_storage.h>
+#include <stdint.h>
 
-namespace kvserver
-{
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace kvserver {
 
 class PeerStorage;
 
-struct Proposal
-{
-    uint64_t index_;
+struct Proposal {
+  uint64_t index_;
 
-    uint64_t term_;
+  uint64_t term_;
 
-    Callback* cb_;
+  Callback* cb_;
 };
 
-class Peer
-{
+class Peer {
+  friend class Router;
 
-friend class Router;
+ public:
+  Peer();
 
-public:
+  Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
+       std::shared_ptr<Engines> engines,
+       std::shared_ptr<metapb::Region> region);
+  ~Peer();
 
-    Peer();
-    Peer(uint64_t storeID, std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region);
-    ~Peer();
+  static void InsertPeerCache(metapb::Peer* peer);
 
-    static void InsertPeerCache(metapb::Peer* peer);
+  static void RemovePeerCache(uint64_t peerID);
 
-    static void RemovePeerCache(uint64_t peerID);
+  static std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerID);
 
-    static std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerID);
+  uint64_t NextProposalIndex();
 
-    uint64_t NextProposalIndex();
+  bool MaybeDestory();
 
-    bool MaybeDestory();
+  bool Destory(std::shared_ptr<Engines> engine, bool keepData);
 
-    bool Destory(std::shared_ptr<Engines> engine, bool keepData);
+  bool IsInitialized();
 
-    bool IsInitialized();
+  uint64_t storeID();
 
-    uint64_t storeID();
+  std::shared_ptr<metapb::Region> Region();
 
-    std::shared_ptr<metapb::Region> Region();
+  void SetRegion(std::shared_ptr<metapb::Region> region);
 
-    void SetRegion(std::shared_ptr<metapb::Region> region);
+  uint64_t PeerId();
 
-    uint64_t PeerId();
+  uint64_t LeaderId();
 
-    uint64_t LeaderId();
+  bool IsLeader();
 
-    bool IsLeader();
+  void Send(std::shared_ptr<Transport> trans,
+            std::vector<eraftpb::Message> msgs);
 
-    void Send(std::shared_ptr<Transport> trans, std::vector<eraftpb::Message> msgs);
+  std::vector<std::shared_ptr<metapb::Peer> > CollectPendingPeers();
 
-    std::vector<std::shared_ptr<metapb::Peer> > CollectPendingPeers();
+  void ClearPeersStartPendingTime();
 
-    void ClearPeersStartPendingTime();
+  bool AnyNewPeerCatchUp(uint64_t peerId);
 
-    bool AnyNewPeerCatchUp(uint64_t peerId);
+  bool MaydeCampaign(bool parentIsLeader);
 
-    bool MaydeCampaign(bool parentIsLeader);
+  uint64_t Term();
 
-    uint64_t Term();
+  void HeartbeatScheduler();  // heart beat
 
-    void HeartbeatScheduler(); // heart beat
+  bool SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans);
 
-    bool SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans);
+  // ticker
 
-    // ticker
+  // instance of the raft moudle
+  std::shared_ptr<eraft::RawNode> raftGroup_;
 
-    // instance of the raft moudle
-    std::shared_ptr<eraft::RawNode> raftGroup_;
+  // peer storage
+  static std::shared_ptr<PeerStorage> peerStorage_;
 
-    // peer storage
-    static std::shared_ptr<PeerStorage> peerStorage_;
+  std::shared_ptr<metapb::Peer> meta_;
 
-    std::shared_ptr<metapb::Peer> meta_;
+  // TODO: peers start pending time
+  bool stopped_;
 
-    // TODO: peers start pending time
-    bool stopped_;
+  std::vector<Proposal> proposals_;
 
-    std::vector<Proposal> proposals_;
+  uint64_t regionId_;
 
-    uint64_t regionId_;
+  static std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
 
+ private:
+ 
+  std::string tag_;
 
-    static std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
+  uint64_t lastCompactedIdx_;
 
-private:
+  uint64_t sizeDiffHint_;
 
-
-    std::string tag_;
-
-    uint64_t lastCompactedIdx_;
-    
-    uint64_t sizeDiffHint_;
-
-    uint64_t approximateSize_;
-
+  uint64_t approximateSize_;
 };
 
-
-} // namespace kvserver
-
+}  // namespace kvserver
 
 #endif

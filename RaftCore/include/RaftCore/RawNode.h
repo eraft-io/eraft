@@ -12,100 +12,107 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//
+//
+// MIT License
 
-// @file RawNode.h
-// @author Colin
-// This module declares the eraft::RawNode class.
-// 
-// Inspired by etcd golang version.
+// Copyright (c) 2021 Colin
 
-#ifndef ERAFT_RAWNODE_H
-#define ERAFT_RAWNODE_H
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-#include <stdint.h>
-#include <eraftio/eraftpb.pb.h>
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+#ifndef ERAFT_RAFTCORE_RAWNODE_H
+#define ERAFT_RAFTCORE_RAWNODE_H
+
 #include <RaftCore/Raft.h>
+#include <eraftio/eraftpb.pb.h>
+#include <stdint.h>
 
-namespace eraft
-{
+namespace eraft {
 
-class DReady
-{
+class DReady {
+ public:
+  std::shared_ptr<ESoftState> softSt;
 
-public:
+  eraftpb::HardState hardSt;
 
-    std::shared_ptr<ESoftState> softSt;
-    
-    eraftpb::HardState hardSt;
+  DReady() {}
 
-    DReady() {}
+  ~DReady() {}
 
-    ~DReady() {}
+  // Entries specifies entries to be saved to stable storage BEFORE
+  // Messages are sent.
+  std::vector<eraftpb::Entry> entries;
 
+  eraftpb::Snapshot snapshot;
 
-    // Entries specifies entries to be saved to stable storage BEFORE
-    // Messages are sent.
-    std::vector<eraftpb::Entry> entries;
+  std::vector<eraftpb::Entry> committedEntries;
 
-    eraftpb::Snapshot snapshot;
-
-    std::vector<eraftpb::Entry> committedEntries;
-
-    std::vector<eraftpb::Message> messages;
-
+  std::vector<eraftpb::Message> messages;
 };
 
 class RawNode {
+ public:
+  std::shared_ptr<RaftContext> raft;
 
-public:
+  RawNode(Config& config);
 
-    std::shared_ptr<RaftContext> raft;
+  // Tick advances the internal logical clock by a single tick.
+  void Tick();
 
-    RawNode(Config& config);
+  // Campaign causes this RawNode to transition to candidate state.
+  void Campaign();
 
-    // Tick advances the internal logical clock by a single tick.
-    void Tick();
+  // Propose proposes data be appended to the raft log.
+  void Propose(std::string data);
 
-    // Campaign causes this RawNode to transition to candidate state.
-    void Campaign();
+  // ProposeConfChange proposes a config change.
+  void ProposeConfChange(eraftpb::ConfChange cc);
 
-    // Propose proposes data be appended to the raft log.
-    void Propose(std::string data);
+  // ApplyConfChange applies a config change to the local node.
+  eraftpb::ConfState ApplyConfChange(eraftpb::ConfChange cc);
 
-    // ProposeConfChange proposes a config change.
-    void ProposeConfChange(eraftpb::ConfChange cc);
+  // Step advances the state machine using the given message.
+  void Step(eraftpb::Message m);
 
-    // ApplyConfChange applies a config change to the local node.
-    eraftpb::ConfState ApplyConfChange(eraftpb::ConfChange cc);
+  // EReady returns the current point-in-time state of this RawNode.
+  DReady EReady();
 
-    // Step advances the state machine using the given message.
-    void Step(eraftpb::Message m);
+  // HasReady called when RawNode user need to check if any Ready pending.
+  bool HasReady();
 
-    // EReady returns the current point-in-time state of this RawNode.
-    DReady EReady();
+  // Advance notifies the RawNode that the application has applied and saved
+  // progress in the last Ready results.
+  void Advance(DReady rd);
 
-    // HasReady called when RawNode user need to check if any Ready pending.
-    bool HasReady();
+  // GetProgress return the the Progress of this node and its peers, if this
+  // node is leader.
+  std::map<uint64_t, Progress> GetProgress();
 
-    // Advance notifies the RawNode that the application has applied and saved progress in the
-    // last Ready results.
-    void Advance(DReady rd);
+  // TransferLeader tries to transfer leadership to the given transferee.
+  void TransferLeader(uint64_t transferee);
 
-    // GetProgress return the the Progress of this node and its peers, if this
-    // node is leader.
-    std::map<uint64_t, Progress> GetProgress();
+ private:
+  std::shared_ptr<ESoftState> prevSoftSt;
 
-    // TransferLeader tries to transfer leadership to the given transferee.
-    void TransferLeader(uint64_t transferee);
-
-private:
-
-    std::shared_ptr<ESoftState> prevSoftSt;
-
-    std::shared_ptr<eraftpb::HardState> prevHardSt;
+  std::shared_ptr<eraftpb::HardState> prevHardSt;
 };
 
-} // namespace eraft
+}  // namespace eraft
 
-
-#endif
+#endif  // ERAFT_RAFTCORE_RAWNODE_H

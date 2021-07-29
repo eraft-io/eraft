@@ -1,72 +1,91 @@
+// MIT License
+
+// Copyright (c) 2021 Colin
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ERAFT_KV_NODE_H_
 #define ERAFT_KV_NODE_H_
 
+#include <Kv/config.h>
+#include <Kv/engines.h>
+#include <Kv/raft_store.h>
+#include <Kv/transport.h>
+#include <eraftio/metapb.pb.h>
 #include <stdint.h>
 
 #include <memory>
 
-#include <eraftio/metapb.pb.h>
-#include <Kv/config.h>
-#include <Kv/raft_store.h>
-#include <Kv/engines.h>
-#include <Kv/transport.h>
+namespace kvserver {
 
-namespace kvserver
-{
+class Node {
+ public:
+  const uint64_t kMaxCheckClusterBoostrappedRetryCount = 60;
 
-class Node
-{
+  const uint64_t kCheckClusterBoostrapRetrySeconds = 3;
 
-public:
+  Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg);
 
-    const uint64_t kMaxCheckClusterBoostrappedRetryCount = 60;
+  bool Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport>);
 
-    const uint64_t kCheckClusterBoostrapRetrySeconds = 3;
+  bool CheckStore(Engines& engs, uint64_t* storeId);
 
-    Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg);
+  bool BootstrapStore(Engines& engs, uint64_t* storeId);
 
-    bool Start(std::shared_ptr<Engines> engines, std::shared_ptr<Transport>);
+  uint64_t AllocID();
 
-    bool CheckStore(Engines& engs, uint64_t* storeId);
+  std::pair<std::shared_ptr<metapb::Region>, bool>
+  CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines,
+                                uint64_t storeID);
 
-    bool BootstrapStore(Engines& engs, uint64_t* storeId);
+  bool CheckClusterBoostrapped();
 
-    uint64_t AllocID();
+  std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrapCluster(
+      std::shared_ptr<Engines> engines, uint64_t storeID);
 
-    std::pair<std::shared_ptr<metapb::Region> , bool> CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines, uint64_t storeID);
+  bool BoostrapCluster(std::shared_ptr<Engines> engines,
+                       std::shared_ptr<metapb::Region> firstRegion,
+                       bool* isNewCluster);
 
-    bool CheckClusterBoostrapped();
+  bool StartNode(std::shared_ptr<Engines> engines,
+                 std::shared_ptr<Transport> trans);
 
-    std::pair<std::shared_ptr<metapb::Region> , bool> PrepareBootstrapCluster(std::shared_ptr<Engines> engines,  uint64_t storeID);
+  bool StopNode(uint64_t storeID);
 
-    bool BoostrapCluster(std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> firstRegion, bool* isNewCluster);
+  void Stop();
 
-    
-    bool StartNode(std::shared_ptr<Engines> engines, std::shared_ptr<Transport> trans);
+  uint64_t GetStoreID();
 
-    bool StopNode(uint64_t storeID);
+  ~Node();
 
-    void Stop();
+  std::shared_ptr<Engines> engs_;
 
-    uint64_t GetStoreID();
+ private:
+  uint64_t clusterID_;
 
-    ~Node();
+  std::shared_ptr<metapb::Store> store_;
 
-    std::shared_ptr<Engines> engs_;
+  std::shared_ptr<Config> cfg_;
 
-private:
-    
-    uint64_t clusterID_;
-
-    std::shared_ptr<metapb::Store> store_;
-
-    std::shared_ptr<Config> cfg_;
-
-    std::shared_ptr<RaftStore> system_;
+  std::shared_ptr<RaftStore> system_;
 };
 
-    
-} // namespace kvserver
-
+}  // namespace kvserver
 
 #endif

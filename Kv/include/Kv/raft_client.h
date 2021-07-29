@@ -1,75 +1,87 @@
+// MIT License
+
+// Copyright (c) 2021 Colin
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ERAFT_KV_RAFT_CLIENT_H_
 #define ERAFT_KV_RAFT_CLIENT_H_
 
-#include <mutex>
-#include <memory>
-#include <string>
-#include <map>
-
-#include <grpcpp/grpcpp.h>
-#include <eraftio/tinykvpb.grpc.pb.h>
-#include <eraftio/raft_serverpb.pb.h>
 #include <Kv/config.h>
-namespace kvserver
-{
+#include <eraftio/raft_serverpb.pb.h>
+#include <eraftio/tinykvpb.grpc.pb.h>
+#include <grpcpp/grpcpp.h>
 
-class RaftConn
-{
-public:
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
 
-    RaftConn(std::string addr_, std::shared_ptr<Config> cfg);
+namespace kvserver {
 
-    ~RaftConn();
+class RaftConn {
+ public:
+  RaftConn(std::string addr_, std::shared_ptr<Config> cfg);
 
-    void Stop();
+  ~RaftConn();
 
-    bool Send(raft_serverpb::RaftMessage& msg);
+  void Stop();
 
-    std::shared_ptr<grpc::Channel> GetChan();
+  bool Send(raft_serverpb::RaftMessage& msg);
 
-private:
+  std::shared_ptr<grpc::Channel> GetChan();
 
-    std::mutex chanMu_;
+ private:
+  std::mutex chanMu_;
 
-    std::shared_ptr<grpc::Channel> chan_;
-
+  std::shared_ptr<grpc::Channel> chan_;
 };
 
+class RaftClient {
+ public:
+  RaftClient(std::shared_ptr<Config> c);
+  ~RaftClient();
 
-class RaftClient
-{
+  std::shared_ptr<RaftConn> GetConn(std::string addr, uint64_t regionID);
 
-public:
-   
-    RaftClient(std::shared_ptr<Config> c);
-    ~RaftClient();
+  bool Send(uint64_t storeID, std::string addr,
+            raft_serverpb::RaftMessage& msg);
 
-    std::shared_ptr<RaftConn> GetConn(std::string addr, uint64_t regionID);
+  std::string GetAddr(uint64_t storeID);
 
-    bool Send(uint64_t storeID, std::string addr, raft_serverpb::RaftMessage& msg);
+  bool PutRaw(std::string addr, kvrpcpb::RawPutRequest& request);
 
-    std::string GetAddr(uint64_t storeID);
+  void InsertAddr(uint64_t storeID, std::string addr);
 
-    bool PutRaw(std::string addr, kvrpcpb::RawPutRequest& request);
+  void Flush();
 
-    void InsertAddr(uint64_t storeID, std::string addr);
+ private:
+  /* data */
+  std::shared_ptr<Config> conf_;
 
-    void Flush();
+  std::mutex mu_;
 
-private:
-    /* data */
-    std::shared_ptr<Config> conf_;
+  std::map<std::string, std::shared_ptr<RaftConn> > conns_;
 
-    std::mutex mu_;
-
-    std::map<std::string, std::shared_ptr<RaftConn> > conns_;
-
-    std::map<uint64_t, std::string> addrs_;
-
+  std::map<uint64_t, std::string> addrs_;
 };
 
-
-} // namespace kvserver
-
+}  // namespace kvserver
 
 #endif

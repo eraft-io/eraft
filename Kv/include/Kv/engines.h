@@ -1,40 +1,59 @@
+// MIT License
+
+// Copyright (c) 2021 Colin
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ERAFT_KV_ENGINES_H_
 #define ERAFT_KV_ENGINES_H_
-
-#include <memory>
-#include <cassert>
 
 #include <rocksdb/db.h>
 #include <rocksdb/write_batch.h>
 
-namespace kvserver
-{
+#include <cassert>
+#include <memory>
 
-struct Engines
-{
-    Engines(std::string kvPath, std::string raftPath);
+namespace kvserver {
 
-    ~Engines();
+class Engines {
+ public:
+  Engines(std::string kvPath, std::string raftPath);
 
-    rocksdb::DB* kvDB_;
+  ~Engines();
 
-    std::string kvPath_;
+  bool WriteKV(rocksdb::WriteBatch& batch);
 
-    rocksdb::DB* raftDB_;
+  bool WriteRaft(rocksdb::WriteBatch& batch);
 
-    std::string raftPath_;
+  bool Close();
 
-    bool WriteKV(rocksdb::WriteBatch& batch);
+  bool Destory();
 
-    bool WriteRaft(rocksdb::WriteBatch& batch);
+  rocksdb::DB* kvDB_;
 
-    bool Close();
+  std::string kvPath_;
 
-    bool Destory();
+  rocksdb::DB* raftDB_;
 
+  std::string raftPath_;
 };
 
-} // namespace kvserver
-
+}  // namespace kvserver
 
 #endif

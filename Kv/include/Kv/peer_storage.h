@@ -1,124 +1,143 @@
+// MIT License
+
+// Copyright (c) 2021 Colin
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ERAFT_KV_PEERSTORAGE_H_
 #define ERAFT_KV_PEERSTORAGE_H_
+
+#include <Kv/engines.h>
+#include <RaftCore/RawNode.h>
+#include <RaftCore/Storage.h>
+#include <eraftio/metapb.pb.h>
+#include <eraftio/raft_serverpb.pb.h>
+#include <rocksdb/write_batch.h>
 
 #include <iostream>
 #include <memory>
 
-#include <eraftio/metapb.pb.h>
-#include <eraftio/raft_serverpb.pb.h>
-#include <Kv/engines.h>
-#include <RaftCore/Storage.h>
-#include <RaftCore/RawNode.h>
-#include <rocksdb/write_batch.h>
+namespace kvserver {
 
-namespace kvserver
-{
+class ApplySnapResult {
+ public:
+  std::shared_ptr<metapb::Region> prevRegion;
 
-class ApplySnapResult
-{
-    public:
+  std::shared_ptr<metapb::Region> region;
 
-    std::shared_ptr<metapb::Region> prevRegion;
+  ApplySnapResult() {}
 
-    std::shared_ptr<metapb::Region> region;
-
-    ApplySnapResult() {}
-
-    ~ApplySnapResult() {}
+  ~ApplySnapResult() {}
 };
 
-class PeerStorage : public eraft::StorageInterface
-{
-public:
+class PeerStorage : public eraft::StorageInterface {
+ public:
+  PeerStorage(std::shared_ptr<Engines> engs,
+              std::shared_ptr<metapb::Region> region, std::string tag);
 
-    PeerStorage(std::shared_ptr<Engines> engs, std::shared_ptr<metapb::Region> region, std::string tag);
+  ~PeerStorage();
 
-    ~PeerStorage();
+  // InitialState implements the Storage interface.
+  std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
 
-    // InitialState implements the Storage interface.
-    std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
+  // Entries implements the Storage interface.
+  std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;
 
-    // Entries implements the Storage interface.
-    std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;
+  // Term implements the Storage interface.
+  uint64_t Term(uint64_t i) override;
 
-    // Term implements the Storage interface.
-    uint64_t Term(uint64_t i) override;
+  // LastIndex implements the Storage interface.
+  uint64_t LastIndex() override;
 
-    // LastIndex implements the Storage interface.
-    uint64_t LastIndex() override;
+  // FirstIndex implements the Storage interface.
+  uint64_t FirstIndex() override;
 
-    // FirstIndex implements the Storage interface.
-    uint64_t FirstIndex() override;
+  uint64_t AppliedIndex();
 
-    uint64_t AppliedIndex();
+  // Snapshot implements the Storage interface.
+  eraftpb::Snapshot Snapshot() override;
 
-    // Snapshot implements the Storage interface.
-    eraftpb::Snapshot Snapshot() override;
+  bool IsInitialized();
 
-    bool IsInitialized();
+  std::shared_ptr<metapb::Region> Region();
 
-    std::shared_ptr<metapb::Region> Region();
+  void SetRegion(std::shared_ptr<metapb::Region> region);
 
-    void SetRegion(std::shared_ptr<metapb::Region> region);
+  bool CheckRange(uint64_t low, uint64_t high);
 
-    bool CheckRange(uint64_t low, uint64_t high);
+  uint64_t TruncatedIndex();
 
-    uint64_t TruncatedIndex();
+  uint64_t TruncatedTerm();
 
-    uint64_t TruncatedTerm();
+  bool ValidateSnap(std::shared_ptr<eraftpb::Snapshot> snap);
 
-    bool ValidateSnap(std::shared_ptr<eraftpb::Snapshot> snap);
+  bool ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
+                 std::shared_ptr<rocksdb::WriteBatch> raftWB);
 
-    bool ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB, std::shared_ptr<rocksdb::WriteBatch> raftWB);
+  void ClearExtraData(std::shared_ptr<metapb::Region> newRegion);
 
-    void ClearExtraData(std::shared_ptr<metapb::Region> newRegion);
+  std::shared_ptr<ApplySnapResult> SaveReadyState(
+      std::shared_ptr<eraft::DReady> ready);
 
-    std::shared_ptr<ApplySnapResult> SaveReadyState(std::shared_ptr<eraft::DReady> ready);
+  void ClearData();
 
-    void ClearData();
+  void ClearRange(uint64_t regionID, std::string start, std::string end);
 
-    void ClearRange(uint64_t regionID, std::string start, std::string end);    
+  // SetHardState saves the current HardState.
+  void SetHardState(eraftpb::HardState& st);
 
-    // SetHardState saves the current HardState.
-    void SetHardState(eraftpb::HardState &st);
+  // ApplySnapshot overwrites the contents of this Storage object with
+  // those of the given snapshot.
+  bool ApplySnapshot(eraftpb::Snapshot& snap);
 
-    // ApplySnapshot overwrites the contents of this Storage object with
-    // those of the given snapshot.
-    bool ApplySnapshot(eraftpb::Snapshot &snap);
+  // CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
+  // can be used to reconstruct the state at that point.
+  // If any configuration changes have been made since the last compaction,
+  // the result of the last ApplyConfChange must be passed in.
+  eraftpb::Snapshot CreateSnapshot(uint64_t i, eraftpb::ConfState* cs,
+                                   const char* bytes);
 
-    // CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
-    // can be used to reconstruct the state at that point.
-    // If any configuration changes have been made since the last compaction,
-    // the result of the last ApplyConfChange must be passed in.
-    eraftpb::Snapshot CreateSnapshot(uint64_t i, eraftpb::ConfState* cs, const char* bytes);
+  // Compact discards all log entries prior to compactIndex.
+  // It is the application's responsibility to not attempt to compact an index
+  // greater than raftLog.applied.
+  bool Compact(uint64_t compactIndex);
 
-    // Compact discards all log entries prior to compactIndex.
-    // It is the application's responsibility to not attempt to compact an index
-    // greater than raftLog.applied.
-    bool Compact(uint64_t compactIndex);
+  // Append the new entries to storage.
+  // entries[0].Index > ms.entries[0].Index
+  bool Append(std::vector<eraftpb::Entry> entries,
+              std::shared_ptr<rocksdb::WriteBatch> raftWB);
 
-    // Append the new entries to storage.
-    // entries[0].Index > ms.entries[0].Index
-    bool Append(std::vector<eraftpb::Entry> entries, std::shared_ptr<rocksdb::WriteBatch> raftWB);
+  std::shared_ptr<metapb::Region> region_;
 
-    std::shared_ptr<metapb::Region> region_;
+  raft_serverpb::RaftLocalState* raftState_;
 
-    raft_serverpb::RaftLocalState* raftState_;
+  raft_serverpb::RaftApplyState* applyState_;
 
-    raft_serverpb::RaftApplyState* applyState_;
+  // TODO: snap
+  uint64_t snapTriedCnt_;
 
-    // TODO: snap
-    uint64_t snapTriedCnt_;
+  std::shared_ptr<Engines> engines_;
 
-    std::shared_ptr<Engines> engines_;
-
-private:
-
-
-
-    std::string tag_;
+ private:
+  std::string tag_;
 };
 
-} // namespace kvserver
+}  // namespace kvserver
 
 #endif

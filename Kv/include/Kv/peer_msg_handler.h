@@ -1,117 +1,145 @@
+// MIT License
+
+// Copyright (c) 2021 Colin
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ERAFT_KV_PEER_MSG_HANDLER_H_
 #define ERAFT_KV_PEER_MSG_HANDLER_H_
+
+#include <Kv/engines.h>
+#include <Kv/peer.h>
+#include <Kv/raft_store.h>
+#include <eraftio/raft_cmdpb.pb.h>
+#include <rocksdb/write_batch.h>
 
 #include <functional>
 #include <memory>
 
-#include <rocksdb/write_batch.h>
-#include <eraftio/raft_cmdpb.pb.h>
-#include <Kv/peer.h>
-#include <Kv/raft_store.h>
-#include <Kv/engines.h>
+namespace kvserver {
 
+static raft_cmdpb::RaftCmdRequest* NewAdminRequest(uint64_t regionID,
+                                                   metapb::Peer* peer);
 
-namespace kvserver
-{
+static raft_cmdpb::RaftCmdRequest* NewCompactLogRequest(uint64_t regionID,
+                                                        metapb::Peer* peer,
+                                                        uint64_t compactIndex,
+                                                        uint64_t compactTerm);
 
-static raft_cmdpb::RaftCmdRequest* NewAdminRequest(uint64_t regionID, metapb::Peer* peer);
+class PeerMsgHandler {
+ public:
+  PeerMsgHandler(std::shared_ptr<Peer> peer,
+                 std::shared_ptr<GlobalContext> ctx);
 
-static raft_cmdpb::RaftCmdRequest* NewCompactLogRequest(uint64_t regionID, metapb::Peer* peer, uint64_t compactIndex, uint64_t compactTerm);
+  ~PeerMsgHandler();
 
-class PeerMsgHandler
-{
-public:
-    
-    PeerMsgHandler(std::shared_ptr<Peer> peer, std::shared_ptr<GlobalContext> ctx);
+  void Read();
 
-    ~PeerMsgHandler();
+  void HandleProposal(eraftpb::Entry* entry, std::function<void(Proposal*)>);
 
-    void Read();
+  void Handle(Proposal* p);
 
-    void HandleProposal(eraftpb::Entry* entry, std::function<void(Proposal*)>);
+  std::shared_ptr<rocksdb::WriteBatch> ProcessRequest(
+      eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* msg,
+      std::shared_ptr<rocksdb::WriteBatch> wb);
 
-    void Handle(Proposal* p);
+  void ProcessAdminRequest(eraftpb::Entry* entry,
+                           raft_cmdpb::RaftCmdRequest* req,
+                           std::shared_ptr<rocksdb::WriteBatch> wb);
 
-    std::shared_ptr<rocksdb::WriteBatch> ProcessRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* msg, std::shared_ptr<rocksdb::WriteBatch> wb);
+  void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc,
+                         std::shared_ptr<rocksdb::WriteBatch> wb);
 
-    void ProcessAdminRequest(eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* req, std::shared_ptr<rocksdb::WriteBatch> wb);
+  std::shared_ptr<rocksdb::WriteBatch> Process(
+      eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb);
 
-    void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc, std::shared_ptr<rocksdb::WriteBatch> wb);
+  void HandleRaftReady();
 
-    std::shared_ptr<rocksdb::WriteBatch> Process(eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb);
+  void HandleMsg(Msg m);
 
-    void HandleRaftReady();
+  bool PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req);
 
-    void HandleMsg(Msg m);
+  void ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb);
 
-    bool PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req);
+  void ProposeRequest(kvrpcpb::RawPutRequest* put);
 
-    void ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg, Callback* cb);
+  void ProposeRaftCommand(kvrpcpb::RawPutRequest* put);
 
-    void ProposeRequest(kvrpcpb::RawPutRequest* put);
+  void OnTick();
 
-    void ProposeRaftCommand(kvrpcpb::RawPutRequest* put);
+  void StartTicker();
 
-    void OnTick();
+  void OnRaftBaseTick();
 
-    void StartTicker();
+  void ScheduleCompactLog(uint64_t firstIndex, uint64_t truncatedIndex);
 
-    void OnRaftBaseTick();
+  bool OnRaftMsg(raft_serverpb::RaftMessage* msg);
 
-    void ScheduleCompactLog(uint64_t firstIndex, uint64_t truncatedIndex);
+  bool ValidateRaftMessage(raft_serverpb::RaftMessage* msg);
 
-    bool OnRaftMsg(raft_serverpb::RaftMessage* msg);
+  bool CheckMessage(raft_serverpb::RaftMessage* msg);
 
-    bool ValidateRaftMessage(raft_serverpb::RaftMessage* msg);
+  void HandleStaleMsg(Transport& trans, raft_serverpb::RaftMessage* msg,
+                      metapb::RegionEpoch* curEpoch, bool needGC);
 
-    bool CheckMessage(raft_serverpb::RaftMessage* msg);
+  void HandleGCPeerMsg(raft_serverpb::RaftMessage* msg);
 
-    void HandleStaleMsg(Transport& trans, raft_serverpb::RaftMessage* msg, metapb::RegionEpoch* curEpoch, bool needGC);
+  bool CheckSnapshot(raft_serverpb::RaftMessage& msg);  // TODO
 
-    void HandleGCPeerMsg(raft_serverpb::RaftMessage* msg);
+  void DestoryPeer();
 
-    bool CheckSnapshot(raft_serverpb::RaftMessage& msg);  // TODO
+  metapb::Region* FindSiblingRegion();
 
-    void DestoryPeer();
+  void OnRaftGCLogTick();
 
-    metapb::Region* FindSiblingRegion();
+  void OnSplitRegionCheckTick();
 
-    void OnRaftGCLogTick();
+  void OnPrepareSplitRegion(metapb::RegionEpoch* regionEpoch,
+                            std::string splitKey, Callback* cb);
 
-    void OnSplitRegionCheckTick();
+  bool ValidateSplitRegion(metapb::RegionEpoch* epoch, std::string splitKey);
 
-    void OnPrepareSplitRegion(metapb::RegionEpoch* regionEpoch, std::string splitKey, Callback* cb);
+  void OnApproximateRegionSize(uint64_t size);
 
-    bool ValidateSplitRegion(metapb::RegionEpoch* epoch, std::string splitKey);
+  void OnSchedulerHeartbeatTick();
 
-    void OnApproximateRegionSize(uint64_t size);
+  void OnGCSnap();  //  TODO:
 
-    void OnSchedulerHeartbeatTick();
+  std::shared_ptr<std::string> GetRequestKey(raft_cmdpb::Request* req);
 
-    void OnGCSnap();  //  TODO:
+  size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id);
 
-    std::shared_ptr<std::string> GetRequestKey(raft_cmdpb::Request *req);
+  bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID);
 
-    size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id);
+  bool CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term);
 
-    bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID);
+  bool CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID);
 
-    bool CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term);
+  bool CheckKeyInRegion(std::string key,
+                        std::shared_ptr<metapb::Region> region);
 
-    bool CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID);    
+ private:
+  std::shared_ptr<Peer> peer_;
 
-    bool CheckKeyInRegion(std::string key, std::shared_ptr<metapb::Region> region);
-
-private:
-
-    std::shared_ptr<Peer> peer_;
-
-    std::shared_ptr<GlobalContext> ctx_;
-
+  std::shared_ptr<GlobalContext> ctx_;
 };
 
-
-} // namespace kvserver
-
+}  // namespace kvserver
 
 #endif
