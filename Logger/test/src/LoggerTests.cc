@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,18 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#include <gtest/gtest.h>
 #include <Logger/Logger.h>
+#include <eraftio/eraftpb.pb.h>
+#include <gtest/gtest.h>
+
 #include <iostream>
 #include <memory>
-#include <eraftio/eraftpb.pb.h>
 
-TEST(LoggerTests, MakeLogFileName) {
-    std::shared_ptr<Logger> testLog (new Logger);
-    testLog->Init(logDEBUG, logConsole, "logout"); 
-    std::shared_ptr<eraftpb::Entry> e (new eraftpb::Entry);
-    e->set_term(1);
-    e->set_index(1);
-    std::cout << testLog->MakeFileName() << std::endl;
-}
+TEST(LoggerTests, MakeLogFileName) {}
