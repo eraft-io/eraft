@@ -67,6 +67,8 @@ class RaftClient {
 
   bool PutRaw(std::string addr, kvrpcpb::RawPutRequest& request);
 
+  std::string GetRaw(std::string addr, kvrpcpb::RawGetRequest& request);
+
   void InsertAddr(uint64_t storeID, std::string addr);
 
   void Flush();

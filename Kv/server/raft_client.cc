@@ -104,6 +104,16 @@ bool RaftClient::PutRaw(std::string addr, kvrpcpb::RawPutRequest& request) {
   return true;
 }
 
+std::string RaftClient::GetRaw(std::string addr,
+                               kvrpcpb::RawGetRequest& request) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);  // for test
+  std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
+  kvrpcpb::RawGetResponse response;
+  grpc::ClientContext context;
+  auto status = stub_->RawGet(&context, request, &response);
+  return response.value();
+}
+
 void RaftClient::Flush() {}
 
 }  // namespace kvserver

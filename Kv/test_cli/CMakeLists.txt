@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.8)
-set(This TestsCli)
+set(This kv_cli)
 
 set(Sources 
     kv_cli.cc

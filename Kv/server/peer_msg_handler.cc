@@ -270,26 +270,28 @@ void PeerMsgHandler::ProcessConfChange(
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
-  // if (entry->entry_type() == eraftpb::EntryType::EntryConfChange)
-  // {
-  //     eraftpb::ConfChange* cc = new eraftpb::ConfChange();
-  //     // cc->ParseFromString(entry->data());
-  //     this->ProcessConfChange(entry, cc, wb);
-  //     return wb;
-  // }
-  // raft_cmdpb::RaftCmdRequest* msg = new raft_cmdpb::RaftCmdRequest();
-  // msg->ParseFromString(entry->data());
-  // if (msg->requests().size() > 0)
-  // {
-  //     this->ProcessRequest(entry, msg, wb);
-  // }
-  // if (msg->mutable_admin_request() != nullptr)
-  // {
-  //     this->ProcessAdminRequest(entry, msg, wb);
-  //     return wb;
-  // }
-
-  // no op entry
+  if (entry->entry_type() == eraftpb::EntryType::EntryConfChange) {
+    eraftpb::ConfChange* cc = new eraftpb::ConfChange();
+    // cc->ParseFromString(entry->data());
+    this->ProcessConfChange(entry, cc, wb);
+    return wb;
+  }
+  kvrpcpb::RawPutRequest* msg = new kvrpcpb::RawPutRequest();
+  msg->ParseFromString(entry->data());
+  Logger::GetInstance()->DEBUG_NEW(
+      "Process Entry DATA: cf " + msg->cf() + " key " + msg->key() + " val " +
+          msg->value(),
+      __FILE__, __LINE__, "eerMsgHandler::Process");
+  // write to kv db
+  auto status =
+      wb->Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+              msg->value());
+  if (!status.ok()) {
+    Logger::GetInstance()->DEBUG_NEW(
+        "err: when process entry data() cf " + msg->cf() + " key " +
+            msg->key() + " val " + msg->value() + ")",
+        __FILE__, __LINE__, "eerMsgHandler::Process");
+  }
   return wb;
 }
 
@@ -314,30 +316,26 @@ void PeerMsgHandler::HandleRaftReady() {
               std::to_string(rd.committedEntries.size()),
           __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
       // std::vector<Proposal> oldProposal = this->peer_->proposals_;
-      // std::shared_ptr<rocksdb::WriteBatch> kvWB =
-      // std::make_shared<rocksdb::WriteBatch>();
+      std::shared_ptr<rocksdb::WriteBatch> kvWB =
+          std::make_shared<rocksdb::WriteBatch>();
       for (auto entry : rd.committedEntries) {
         ;
         Logger::GetInstance()->DEBUG_NEW(
             "COMMIT_ENTRY" + eraft::EntryToString(entry), __FILE__, __LINE__,
             "PeerMsgHandler::HandleRaftReady");
-        // kvWB = this->Process(&entry, kvWB);
-        // if (this->peer_->stopped_)
-        // {
-        //     return;
-        // }
+        kvWB = this->Process(&entry, kvWB);
+        if (this->peer_->stopped_) {
+          return;
+        }
       }
-      // this->peer_->peerStorage_->applyState_->set_applied_index(rd.committedEntries[rd.committedEntries.size()
-      // - 1].index()); std::string
-      // key(Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).begin(),
-      // Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_).end());
-      // Assistant::GetInstance()->SetMeta(kvWB.get(), key,
-      // *this->peer_->peerStorage_->applyState_);
-      // this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
-      // kvWB.get()); if (oldProposal.size() > this->peer_->proposals_.size())
-      // {
-      //     // TODO:
-      // }
+      this->peer_->peerStorage_->applyState_->set_applied_index(
+          rd.committedEntries[rd.committedEntries.size() - 1].index());
+      std::string key(
+          Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_));
+      Assistant::GetInstance()->SetMeta(
+          kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
+      this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
+                                                        kvWB.get());
     }
     this->peer_->raftGroup_->Advance(rd);
   }

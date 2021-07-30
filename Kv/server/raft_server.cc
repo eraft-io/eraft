@@ -44,36 +44,14 @@ bool RaftStorage::Write(const kvrpcpb::Context& ctx,
                         const kvrpcpb::RawPutRequest* put) {
   raft_serverpb::RaftMessage* sendMsg = new raft_serverpb::RaftMessage();
   // send raft message
-  sendMsg->set_data(put->key());
+  sendMsg->set_data(put->SerializeAsString());
   sendMsg->set_region_id(1);
   return this->Raft(sendMsg);
 }
 
 StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx) {
-  raft_cmdpb::RaftRequestHeader rqh;
-  rqh.set_region_id(ctx.region_id());
-  auto peer = new metapb::Peer(ctx.peer());
-  rqh.set_allocated_peer(peer);
-  auto regionEpoch = new metapb::RegionEpoch(ctx.region_epoch());
-  rqh.set_allocated_region_epoch(regionEpoch);
-  rqh.set_term(ctx.term());
-
-  delete peer;
-  delete regionEpoch;
-
-  raft_cmdpb::RaftCmdRequest request;
-  raft_cmdpb::Request req;
-  req.set_cmd_type(raft_cmdpb::CmdType::Snap);
-  raft_cmdpb::SnapRequest snapReq;
-  req.set_allocated_snap(&snapReq);
-
-  Callback* cb;
-
-  this->raftRouter_->SendRaftCommand(nullptr);
-  auto resp = cb->WaitResp();
-
-  RegionReader* regionReader =
-      new RegionReader(this->engs_, resp->responses()[0].snap().region());
+  metapb::Region region;
+  RegionReader* regionReader = new RegionReader(this->engs_, region);
   this->regionReader_ = regionReader;
   return regionReader;
 }

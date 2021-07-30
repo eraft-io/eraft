@@ -64,6 +64,8 @@ Status Server::RawPut(ServerContext* context,
           request->value() + " cf " + request->cf() + " region id " +
           std::to_string(request->context().region_id()),
       __FILE__, __LINE__, "Server::RawPut");
+  // TODO: no waiting for ack from raft. Value is not yet committed so a
+  // subsequent GET on key may return old value
   if (!this->st_->Write(request->context(), request)) {
     Logger::GetInstance()->DEBUG_NEW("err: st write error!", __FILE__, __LINE__,
                                      "Server::RawPut");

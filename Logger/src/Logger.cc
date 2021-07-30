@@ -80,7 +80,7 @@ void Logger::DEBUG_NEW(const std::string& in, const std::string& file,
   text.append(" [ ");
   text.append(std::string(in));
   text.append(" ]");
-  output(text, kDebug);
+  Output(text, kDebug);
 }
 
 void Logger::INFO(const std::string& text) { Output(text, kInfo); }
