@@ -1,8 +1,7 @@
-googletest
 build
 build_
 protobuf
 .vscode
 output
 grpc
-rocksdb
+rocksdb/*.o
