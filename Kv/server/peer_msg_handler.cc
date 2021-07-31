@@ -366,12 +366,13 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               break;
             }
             case raft_serverpb::RaftMsgClientCmd: {
-              kvrpcpb::RawPutRequest* put = new kvrpcpb::RawPutRequest();
+              std::shared_ptr<kvrpcpb::RawPutRequest> put =
+                  std::make_shared<kvrpcpb::RawPutRequest>();
               put->set_key(raftMsg->data());
               Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(),
                                                __FILE__, __LINE__,
                                                "PeerMsgHandler::HandleMsg");
-              this->ProposeRaftCommand(put);
+              this->ProposeRaftCommand(put.get());
               return;
               break;
             }

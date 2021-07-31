@@ -103,6 +103,8 @@ class RaftstoreRouter : public RaftRouter {
 
  private:
   std::shared_ptr<Router> router_;
+
+  static raft_serverpb::RaftMessage* raft_msg_;
 };
 
 }  // namespace kvserver

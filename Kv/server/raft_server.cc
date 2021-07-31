@@ -42,13 +42,14 @@ bool RaftStorage::CheckResponse(raft_cmdpb::RaftCmdResponse* resp,
 
 bool RaftStorage::Write(const kvrpcpb::Context& ctx,
                         const kvrpcpb::RawPutRequest* put) {
-  raft_serverpb::RaftMessage* sendMsg = new raft_serverpb::RaftMessage();
+  std::shared_ptr<raft_serverpb::RaftMessage> sendMsg =
+      std::make_shared<raft_serverpb::RaftMessage>();
   // send raft message
   sendMsg->set_data(put->SerializeAsString());
   sendMsg->set_region_id(1);
   sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgClientCmd);
 
-  return this->Raft(sendMsg);
+  return this->Raft(sendMsg.get());
 }
 
 StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx) {

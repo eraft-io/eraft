@@ -6,8 +6,6 @@ SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 SRCPATH=$(cd $SCRIPTPATH/..; pwd -P)
 NPROC=$(nproc || grep -c ^processor /proc/cpuinfo)
 
-# cd "$SRCPATH/rocksdb" && make static_lib && cd -
-
 if [ -d "$SRCPATH/Protocol" ]; then
   cd "$SRCPATH/Protocol"
   ./scripts/generate_cpp.sh

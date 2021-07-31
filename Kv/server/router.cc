@@ -73,14 +73,21 @@ bool RaftstoreRouter::Send(uint64_t regionID, const Msg m) {
   this->router_->Send(regionID, m);
 }
 
+raft_serverpb::RaftMessage* RaftstoreRouter::raft_msg_ = nullptr;
+
 bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg) {
-  raft_serverpb::RaftMessage* newRaftMsg = new raft_serverpb::RaftMessage(*msg);
+  if (RaftstoreRouter::raft_msg_ != nullptr) {
+    delete RaftstoreRouter::raft_msg_;
+  }
+  RaftstoreRouter::raft_msg_ = new raft_serverpb::RaftMessage(*msg);
   Logger::GetInstance()->DEBUG_NEW(
       "send raft message type " +
-          eraft::MsgTypeToString(newRaftMsg->message().msg_type()) +
-          " MSG_DATA: " + newRaftMsg->message().temp_data(),
+          eraft::MsgTypeToString(
+              RaftstoreRouter::raft_msg_->message().msg_type()) +
+          " MSG_DATA: " + RaftstoreRouter::raft_msg_->message().temp_data(),
       __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
-  Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), newRaftMsg);
+  Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(),
+              RaftstoreRouter::raft_msg_);
   return this->router_->Send(msg->region_id(), m);
 }
 

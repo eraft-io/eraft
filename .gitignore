@@ -5,3 +5,4 @@ protobuf
 output
 grpc
 rocksdb/*.o
+Kv/.DS_Store
