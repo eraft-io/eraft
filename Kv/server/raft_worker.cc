@@ -22,7 +22,7 @@
 
 #include <Kv/peer_msg_handler.h>
 #include <Kv/raft_worker.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 
 #include <condition_variable>
 #include <iostream>

@@ -24,7 +24,7 @@
 #define ERAFT_KV_UTIL_H_
 
 #include <Kv/engines.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 #include <eraftio/eraftpb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <google/protobuf/message.h>

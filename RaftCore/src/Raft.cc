@@ -35,9 +35,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Logger/Logger.h>
-#include <RaftCore/Raft.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/raft.h>
+#include <RaftCore/util.h>
 #include <assert.h>
 #include <google/protobuf/text_format.h>
 

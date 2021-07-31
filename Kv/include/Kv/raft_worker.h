@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,27 +23,23 @@
 #ifndef ERAFT_KV_RAFT_WORKER_H_
 #define ERAFT_KV_RAFT_WORKER_H_
 
-#include <deque>
-#include <memory>
-#include <map>
-
-#include <Kv/raft_store.h>
-#include <Kv/msg.h>
-#include <Kv/router.h>
 #include <Kv/concurrency_queue.h>
+#include <Kv/msg.h>
+#include <Kv/raft_store.h>
+#include <Kv/router.h>
 
-namespace kvserver
-{
+#include <deque>
+#include <map>
+#include <memory>
+
+namespace kvserver {
 
 struct GlobalContext;
 struct Router;
 struct PeerState_;
 
-class RaftWorker
-{
-
-public:
-
+class RaftWorker {
+ public:
   RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm);
   ~RaftWorker();
 
@@ -51,18 +47,16 @@ public:
 
   static void BootThread();
 
-  static std::shared_ptr<PeerState_> GetPeerState(std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap, uint64_t regionID);
+  static std::shared_ptr<PeerState_> GetPeerState(
+      std::map<uint64_t, std::shared_ptr<PeerState_> > peersStateMap,
+      uint64_t regionID);
 
-private:
-
+ private:
   static std::shared_ptr<Router> pr_;
-  
-  static std::shared_ptr<GlobalContext> ctx_;
 
+  static std::shared_ptr<GlobalContext> ctx_;
 };
 
-
-} // namespace kvserver
-
+}  // namespace kvserver
 
 #endif

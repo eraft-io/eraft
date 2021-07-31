@@ -35,9 +35,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <RaftCore/MemoryStorage.h>
-#include <RaftCore/Raft.h>
-#include <RaftCore/Util.h>
+#include <RaftCore/memory_storage.h>
+#include <RaftCore/raft.h>
+#include <RaftCore/util.h>
 #include <gtest/gtest.h>
 
 // TestFollowerUpdateTermFromMessage2AA、TestCandidateUpdateTermFromMessage2AA

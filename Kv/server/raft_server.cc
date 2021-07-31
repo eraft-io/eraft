@@ -23,7 +23,7 @@
 #include <Kv/engines.h>
 #include <Kv/raft_server.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 
 #include <cassert>
 
@@ -46,6 +46,8 @@ bool RaftStorage::Write(const kvrpcpb::Context& ctx,
   // send raft message
   sendMsg->set_data(put->SerializeAsString());
   sendMsg->set_region_id(1);
+  sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgClientCmd);
+
   return this->Raft(sendMsg);
 }
 

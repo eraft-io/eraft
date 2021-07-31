@@ -111,6 +111,31 @@ template<> ::raft_serverpb::StoreIdent* Arena::CreateMaybeMessage<::raft_serverp
 PROTOBUF_NAMESPACE_CLOSE
 namespace raft_serverpb {
 
+enum RaftMessageType : int {
+  RaftMsgNormal = 0,
+  RaftMsgClientCmd = 1,
+  RaftMessageType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  RaftMessageType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool RaftMessageType_IsValid(int value);
+constexpr RaftMessageType RaftMessageType_MIN = RaftMsgNormal;
+constexpr RaftMessageType RaftMessageType_MAX = RaftMsgClientCmd;
+constexpr int RaftMessageType_ARRAYSIZE = RaftMessageType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* RaftMessageType_descriptor();
+template<typename T>
+inline const std::string& RaftMessageType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, RaftMessageType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function RaftMessageType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    RaftMessageType_descriptor(), enum_t_value);
+}
+inline bool RaftMessageType_Parse(
+    const std::string& name, RaftMessageType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<RaftMessageType>(
+    RaftMessageType_descriptor(), name, value);
+}
 enum PeerState : int {
   Normal = 0,
   Tombstone = 2,
@@ -331,6 +356,12 @@ class RaftMessage :
   bool is_tombstone() const;
   void set_is_tombstone(bool value);
 
+  // .raft_serverpb.RaftMessageType raft_msg_type = 10;
+  void clear_raft_msg_type();
+  static const int kRaftMsgTypeFieldNumber = 10;
+  ::raft_serverpb::RaftMessageType raft_msg_type() const;
+  void set_raft_msg_type(::raft_serverpb::RaftMessageType value);
+
   // @@protoc_insertion_point(class_scope:raft_serverpb.RaftMessage)
  private:
   class HasBitSetters;
@@ -345,6 +376,7 @@ class RaftMessage :
   ::metapb::RegionEpoch* region_epoch_;
   ::PROTOBUF_NAMESPACE_ID::uint64 region_id_;
   bool is_tombstone_;
+  int raft_msg_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_raft_5fserverpb_2eproto;
 };
@@ -2257,6 +2289,20 @@ inline void RaftMessage::set_allocated_data(std::string* data) {
   // @@protoc_insertion_point(field_set_allocated:raft_serverpb.RaftMessage.data)
 }
 
+// .raft_serverpb.RaftMessageType raft_msg_type = 10;
+inline void RaftMessage::clear_raft_msg_type() {
+  raft_msg_type_ = 0;
+}
+inline ::raft_serverpb::RaftMessageType RaftMessage::raft_msg_type() const {
+  // @@protoc_insertion_point(field_get:raft_serverpb.RaftMessage.raft_msg_type)
+  return static_cast< ::raft_serverpb::RaftMessageType >(raft_msg_type_);
+}
+inline void RaftMessage::set_raft_msg_type(::raft_serverpb::RaftMessageType value) {
+  
+  raft_msg_type_ = value;
+  // @@protoc_insertion_point(field_set:raft_serverpb.RaftMessage.raft_msg_type)
+}
+
 // -------------------------------------------------------------------
 
 // RaftLocalState
@@ -3090,6 +3136,11 @@ inline void SnapshotChunk::set_allocated_data(std::string* data) {
 
 PROTOBUF_NAMESPACE_OPEN
 
+template <> struct is_proto_enum< ::raft_serverpb::RaftMessageType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::raft_serverpb::RaftMessageType>() {
+  return ::raft_serverpb::RaftMessageType_descriptor();
+}
 template <> struct is_proto_enum< ::raft_serverpb::PeerState> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::raft_serverpb::PeerState>() {

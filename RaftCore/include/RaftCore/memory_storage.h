@@ -39,7 +39,7 @@
 #ifndef ERAFT_RAFTCORE_MEMORYSTORAGE_H
 #define ERAFT_RAFTCORE_MEMORYSTORAGE_H
 
-#include <RaftCore/Storage.h>
+#include <RaftCore/storage.h>
 
 #include <mutex>
 

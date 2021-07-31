@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,27 +20,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Kv/server.h>
 #include <Kv/config.h>
-#include <Kv/raft_store.h>
 #include <Kv/raft_server.h>
-#include <Logger/Logger.h>
+#include <Kv/raft_store.h>
+#include <Kv/server.h>
 #include <Kv/ticker.h>
+#include <Logger/logger.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
+  // make conf
+  std::shared_ptr<kvserver::Config> conf = std::make_shared<kvserver::Config>(
+      std::string(argv[1]), std::string(argv[2]),
+      std::stoi(std::string(argv[3])));
+  conf->PrintConfigToConsole();
 
-    // make conf
-    std::shared_ptr<kvserver::Config> conf = std::make_shared<kvserver::Config>(std::string(argv[1]),
-     std::string(argv[2]), std::stoi(std::string(argv[3])));
-    conf->PrintConfigToConsole();
+  // start raft store
+  kvserver::RaftStorage* storage = new kvserver::RaftStorage(conf);
+  storage->Start();
 
-    // start raft store
-    kvserver::RaftStorage* storage = new kvserver::RaftStorage(conf);
-    storage->Start();
+  // start rpc service server
+  kvserver::Server svr(conf->storeAddr_, storage);
+  svr.RunLogic();
 
-    // start rpc service server
-    kvserver::Server svr(conf->storeAddr_, storage);
-    svr.RunLogic();
-
-    return 0;
+  return 0;
 }

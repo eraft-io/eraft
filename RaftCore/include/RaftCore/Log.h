@@ -24,8 +24,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -34,11 +34,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
- 
+
 #ifndef ERAFT_RAFTCORE_LOG_H_
 #define ERAFT_RAFTCORE_LOG_H_
 
-#include <RaftCore/MemoryStorage.h>
+#include <RaftCore/memory_storage.h>
 
 // RaftLog manage the log entries, its struct look like:
 //
@@ -49,77 +49,72 @@
 // for simplify the RaftLog implement should manage all log entries
 // that not truncated
 
-namespace eraft
-{
+namespace eraft {
 
 enum class NodeState {
-    StateFollower,
-    StateCandidate,
-    StateLeader,
+  StateFollower,
+  StateCandidate,
+  StateLeader,
 };
 
 class RaftLog {
+ public:
+  friend class RaftContext;
 
-public:
-    friend class RaftContext;
+  friend class RawNode;
 
-    friend class RawNode;
+  RaftLog(StorageInterface &st);
 
-    RaftLog(StorageInterface &st);
+  ~RaftLog();
 
-    ~RaftLog();
+  // LastIndex return the last index of the log entries
+  uint64_t LastIndex();
 
-    // LastIndex return the last index of the log entries
-    uint64_t LastIndex();
+  // Term return the term of the entry in the given index
+  uint64_t Term(uint64_t i);
 
-    // Term return the term of the entry in the given index
-    uint64_t Term(uint64_t i);
+  // We need to compact the log entries in some point of time like
+  // storage compact stabled log entries prevent the log entries
+  // grow unlimitedly in memory
+  void MaybeCompact();
 
-    // We need to compact the log entries in some point of time like
-    // storage compact stabled log entries prevent the log entries
-    // grow unlimitedly in memory
-    void MaybeCompact();
+  // unstableEntries return all the unstable entries
+  std::vector<eraftpb::Entry> UnstableEntries();
 
-    // unstableEntries return all the unstable entries
-    std::vector<eraftpb::Entry> UnstableEntries();
+  // nextEnts returns all the committed but not applied entries
+  std::vector<eraftpb::Entry> NextEnts();
 
-    // nextEnts returns all the committed but not applied entries
-    std::vector<eraftpb::Entry> NextEnts();
+  uint64_t ToSliceIndex(uint64_t i);
 
-    uint64_t ToSliceIndex(uint64_t i);
+  uint64_t ToEntryIndex(uint64_t i);
 
-    uint64_t ToEntryIndex(uint64_t i);
+  // committed is the highest log position that is known to be in
+  // stable storage on a quorum of nodes.
+  uint64_t commited_;
 
-	// committed is the highest log position that is known to be in
-	// stable storage on a quorum of nodes.
-    uint64_t commited_;
+  // applied is the highest log position that the application has
+  // been instructed to apply to its state machine.
+  // Invariant: applied <= committed
+  uint64_t applied_;
 
-	// applied is the highest log position that the application has
-	// been instructed to apply to its state machine.
-	// Invariant: applied <= committed
-    uint64_t applied_;
+  // log entries with index <= stabled are persisted to storage.
+  // It is used to record the logs that are not persisted by storage yet.
+  // Everytime handling `Ready`, the unstabled logs will be included.
+  uint64_t stabled_;
 
-	// log entries with index <= stabled are persisted to storage.
-	// It is used to record the logs that are not persisted by storage yet.
-	// Everytime handling `Ready`, the unstabled logs will be included.
-    uint64_t stabled_;
+  uint64_t firstIndex_;
 
-    uint64_t firstIndex_;
+  // all entries that have not yet compact.
+  std::vector<eraftpb::Entry> entries_;
 
-	// all entries that have not yet compact.
-    std::vector<eraftpb::Entry> entries_;
+ private:
+  // storage contains all stable entries since the last snapshot.
+  StorageInterface *storage_;  // point to real storage
 
-private:
-
-	// storage contains all stable entries since the last snapshot.
-    StorageInterface *storage_; // point to real storage
-
-	// the incoming unstable snapshot, if any.
-    eraftpb::Snapshot pendingSnapshot_;
-
+  // the incoming unstable snapshot, if any.
+  eraftpb::Snapshot pendingSnapshot_;
 };
-    
-} // namespace eraft
 
+}  // namespace eraft
 
-#endif // ERAFT_RAFTCORE_LOG_H_
+#endif  // ERAFT_RAFTCORE_LOG_H_

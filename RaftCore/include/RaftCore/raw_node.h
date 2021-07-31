@@ -39,7 +39,7 @@
 #ifndef ERAFT_RAFTCORE_RAWNODE_H
 #define ERAFT_RAFTCORE_RAWNODE_H
 
-#include <RaftCore/Raft.h>
+#include <RaftCore/raft.h>
 #include <eraftio/eraftpb.pb.h>
 #include <stdint.h>
 

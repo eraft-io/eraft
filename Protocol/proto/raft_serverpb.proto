@@ -4,6 +4,11 @@ package raft_serverpb;
 import "eraftpb.proto";
 import "metapb.proto";
 
+enum RaftMessageType {
+    RaftMsgNormal = 0;
+    RaftMsgClientCmd = 1;
+}
+
 // The message sent between Raft peer, it wraps the raft meessage with some meta information.
 message RaftMessage {
     uint64 region_id = 1;
@@ -17,6 +22,7 @@ message RaftMessage {
     bytes start_key = 7;
     bytes end_key = 8;
     string data = 9;
+    RaftMessageType raft_msg_type = 10;
 }
 
 // Used to store the persistent state for Raft, including the hard state for raft and the last index of the raft log.

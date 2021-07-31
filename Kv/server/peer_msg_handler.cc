@@ -23,9 +23,9 @@
 #include <Kv/concurrency_queue.h>
 #include <Kv/peer_msg_handler.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
-#include <RaftCore/RawNode.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/raw_node.h>
+#include <RaftCore/util.h>
 
 #include <cassert>
 
@@ -350,35 +350,39 @@ void PeerMsgHandler::HandleMsg(Msg m) {
       if (m.data_ != nullptr) {
         try {
           auto raftMsg = static_cast<raft_serverpb::RaftMessage*>(m.data_);
-
-          if (!raftMsg->data().empty()) {
-            kvrpcpb::RawPutRequest* put = new kvrpcpb::RawPutRequest();
-            put->set_key(raftMsg->data());
-            Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(),
-                                             __FILE__, __LINE__,
-                                             "PeerMsgHandler::HandleMsg");
-            this->ProposeRaftCommand(put);
-            return;
+          switch (raftMsg->raft_msg_type()) {
+            case raft_serverpb::RaftMsgNormal: {
+              if (raftMsg == nullptr) {
+                Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__,
+                                                 __LINE__,
+                                                 "PeerMsgHandler::HandleMsg");
+                return;
+              }
+              if (!this->OnRaftMsg(raftMsg)) {
+                Logger::GetInstance()->DEBUG_NEW("err: on handle raft msg",
+                                                 __FILE__, __LINE__,
+                                                 "PeerMsgHandler::HandleMsg");
+              }
+              break;
+            }
+            case raft_serverpb::RaftMsgClientCmd: {
+              kvrpcpb::RawPutRequest* put = new kvrpcpb::RawPutRequest();
+              put->set_key(raftMsg->data());
+              Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(),
+                                               __FILE__, __LINE__,
+                                               "PeerMsgHandler::HandleMsg");
+              this->ProposeRaftCommand(put);
+              return;
+              break;
+            }
+            default:
+              break;
           }
 
-          if (raftMsg == nullptr) {
-            Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__,
-                                             __LINE__,
-                                             "PeerMsgHandler::HandleMsg");
-            return;
-          }
-          if (!this->OnRaftMsg(raftMsg)) {
-            Logger::GetInstance()->DEBUG_NEW("err: on handle raft msg",
-                                             __FILE__, __LINE__,
-                                             "PeerMsgHandler::HandleMsg");
-          }
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
         }
       }
-      break;
-    }
-    case MsgType::MsgTypeRaftCmd: {
       break;
     }
     case MsgType::MsgTypeTick: {

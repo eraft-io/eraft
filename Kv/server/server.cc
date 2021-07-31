@@ -22,7 +22,7 @@
 
 #include <Kv/raft_server.h>
 #include <Kv/server.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 

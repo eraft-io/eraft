@@ -23,7 +23,7 @@
 #include <Kv/bootstrap.h>
 #include <Kv/node.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 #include <eraftio/raft_serverpb.pb.h>
 
 namespace kvserver {

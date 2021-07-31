@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 #include <Kv/router.h>
-#include <Logger/Logger.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/util.h>
 
 namespace kvserver {
 

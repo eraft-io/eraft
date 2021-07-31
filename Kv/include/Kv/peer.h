@@ -28,7 +28,7 @@
 #include <Kv/engines.h>
 #include <Kv/peer_storage.h>
 #include <Kv/transport.h>
-#include <RaftCore/RawNode.h>
+#include <RaftCore/raw_node.h>
 #include <eraftio/metapb.pb.h>
 #include <stdint.h>
 
@@ -123,7 +123,6 @@ class Peer {
   static std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
 
  private:
- 
   std::string tag_;
 
   uint64_t lastCompactedIdx_;

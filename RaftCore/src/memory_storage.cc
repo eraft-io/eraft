@@ -35,7 +35,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <RaftCore/MemoryStorage.h>
+#include <RaftCore/memory_storage.h>
 #include <string.h>
 
 #include <iostream>

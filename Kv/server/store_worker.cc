@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include <Kv/store_worker.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 
 namespace kvserver {
 

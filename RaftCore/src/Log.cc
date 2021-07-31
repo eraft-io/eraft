@@ -34,9 +34,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#include <Logger/Logger.h>
-#include <RaftCore/Log.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/log.h>
+#include <RaftCore/util.h>
 
 #include <algorithm>
 

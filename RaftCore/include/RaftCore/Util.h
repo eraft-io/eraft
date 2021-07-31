@@ -39,7 +39,7 @@
 #ifndef ERAFT_RAFTCORE_UTIL_H
 #define ERAFT_RAFTCORE_UTIL_H
 
-#include <RaftCore/Log.h>
+#include <RaftCore/log.h>
 #include <eraftio/eraftpb.pb.h>
 #include <google/protobuf/text_format.h>
 #include <stdint.h>

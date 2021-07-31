@@ -24,8 +24,8 @@
 #define ERAFT_KV_PEERSTORAGE_H_
 
 #include <Kv/engines.h>
-#include <RaftCore/RawNode.h>
-#include <RaftCore/Storage.h>
+#include <RaftCore/raw_node.h>
+#include <RaftCore/storage.h>
 #include <eraftio/metapb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <rocksdb/write_batch.h>

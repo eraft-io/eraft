@@ -23,9 +23,9 @@
 #include <Kv/peer.h>
 #include <Kv/peer_storage.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
-#include <RaftCore/Raft.h>
-#include <RaftCore/RawNode.h>
+#include <Logger/logger.h>
+#include <RaftCore/raft.h>
+#include <RaftCore/raw_node.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <rocksdb/write_batch.h>
 
@@ -247,6 +247,7 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_reject(msg.reject());
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
   sendMsg->mutable_message()->set_temp_data(msg.temp_data());
+  sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgNormal);
 
   Logger::GetInstance()->DEBUG_NEW(
       "on peer send msg" + std::to_string(msg.from()) + " to " +

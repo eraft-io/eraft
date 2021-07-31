@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include <Kv/raft_client.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <grpcpp/grpcpp.h>

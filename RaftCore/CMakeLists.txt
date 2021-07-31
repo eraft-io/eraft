@@ -24,19 +24,19 @@ cmake_minimum_required(VERSION 3.8)
 set(This RaftCore)
 
 set(Headers 
-    include/RaftCore/Log.h
-    include/RaftCore/MemoryStorage.h
-    include/RaftCore/Raft.h
-    include/RaftCore/RawNode.h
-    include/RaftCore/Storage.h
-    include/RaftCore/Util.h
+    include/RaftCore/log.h
+    include/RaftCore/memory_storage.h
+    include/RaftCore/raft.h
+    include/RaftCore/raw_node.h
+    include/RaftCore/storage.h
+    include/RaftCore/util.h
 )
 
 set(Sources
-    src/Log.cc
-    src/MemoryStorage.cc
-    src/Raft.cc
-    src/RawNode.cc
+    src/log.cc
+    src/memory_storage.cc
+    src/raft.cc
+    src/raw_node.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})

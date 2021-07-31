@@ -24,8 +24,8 @@
 #include <Kv/store_worker.h>
 #include <Kv/ticker.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/util.h>
 
 #include <chrono>
 

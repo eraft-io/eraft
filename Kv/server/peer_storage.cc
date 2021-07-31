@@ -22,8 +22,8 @@
 
 #include <Kv/peer_storage.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/util.h>
 
 namespace kvserver {
 

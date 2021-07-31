@@ -22,7 +22,7 @@
 
 #include <Kv/server_transport.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 #include <google/protobuf/text_format.h>
 
 namespace kvserver {

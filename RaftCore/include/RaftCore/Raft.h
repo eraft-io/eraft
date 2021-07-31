@@ -39,7 +39,7 @@
 #ifndef ERAFT_RAFTCORE_RAFT_H
 #define ERAFT_RAFTCORE_RAFT_H
 
-#include <RaftCore/Log.h>
+#include <RaftCore/log.h>
 #include <eraftio/eraftpb.pb.h>
 #include <stdint.h>
 

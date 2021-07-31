@@ -23,8 +23,8 @@
 #ifndef ERAFT_KV_CONFIG_H_
 #define ERAFT_KV_CONFIG_H_
 
-#include <Logger/Logger.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/util.h>
 #include <stdint.h>
 
 #include <iostream>

@@ -22,7 +22,7 @@
 
 #include <Kv/bootstrap.h>
 #include <Kv/utils.h>
-#include <Logger/Logger.h>
+#include <Logger/logger.h>
 #include <eraftio/metapb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 

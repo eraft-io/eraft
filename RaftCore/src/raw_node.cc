@@ -35,9 +35,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Logger/Logger.h>
-#include <RaftCore/RawNode.h>
-#include <RaftCore/Util.h>
+#include <Logger/logger.h>
+#include <RaftCore/raw_node.h>
+#include <RaftCore/util.h>
 
 namespace eraft {
 
