@@ -24,18 +24,18 @@ cmake_minimum_required(VERSION 3.8)
 set(This RaftCore)
 
 set(Headers 
-    include/RaftCore/log.h
+    include/RaftCore/Log.h
     include/RaftCore/memory_storage.h
-    include/RaftCore/raft.h
+    include/RaftCore/Raft.h
     include/RaftCore/raw_node.h
-    include/RaftCore/storage.h
-    include/RaftCore/util.h
+    include/RaftCore/Storage.h
+    include/RaftCore/Util.h
 )
 
 set(Sources
-    src/log.cc
+    src/Log.cc
     src/memory_storage.cc
-    src/raft.cc
+    src/Raft.cc
     src/raw_node.cc
 )
 

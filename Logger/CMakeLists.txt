@@ -24,11 +24,11 @@ cmake_minimum_required(VERSION 3.8)
 set(This Logger)
 
 set(Headers 
-    include/Logger/logger.h
+    include/Logger/Logger.h
 )
 
 set(Sources
-    src/logger.cc
+    src/Logger.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
