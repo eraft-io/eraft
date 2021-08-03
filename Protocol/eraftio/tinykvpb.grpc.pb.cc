@@ -26,6 +26,7 @@ static const char* TinyKv_method_names[] = {
   "/tinykvpb.TinyKv/KvCheckTxnStatus",
   "/tinykvpb.TinyKv/KvBatchRollback",
   "/tinykvpb.TinyKv/KvResolveLock",
+  "/tinykvpb.TinyKv/TransferLeader",
   "/tinykvpb.TinyKv/RawGet",
   "/tinykvpb.TinyKv/RawPut",
   "/tinykvpb.TinyKv/RawDelete",
@@ -49,13 +50,14 @@ TinyKv::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   , rpcmethod_KvCheckTxnStatus_(TinyKv_method_names[4], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_KvBatchRollback_(TinyKv_method_names[5], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_KvResolveLock_(TinyKv_method_names[6], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_RawGet_(TinyKv_method_names[7], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_RawPut_(TinyKv_method_names[8], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_RawDelete_(TinyKv_method_names[9], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_RawScan_(TinyKv_method_names[10], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_Raft_(TinyKv_method_names[11], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_Snapshot_(TinyKv_method_names[12], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_Coprocessor_(TinyKv_method_names[13], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_TransferLeader_(TinyKv_method_names[7], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_RawGet_(TinyKv_method_names[8], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_RawPut_(TinyKv_method_names[9], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_RawDelete_(TinyKv_method_names[10], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_RawScan_(TinyKv_method_names[11], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Raft_(TinyKv_method_names[12], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Snapshot_(TinyKv_method_names[13], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Coprocessor_(TinyKv_method_names[14], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status TinyKv::Stub::KvGet(::grpc::ClientContext* context, const ::kvrpcpb::GetRequest& request, ::kvrpcpb::GetResponse* response) {
@@ -252,6 +254,34 @@ void TinyKv::Stub::experimental_async::KvResolveLock(::grpc::ClientContext* cont
 
 ::grpc::ClientAsyncResponseReader< ::kvrpcpb::ResolveLockResponse>* TinyKv::Stub::PrepareAsyncKvResolveLockRaw(::grpc::ClientContext* context, const ::kvrpcpb::ResolveLockRequest& request, ::grpc::CompletionQueue* cq) {
   return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::kvrpcpb::ResolveLockResponse>::Create(channel_.get(), cq, rpcmethod_KvResolveLock_, context, request, false);
+}
+
+::grpc::Status TinyKv::Stub::TransferLeader(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest& request, ::raft_cmdpb::TransferLeaderResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_TransferLeader_, context, request, response);
+}
+
+void TinyKv::Stub::experimental_async::TransferLeader(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest* request, ::raft_cmdpb::TransferLeaderResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_TransferLeader_, context, request, response, std::move(f));
+}
+
+void TinyKv::Stub::experimental_async::TransferLeader(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::TransferLeaderResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_TransferLeader_, context, request, response, std::move(f));
+}
+
+void TinyKv::Stub::experimental_async::TransferLeader(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest* request, ::raft_cmdpb::TransferLeaderResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_TransferLeader_, context, request, response, reactor);
+}
+
+void TinyKv::Stub::experimental_async::TransferLeader(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::TransferLeaderResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_TransferLeader_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::raft_cmdpb::TransferLeaderResponse>* TinyKv::Stub::AsyncTransferLeaderRaw(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::raft_cmdpb::TransferLeaderResponse>::Create(channel_.get(), cq, rpcmethod_TransferLeader_, context, request, true);
+}
+
+::grpc::ClientAsyncResponseReader< ::raft_cmdpb::TransferLeaderResponse>* TinyKv::Stub::PrepareAsyncTransferLeaderRaw(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::raft_cmdpb::TransferLeaderResponse>::Create(channel_.get(), cq, rpcmethod_TransferLeader_, context, request, false);
 }
 
 ::grpc::Status TinyKv::Stub::RawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::kvrpcpb::RawGetResponse* response) {
@@ -489,35 +519,40 @@ TinyKv::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       TinyKv_method_names[7],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::raft_cmdpb::TransferLeaderRequest, ::raft_cmdpb::TransferLeaderResponse>(
+          std::mem_fn(&TinyKv::Service::TransferLeader), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      TinyKv_method_names[8],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::kvrpcpb::RawGetRequest, ::kvrpcpb::RawGetResponse>(
           std::mem_fn(&TinyKv::Service::RawGet), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      TinyKv_method_names[8],
+      TinyKv_method_names[9],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::kvrpcpb::RawPutRequest, ::kvrpcpb::RawPutResponse>(
           std::mem_fn(&TinyKv::Service::RawPut), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      TinyKv_method_names[9],
+      TinyKv_method_names[10],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::kvrpcpb::RawDeleteRequest, ::kvrpcpb::RawDeleteResponse>(
           std::mem_fn(&TinyKv::Service::RawDelete), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      TinyKv_method_names[10],
+      TinyKv_method_names[11],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::kvrpcpb::RawScanRequest, ::kvrpcpb::RawScanResponse>(
           std::mem_fn(&TinyKv::Service::RawScan), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      TinyKv_method_names[11],
+      TinyKv_method_names[12],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(
           std::mem_fn(&TinyKv::Service::Raft), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      TinyKv_method_names[12],
+      TinyKv_method_names[13],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(
           std::mem_fn(&TinyKv::Service::Snapshot), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      TinyKv_method_names[13],
+      TinyKv_method_names[14],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< TinyKv::Service, ::coprocessor::Request, ::coprocessor::Response>(
           std::mem_fn(&TinyKv::Service::Coprocessor), this)));
@@ -569,6 +604,13 @@ TinyKv::Service::~Service() {
 }
 
 ::grpc::Status TinyKv::Service::KvResolveLock(::grpc::ServerContext* context, const ::kvrpcpb::ResolveLockRequest* request, ::kvrpcpb::ResolveLockResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status TinyKv::Service::TransferLeader(::grpc::ServerContext* context, const ::raft_cmdpb::TransferLeaderRequest* request, ::raft_cmdpb::TransferLeaderResponse* response) {
   (void) context;
   (void) request;
   (void) response;

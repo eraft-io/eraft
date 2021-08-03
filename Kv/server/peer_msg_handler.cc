@@ -328,12 +328,14 @@ void PeerMsgHandler::HandleRaftReady() {
           return;
         }
       }
-      this->peer_->peerStorage_->applyState_->set_applied_index(
-          rd.committedEntries[rd.committedEntries.size() - 1].index());
-      std::string key(
-          Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_));
-      Assistant::GetInstance()->SetMeta(
-          kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
+      //
+      // TODO: a bug
+      // this->peer_->peerStorage_->applyState_->set_applied_index(
+      //     rd.committedEntries[rd.committedEntries.size() - 1].index());
+      // std::string key(
+      //     Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_));
+      // Assistant::GetInstance()->SetMeta(
+      //     kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
       this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
                                                         kvWB.get());
     }
@@ -373,13 +375,22 @@ void PeerMsgHandler::HandleMsg(Msg m) {
                                                __FILE__, __LINE__,
                                                "PeerMsgHandler::HandleMsg");
               this->ProposeRaftCommand(put.get());
-              return;
+              break;
+            }
+            case raft_serverpb::RaftTransferLeader: {
+              std::shared_ptr<raft_cmdpb::TransferLeaderRequest> tranLeader =
+                  std::make_shared<raft_cmdpb::TransferLeaderRequest>();
+              tranLeader->ParseFromString(raftMsg->data());
+              Logger::GetInstance()->DEBUG_NEW(
+                  "transfer leader with peer id = " +
+                      std::to_string(tranLeader->peer().id()),
+                  __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+              this->peer_->raftGroup_->TransferLeader(tranLeader->peer().id());
               break;
             }
             default:
               break;
           }
-
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
         }

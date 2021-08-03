@@ -3,6 +3,7 @@ package tinykvpb;
 
 import "kvrpcpb.proto";
 import "raft_serverpb.proto";
+import "raft_cmdpb.proto";
 import "coprocessor.proto";
 
 import "gogoproto/gogo.proto";
@@ -23,6 +24,9 @@ service TinyKv {
     rpc KvBatchRollback(kvrpcpb.BatchRollbackRequest) returns (kvrpcpb.BatchRollbackResponse) {}
     rpc KvResolveLock(kvrpcpb.ResolveLockRequest) returns (kvrpcpb.ResolveLockResponse) {}
 
+    // transfer leader request
+    rpc TransferLeader(raft_cmdpb.TransferLeaderRequest) returns (raft_cmdpb.TransferLeaderResponse) {}
+
     // RawKV commands.
     rpc RawGet(kvrpcpb.RawGetRequest) returns (kvrpcpb.RawGetResponse) {}
     rpc RawPut(kvrpcpb.RawPutRequest) returns (kvrpcpb.RawPutResponse) {}
@@ -32,7 +36,7 @@ service TinyKv {
     // Raft commands (tinykv <-> tinykv).
     rpc Raft(raft_serverpb.RaftMessage) returns (raft_serverpb.Done) {}
     rpc Snapshot(raft_serverpb.SnapshotChunk) returns (raft_serverpb.Done) {}
-
+    
     // Coprocessor 
     rpc Coprocessor(coprocessor.Request) returns (coprocessor.Response) {}
 }

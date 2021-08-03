@@ -114,12 +114,13 @@ namespace raft_serverpb {
 enum RaftMessageType : int {
   RaftMsgNormal = 0,
   RaftMsgClientCmd = 1,
+  RaftTransferLeader = 2,
   RaftMessageType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   RaftMessageType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool RaftMessageType_IsValid(int value);
 constexpr RaftMessageType RaftMessageType_MIN = RaftMsgNormal;
-constexpr RaftMessageType RaftMessageType_MAX = RaftMsgClientCmd;
+constexpr RaftMessageType RaftMessageType_MAX = RaftTransferLeader;
 constexpr int RaftMessageType_ARRAYSIZE = RaftMessageType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* RaftMessageType_descriptor();
