@@ -69,6 +69,9 @@ class RaftClient {
 
   std::string GetRaw(std::string addr, kvrpcpb::RawGetRequest& request);
 
+  bool TransferLeader(std::string addr,
+                      raft_cmdpb::TransferLeaderRequest& request);
+
   void InsertAddr(uint64_t storeID, std::string addr);
 
   void Flush();

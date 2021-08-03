@@ -66,8 +66,10 @@ class Queue {
 
   Queue() = default;
 
-  Queue(const Queue&) = delete;             // disable copying
-  Queue& operator=(const Queue&) = delete;  // disable assignment
+  // disable copying
+  Queue(const Queue&) = delete;
+  // disable assignment
+  Queue& operator=(const Queue&) = delete;
 
  private:
   std::queue<T> queue_;

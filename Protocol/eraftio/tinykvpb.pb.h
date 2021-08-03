@@ -32,6 +32,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include "kvrpcpb.pb.h"
 #include "raft_serverpb.pb.h"
+#include "raft_cmdpb.pb.h"
 #include "coprocessor.pb.h"
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>

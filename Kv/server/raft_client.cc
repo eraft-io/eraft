@@ -95,6 +95,16 @@ void RaftClient::InsertAddr(uint64_t storeID, std::string addr) {
   }
 }
 
+bool RaftClient::TransferLeader(std::string addr,
+                                raft_cmdpb::TransferLeaderRequest& request) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
+  raft_cmdpb::TransferLeaderResponse response;
+  grpc::ClientContext context;
+  stub_->TransferLeader(&context, request, &response);
+  return true;
+}
+
 bool RaftClient::PutRaw(std::string addr, kvrpcpb::RawPutRequest& request) {
   std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);  // for test
   std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));

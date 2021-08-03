@@ -71,6 +71,10 @@ class Server : public TinyKv::Service {
                   const raft_serverpb::SnapshotChunk* request,
                   Done* response) override;
 
+  Status TransferLeader(ServerContext* context,
+                        const raft_cmdpb::TransferLeaderRequest* request,
+                        raft_cmdpb::TransferLeaderResponse* response) override;
+
  private:
   std::string serverAddress_;
 

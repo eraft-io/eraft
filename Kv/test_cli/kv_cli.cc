@@ -49,10 +49,10 @@ int main(int argc, char** argv) {
                         put key \n \
       :./ kv_cli[leader_ip][op][cf][key][value] ");
 
-  if (argc < 5 || argc > 6) {
-    std::cerr << helpStr << std::endl;
-    return -1;
-  }
+  // if (argc < 5 || argc > 6) {
+  //   std::cerr << helpStr << std::endl;
+  //   // return -1;
+  // }
 
   std::string reqType = std::string(argv[2]);
   std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
@@ -71,6 +71,12 @@ int main(int argc, char** argv) {
     request.set_key(std::string(argv[4]));
     std::string value = raftClient->GetRaw(std::string(argv[1]), request);
     std::cout << "Get value: " << value << std::endl;
+  } else if (reqType == "change_leader") {
+    raft_cmdpb::TransferLeaderRequest transLeaderReq;
+    metapb::Peer* pr = new metapb::Peer();
+    pr->set_id(std::atoi(argv[3]));
+    transLeaderReq.set_allocated_peer(pr);
+    raftClient->TransferLeader(std::string(argv[1]), transLeaderReq);
   } else {
     std::cerr << helpStr << std::endl;
   }
