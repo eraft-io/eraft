@@ -319,7 +319,6 @@ void PeerMsgHandler::HandleRaftReady() {
       std::shared_ptr<rocksdb::WriteBatch> kvWB =
           std::make_shared<rocksdb::WriteBatch>();
       for (auto entry : rd.committedEntries) {
-        ;
         Logger::GetInstance()->DEBUG_NEW(
             "COMMIT_ENTRY" + eraft::EntryToString(entry), __FILE__, __LINE__,
             "PeerMsgHandler::HandleRaftReady");
@@ -330,12 +329,22 @@ void PeerMsgHandler::HandleRaftReady() {
       }
       //
       // TODO: a bug
-      // this->peer_->peerStorage_->applyState_->set_applied_index(
-      //     rd.committedEntries[rd.committedEntries.size() - 1].index());
-      // std::string key(
-      //     Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_));
-      // Assistant::GetInstance()->SetMeta(
-      //     kvWB.get(), key, *this->peer_->peerStorage_->applyState_);
+      auto lastEnt = rd.committedEntries[rd.committedEntries.size() - 1];
+      this->peer_->peerStorage_->applyState_->set_applied_index(
+          lastEnt.index());
+      this->peer_->peerStorage_->applyState_->mutable_truncated_state()
+          ->set_index(lastEnt.index());
+      this->peer_->peerStorage_->applyState_->mutable_truncated_state()
+          ->set_term(lastEnt.term());
+      Logger::GetInstance()->DEBUG_NEW(
+          "write to db applied index: " + std::to_string(lastEnt.index()) +
+              " truncated state index: " + std::to_string(lastEnt.index()) +
+              " truncated state term " + std::to_string(lastEnt.term()),
+          __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
+      Assistant::GetInstance()->SetMeta(
+          kvWB.get(),
+          Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_),
+          *this->peer_->peerStorage_->applyState_);
       this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
                                                         kvWB.get());
     }

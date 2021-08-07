@@ -59,16 +59,16 @@ PeerStorage::~PeerStorage() {}
 
 // InitialState implements the Storage interface.
 std::pair<eraftpb::HardState, eraftpb::ConfState> PeerStorage::InitialState() {
-  // if(eraft::IsEmptyHardState(this->raftState_->hard_state()))
-  // {
-  //     return std::pair<eraftpb::HardState,
-  //     eraftpb::ConfState>(eraftpb::HardState(), eraftpb::ConfState());
-  // }
-  this->raftState_->mutable_hard_state()->set_commit(5);
-  this->raftState_->mutable_hard_state()->set_term(5);
-  Logger::GetInstance()->DEBUG_NEW(
-      "init peerstorage state with commit 5 and term 5 ", __FILE__, __LINE__,
-      "PeerStorage::InitialState");
+  if (eraft::IsEmptyHardState(this->raftState_->hard_state())) {
+    Logger::GetInstance()->DEBUG_NEW(
+        "init peerstorage state with commit 5 and term 5 ", __FILE__, __LINE__,
+        "PeerStorage::InitialState");
+    this->raftState_->mutable_hard_state()->set_commit(5);
+    this->raftState_->mutable_hard_state()->set_term(5);
+    return std::pair<eraftpb::HardState, eraftpb::ConfState>(
+        this->raftState_->hard_state(),
+        Assistant::GetInstance()->ConfStateFromRegion(this->region_));
+  }
   return std::pair<eraftpb::HardState, eraftpb::ConfState>(
       this->raftState_->hard_state(),
       Assistant::GetInstance()->ConfStateFromRegion(this->region_));
@@ -262,11 +262,11 @@ std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(
 
   this->Append(ready->entries, raftWB);
 
-  if (eraft::IsEmptyHardState(ready->hardSt)) {
-    this->raftState_->mutable_hard_state()->set_commit(ready->hardSt.commit());
-    this->raftState_->mutable_hard_state()->set_term(ready->hardSt.term());
-    this->raftState_->mutable_hard_state()->set_vote(ready->hardSt.vote());
-  }
+  // if (eraft::IsEmptyHardState(ready->hardSt)) {
+  this->raftState_->mutable_hard_state()->set_commit(ready->hardSt.commit());
+  this->raftState_->mutable_hard_state()->set_term(ready->hardSt.term());
+  this->raftState_->mutable_hard_state()->set_vote(ready->hardSt.vote());
+  // }
   Assistant::GetInstance()->SetMeta(
       raftWB.get(), Assistant::GetInstance()->RaftStateKey(this->region_->id()),
       *this->raftState_);

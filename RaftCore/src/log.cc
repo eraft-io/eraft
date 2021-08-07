@@ -61,7 +61,7 @@ RaftLog::RaftLog(StorageInterface &st) {
   this->applied_ = lo - 1;
   this->stabled_ = hi;
   this->firstIndex_ = lo;
-  this->commited_ = 5;
+  // this->commited_ = 5;
   Logger::GetInstance()->DEBUG_NEW(
       "init raft log with firstIndex " + std::to_string(this->firstIndex_) +
           " applied " + std::to_string(this->applied_) + " stabled " +
