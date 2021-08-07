@@ -259,19 +259,20 @@ void PeerMsgHandler::ProcessConfChange(
       break;
   }
   this->peer_->raftGroup_->ApplyConfChange(*cc);
-  this->HandleProposal(entry, [&](Proposal* p) {
-    raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
-    adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
-    raft_cmdpb::RaftCmdResponse* raftCmdResp = new raft_cmdpb::RaftCmdResponse;
-    raftCmdResp->set_allocated_admin_response(adminResp);
-    p->cb_->Done(raftCmdResp);
-  });
+  // this->HandleProposal(entry, [&](Proposal* p) {
+  //   raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
+  //   adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
+  //   raft_cmdpb::RaftCmdResponse* raftCmdResp = new
+  //   raft_cmdpb::RaftCmdResponse;
+  //   raftCmdResp->set_allocated_admin_response(adminResp);
+  //   p->cb_->Done(raftCmdResp);
+  // });
 }
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   if (entry->entry_type() == eraftpb::EntryType::EntryConfChange) {
-    eraftpb::ConfChange* cc = new eraftpb::ConfChange();
+    // eraftpb::ConfChange* cc = new eraftpb::ConfChange();
     // cc->ParseFromString(entry->data());
     this->ProcessConfChange(entry, cc, wb);
     return wb;
@@ -309,6 +310,7 @@ void PeerMsgHandler::HandleRaftReady() {
         std::make_shared<eraft::DReady>(rd));
     if (result != nullptr) {
     }
+    // real rend raft message to transport (grpc)
     this->peer_->Send(this->ctx_->trans_, rd.messages);
     if (rd.committedEntries.size() > 0) {
       Logger::GetInstance()->DEBUG_NEW(
@@ -395,6 +397,11 @@ void PeerMsgHandler::HandleMsg(Msg m) {
                       std::to_string(tranLeader->peer().id()),
                   __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
               this->peer_->raftGroup_->TransferLeader(tranLeader->peer().id());
+              break;
+            }
+            case raft_serverpb::RaftConfChange: {
+              // 构造一个 日志条目 ProposeRaftCommand(), 提交到状态机
+
               break;
             }
             default:

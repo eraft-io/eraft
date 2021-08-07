@@ -65,6 +65,7 @@ void RawNode::Propose(std::string data) {
   this->raft->Step(msg);
 }
 
+// ...
 void RawNode::ProposeConfChange(eraftpb::ConfChange cc) {
   std::string data = cc.SerializeAsString();
   eraftpb::Entry ent;

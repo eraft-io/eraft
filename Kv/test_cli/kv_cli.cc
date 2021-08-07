@@ -77,6 +77,11 @@ int main(int argc, char** argv) {
     pr->set_id(std::atoi(argv[3]));
     transLeaderReq.set_allocated_peer(pr);
     raftClient->TransferLeader(std::string(argv[1]), transLeaderReq);
+  } else if (reqType == "config_change") {
+    // TODO:
+    // add peer param: 1.id 2.ip
+    // 2. 构造 ChangePeerRequest
+    // raftClient 对象调用 PeerConfChange  发送 request 给 server
   } else {
     std::cerr << helpStr << std::endl;
   }

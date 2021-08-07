@@ -72,6 +72,8 @@ class RaftClient {
   bool TransferLeader(std::string addr,
                       raft_cmdpb::TransferLeaderRequest& request);
 
+  bool PeerConfChange(std::string addr, raft_cmdpb::ChangePeerRequest& request);
+
   void InsertAddr(uint64_t storeID, std::string addr);
 
   void Flush();

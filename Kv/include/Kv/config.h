@@ -56,8 +56,10 @@ struct Config {
     this->regionMaxSize_ = 144 * MB;
     this->regionSplitSize_ = 96 * MB;
     this->dbPath_ = dbPath;
-    this->peerAddrMaps_ = {
-        {"127.0.0.1:20160", 1}, {"127.0.0.1:20161", 2}, {"127.0.0.1:20162", 3}};
+    // this->peerAddrMaps_ = {
+    //     {"127.0.0.1:20160", 1}, {"127.0.0.1:20161", 2}, {"127.0.0.1:20162",
+    //     3}};
+    this->peerAddrMaps_ = {{"127.0.0.1:20160", 1}};
   }
 
   Config(std::string storeAddr, bool raft, std::string schedulerAddr,

@@ -746,6 +746,7 @@ void RaftContext::LeaderCommit() {
   if (n > this->raftLog_->commited_) {
     uint64_t logTerm = this->raftLog_->Term(n);
     if (logTerm == this->term_) {
+      // commit 条件，半数节点以上
       this->raftLog_->commited_ = n;
       this->BcastAppend();
     }

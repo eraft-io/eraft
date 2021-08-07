@@ -87,6 +87,16 @@ Status Server::TransferLeader(ServerContext* context,
   return Status::OK;
 }
 
+Status PeerConfChange(::grpc::ClientContext* context,
+                      const ::raft_cmdpb::ChangePeerRequest& request,
+                      ::raft_cmdpb::ChangePeerResponse* response) {
+  // 构造配置变更的消息，发送到 raft group
+  std::shared_ptr<raft_serverpb::RaftMessage> sendMsg =
+      std::make_shared<raft_serverpb::RaftMessage>();
+
+  return Status::OK;
+}
+
 Status Server::RawDelete(ServerContext* context,
                          const kvrpcpb::RawDeleteRequest* request,
                          kvrpcpb::RawDeleteResponse* response) {

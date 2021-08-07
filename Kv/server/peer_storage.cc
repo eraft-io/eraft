@@ -41,7 +41,6 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
 
   if (raftStatePair.first->last_index() <
       applyStatePair.first->applied_index()) {
-    // unexpected raft log index
     Logger::GetInstance()->DEBUG_NEW(
         "err: raft log last index less than applied index! " +
             std::to_string(region->id()),
