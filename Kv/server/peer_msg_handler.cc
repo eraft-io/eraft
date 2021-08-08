@@ -309,7 +309,7 @@ void PeerMsgHandler::HandleRaftReady() {
         std::make_shared<eraft::DReady>(rd));
     if (result != nullptr) {
     }
-    // real rend raft message to transport (grpc)
+    // real send raft message to transport (grpc)
     this->peer_->Send(this->ctx_->trans_, rd.messages);
     if (rd.committedEntries.size() > 0) {
       Logger::GetInstance()->DEBUG_NEW(
