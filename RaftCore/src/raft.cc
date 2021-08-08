@@ -426,6 +426,17 @@ void RaftContext::StepFollower(eraftpb::Message m) {
       this->DoElection();
       break;
     }
+    case eraftpb::MsgEntryConfChange: {
+      // std::shared_ptr<eraftpb::ConfChange> confChange =
+      //     std::make_shared<eraftpb::ConfChange>();
+      // confChange->ParseFromString(m.temp_data());
+      // if (confChange->change_type() == eraftpb::AddNode)
+      //   this->AddNode(confChange->node_id());
+      // else if (confChange->change_type() == eraftpb::RemoveNode)
+      //   this->RemoveNode(confChange->node_id());
+      if (this->pendingConfIndex_ != NONE) this->msgs_.push_back(m);
+      break;
+    }
   }
 }
 
@@ -478,6 +489,17 @@ void RaftContext::StepCandidate(eraftpb::Message m) {
     }
     case eraftpb::MsgTimeoutNow:
       break;
+    case eraftpb::MsgEntryConfChange: {
+      // std::shared_ptr<eraftpb::ConfChange> confChange =
+      //     std::make_shared<eraftpb::ConfChange>();
+      // confChange->ParseFromString(m.temp_data());
+      // if (confChange->change_type() == eraftpb::AddNode)
+      //   this->AddNode(confChange->node_id());
+      // else if (confChange->change_type() == eraftpb::RemoveNode)
+      //   this->RemoveNode(confChange->node_id());
+      if (this->pendingConfIndex_ != NONE) this->msgs_.push_back(m);
+      break;
+    }
   }
 }
 
@@ -531,6 +553,16 @@ void RaftContext::StepLeader(eraftpb::Message m) {
     }
     case eraftpb::MsgTimeoutNow:
       break;
+    case eraftpb::MsgEntryConfChange: {
+      std::shared_ptr<eraftpb::ConfChange> confChange =
+          std::make_shared<eraftpb::ConfChange>();
+      confChange->ParseFromString(m.temp_data());
+      if (confChange->change_type() == eraftpb::AddNode)
+        this->AddNode(confChange->node_id());
+      else if (confChange->change_type() == eraftpb::RemoveNode)
+        this->RemoveNode(confChange->node_id());
+      break;
+    }
   }
 }
 

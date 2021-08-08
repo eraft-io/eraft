@@ -79,9 +79,22 @@ int main(int argc, char** argv) {
     raftClient->TransferLeader(std::string(argv[1]), transLeaderReq);
   } else if (reqType == "config_change") {
     // TODO:
-    // add peer param: 1.id 2.ip
+    // ./kv_cli 127.0.0.1:xxx config_change add 127.0.0.1:xxx 1/2/3
+    // add peer param: 1.ip 2.id
     // 2. 构造 ChangePeerRequest
     // raftClient 对象调用 PeerConfChange  发送 request 给 server
+    raft_cmdpb::ChangePeerRequest confChange;
+    std::string confChangeType = std::string(argv[3]);
+    if (confChangeType == "add")
+      confChange.set_change_type(eraftpb::AddNode);
+    else if (confChangeType == "remove")
+      confChange.set_change_type(eraftpb::RemoveNode);
+    metapb::Peer* pr = new metapb::Peer();
+    pr->set_addr(std::string(argv[4]));  // ip
+    pr->set_id(std::atoi(argv[5]));      // id
+    confChange.set_allocated_peer(pr);
+    raftClient->PeerConfChange(std::string(argv[1]), confChange);
+
   } else {
     std::cerr << helpStr << std::endl;
   }

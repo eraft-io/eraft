@@ -68,11 +68,14 @@ void RawNode::Propose(std::string data) {
 // ...
 void RawNode::ProposeConfChange(eraftpb::ConfChange cc) {
   std::string data = cc.SerializeAsString();
-  eraftpb::Entry ent;
-  ent.set_entry_type(eraftpb::EntryConfChange);
-  ent.set_data("conf");
+  // eraftpb::Entry ent;
+  // ent.set_entry_type(eraftpb::EntryConfChange);
+  // // ent.set_data("conf");
+  // ent.set_data(data);
   eraftpb::Message msg;
-  msg.set_msg_type(eraftpb::MsgPropose);
+  msg.set_msg_type(eraftpb::MsgEntryConfChange);
+  msg.set_from(this->raft->id_);
+  msg.set_temp_data(data);
   this->raft->Step(msg);
 }
 

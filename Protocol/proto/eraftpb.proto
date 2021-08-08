@@ -66,6 +66,8 @@ enum MessageType {
     // 'MessageType_MsgTimeoutNow' send from the leader to the leadership transfer target, to let
     // the transfer target timeout immediately and start a new election.
     MsgTimeoutNow = 12;
+    // 'MessageType_EntryConfChange' add or remove membership;
+    MsgEntryConfChange = 13;
 }
 
 message Message {

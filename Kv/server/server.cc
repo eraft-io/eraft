@@ -74,9 +74,9 @@ Status Server::RawPut(ServerContext* context,
   return Status::OK;
 }
 
-Status Server::TransferLeader(ServerContext* context,
-                              const raft_cmdpb::TransferLeaderRequest* request,
-                              raft_cmdpb::TransferLeaderResponse* response) {
+Status Server::TransferLeader(
+    ServerContext* context, const ::raft_cmdpb::TransferLeaderRequest* request,
+    raft_cmdpb::TransferLeaderResponse* response) {
   std::shared_ptr<raft_serverpb::RaftMessage> sendMsg =
       std::make_shared<raft_serverpb::RaftMessage>();
   // send raft message
@@ -87,13 +87,17 @@ Status Server::TransferLeader(ServerContext* context,
   return Status::OK;
 }
 
-Status PeerConfChange(::grpc::ClientContext* context,
-                      const ::raft_cmdpb::ChangePeerRequest& request,
-                      ::raft_cmdpb::ChangePeerResponse* response) {
+Status Server::PeerConfChange(ServerContext* context,
+                              const raft_cmdpb::ChangePeerRequest* request,
+                              raft_cmdpb::ChangePeerResponse* response) {
   // 构造配置变更的消息，发送到 raft group
   std::shared_ptr<raft_serverpb::RaftMessage> sendMsg =
       std::make_shared<raft_serverpb::RaftMessage>();
-
+  // sendMsg->set_allocated_to_peer(request->peer());
+  sendMsg->set_data(request->SerializeAsString());
+  sendMsg->set_region_id(1);
+  sendMsg->set_raft_msg_type(raft_serverpb::RaftConfChange);
+  this->Raft(context, sendMsg.get(), nullptr);
   return Status::OK;
 }
 

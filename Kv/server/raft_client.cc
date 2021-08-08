@@ -105,10 +105,16 @@ bool RaftClient::TransferLeader(std::string addr,
   return true;
 }
 
-bool PeerConfChange(std::string addr, raft_cmdpb::ChangePeerRequest& request) {
+bool RaftClient::PeerConfChange(std::string addr,
+                                raft_cmdpb::ChangePeerRequest& request) {
   // TODO
   // 1. 连接
   // 2. 发送到 stub_ 里面
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
+  raft_cmdpb::ChangePeerResponse response;
+  grpc::ClientContext context;
+  stub_->PeerConfChange(&context, request, &response);
   return true;
 }
 

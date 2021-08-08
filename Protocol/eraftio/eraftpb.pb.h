@@ -127,12 +127,13 @@ enum MessageType : int {
   MsgHeartbeatResponse = 9,
   MsgTransferLeader = 11,
   MsgTimeoutNow = 12,
+  MsgEntryConfChange = 13,
   MessageType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   MessageType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool MessageType_IsValid(int value);
 constexpr MessageType MessageType_MIN = MsgHup;
-constexpr MessageType MessageType_MAX = MsgTimeoutNow;
+constexpr MessageType MessageType_MAX = MsgEntryConfChange;
 constexpr int MessageType_ARRAYSIZE = MessageType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MessageType_descriptor();

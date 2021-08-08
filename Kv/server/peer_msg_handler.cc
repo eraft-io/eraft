@@ -259,21 +259,20 @@ void PeerMsgHandler::ProcessConfChange(
       break;
   }
   this->peer_->raftGroup_->ApplyConfChange(*cc);
-  // this->HandleProposal(entry, [&](Proposal* p) {
-  //   raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
-  //   adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
-  //   raft_cmdpb::RaftCmdResponse* raftCmdResp = new
-  //   raft_cmdpb::RaftCmdResponse;
-  //   raftCmdResp->set_allocated_admin_response(adminResp);
-  //   p->cb_->Done(raftCmdResp);
-  // });
+  this->HandleProposal(entry, [&](Proposal* p) {
+    raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
+    adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
+    raft_cmdpb::RaftCmdResponse* raftCmdResp = new raft_cmdpb::RaftCmdResponse;
+    raftCmdResp->set_allocated_admin_response(adminResp);
+    p->cb_->Done(raftCmdResp);
+  });
 }
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   if (entry->entry_type() == eraftpb::EntryType::EntryConfChange) {
-    // eraftpb::ConfChange* cc = new eraftpb::ConfChange();
-    // cc->ParseFromString(entry->data());
+    eraftpb::ConfChange* cc = new eraftpb::ConfChange();
+    cc->ParseFromString(entry->data());
     this->ProcessConfChange(entry, cc, wb);
     return wb;
   }
@@ -401,7 +400,22 @@ void PeerMsgHandler::HandleMsg(Msg m) {
             }
             case raft_serverpb::RaftConfChange: {
               // 构造一个 日志条目 ProposeRaftCommand(), 提交到状态机
-
+              std::shared_ptr<raft_cmdpb::ChangePeerRequest> peerChange =
+                  std::make_shared<raft_cmdpb::ChangePeerRequest>();
+              peerChange->ParseFromString(raftMsg->data());
+              // peerChange->set_change_type(raftMsg);
+              // Logger::GetInstance()->DEBUG_NEW(
+              //     "config change with peer addr = " +
+              //         std::to_string(peerChange->peer().addr()) +
+              //         ", id = " + std::to_string(peerChange->peer().id()),
+              //     __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+              {
+                eraftpb::ConfChange confChange;
+                confChange.set_node_id(peerChange->peer().id());
+                confChange.set_context(peerChange->peer().addr());
+                confChange.set_change_type(peerChange->change_type());
+                this->peer_->raftGroup_->ProposeConfChange(confChange);
+              }
               break;
             }
             default:
