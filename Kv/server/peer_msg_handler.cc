@@ -259,18 +259,21 @@ void PeerMsgHandler::ProcessConfChange(
       break;
   }
   this->peer_->raftGroup_->ApplyConfChange(*cc);
-  this->HandleProposal(entry, [&](Proposal* p) {
-    raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
-    adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
-    raft_cmdpb::RaftCmdResponse* raftCmdResp = new raft_cmdpb::RaftCmdResponse;
-    raftCmdResp->set_allocated_admin_response(adminResp);
-    p->cb_->Done(raftCmdResp);
-  });
+  // this->HandleProposal(entry, [&](Proposal* p) {
+  //   raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
+  //   adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
+  //   raft_cmdpb::RaftCmdResponse* raftCmdResp = new
+  //   raft_cmdpb::RaftCmdResponse;
+  //   raftCmdResp->set_allocated_admin_response(adminResp);
+  //   p->cb_->Done(raftCmdResp);
+  // });
 }
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
+  // Modified, it should be MsgEntryConfChange
   if (entry->entry_type() == eraftpb::EntryType::EntryConfChange) {
+    // if (entry->entry_type() == eraftpb::MsgEntryConfChange) {
     eraftpb::ConfChange* cc = new eraftpb::ConfChange();
     cc->ParseFromString(entry->data());
     this->ProcessConfChange(entry, cc, wb);
