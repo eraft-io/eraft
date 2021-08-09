@@ -434,7 +434,12 @@ void RaftContext::StepFollower(eraftpb::Message m) {
       //   this->AddNode(confChange->node_id());
       // else if (confChange->change_type() == eraftpb::RemoveNode)
       //   this->RemoveNode(confChange->node_id());
-      if (this->pendingConfIndex_ != NONE) this->msgs_.push_back(m);
+
+      // if (this->pendingConfIndex_ != NONE)
+      this->msgs_.push_back(m);
+      Logger::GetInstance()->DEBUG_NEW("-----------add  ndoe----------",
+                                       __FILE__, __LINE__,
+                                       "---RaftContext::StepFollower----");
       break;
     }
   }
@@ -497,7 +502,9 @@ void RaftContext::StepCandidate(eraftpb::Message m) {
       //   this->AddNode(confChange->node_id());
       // else if (confChange->change_type() == eraftpb::RemoveNode)
       //   this->RemoveNode(confChange->node_id());
-      if (this->pendingConfIndex_ != NONE) this->msgs_.push_back(m);
+
+      // if (this->pendingConfIndex_ != NONE)
+      this->msgs_.push_back(m);
       break;
     }
   }
@@ -561,6 +568,9 @@ void RaftContext::StepLeader(eraftpb::Message m) {
         this->AddNode(confChange->node_id());
       else if (confChange->change_type() == eraftpb::RemoveNode)
         this->RemoveNode(confChange->node_id());
+      Logger::GetInstance()->DEBUG_NEW("----------add node----------", __FILE__,
+                                       __LINE__,
+                                       "---RaftContext::StepLeader----");
       break;
     }
   }

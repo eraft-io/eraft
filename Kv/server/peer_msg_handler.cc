@@ -227,6 +227,9 @@ void PeerMsgHandler::ProcessConfChange(
         storeMeta->regions_[region->id()] = &*region;
         storeMeta->mutex_.unlock();
         this->peer_->InsertPeerCache(addPeer);
+        // Logger::GetInstance()->DEBUG_NEW(
+        //     "--------------add--------------", __FILE__, __LINE__,
+        //     "-----PeerMsgHandler::ProcessConfChange---");
       }
       break;
     }
@@ -273,6 +276,9 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   // Modified, it should be MsgEntryConfChange
   if (entry->entry_type() == eraftpb::EntryType::EntryConfChange) {
+    Logger::GetInstance()->DEBUG_NEW("--------------add--------------",
+                                     __FILE__, __LINE__,
+                                     "---PeerMsgHandler::Process---");
     // if (entry->entry_type() == eraftpb::MsgEntryConfChange) {
     eraftpb::ConfChange* cc = new eraftpb::ConfChange();
     cc->ParseFromString(entry->data());
@@ -421,35 +427,33 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               }
               break;
             }
-            default:
-              break;
           }
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
         }
+        break;
       }
-      break;
+      case MsgType::MsgTypeTick: {
+        this->OnTick();
+        break;
+      }
+      case MsgType::MsgTypeSplitRegion: {
+        break;
+      }
+      case MsgType::MsgTypeRegionApproximateSize: {
+        break;
+      }
+      case MsgType::MsgTypeGcSnap: {
+        break;
+      }
+      case MsgType::MsgTypeStart: {
+        this->StartTicker();
+        break;
+      }
+      default:
+        break;
     }
-    case MsgType::MsgTypeTick: {
-      this->OnTick();
-      break;
-    }
-    case MsgType::MsgTypeSplitRegion: {
-      break;
-    }
-    case MsgType::MsgTypeRegionApproximateSize: {
-      break;
-    }
-    case MsgType::MsgTypeGcSnap: {
-      break;
-    }
-    case MsgType::MsgTypeStart: {
-      this->StartTicker();
-      break;
-    }
-    default:
-      break;
-  }
+  }  // namespace kvserver
 }
 
 bool PeerMsgHandler::CheckStoreID(raft_cmdpb::RaftCmdRequest* req,
