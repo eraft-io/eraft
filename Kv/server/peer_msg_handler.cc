@@ -330,7 +330,7 @@ void PeerMsgHandler::HandleRaftReady() {
       this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
                                                         kvWB.get());
     }
-    this->peer_->raftGroup_->Advance(rd);
+    // this->peer_->raftGroup_->Advance(rd);
   }
 }
 

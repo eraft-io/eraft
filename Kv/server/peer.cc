@@ -262,9 +262,10 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
     e->set_entry_type(ent.entry_type());
     e->set_index(ent.index());
     e->set_term(ent.term());
-    e->set_data(msg.temp_data());
+    e->set_data(ent.data());
   }
 
+  // rpc
   return trans->Send(sendMsg);
 }
 

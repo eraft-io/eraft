@@ -827,6 +827,8 @@ void RaftContext::AppendEntry(eraftpb::Message m) {
     Logger::GetInstance()->DEBUG_NEW(
         "push on entry to raftlog: " + m.temp_data(), __FILE__, __LINE__,
         "RaftContext::AppendEntry");
+  } else {
+    return;
   }
   this->prs_[this->id_]->match = this->raftLog_->LastIndex();
   this->prs_[this->id_]->next = this->prs_[this->id_]->match + 1;
