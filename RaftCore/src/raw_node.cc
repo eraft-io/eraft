@@ -154,7 +154,7 @@ void RawNode::Advance(DReady rd) {
     this->raft->raftLog_->applied_ =
         rd.committedEntries[rd.committedEntries.size() - 1].index();
   }
-  this->raft->raftLog_->MaybeCompact();
+  // this->raft->raftLog_->MaybeCompact();
 }
 
 std::map<uint64_t, Progress> RawNode::GetProgress() {

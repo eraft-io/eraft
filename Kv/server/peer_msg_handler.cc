@@ -214,38 +214,29 @@ void PeerMsgHandler::ProcessConfChange(
       peer->set_store_id(cc->node_id());
       peer->set_addr(cc->context());
       this->peer_->InsertPeerCache(peer);
+      break;
     }
     case eraftpb::ConfChangeType::RemoveNode: {
       Logger::GetInstance()->DEBUG_NEW(
           "--------------remove node--------------", __FILE__, __LINE__,
           "-----PeerMsgHandler::ProcessConfChange---");
-
+      this->peer_->RemovePeerCache(cc->node_id());
       break;
     }
     default:
       break;
   }
   this->peer_->raftGroup_->ApplyConfChange(*cc);
-  // this->HandleProposal(entry, [&](Proposal* p) {
-  //   raft_cmdpb::AdminResponse* adminResp = new raft_cmdpb::AdminResponse;
-  //   adminResp->set_cmd_type(raft_cmdpb::AdminCmdType::ChangePeer);
-  //   raft_cmdpb::RaftCmdResponse* raftCmdResp = new
-  //   raft_cmdpb::RaftCmdResponse;
-  //   raftCmdResp->set_allocated_admin_response(adminResp);
-  //   p->cb_->Done(raftCmdResp);
-  // });
 }
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   // Modified, it should be MsgEntryConfChange
-
   switch (entry->entry_type()) {
     case eraftpb::EntryType::EntryConfChange: {
       Logger::GetInstance()->DEBUG_NEW(
           "--------------add--------------", __FILE__, __LINE__,
           "---PeerMsgHandler::Proces EntryConfChanges---");
-      // if (entry->entry_type() == eraftpb::MsgEntryConfChange) {
       eraftpb::ConfChange* cc = new eraftpb::ConfChange();
       cc->ParseFromString(entry->data());
       this->ProcessConfChange(entry, cc, wb);
@@ -330,7 +321,7 @@ void PeerMsgHandler::HandleRaftReady() {
       this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
                                                         kvWB.get());
     }
-    // this->peer_->raftGroup_->Advance(rd);
+    this->peer_->raftGroup_->Advance(rd);
   }
 }
 
@@ -528,6 +519,11 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
   // {
   //     return false;
   // }
+  auto toPeer = this->peer_->GetPeerFromCache(
+      msg->message().from());  // peer is delete, do not handle
+  if (toPeer == nullptr) {
+    return false;
+  }
   Logger::GetInstance()->DEBUG_NEW(
       "on raft msg from " + std::to_string(msg->message().from()) + " to " +
           std::to_string(msg->message().to()) + " index " +
