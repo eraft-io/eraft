@@ -94,10 +94,10 @@ void Peer::InsertPeerCache(metapb::Peer* peer) {
 void Peer::RemovePeerCache(uint64_t peerID) { Peer::peerCache_.erase(peerID); }
 
 std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID) {
-  // if(Peer::peerCache_.find(peerID) != Peer::peerCache_.end()) { // peer cache
-  // has err
-  //     return Peer::peerCache_[peerID];
-  // }
+  if (Peer::peerCache_.find(peerID) !=
+      Peer::peerCache_.end()) {  // peer cachehas err
+    return Peer::peerCache_[peerID];
+  }
   for (auto peer : peerStorage_->region_->peers()) {
     if (peer.id() == peerID) {
       // Peer::InsertPeerCache(&peer);

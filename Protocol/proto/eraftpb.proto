@@ -82,6 +82,7 @@ message Message {
     Snapshot snapshot = 9;
     bool reject = 10;
     string temp_data = 11;
+    EntryType temp_type = 12;
 }
 
 // HardState contains the state of a node need to be peristed, including the current term, commit index 
@@ -108,5 +109,5 @@ message ConfChange {
     ConfChangeType change_type = 1;
     // node will be add/remove
     uint64 node_id = 2;
-    bytes context = 3;
+    string context = 3;
 }

@@ -62,20 +62,20 @@ void RawNode::Propose(std::string data) {
   msg.set_msg_type(eraftpb::MsgPropose);
   msg.set_from(this->raft->id_);
   msg.set_temp_data(data);
+  msg.set_temp_type(eraftpb::EntryNormal);
   this->raft->Step(msg);
 }
 
 // ...
 void RawNode::ProposeConfChange(eraftpb::ConfChange cc) {
   std::string data = cc.SerializeAsString();
-  // eraftpb::Entry ent;
-  // ent.set_entry_type(eraftpb::EntryConfChange);
-  // // ent.set_data("conf");
-  // ent.set_data(data);
+  Logger::GetInstance()->DEBUG_NEW("ProposeConfChange: " + data, __FILE__,
+                                   __LINE__, "RawNode::ProposeConfChange");
   eraftpb::Message msg;
-  msg.set_msg_type(eraftpb::MsgEntryConfChange);
+  msg.set_msg_type(eraftpb::MsgPropose);
   msg.set_from(this->raft->id_);
   msg.set_temp_data(data);
+  msg.set_temp_type(eraftpb::EntryConfChange);
   this->raft->Step(msg);
 }
 
@@ -97,10 +97,10 @@ eraftpb::ConfState RawNode::ApplyConfChange(eraftpb::ConfChange cc) {
       break;
     }
   }
-  std::vector<uint64_t> nodes = this->raft->Nodes(this->raft);
-  for (uint64_t i = 0; i < nodes.size(); i++) {
-    confState.set_nodes(i, nodes[i]);
-  }
+  // std::vector<uint64_t> nodes = this->raft->Nodes(this->raft);
+  // for (uint64_t i = 0; i < nodes.size(); i++) {
+  //   confState.set_nodes(i, nodes[i]);
+  // }
   return confState;
 }
 

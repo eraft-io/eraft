@@ -196,6 +196,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftpb_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::eraftpb::Message, snapshot_),
   PROTOBUF_FIELD_OFFSET(::eraftpb::Message, reject_),
   PROTOBUF_FIELD_OFFSET(::eraftpb::Message, temp_data_),
+  PROTOBUF_FIELD_OFFSET(::eraftpb::Message, temp_type_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::eraftpb::HardState, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -224,9 +225,9 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 9, -1, sizeof(::eraftpb::SnapshotMetadata)},
   { 17, -1, sizeof(::eraftpb::Snapshot)},
   { 24, -1, sizeof(::eraftpb::Message)},
-  { 40, -1, sizeof(::eraftpb::HardState)},
-  { 48, -1, sizeof(::eraftpb::ConfState)},
-  { 54, -1, sizeof(::eraftpb::ConfChange)},
+  { 41, -1, sizeof(::eraftpb::HardState)},
+  { 49, -1, sizeof(::eraftpb::ConfState)},
+  { 55, -1, sizeof(::eraftpb::ConfChange)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -246,27 +247,28 @@ const char descriptor_table_protodef_eraftpb_2eproto[] =
   "SnapshotMetadata\022&\n\nconf_state\030\001 \001(\0132\022.e"
   "raftpb.ConfState\022\r\n\005index\030\002 \001(\004\022\014\n\004term\030"
   "\003 \001(\004\"E\n\010Snapshot\022\014\n\004data\030\001 \001(\014\022+\n\010metad"
-  "ata\030\002 \001(\0132\031.eraftpb.SnapshotMetadata\"\363\001\n"
+  "ata\030\002 \001(\0132\031.eraftpb.SnapshotMetadata\"\232\002\n"
   "\007Message\022&\n\010msg_type\030\001 \001(\0162\024.eraftpb.Mes"
   "sageType\022\n\n\002to\030\002 \001(\004\022\014\n\004from\030\003 \001(\004\022\014\n\004te"
   "rm\030\004 \001(\004\022\020\n\010log_term\030\005 \001(\004\022\r\n\005index\030\006 \001("
   "\004\022\037\n\007entries\030\007 \003(\0132\016.eraftpb.Entry\022\016\n\006co"
   "mmit\030\010 \001(\004\022#\n\010snapshot\030\t \001(\0132\021.eraftpb.S"
   "napshot\022\016\n\006reject\030\n \001(\010\022\021\n\ttemp_data\030\013 \001"
-  "(\t\"7\n\tHardState\022\014\n\004term\030\001 \001(\004\022\014\n\004vote\030\002 "
-  "\001(\004\022\016\n\006commit\030\003 \001(\004\"\032\n\tConfState\022\r\n\005node"
-  "s\030\001 \003(\004\"\\\n\nConfChange\022,\n\013change_type\030\001 \001"
-  "(\0162\027.eraftpb.ConfChangeType\022\017\n\007node_id\030\002"
-  " \001(\004\022\017\n\007context\030\003 \001(\014*1\n\tEntryType\022\017\n\013En"
-  "tryNormal\020\000\022\023\n\017EntryConfChange\020\001*\213\002\n\013Mes"
-  "sageType\022\n\n\006MsgHup\020\000\022\013\n\007MsgBeat\020\001\022\016\n\nMsg"
-  "Propose\020\002\022\r\n\tMsgAppend\020\003\022\025\n\021MsgAppendRes"
-  "ponse\020\004\022\022\n\016MsgRequestVote\020\005\022\032\n\026MsgReques"
-  "tVoteResponse\020\006\022\017\n\013MsgSnapshot\020\007\022\020\n\014MsgH"
-  "eartbeat\020\010\022\030\n\024MsgHeartbeatResponse\020\t\022\025\n\021"
-  "MsgTransferLeader\020\013\022\021\n\rMsgTimeoutNow\020\014\022\026"
-  "\n\022MsgEntryConfChange\020\r*-\n\016ConfChangeType"
-  "\022\013\n\007AddNode\020\000\022\016\n\nRemoveNode\020\001b\006proto3"
+  "(\t\022%\n\ttemp_type\030\014 \001(\0162\022.eraftpb.EntryTyp"
+  "e\"7\n\tHardState\022\014\n\004term\030\001 \001(\004\022\014\n\004vote\030\002 \001"
+  "(\004\022\016\n\006commit\030\003 \001(\004\"\032\n\tConfState\022\r\n\005nodes"
+  "\030\001 \003(\004\"\\\n\nConfChange\022,\n\013change_type\030\001 \001("
+  "\0162\027.eraftpb.ConfChangeType\022\017\n\007node_id\030\002 "
+  "\001(\004\022\017\n\007context\030\003 \001(\t*1\n\tEntryType\022\017\n\013Ent"
+  "ryNormal\020\000\022\023\n\017EntryConfChange\020\001*\213\002\n\013Mess"
+  "ageType\022\n\n\006MsgHup\020\000\022\013\n\007MsgBeat\020\001\022\016\n\nMsgP"
+  "ropose\020\002\022\r\n\tMsgAppend\020\003\022\025\n\021MsgAppendResp"
+  "onse\020\004\022\022\n\016MsgRequestVote\020\005\022\032\n\026MsgRequest"
+  "VoteResponse\020\006\022\017\n\013MsgSnapshot\020\007\022\020\n\014MsgHe"
+  "artbeat\020\010\022\030\n\024MsgHeartbeatResponse\020\t\022\025\n\021M"
+  "sgTransferLeader\020\013\022\021\n\rMsgTimeoutNow\020\014\022\026\n"
+  "\022MsgEntryConfChange\020\r*-\n\016ConfChangeType\022"
+  "\013\n\007AddNode\020\000\022\016\n\nRemoveNode\020\001b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftpb_2eproto_deps[1] = {
 };
@@ -282,7 +284,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftpb_2eproto_once;
 static bool descriptor_table_eraftpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftpb_2eproto = {
-  &descriptor_table_eraftpb_2eproto_initialized, descriptor_table_protodef_eraftpb_2eproto, "eraftpb.proto", 1077,
+  &descriptor_table_eraftpb_2eproto_initialized, descriptor_table_protodef_eraftpb_2eproto, "eraftpb.proto", 1116,
   &descriptor_table_eraftpb_2eproto_once, descriptor_table_eraftpb_2eproto_sccs, descriptor_table_eraftpb_2eproto_deps, 7, 0,
   schemas, file_default_instances, TableStruct_eraftpb_2eproto::offsets,
   file_level_metadata_eraftpb_2eproto, 7, file_level_enum_descriptors_eraftpb_2eproto, file_level_service_descriptors_eraftpb_2eproto,
@@ -1479,6 +1481,7 @@ const int Message::kCommitFieldNumber;
 const int Message::kSnapshotFieldNumber;
 const int Message::kRejectFieldNumber;
 const int Message::kTempDataFieldNumber;
+const int Message::kTempTypeFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Message::Message()
@@ -1501,8 +1504,8 @@ Message::Message(const Message& from)
     snapshot_ = nullptr;
   }
   ::memcpy(&to_, &from.to_,
-    static_cast<size_t>(reinterpret_cast<char*>(&commit_) -
-    reinterpret_cast<char*>(&to_)) + sizeof(commit_));
+    static_cast<size_t>(reinterpret_cast<char*>(&temp_type_) -
+    reinterpret_cast<char*>(&to_)) + sizeof(temp_type_));
   // @@protoc_insertion_point(copy_constructor:eraftpb.Message)
 }
 
@@ -1510,8 +1513,8 @@ void Message::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Message_eraftpb_2eproto.base);
   temp_data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&snapshot_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&commit_) -
-      reinterpret_cast<char*>(&snapshot_)) + sizeof(commit_));
+      reinterpret_cast<char*>(&temp_type_) -
+      reinterpret_cast<char*>(&snapshot_)) + sizeof(temp_type_));
 }
 
 Message::~Message() {
@@ -1546,8 +1549,8 @@ void Message::Clear() {
   }
   snapshot_ = nullptr;
   ::memset(&to_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&commit_) -
-      reinterpret_cast<char*>(&to_)) + sizeof(commit_));
+      reinterpret_cast<char*>(&temp_type_) -
+      reinterpret_cast<char*>(&to_)) + sizeof(temp_type_));
   _internal_metadata_.Clear();
 }
 
@@ -1640,6 +1643,14 @@ const char* Message::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 90)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_temp_data(), ptr, ctx, "eraftpb.Message.temp_data");
           CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .eraftpb.EntryType temp_type = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 96)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          set_temp_type(static_cast<::eraftpb::EntryType>(val));
         } else goto handle_unusual;
         continue;
       default: {
@@ -1814,6 +1825,20 @@ bool Message::MergePartialFromCodedStream(
         break;
       }
 
+      // .eraftpb.EntryType temp_type = 12;
+      case 12: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (96 & 0xFF)) {
+          int value = 0;
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   int, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          set_temp_type(static_cast< ::eraftpb::EntryType >(value));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1907,6 +1932,12 @@ void Message::SerializeWithCachedSizes(
       11, this->temp_data(), output);
   }
 
+  // .eraftpb.EntryType temp_type = 12;
+  if (this->temp_type() != 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnum(
+      12, this->temp_type(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1985,6 +2016,12 @@ void Message::SerializeWithCachedSizes(
     target =
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
         11, this->temp_data(), target);
+  }
+
+  // .eraftpb.EntryType temp_type = 12;
+  if (this->temp_type() != 0) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      12, this->temp_type(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2086,6 +2123,12 @@ size_t Message::ByteSizeLong() const {
         this->commit());
   }
 
+  // .eraftpb.EntryType temp_type = 12;
+  if (this->temp_type() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->temp_type());
+  }
+
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -2145,6 +2188,9 @@ void Message::MergeFrom(const Message& from) {
   if (from.commit() != 0) {
     set_commit(from.commit());
   }
+  if (from.temp_type() != 0) {
+    set_temp_type(from.temp_type());
+  }
 }
 
 void Message::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -2184,6 +2230,7 @@ void Message::InternalSwap(Message* other) {
   swap(reject_, other->reject_);
   swap(index_, other->index_);
   swap(commit_, other->commit_);
+  swap(temp_type_, other->temp_type_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Message::GetMetadata() const {
@@ -2915,10 +2962,10 @@ const char* ConfChange::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // bytes context = 3;
+      // string context = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(mutable_context(), ptr, ctx);
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_context(), ptr, ctx, "eraftpb.ConfChange.context");
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2979,11 +3026,15 @@ bool ConfChange::MergePartialFromCodedStream(
         break;
       }
 
-      // bytes context = 3;
+      // string context = 3;
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadBytes(
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadString(
                 input, this->mutable_context()));
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+            this->context().data(), static_cast<int>(this->context().length()),
+            ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE,
+            "eraftpb.ConfChange.context"));
         } else {
           goto handle_unusual;
         }
@@ -3028,9 +3079,13 @@ void ConfChange::SerializeWithCachedSizes(
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64(2, this->node_id(), output);
   }
 
-  // bytes context = 3;
+  // string context = 3;
   if (this->context().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesMaybeAliased(
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->context().data(), static_cast<int>(this->context().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "eraftpb.ConfChange.context");
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringMaybeAliased(
       3, this->context(), output);
   }
 
@@ -3058,10 +3113,14 @@ void ConfChange::SerializeWithCachedSizes(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->node_id(), target);
   }
 
-  // bytes context = 3;
+  // string context = 3;
   if (this->context().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->context().data(), static_cast<int>(this->context().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "eraftpb.ConfChange.context");
     target =
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesToArray(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
         3, this->context(), target);
   }
 
@@ -3086,10 +3145,10 @@ size_t ConfChange::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // bytes context = 3;
+  // string context = 3;
   if (this->context().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->context());
   }
 

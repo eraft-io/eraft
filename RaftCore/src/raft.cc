@@ -560,19 +560,20 @@ void RaftContext::StepLeader(eraftpb::Message m) {
     }
     case eraftpb::MsgTimeoutNow:
       break;
-    case eraftpb::MsgEntryConfChange: {
-      std::shared_ptr<eraftpb::ConfChange> confChange =
-          std::make_shared<eraftpb::ConfChange>();
-      confChange->ParseFromString(m.temp_data());
-      if (confChange->change_type() == eraftpb::AddNode)
-        this->AddNode(confChange->node_id());
-      else if (confChange->change_type() == eraftpb::RemoveNode)
-        this->RemoveNode(confChange->node_id());
-      Logger::GetInstance()->DEBUG_NEW("----------add node----------", __FILE__,
-                                       __LINE__,
-                                       "---RaftContext::StepLeader----");
-      break;
-    }
+      // case eraftpb::MsgEntryConfChange: {
+      //   std::shared_ptr<eraftpb::ConfChange> confChange =
+      //       std::make_shared<eraftpb::ConfChange>();
+      //   confChange->ParseFromString(m.temp_data());
+      //   if (confChange->change_type() == eraftpb::AddNode)
+      //     this->AddNode(confChange->node_id());
+      //   else if (confChange->change_type() == eraftpb::RemoveNode)
+      //     this->RemoveNode(confChange->node_id());
+      //   Logger::GetInstance()->DEBUG_NEW("----------add node----------",
+      //   __FILE__,
+      //                                    __LINE__,
+      //                                    "---RaftContext::StepLeader----");
+      //   break;
+      // }
   }
 }
 
@@ -821,6 +822,7 @@ void RaftContext::AppendEntry(eraftpb::Message m) {
     entry.set_term(this->term_);
     entry.set_index(lastIndex + 1);
     entry.set_data(m.temp_data());
+    entry.set_entry_type(m.temp_type());
     this->raftLog_->entries_.push_back(entry);
     Logger::GetInstance()->DEBUG_NEW(
         "push on entry to raftlog: " + m.temp_data(), __FILE__, __LINE__,
@@ -919,7 +921,7 @@ void RaftContext::AddNode(uint64_t id) {
   Logger::GetInstance()->DEBUG_NEW("add node id " + std::to_string(id),
                                    __FILE__, __LINE__, "RaftContext::AddNode");
   if (this->prs_[id] == nullptr) {
-    this->prs_[id] = std::make_shared<Progress>(1);
+    this->prs_[id] = std::make_shared<Progress>(5);
   }
   this->pendingConfIndex_ = NONE;
 }

@@ -201,61 +201,25 @@ size_t PeerMsgHandler::SearchRegionPeer(std::shared_ptr<metapb::Region> region,
 void PeerMsgHandler::ProcessConfChange(
     eraftpb::Entry* entry, eraftpb::ConfChange* cc,
     std::shared_ptr<rocksdb::WriteBatch> wb) {
-  raft_cmdpb::RaftCmdRequest msg;
-  msg.ParseFromString(cc->context());
-
-  auto region = this->peer_->Region();
-  // TODO: check region epoch
-
   switch (cc->change_type()) {
     case eraftpb::ConfChangeType::AddNode: {
-      auto n = this->SearchRegionPeer(region, cc->node_id());
-      if (n == region->peers().size()) {
-        auto p = msg.admin_request().change_peer().peer();
-        auto addPeer = region->add_peers();
-        addPeer->set_id(p.id());
-        addPeer->set_store_id(p.store_id());
-        // incr conf ver
-        uint64_t confVer = region->region_epoch().conf_ver();
-        auto epoch = region->mutable_region_epoch();
-        epoch->set_conf_ver(++confVer);
-        // store region state
-        Assistant::GetInstance()->WriteRegionState(
-            wb, region, raft_serverpb::PeerState::Normal);
-        auto storeMeta = this->ctx_->storeMeta_;
-        storeMeta->mutex_.lock();
-        storeMeta->regions_[region->id()] = &*region;
-        storeMeta->mutex_.unlock();
-        this->peer_->InsertPeerCache(addPeer);
-        // Logger::GetInstance()->DEBUG_NEW(
-        //     "--------------add--------------", __FILE__, __LINE__,
-        //     "-----PeerMsgHandler::ProcessConfChange---");
-      }
-      break;
+      Logger::GetInstance()->DEBUG_NEW(
+          "--------------add node--------------", __FILE__, __LINE__,
+          "-----PeerMsgHandler::ProcessConfChange---");
+      metapb::Peer* peer = new metapb::Peer();
+      //       uint64 id = 1;
+      // uint64 store_id = 2;
+      // string addr = 3;
+      peer->set_id(cc->node_id());
+      peer->set_store_id(cc->node_id());
+      peer->set_addr(cc->context());
+      this->peer_->InsertPeerCache(peer);
     }
     case eraftpb::ConfChangeType::RemoveNode: {
-      if (cc->node_id() == this->peer_->meta_->id()) {
-        this->DestoryPeer();
-        return;
-      }
-      size_t n = this->SearchRegionPeer(region, cc->node_id());
-      if (n < region->peers().size()) {
-        // erase no n peer
-        auto peers = region->mutable_peers();
-        peers->erase(peers->begin() + n);
-        // incr conf ver
-        uint64_t confVer = region->region_epoch().conf_ver();
-        auto epoch = region->mutable_region_epoch();
-        epoch->set_conf_ver(++confVer);
-        // store region state
-        Assistant::GetInstance()->WriteRegionState(
-            wb, region, raft_serverpb::PeerState::Normal);
-        auto storeMeta = this->ctx_->storeMeta_;
-        storeMeta->mutex_.lock();
-        storeMeta->regions_[region->id()] = &*region;
-        storeMeta->mutex_.unlock();
-        this->peer_->RemovePeerCache(cc->node_id());
-      }
+      Logger::GetInstance()->DEBUG_NEW(
+          "--------------remove node--------------", __FILE__, __LINE__,
+          "-----PeerMsgHandler::ProcessConfChange---");
+
       break;
     }
     default:
@@ -275,31 +239,39 @@ void PeerMsgHandler::ProcessConfChange(
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   // Modified, it should be MsgEntryConfChange
-  if (entry->entry_type() == eraftpb::EntryType::EntryConfChange) {
-    Logger::GetInstance()->DEBUG_NEW("--------------add--------------",
-                                     __FILE__, __LINE__,
-                                     "---PeerMsgHandler::Process---");
-    // if (entry->entry_type() == eraftpb::MsgEntryConfChange) {
-    eraftpb::ConfChange* cc = new eraftpb::ConfChange();
-    cc->ParseFromString(entry->data());
-    this->ProcessConfChange(entry, cc, wb);
-    return wb;
-  }
-  kvrpcpb::RawPutRequest* msg = new kvrpcpb::RawPutRequest();
-  msg->ParseFromString(entry->data());
-  Logger::GetInstance()->DEBUG_NEW(
-      "Process Entry DATA: cf " + msg->cf() + " key " + msg->key() + " val " +
-          msg->value(),
-      __FILE__, __LINE__, "eerMsgHandler::Process");
-  // write to kv db
-  auto status =
-      wb->Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
-              msg->value());
-  if (!status.ok()) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "err: when process entry data() cf " + msg->cf() + " key " +
-            msg->key() + " val " + msg->value() + ")",
-        __FILE__, __LINE__, "eerMsgHandler::Process");
+
+  switch (entry->entry_type()) {
+    case eraftpb::EntryType::EntryConfChange: {
+      Logger::GetInstance()->DEBUG_NEW(
+          "--------------add--------------", __FILE__, __LINE__,
+          "---PeerMsgHandler::Proces EntryConfChanges---");
+      // if (entry->entry_type() == eraftpb::MsgEntryConfChange) {
+      eraftpb::ConfChange* cc = new eraftpb::ConfChange();
+      cc->ParseFromString(entry->data());
+      this->ProcessConfChange(entry, cc, wb);
+      break;
+    }
+    case eraftpb::EntryType::EntryNormal: {
+      kvrpcpb::RawPutRequest* msg = new kvrpcpb::RawPutRequest();
+      msg->ParseFromString(entry->data());
+      Logger::GetInstance()->DEBUG_NEW(
+          "Process Entry DATA: cf " + msg->cf() + " key " + msg->key() +
+              " val " + msg->value(),
+          __FILE__, __LINE__, "eerMsgHandler::Process");
+      // write to kv db
+      auto status =
+          wb->Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+                  msg->value());
+      if (!status.ok()) {
+        Logger::GetInstance()->DEBUG_NEW(
+            "err: when process entry data() cf " + msg->cf() + " key " +
+                msg->key() + " val " + msg->value() + ")",
+            __FILE__, __LINE__, "eerMsgHandler::Process");
+      }
+      break;
+    }
+    default:
+      break;
   }
   return wb;
 }
@@ -389,7 +361,7 @@ void PeerMsgHandler::HandleMsg(Msg m) {
             case raft_serverpb::RaftMsgClientCmd: {
               std::shared_ptr<kvrpcpb::RawPutRequest> put =
                   std::make_shared<kvrpcpb::RawPutRequest>();
-              put->set_key(raftMsg->data());
+              put->set_key(raftMsg->data());  // data
               Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(),
                                                __FILE__, __LINE__,
                                                "PeerMsgHandler::HandleMsg");
@@ -412,12 +384,6 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               std::shared_ptr<raft_cmdpb::ChangePeerRequest> peerChange =
                   std::make_shared<raft_cmdpb::ChangePeerRequest>();
               peerChange->ParseFromString(raftMsg->data());
-              // peerChange->set_change_type(raftMsg);
-              // Logger::GetInstance()->DEBUG_NEW(
-              //     "config change with peer addr = " +
-              //         std::to_string(peerChange->peer().addr()) +
-              //         ", id = " + std::to_string(peerChange->peer().id()),
-              //     __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
               {
                 eraftpb::ConfChange confChange;
                 confChange.set_node_id(peerChange->peer().id());
