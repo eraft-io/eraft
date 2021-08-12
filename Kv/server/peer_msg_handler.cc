@@ -552,6 +552,10 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
   newMsg.set_reject(msg->message().reject());
   newMsg.set_msg_type(msg->message().msg_type());
   newMsg.set_temp_data(msg->message().temp_data());
+  // newMsg.mutable_snapshot()->mutable_metadata()->set_index(
+  //     msg->message().snapshot().metadata().index());
+  // newMsg.mutable_snapshot()->mutable_metadata()->set_term(
+  //     msg->message().snapshot().metadata().term());
   Logger::GetInstance()->DEBUG_NEW(
       "RECIVED ENTRY DATA = " + msg->message().temp_data(), __FILE__, __LINE__,
       "RaftContext::OnRaftMsg");

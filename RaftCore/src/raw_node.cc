@@ -120,10 +120,10 @@ DReady RawNode::EReady() {
   //     rd.hardSt = *r->HardState();
   // }
   this->raft->msgs_.clear();
-  // if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
-  //     rd.snapshot = r->raftLog_->pendingSnapshot_;
-  //     r->raftLog_->pendingSnapshot_.clear_data();
-  // }
+  if (!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
+    rd.snapshot = r->raftLog_->pendingSnapshot_;
+    r->raftLog_->pendingSnapshot_.clear_data();
+  }
   return rd;
 }
 
@@ -154,7 +154,7 @@ void RawNode::Advance(DReady rd) {
     this->raft->raftLog_->applied_ =
         rd.committedEntries[rd.committedEntries.size() - 1].index();
   }
-  // this->raft->raftLog_->MaybeCompact();
+  this->raft->raftLog_->MaybeCompact();
 }
 
 std::map<uint64_t, Progress> RawNode::GetProgress() {
