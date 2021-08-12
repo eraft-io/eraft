@@ -142,9 +142,36 @@ bool RaftContext::SendAppend(uint64_t to) {
   auto resPair = this->raftLog_->Term(prevIndex);
   uint64_t prevLogTerm = resPair.first;
   if (!resPair.second) {
-    // need to send snap
-    this->SendSnapshot(to);
-    return false;
+    // load log from db
+    auto entries =
+        this->raftLog_->storage_->Entries(prevIndex + 1, prevIndex + 2);
+    Logger::GetInstance()->DEBUG_NEW(
+        "LOAD LOG FROM DB DIZE: " + std::to_string(entries.size()), __FILE__,
+        __LINE__, "RaftContext::SendAppend");
+    if (entries.size() > 0) {
+      prevLogTerm = entries[0].term();
+      eraftpb::Message msg;
+      msg.set_msg_type(eraftpb::MsgAppend);
+      msg.set_from(this->id_);
+      msg.set_to(to);
+      msg.set_term(this->term_);
+      msg.set_commit(this->raftLog_->commited_);
+      msg.set_log_term(prevLogTerm);
+      msg.set_index(prevIndex);
+      for (auto ent : entries) {
+        eraftpb::Entry* e = msg.add_entries();
+        e->set_entry_type(ent.entry_type());
+        e->set_index(ent.index());
+        e->set_term(ent.term());
+        e->set_data(ent.data());
+        msg.set_temp_data(ent.data());
+        Logger::GetInstance()->DEBUG_NEW(
+            "SET ENTRY DATA =============================" + ent.data(),
+            __FILE__, __LINE__, "RaftContext::SendAppend");
+      }
+      this->msgs_.push_back(msg);
+    }
+    return true;
   }
 
   int64_t n = this->raftLog_->entries_.size();
