@@ -66,6 +66,8 @@ enum MessageType {
     // 'MessageType_MsgTimeoutNow' send from the leader to the leadership transfer target, to let
     // the transfer target timeout immediately and start a new election.
     MsgTimeoutNow = 12;
+    // 'MessageType_EntryConfChange' add or remove membership;
+    MsgEntryConfChange = 13;
 }
 
 message Message {
@@ -80,6 +82,7 @@ message Message {
     Snapshot snapshot = 9;
     bool reject = 10;
     string temp_data = 11;
+    EntryType temp_type = 12;
 }
 
 // HardState contains the state of a node need to be peristed, including the current term, commit index 
@@ -106,5 +109,5 @@ message ConfChange {
     ConfChangeType change_type = 1;
     // node will be add/remove
     uint64 node_id = 2;
-    bytes context = 3;
+    string context = 3;
 }

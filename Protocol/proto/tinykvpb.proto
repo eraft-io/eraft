@@ -27,6 +27,9 @@ service TinyKv {
     // transfer leader request
     rpc TransferLeader(raft_cmdpb.TransferLeaderRequest) returns (raft_cmdpb.TransferLeaderResponse) {}
 
+    // conf change request
+    rpc PeerConfChange(raft_cmdpb.ChangePeerRequest) returns (raft_cmdpb.ChangePeerResponse) {}
+
     // RawKV commands.
     rpc RawGet(kvrpcpb.RawGetRequest) returns (kvrpcpb.RawGetResponse) {}
     rpc RawPut(kvrpcpb.RawPutRequest) returns (kvrpcpb.RawPutResponse) {}

@@ -75,6 +75,10 @@ class Server : public TinyKv::Service {
                         const raft_cmdpb::TransferLeaderRequest* request,
                         raft_cmdpb::TransferLeaderResponse* response) override;
 
+  Status PeerConfChange(ServerContext* context,
+                        const raft_cmdpb::ChangePeerRequest* request,
+                        raft_cmdpb::ChangePeerResponse* response) override;
+
  private:
   std::string serverAddress_;
 

@@ -78,6 +78,10 @@ void StoreWorker::HandleMsg(Msg msg) {
       StoreWorker::Start(static_cast<metapb::Store*>(msg.data_));
       break;
     }
+    case MsgType::MsgTypeRaftMessage: {
+      // StoreWorker::MaybeCreatePeer(msg.regionId_, );
+      break;
+    }
     default:
       break;
   }

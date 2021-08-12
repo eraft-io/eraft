@@ -71,7 +71,7 @@ class StorageInterface {
   // [FirstIndex()-1, LastIndex()]. The term of the entry before
   // FirstIndex is retained for matching purposes even though the
   // rest of that entry may not be available.
-  virtual uint64_t Term(uint64_t i) = 0;
+  virtual std::pair<uint64_t, bool> Term(uint64_t i) = 0;
 
   // LastIndex returns the index of the last entry in the log.
   virtual uint64_t LastIndex() = 0;

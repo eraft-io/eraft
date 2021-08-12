@@ -30,7 +30,6 @@
 namespace kvserver {
 
 struct Callback {
-  
   Callback() {
     this->done_ = false;
     this->resp_ = nullptr;

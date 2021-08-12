@@ -60,11 +60,11 @@ class Peer {
        std::shared_ptr<metapb::Region> region);
   ~Peer();
 
-  static void InsertPeerCache(metapb::Peer* peer);
+  void InsertPeerCache(metapb::Peer* peer);
 
-  static void RemovePeerCache(uint64_t peerID);
+  void RemovePeerCache(uint64_t peerID);
 
-  static std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerID);
+  std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerID);
 
   uint64_t NextProposalIndex();
 

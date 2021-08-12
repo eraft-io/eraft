@@ -94,10 +94,10 @@ void Peer::InsertPeerCache(metapb::Peer* peer) {
 void Peer::RemovePeerCache(uint64_t peerID) { Peer::peerCache_.erase(peerID); }
 
 std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID) {
-  // if(Peer::peerCache_.find(peerID) != Peer::peerCache_.end()) { // peer cache
-  // has err
-  //     return Peer::peerCache_[peerID];
-  // }
+  if (Peer::peerCache_.find(peerID) !=
+      Peer::peerCache_.end()) {  // peer cachehas err
+    return Peer::peerCache_[peerID];
+  }
   for (auto peer : peerStorage_->region_->peers()) {
     if (peer.id() == peerID) {
       // Peer::InsertPeerCache(&peer);
@@ -247,6 +247,10 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_reject(msg.reject());
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
   sendMsg->mutable_message()->set_temp_data(msg.temp_data());
+  // sendMsg->mutable_message()->mutable_snapshot()->mutable_metadata()->set_index(
+  //     msg.snapshot().metadata().index());
+  // sendMsg->mutable_message()->mutable_snapshot()->mutable_metadata()->set_term(
+  //     msg.snapshot().metadata().term());
   sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgNormal);
 
   Logger::GetInstance()->DEBUG_NEW(
@@ -262,9 +266,10 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
     e->set_entry_type(ent.entry_type());
     e->set_index(ent.index());
     e->set_term(ent.term());
-    e->set_data(msg.temp_data());
+    e->set_data(ent.data());
   }
 
+  // rpc
   return trans->Send(sendMsg);
 }
 

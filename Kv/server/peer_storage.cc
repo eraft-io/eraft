@@ -41,7 +41,6 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
 
   if (raftStatePair.first->last_index() <
       applyStatePair.first->applied_index()) {
-    // unexpected raft log index
     Logger::GetInstance()->DEBUG_NEW(
         "err: raft log last index less than applied index! " +
             std::to_string(region->id()),
@@ -106,20 +105,23 @@ std::vector<eraftpb::Entry> PeerStorage::Entries(uint64_t lo, uint64_t hi) {
 }
 
 // Term implements the Storage interface.
-uint64_t PeerStorage::Term(uint64_t idx) {
+std::pair<uint64_t, bool> PeerStorage::Term(uint64_t idx) {
   if (idx == this->TruncatedIndex()) {
-    return this->TruncatedTerm();
+    return std::make_pair<uint64_t, bool>(this->TruncatedTerm(), true);
   }
   // TODO: check idx, idx+1
+  if (!this->CheckRange(idx, idx + 1)) {
+    return std::make_pair<uint64_t, bool>(0, false);
+  }
   if (this->TruncatedTerm() == this->raftState_->last_term() ||
       idx == this->raftState_->last_index()) {
-    return this->raftState_->last_term();
+    return std::make_pair<uint64_t, bool>(this->raftState_->last_term(), true);
   }
   eraftpb::Entry* entry;
   Assistant::GetInstance()->GetMeta(
       this->engines_->raftDB_,
       Assistant::GetInstance()->RaftLogKey(this->region_->id(), idx), entry);
-  return entry->term();
+  return std::make_pair<uint64_t, bool>(entry->term(), true);
 }
 
 // LastIndex implements the Storage interface.
@@ -130,7 +132,13 @@ uint64_t PeerStorage::FirstIndex() { return this->TruncatedIndex() + 1; }
 
 // Snapshot implements the Storage interface.
 eraftpb::Snapshot PeerStorage::Snapshot() {
-  // TODO:
+  std::shared_ptr<eraftpb::Snapshot> snap =
+      std::make_shared<eraftpb::Snapshot>();
+  snap->mutable_metadata()->set_index(
+      this->applyState_->truncated_state().index());
+  snap->mutable_metadata()->set_term(
+      this->applyState_->truncated_state().term());
+  return *snap;
 }
 
 // SetHardState saves the current HardState.
@@ -258,6 +266,13 @@ std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(
       std::make_shared<rocksdb::WriteBatch>();
   ApplySnapResult result;
   if (!eraft::IsEmptySnap(ready->snapshot)) {
+    this->raftState_->set_last_index(ready->snapshot.metadata().index());
+    this->raftState_->set_last_term(ready->snapshot.metadata().term());
+    this->applyState_->set_applied_index(ready->snapshot.metadata().index());
+    this->applyState_->mutable_truncated_state()->set_index(
+        ready->snapshot.metadata().index());
+    this->applyState_->mutable_truncated_state()->set_term(
+        ready->snapshot.metadata().term());
   }
 
   this->Append(ready->entries, raftWB);

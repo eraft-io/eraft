@@ -127,12 +127,13 @@ enum MessageType : int {
   MsgHeartbeatResponse = 9,
   MsgTransferLeader = 11,
   MsgTimeoutNow = 12,
+  MsgEntryConfChange = 13,
   MessageType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   MessageType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool MessageType_IsValid(int value);
 constexpr MessageType MessageType_MIN = MsgHup;
-constexpr MessageType MessageType_MAX = MsgTimeoutNow;
+constexpr MessageType MessageType_MAX = MsgEntryConfChange;
 constexpr int MessageType_ARRAYSIZE = MessageType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MessageType_descriptor();
@@ -804,6 +805,12 @@ class Message :
   ::PROTOBUF_NAMESPACE_ID::uint64 commit() const;
   void set_commit(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
+  // .eraftpb.EntryType temp_type = 12;
+  void clear_temp_type();
+  static const int kTempTypeFieldNumber = 12;
+  ::eraftpb::EntryType temp_type() const;
+  void set_temp_type(::eraftpb::EntryType value);
+
   // @@protoc_insertion_point(class_scope:eraftpb.Message)
  private:
   class HasBitSetters;
@@ -820,6 +827,7 @@ class Message :
   bool reject_;
   ::PROTOBUF_NAMESPACE_ID::uint64 index_;
   ::PROTOBUF_NAMESPACE_ID::uint64 commit_;
+  int temp_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftpb_2eproto;
 };
@@ -1207,14 +1215,14 @@ class ConfChange :
 
   // accessors -------------------------------------------------------
 
-  // bytes context = 3;
+  // string context = 3;
   void clear_context();
   static const int kContextFieldNumber = 3;
   const std::string& context() const;
   void set_context(const std::string& value);
   void set_context(std::string&& value);
   void set_context(const char* value);
-  void set_context(const void* value, size_t size);
+  void set_context(const char* value, size_t size);
   std::string* mutable_context();
   std::string* release_context();
   void set_allocated_context(std::string* context);
@@ -1783,6 +1791,20 @@ inline void Message::set_allocated_temp_data(std::string* temp_data) {
   // @@protoc_insertion_point(field_set_allocated:eraftpb.Message.temp_data)
 }
 
+// .eraftpb.EntryType temp_type = 12;
+inline void Message::clear_temp_type() {
+  temp_type_ = 0;
+}
+inline ::eraftpb::EntryType Message::temp_type() const {
+  // @@protoc_insertion_point(field_get:eraftpb.Message.temp_type)
+  return static_cast< ::eraftpb::EntryType >(temp_type_);
+}
+inline void Message::set_temp_type(::eraftpb::EntryType value) {
+  
+  temp_type_ = value;
+  // @@protoc_insertion_point(field_set:eraftpb.Message.temp_type)
+}
+
 // -------------------------------------------------------------------
 
 // HardState
@@ -1895,7 +1917,7 @@ inline void ConfChange::set_node_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   // @@protoc_insertion_point(field_set:eraftpb.ConfChange.node_id)
 }
 
-// bytes context = 3;
+// string context = 3;
 inline void ConfChange::clear_context() {
   context_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -1920,7 +1942,7 @@ inline void ConfChange::set_context(const char* value) {
   context_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftpb.ConfChange.context)
 }
-inline void ConfChange::set_context(const void* value, size_t size) {
+inline void ConfChange::set_context(const char* value, size_t size) {
   
   context_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
