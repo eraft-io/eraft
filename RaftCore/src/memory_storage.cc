@@ -84,16 +84,16 @@ std::vector<eraftpb::Entry> MemoryStorage::Entries(uint64_t lo, uint64_t hi) {
   return ents;
 }
 
-uint64_t MemoryStorage::Term(uint64_t i) {
+std::pair<uint64_t, bool> MemoryStorage::Term(uint64_t i) {
   // std::lock_guard<std::mutex> lck (mutex_);
   uint64_t offset = this->ents_[0].index();
   if (i < offset) {
-    return 0;
+    return std::make_pair<uint64_t, bool>(0, true);
   }
   if ((i - offset) >= this->ents_.size()) {
-    return 0;
+    return std::make_pair<uint64_t, bool>(0, true);
   }
-  return this->ents_[i - offset].term();
+  return std::make_pair<uint64_t, bool>(this->ents_[i - offset].term(), true);
 }
 
 uint64_t MemoryStorage::LastIndex() {

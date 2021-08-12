@@ -119,20 +119,34 @@ RaftContext::RaftContext(Config& c) {
 }
 
 void RaftContext::SendSnapshot(uint64_t to) {
-  eraftpb::Snapshot snapshot = this->raftLog_->storage_->Snapshot();
+  Logger::GetInstance()->DEBUG_NEW("send snap to " + std::to_string(to),
+                                   __FILE__, __LINE__,
+                                   "RaftContext::SendSnapshot");
+  eraftpb::Snapshot* snapshot = new eraftpb::Snapshot();
+  auto snap_ = this->raftLog_->storage_->Snapshot();
+  snapshot->mutable_metadata()->set_index(snap_.metadata().index());
+  snapshot->mutable_metadata()->set_term(snap_.metadata().term());
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgSnapshot);
   msg.set_from(this->id_);
   msg.set_to(to);
   msg.set_term(this->term_);
-  msg.set_allocated_snapshot(&snapshot);
+  this->prs_[to]->next = snapshot->metadata().index() + 1;
+  msg.set_allocated_snapshot(snapshot);
   this->msgs_.push_back(msg);
-  this->prs_[to]->next = snapshot.metadata().index() + 1;
 }
 
 bool RaftContext::SendAppend(uint64_t to) {
   uint64_t prevIndex = this->prs_[to]->next - 1;
-  uint64_t prevLogTerm = this->raftLog_->Term(prevIndex);
+
+  auto resPair = this->raftLog_->Term(prevIndex);
+  uint64_t prevLogTerm = resPair.first;
+  if (!resPair.second) {
+    // need to send snap
+    this->SendSnapshot(to);
+    return false;
+  }
+
   int64_t n = this->raftLog_->entries_.size();
   Logger::GetInstance()->DEBUG_NEW(
       "prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " +
@@ -495,15 +509,6 @@ void RaftContext::StepCandidate(eraftpb::Message m) {
     case eraftpb::MsgTimeoutNow:
       break;
     case eraftpb::MsgEntryConfChange: {
-      // std::shared_ptr<eraftpb::ConfChange> confChange =
-      //     std::make_shared<eraftpb::ConfChange>();
-      // confChange->ParseFromString(m.temp_data());
-      // if (confChange->change_type() == eraftpb::AddNode)
-      //   this->AddNode(confChange->node_id());
-      // else if (confChange->change_type() == eraftpb::RemoveNode)
-      //   this->RemoveNode(confChange->node_id());
-
-      // if (this->pendingConfIndex_ != NONE)
       this->msgs_.push_back(m);
       break;
     }
@@ -589,7 +594,9 @@ bool RaftContext::DoElection() {
     return true;
   }
   uint64_t lastIndex = this->raftLog_->LastIndex();
-  uint64_t lastLogTerm = this->raftLog_->Term(lastIndex);
+  auto resPair = this->raftLog_->Term(lastIndex);
+  uint64_t lastLogTerm = resPair.first;
+
   for (auto peer : this->prs_) {
     if (peer.first == this->id_) {
       continue;
@@ -636,7 +643,10 @@ bool RaftContext::HandleRequestVote(eraftpb::Message m) {
     return true;
   }
   uint64_t lastIndex = this->raftLog_->LastIndex();
-  uint64_t lastLogTerm = this->raftLog_->Term(lastIndex);
+
+  auto resPair = this->raftLog_->Term(lastIndex);
+  uint64_t lastLogTerm = resPair.first;
+
   if (lastLogTerm > m.log_term() ||
       (lastLogTerm == m.log_term() && lastIndex > m.index())) {
     this->SendRequestVoteResponse(m.from(), true);
@@ -690,7 +700,8 @@ bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
     return false;
   }
   if (m.index() >= this->raftLog_->firstIndex_) {
-    uint64_t logTerm = this->raftLog_->Term(m.index());
+    auto resPair = this->raftLog_->Term(m.index());
+    uint64_t logTerm = resPair.first;
     if (logTerm != m.log_term()) {
       uint64_t index = 0;
       for (uint64_t i = 0; i < this->raftLog_->ToSliceIndex(m.index() + 1);
@@ -709,7 +720,8 @@ bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
       continue;
     }
     if (entry.index() <= this->raftLog_->LastIndex()) {
-      uint64_t logTerm = this->raftLog_->Term(entry.index());
+      auto resPair = this->raftLog_->Term(entry.index());
+      uint64_t logTerm = resPair.first;
       if (logTerm != entry.term()) {
         uint64_t idx = this->raftLog_->ToSliceIndex(entry.index());
         this->raftLog_->entries_[idx] = entry;
@@ -787,7 +799,8 @@ void RaftContext::LeaderCommit() {
   std::sort(match.begin(), match.end());
   uint64_t n = match[(this->prs_.size() - 1) / 2];
   if (n > this->raftLog_->commited_) {
-    uint64_t logTerm = this->raftLog_->Term(n);
+    auto resPair = this->raftLog_->Term(n);
+    uint64_t logTerm = resPair.first;
     if (logTerm == this->term_) {
       // commit 条件，半数节点以上
       this->raftLog_->commited_ = n;
@@ -879,6 +892,9 @@ std::shared_ptr<eraftpb::HardState> RaftContext::HardState() {
 }
 
 bool RaftContext::HandleSnapshot(eraftpb::Message m) {
+  Logger::GetInstance()->DEBUG_NEW(
+      "handle snapshot from: " + std::to_string(m.from()), __FILE__, __LINE__,
+      "RaftContext::HandleSnapshot");
   eraftpb::SnapshotMetadata meta = m.snapshot().metadata();
   if (meta.index() <= this->raftLog_->commited_) {
     this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->commited_);
@@ -923,7 +939,7 @@ void RaftContext::AddNode(uint64_t id) {
   Logger::GetInstance()->DEBUG_NEW("add node id " + std::to_string(id),
                                    __FILE__, __LINE__, "RaftContext::AddNode");
   if (this->prs_[id] == nullptr) {
-    this->prs_[id] = std::make_shared<Progress>(5);
+    this->prs_[id] = std::make_shared<Progress>(6);
   }
   this->pendingConfIndex_ = NONE;
 }

@@ -56,7 +56,7 @@ class MemoryStorage : public StorageInterface {
   std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;
 
   // Term implements the Storage interface.
-  uint64_t Term(uint64_t i) override;
+  std::pair<uint64_t, bool> Term(uint64_t i) override;
 
   // LastIndex implements the Storage interface.
   uint64_t LastIndex() override;
