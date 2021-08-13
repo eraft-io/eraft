@@ -247,6 +247,10 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_reject(msg.reject());
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
   sendMsg->mutable_message()->set_temp_data(msg.temp_data());
+  // sendMsg->mutable_message()->mutable_snapshot()->mutable_metadata()->set_index(
+  //     msg.snapshot().metadata().index());
+  // sendMsg->mutable_message()->mutable_snapshot()->mutable_metadata()->set_term(
+  //     msg.snapshot().metadata().term());
   sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgNormal);
 
   Logger::GetInstance()->DEBUG_NEW(
@@ -262,9 +266,10 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
     e->set_entry_type(ent.entry_type());
     e->set_index(ent.index());
     e->set_term(ent.term());
-    e->set_data(msg.temp_data());
+    e->set_data(ent.data());
   }
 
+  // rpc
   return trans->Send(sendMsg);
 }
 

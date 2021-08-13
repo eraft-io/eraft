@@ -120,10 +120,10 @@ DReady RawNode::EReady() {
   //     rd.hardSt = *r->HardState();
   // }
   this->raft->msgs_.clear();
-  // if(!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
-  //     rd.snapshot = r->raftLog_->pendingSnapshot_;
-  //     r->raftLog_->pendingSnapshot_.clear_data();
-  // }
+  if (!IsEmptySnap(r->raftLog_->pendingSnapshot_)) {
+    rd.snapshot = r->raftLog_->pendingSnapshot_;
+    r->raftLog_->pendingSnapshot_.clear_data();
+  }
   return rd;
 }
 

@@ -39,6 +39,7 @@
 #define ERAFT_RAFTCORE_LOG_H_
 
 #include <RaftCore/memory_storage.h>
+#include <stdint.h>
 
 // RaftLog manage the log entries, its struct look like:
 //
@@ -71,7 +72,7 @@ class RaftLog {
   uint64_t LastIndex();
 
   // Term return the term of the entry in the given index
-  uint64_t Term(uint64_t i);
+  std::pair<uint64_t, bool> Term(uint64_t i);
 
   // We need to compact the log entries in some point of time like
   // storage compact stabled log entries prevent the log entries

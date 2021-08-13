@@ -133,18 +133,23 @@ uint64_t RaftLog::LastIndex() {
   return std::max(i, index);
 }
 
-uint64_t RaftLog::Term(uint64_t i) {
+std::pair<uint64_t, bool> RaftLog::Term(uint64_t i) {
   if (this->entries_.size() > 0 && i >= this->firstIndex_) {
-    // TODO: check out of range
-    return this->entries_[i - this->firstIndex_].term();
+    return std::make_pair<uint64_t, bool>(
+        this->entries_[i - this->firstIndex_].term(), true);
   }
-  uint64_t term = this->storage_->Term(i);
-  if (term == 0 && !IsEmptySnap(pendingSnapshot_)) {
+  // i <= firstIndex
+  std::pair<uint64_t, bool> pair = this->storage_->Term(i);
+  if (!pair.second) {
+    return std::make_pair<uint64_t, bool>(0, false);
+  }
+  uint64_t term_ = pair.first;
+  if (term_ == 0 && !IsEmptySnap(pendingSnapshot_)) {
     if (i == pendingSnapshot_.metadata().index()) {
-      term = pendingSnapshot_.metadata().index();
+      term_ = static_cast<uint64_t>(pendingSnapshot_.metadata().index());
     }
   }
-  return term;
+  return std::make_pair<uint64_t, bool>(static_cast<uint64_t>(term_), true);
 }
 
 }  // namespace eraft

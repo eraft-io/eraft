@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     raftClient->TransferLeader(std::string(argv[1]), transLeaderReq);
   } else if (reqType == "config_change") {
     // TODO:
-    // ./kv_cli 127.0.0.1:20160 config_change add 127.0.0.1:201063 4
+    // ./kv_cli 127.0.0.1:20160 config_change add 127.0.0.1:20163 4
     // add peer param: 1.ip 2.id
     // 2. 构造 ChangePeerRequest
     // raftClient 对象调用 PeerConfChange  发送 request 给 server

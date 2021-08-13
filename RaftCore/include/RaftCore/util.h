@@ -104,9 +104,6 @@ static bool IsInitialMsg(eraftpb::Message& msg) {
 
 // IsEmptySnap returns true if the given Snapshot is empty.
 static bool IsEmptySnap(eraftpb::Snapshot sp) {
-  if (sp.has_metadata()) {
-    return true;
-  }
   return sp.metadata().index() == 0;
 }
 
