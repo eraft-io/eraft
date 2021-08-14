@@ -47,15 +47,20 @@ class Logger {
   void WARNING(const std::string& text);
   void ERRORS(const std::string& text);
 
+  static void Init(LogTarget target, LogLevel level, const std::string& path);
+
   static Logger* GetInstance() {
     if (instance_ == nullptr) {
-      instance_ = new Logger(Logger::kTerminal, Logger::kDebug, "Log.log");
+      instance_ = new Logger(gLogTarget_, gLogLevel_, gLogPath_);
     }
     return instance_;
   }
 
  private:
   static Logger* instance_;
+  static LogTarget gLogTarget_;
+  static std::string gLogPath_;
+  static LogLevel gLogLevel_;
 
   std::ofstream outfile_;  // 将日志输出到文件的流对象
   LogTarget target_;       // 日志输出目标

@@ -34,6 +34,10 @@ int main(int argc, char* argv[]) {
       std::stoi(std::string(argv[3])));
   conf->PrintConfigToConsole();
 
+  // init logger
+  Logger::Init(Logger::kFileAndTerminal, Logger::kDebug,
+               conf->dbPath_ + "/" + conf->storeAddr_ + ".log");
+
   // start raft store
   kvserver::RaftStorage* storage = new kvserver::RaftStorage(conf);
   storage->Start();
