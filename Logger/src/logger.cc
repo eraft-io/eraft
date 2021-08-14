@@ -26,6 +26,16 @@
 
 Logger* Logger::instance_ = nullptr;
 
+Logger::LogTarget Logger::gLogTarget_ = Logger::kTerminal;
+std::string Logger::gLogPath_ = "/tmp/temp.log";
+Logger::LogLevel Logger::gLogLevel_ = Logger::kInfo;
+
+void Logger::Init(LogTarget target, LogLevel level, const std::string& path) {
+  Logger::gLogTarget_ = target;
+  Logger::gLogLevel_ = level;
+  Logger::gLogPath_ = path;
+}
+
 std::string currTime() {
   char tmp[64];
   time_t ptime;
@@ -37,8 +47,6 @@ std::string currTime() {
 Logger::Logger() {
   target_ = kTerminal;
   level_ = kDebug;
-  std::cout << currTime() << " : "
-            << "=== Start logging ===" << std::endl;
 }
 
 Logger::Logger(LogTarget target, LogLevel level, const std::string& path) {
@@ -69,6 +77,9 @@ void Logger::DEBUG(const std::string& text) { Output(text, kDebug); }
 
 void Logger::DEBUG_NEW(const std::string& in, const std::string& file,
                        uint64_t line, const std::string& function) {
+  if (gLogLevel_ != Logger::kDebug) {
+    return;
+  }
   std::string text;
   text.append(" [ ");
   text.append(file);

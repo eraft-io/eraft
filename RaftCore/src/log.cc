@@ -123,9 +123,9 @@ uint64_t RaftLog::ToEntryIndex(uint64_t i) { return i + this->firstIndex_; }
 
 uint64_t RaftLog::LastIndex() {
   uint64_t index = 0;
-  if (!IsEmptySnap(pendingSnapshot_)) {
-    index = pendingSnapshot_.metadata().index();
-  }
+  // if (!IsEmptySnap(pendingSnapshot_)) {
+  //   index = pendingSnapshot_.metadata().index();
+  // }
   if (this->entries_.size() > 0) {
     return std::max(this->entries_[this->entries_.size() - 1].index(), index);
   }

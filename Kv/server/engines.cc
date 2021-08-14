@@ -38,19 +38,14 @@ Engines::Engines(std::string kvPath, std::string raftPath) {
   this->raftPath_ = raftPath;
 }
 
-Engines::~Engines() {
-  // this->Close();
-}
+Engines::~Engines() {}
 
 bool Engines::Close() {
   delete kvDB_;
   delete raftDB_;
 }
 
-bool Engines::Destory() {
-  File::DeleteDirectory(this->kvPath_);
-  File::DeleteDirectory(this->raftPath_);
-}
+bool Engines::Destory() {}
 
 bool Engines::WriteKV(rocksdb::WriteBatch& batch) {
   rocksdb::Status s = kvDB_->Write(rocksdb::WriteOptions(), &batch);

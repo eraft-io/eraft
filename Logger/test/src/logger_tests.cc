@@ -27,4 +27,6 @@
 #include <iostream>
 #include <memory>
 
-TEST(LoggerTests, MakeLogFileName) {}
+TEST(LoggerTests, LoggerDefaultInstance) {
+  Logger::GetInstance()->DEBUG("hello eraft!");
+}
