@@ -90,10 +90,6 @@ bool RaftStorage::Start() {
   }
 }
 
-bool RaftStorage::Stop() {
-  // stop worker
-}
-
 RegionReader::RegionReader(std::shared_ptr<Engines> engs,
                            metapb::Region region) {
   this->engs_ = engs;

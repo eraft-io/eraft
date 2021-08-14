@@ -39,8 +39,6 @@ PeerMsgHandler::PeerMsgHandler(std::shared_ptr<Peer> peer,
 
 PeerMsgHandler::~PeerMsgHandler() {}
 
-void PeerMsgHandler::Read() {}
-
 void PeerMsgHandler::HandleProposal(eraftpb::Entry* entry,
                                     std::function<void(Proposal*)> handle) {
   Logger::GetInstance()->DEBUG_NEW(
@@ -185,18 +183,6 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(
 void PeerMsgHandler::ProcessAdminRequest(
     eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* req,
     std::shared_ptr<rocksdb::WriteBatch> wb) {}
-
-size_t PeerMsgHandler::SearchRegionPeer(std::shared_ptr<metapb::Region> region,
-                                        uint64_t id) {
-  size_t i = 0;
-  for (auto peer : region->peers()) {
-    if (peer.id() == id) {
-      return i;
-    }
-    ++i;
-  }
-  return region->peers().size();
-}
 
 void PeerMsgHandler::ProcessConfChange(
     eraftpb::Entry* entry, eraftpb::ConfChange* cc,
@@ -462,17 +448,6 @@ bool PeerMsgHandler::CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term) {
   return false;
 }
 
-bool PeerMsgHandler::CheckKeyInRegion(std::string key,
-                                      std::shared_ptr<metapb::Region> region) {
-  if (key.compare(region->start_key()) >= 0 &&
-      (region->end_key().size() == 0 || key.compare(region->end_key()) < 0)) {
-    return true;
-  } else {
-    // key is not in range [`start_key`, `end_key`)
-    return false;
-  }
-}
-
 void PeerMsgHandler::ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg,
                                          Callback* cb) {}
 
@@ -510,9 +485,6 @@ void PeerMsgHandler::StartTicker() {
 }
 
 void PeerMsgHandler::OnRaftBaseTick() { this->peer_->raftGroup_->Tick(); }
-
-void PeerMsgHandler::ScheduleCompactLog(uint64_t firstIndex,
-                                        uint64_t truncatedIndex) {}
 
 bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
   // if(!this->ValidateRaftMessage(msg))
@@ -602,54 +574,5 @@ bool PeerMsgHandler::CheckMessage(raft_serverpb::RaftMessage* msg) {
 
   return false;
 }
-
-void PeerMsgHandler::HandleStaleMsg(Transport& trans,
-                                    raft_serverpb::RaftMessage* msg,
-                                    metapb::RegionEpoch* curEpoch,
-                                    bool needGC) {
-  auto regionID = msg->region_id();
-  auto fromPeer = msg->from_peer();
-  auto toPeer = msg->to_peer();
-  auto msgType = msg->message().msg_type();
-
-  if (!needGC) {
-    return;
-  }
-
-  std::shared_ptr<raft_serverpb::RaftMessage> gcMsg =
-      std::make_shared<raft_serverpb::RaftMessage>();
-  gcMsg->set_region_id(regionID);
-  gcMsg->set_allocated_from_peer(&fromPeer);
-  gcMsg->set_allocated_to_peer(&toPeer);
-  gcMsg->set_allocated_region_epoch(curEpoch);
-  gcMsg->set_is_tombstone(true);
-  trans.Send(gcMsg);
-}
-
-void PeerMsgHandler::HandleGCPeerMsg(raft_serverpb::RaftMessage* msg) {}
-
-bool PeerMsgHandler::CheckSnapshot(raft_serverpb::RaftMessage& msg)  // TODO
-{}
-
-void PeerMsgHandler::DestoryPeer() {}
-
-metapb::Region* PeerMsgHandler::FindSiblingRegion() {}
-
-void PeerMsgHandler::OnRaftGCLogTick() {}
-
-void PeerMsgHandler::OnSplitRegionCheckTick() {}
-
-void PeerMsgHandler::OnPrepareSplitRegion(metapb::RegionEpoch* regionEpoch,
-                                          std::string splitKey, Callback* cb) {}
-
-bool PeerMsgHandler::ValidateSplitRegion(metapb::RegionEpoch* epoch,
-                                         std::string splitKey) {}
-
-void PeerMsgHandler::OnApproximateRegionSize(uint64_t size) {}
-
-void PeerMsgHandler::OnSchedulerHeartbeatTick() {}
-
-void PeerMsgHandler::OnGCSnap()  //  TODO:
-{}
 
 }  // namespace kvserver

@@ -58,8 +58,6 @@ class ServerTransport : public Transport {
   void SendSnapshotSock(std::string addr,
                         std::shared_ptr<raft_serverpb::RaftMessage> msg);
 
-  void Flush();
-
  private:
   std::shared_ptr<RaftClient> raftClient_;
 

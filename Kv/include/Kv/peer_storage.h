@@ -91,33 +91,12 @@ class PeerStorage : public eraft::StorageInterface {
   bool ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
                  std::shared_ptr<rocksdb::WriteBatch> raftWB);
 
-  void ClearExtraData(std::shared_ptr<metapb::Region> newRegion);
-
   std::shared_ptr<ApplySnapResult> SaveReadyState(
       std::shared_ptr<eraft::DReady> ready);
 
   void ClearData();
 
   void ClearRange(uint64_t regionID, std::string start, std::string end);
-
-  // SetHardState saves the current HardState.
-  void SetHardState(eraftpb::HardState& st);
-
-  // ApplySnapshot overwrites the contents of this Storage object with
-  // those of the given snapshot.
-  bool ApplySnapshot(eraftpb::Snapshot& snap);
-
-  // CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
-  // can be used to reconstruct the state at that point.
-  // If any configuration changes have been made since the last compaction,
-  // the result of the last ApplyConfChange must be passed in.
-  eraftpb::Snapshot CreateSnapshot(uint64_t i, eraftpb::ConfState* cs,
-                                   const char* bytes);
-
-  // Compact discards all log entries prior to compactIndex.
-  // It is the application's responsibility to not attempt to compact an index
-  // greater than raftLog.applied.
-  bool Compact(uint64_t compactIndex);
 
   // Append the new entries to storage.
   // entries[0].Index > ms.entries[0].Index

@@ -75,7 +75,7 @@ void StoreWorker::HandleMsg(Msg msg) {
       break;
     }
     case MsgType::MsgTypeStoreStart: {
-      StoreWorker::Start(static_cast<metapb::Store*>(msg.data_));
+      // StoreWorker::Start(static_cast<metapb::Store*>(msg.data_));
       break;
     }
     case MsgType::MsgTypeRaftMessage: {
@@ -87,22 +87,6 @@ void StoreWorker::HandleMsg(Msg msg) {
   }
 }
 
-void StoreWorker::Start(metapb::Store* store) {}
-
-bool StoreWorker::CheckMsg(std::shared_ptr<raft_serverpb::RaftMessage> msg) {}
-
 bool StoreWorker::OnRaftMessage(raft_serverpb::RaftMessage* msg) {}
-
-bool StoreWorker::MaybeCreatePeer(
-    uint64_t regionID, std::shared_ptr<raft_serverpb::RaftMessage> msg) {}
-
-void StoreWorker::StoreHeartbeatScheduler() {}
-
-void StoreWorker::OnSchedulerStoreHeartbeatTick() {}
-
-bool StoreWorker::HandleSnapMgrGC() {}
-
-bool StoreWorker::ScheduleGCSnap()  //  TODO:
-{}
 
 }  // namespace kvserver

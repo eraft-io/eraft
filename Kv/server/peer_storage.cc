@@ -141,26 +141,6 @@ eraftpb::Snapshot PeerStorage::Snapshot() {
   return *snap;
 }
 
-// SetHardState saves the current HardState.
-void PeerStorage::SetHardState(eraftpb::HardState& st) {}
-
-// ApplySnapshot overwrites the contents of this Storage object with
-// those of the given snapshot.
-bool PeerStorage::ApplySnapshot(eraftpb::Snapshot& snap) {}
-
-// CreateSnapshot makes a snapshot which can be retrieved with Snapshot() and
-// can be used to reconstruct the state at that point.
-// If any configuration changes have been made since the last compaction,
-// the result of the last ApplyConfChange must be passed in.
-eraftpb::Snapshot PeerStorage::CreateSnapshot(uint64_t i,
-                                              eraftpb::ConfState* cs,
-                                              const char* bytes) {}
-
-// Compact discards all log entries prior to compactIndex.
-// It is the application's responsibility to not attempt to compact an index
-// greater than raftLog.applied.
-bool PeerStorage::Compact(uint64_t compactIndex) {}
-
 // Append the new entries to storage.
 // entries[0].Index > ms.entries[0].Index
 bool PeerStorage::Append(std::vector<eraftpb::Entry> entries,
@@ -245,18 +225,6 @@ bool PeerStorage::ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
   return Assistant::GetInstance()->DoClearMeta(
       this->engines_, kvWB.get(), raftWB.get(), this->region_->id(),
       this->raftState_->last_index());
-}
-
-// delete all data that is not covered by new_region
-void PeerStorage::ClearExtraData(std::shared_ptr<metapb::Region> newRegion) {
-  if (this->region_->start_key().compare(newRegion->start_key()) < 0) {
-    this->ClearRange(newRegion->id(), this->region_->start_key(),
-                     newRegion->start_key());
-  }
-  if (newRegion->end_key().compare(this->region_->end_key()) < 0) {
-    this->ClearRange(newRegion->id(), newRegion->end_key(),
-                     this->region_->end_key());
-  }
 }
 
 // save memory states to disk

@@ -65,6 +65,4 @@ void ServerTransport::WriteData(
 void ServerTransport::SendSnapshotSock(
     std::string addr, std::shared_ptr<raft_serverpb::RaftMessage> msg) {}
 
-void ServerTransport::Flush() { this->raftClient_->Flush(); }
-
 }  // namespace kvserver
