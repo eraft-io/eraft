@@ -87,5 +87,4 @@ target_link_libraries(${This} PUBLIC
 )
 
 add_subdirectory(kvserver)
-
-add_subdirectory(test_cli)
+add_subdirectory(kvcli)
