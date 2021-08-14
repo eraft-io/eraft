@@ -70,11 +70,6 @@ class BootHelper {
   static void WriteInitialRaftState(rocksdb::WriteBatch* raftWB,
                                     uint64_t regionID);
 
-  static bool ClearPrepareBoostrap(std::shared_ptr<Engines> engines,
-                                   uint64_t regionID);
-
-  static bool ClearPrepareBoostrapState(std::shared_ptr<Engines> engines);
-
   // get instance
   static BootHelper* GetInstance();
 

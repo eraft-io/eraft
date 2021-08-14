@@ -49,8 +49,6 @@ class PeerMsgHandler {
 
   ~PeerMsgHandler();
 
-  void Read();
-
   void HandleProposal(eraftpb::Entry* entry, std::function<void(Proposal*)>);
 
   void Handle(Proposal* p);
@@ -87,52 +85,19 @@ class PeerMsgHandler {
 
   void OnRaftBaseTick();
 
-  void ScheduleCompactLog(uint64_t firstIndex, uint64_t truncatedIndex);
-
   bool OnRaftMsg(raft_serverpb::RaftMessage* msg);
 
   bool ValidateRaftMessage(raft_serverpb::RaftMessage* msg);
 
   bool CheckMessage(raft_serverpb::RaftMessage* msg);
 
-  void HandleStaleMsg(Transport& trans, raft_serverpb::RaftMessage* msg,
-                      metapb::RegionEpoch* curEpoch, bool needGC);
-
-  void HandleGCPeerMsg(raft_serverpb::RaftMessage* msg);
-
-  bool CheckSnapshot(raft_serverpb::RaftMessage& msg);  // TODO
-
-  void DestoryPeer();
-
-  metapb::Region* FindSiblingRegion();
-
-  void OnRaftGCLogTick();
-
-  void OnSplitRegionCheckTick();
-
-  void OnPrepareSplitRegion(metapb::RegionEpoch* regionEpoch,
-                            std::string splitKey, Callback* cb);
-
-  bool ValidateSplitRegion(metapb::RegionEpoch* epoch, std::string splitKey);
-
-  void OnApproximateRegionSize(uint64_t size);
-
-  void OnSchedulerHeartbeatTick();
-
-  void OnGCSnap();  //  TODO:
-
   std::shared_ptr<std::string> GetRequestKey(raft_cmdpb::Request* req);
-
-  size_t SearchRegionPeer(std::shared_ptr<metapb::Region> region, uint64_t id);
 
   bool CheckStoreID(raft_cmdpb::RaftCmdRequest* req, uint64_t storeID);
 
   bool CheckTerm(raft_cmdpb::RaftCmdRequest* req, uint64_t term);
 
   bool CheckPeerID(raft_cmdpb::RaftCmdRequest* req, uint64_t peerID);
-
-  bool CheckKeyInRegion(std::string key,
-                        std::shared_ptr<metapb::Region> region);
 
  private:
   std::shared_ptr<Peer> peer_;

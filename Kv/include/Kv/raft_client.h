@@ -41,8 +41,6 @@ class RaftConn {
 
   ~RaftConn();
 
-  void Stop();
-
   bool Send(raft_serverpb::RaftMessage& msg);
 
   std::shared_ptr<grpc::Channel> GetChan();
@@ -63,8 +61,6 @@ class RaftClient {
   bool Send(uint64_t storeID, std::string addr,
             raft_serverpb::RaftMessage& msg);
 
-  std::string GetAddr(uint64_t storeID);
-
   bool PutRaw(std::string addr, kvrpcpb::RawPutRequest& request);
 
   std::string GetRaw(std::string addr, kvrpcpb::RawGetRequest& request);
@@ -73,10 +69,6 @@ class RaftClient {
                       raft_cmdpb::TransferLeaderRequest& request);
 
   bool PeerConfChange(std::string addr, raft_cmdpb::ChangePeerRequest& request);
-
-  void InsertAddr(uint64_t storeID, std::string addr);
-
-  void Flush();
 
  private:
   /* data */

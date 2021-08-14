@@ -78,9 +78,6 @@ class RaftStorage : public Storage {
   bool SnapShot(raft_serverpb::RaftSnapshotData* snap);
 
   bool Start();
-
-  bool Stop();
-
   std::shared_ptr<Engines> engs_;
 
  private:

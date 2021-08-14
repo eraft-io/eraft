@@ -56,22 +56,7 @@ class StoreWorker {
 
   static void HandleMsg(Msg msg);
 
-  static void Start(metapb::Store* store);
-
-  static bool CheckMsg(std::shared_ptr<raft_serverpb::RaftMessage> msg);
-
   static bool OnRaftMessage(raft_serverpb::RaftMessage* msg);
-
-  static bool MaybeCreatePeer(uint64_t regionID,
-                              std::shared_ptr<raft_serverpb::RaftMessage> msg);
-
-  static void StoreHeartbeatScheduler();
-
-  static void OnSchedulerStoreHeartbeatTick();
-
-  static bool HandleSnapMgrGC();
-
-  static bool ScheduleGCSnap();  //  TODO:
 
  protected:
  private:

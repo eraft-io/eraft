@@ -37,8 +37,6 @@ RaftConn::RaftConn(std::string addr_, std::shared_ptr<Config>) {
 
 RaftConn::~RaftConn() {}
 
-void RaftConn::Stop() {}
-
 std::shared_ptr<grpc::Channel> RaftConn::GetChan() { return this->chan_; }
 
 RaftClient::RaftClient(std::shared_ptr<Config> c) { this->conf_ = c; }
@@ -84,17 +82,6 @@ bool RaftClient::Send(uint64_t storeID, std::string addr,
   return true;
 }
 
-std::string RaftClient::GetAddr(uint64_t storeID) {
-  return this->addrs_[storeID];
-}
-
-void RaftClient::InsertAddr(uint64_t storeID, std::string addr) {
-  {
-    std::lock_guard<std::mutex> lck(this->mu_);
-    this->addrs_[storeID] = addr;
-  }
-}
-
 bool RaftClient::TransferLeader(std::string addr,
                                 raft_cmdpb::TransferLeaderRequest& request) {
   std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
@@ -136,7 +123,5 @@ std::string RaftClient::GetRaw(std::string addr,
   auto status = stub_->RawGet(&context, request, &response);
   return response.value();
 }
-
-void RaftClient::Flush() {}
 
 }  // namespace kvserver
