@@ -116,9 +116,7 @@ struct Config {
         " regionMaxSize_: " + std::to_string(this->regionMaxSize_) + " \n " +
         " regionSplitSize_: " + std::to_string(this->regionSplitSize_) +
         " \n " + " dbPath_: " + this->dbPath_ + "\n" + " } ";
-
-    Logger::GetInstance()->DEBUG_NEW(output, __FILE__, __LINE__,
-                                     "PrintConfigToConsole");
+    std::cout << output << std::endl;
   }
 
   bool Validate() {

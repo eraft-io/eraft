@@ -172,25 +172,4 @@ void BootHelper::WriteInitialRaftState(rocksdb::WriteBatch* raftWB,
       raftWB, Assistant::GetInstance()->RaftStateKey(regionID), *raftState);
 }
 
-bool BootHelper::ClearPrepareBoostrap(std::shared_ptr<Engines> engines,
-                                      uint64_t regionID) {
-  engines->raftDB_->Delete(rocksdb::WriteOptions(),
-                           Assistant::GetInstance()->RaftStateKey(regionID));
-  std::shared_ptr<rocksdb::WriteBatch> wb =
-      std::make_shared<rocksdb::WriteBatch>();
-  wb->Delete(Assistant::GetInstance()->VecToString(
-      Assistant::GetInstance()->PrepareBootstrapKey));
-  wb->Delete(Assistant::GetInstance()->RegionStateKey(regionID));
-  wb->Delete(Assistant::GetInstance()->ApplyStateKey(regionID));
-  engines->kvDB_->Write(rocksdb::WriteOptions(), &*wb);
-  return true;
-}
-
-bool BootHelper::ClearPrepareBoostrapState(std::shared_ptr<Engines> engines) {
-  engines->kvDB_->Delete(rocksdb::WriteOptions(),
-                         Assistant::GetInstance()->VecToString(
-                             Assistant::GetInstance()->PrepareBootstrapKey));
-  return true;
-}
-
 }  // namespace kvserver
