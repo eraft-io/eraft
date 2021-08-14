@@ -22,5 +22,5 @@ build-dev:
 # run3:
 # 	docker run -it --rm -v $(realpath ..):/eraft -p 20162:20162 cxspace/ti-redis-dev:v0.0.1 /eraft/ci/run-node3.sh
 
-# clean:
-# 	docker rm $(docker ps -aq)
+clean:
+	docker rm $(docker ps -aq)

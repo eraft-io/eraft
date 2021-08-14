@@ -27,6 +27,8 @@
 #include <Kv/ticker.h>
 #include <Logger/logger.h>
 
+#include <memory>
+
 int main(int argc, char* argv[]) {
   // make conf
   std::shared_ptr<kvserver::Config> conf = std::make_shared<kvserver::Config>(
@@ -35,15 +37,16 @@ int main(int argc, char* argv[]) {
   conf->PrintConfigToConsole();
 
   // init logger
-  Logger::Init(Logger::kFileAndTerminal, Logger::kDebug,
+  Logger::Init(Logger::kTerminal, Logger::kDebug,
                conf->dbPath_ + "/" + conf->storeAddr_ + ".log");
 
   // start raft store
-  kvserver::RaftStorage* storage = new kvserver::RaftStorage(conf);
+  std::unique_ptr<kvserver::RaftStorage> storage(
+      new kvserver::RaftStorage(conf));
   storage->Start();
 
   // start rpc service server
-  kvserver::Server svr(conf->storeAddr_, storage);
+  kvserver::Server svr(conf->storeAddr_, storage.get());
   svr.RunLogic();
 
   return 0;
