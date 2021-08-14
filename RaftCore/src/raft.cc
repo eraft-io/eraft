@@ -87,9 +87,10 @@ RaftContext::RaftContext(Config& c) {
   if (c.peers.size() == 0) {
     std::vector<uint64_t> peersTp;
     for (auto node : confSt.nodes()) {
-      Logger::GetInstance()->DEBUG_NEW(
-          "push node to region with peer id " + std::to_string(node), __FILE__,
-          __LINE__, "RaftContext::RaftContext");
+      // Logger::GetInstance()->DEBUG_NEW(
+      //     "push node to region with peer id " + std::to_string(node),
+      //     __FILE__,
+      //     __LINE__, "RaftContext::RaftContext");
       peersTp.push_back(node);
     }
     c.peers = peersTp;
@@ -105,10 +106,10 @@ RaftContext::RaftContext(Config& c) {
   this->BecomeFollower(0, NONE);
   this->randomElectionTimeout_ =
       this->electionTimeout_ + RandIntn(this->electionTimeout_);
-  Logger::GetInstance()->DEBUG_NEW(
-      "random election timeout is " +
-          std::to_string(this->randomElectionTimeout_) + " s",
-      __FILE__, __LINE__, "RaftContext::RaftContext");
+  // Logger::GetInstance()->DEBUG_NEW(
+  //     "random election timeout is " +
+  //         std::to_string(this->randomElectionTimeout_) + " s",
+  //     __FILE__, __LINE__, "RaftContext::RaftContext");
   this->term_ = hardSt.term();
   this->vote_ = hardSt.vote();
   this->raftLog_->commited_ = hardSt.commit();
@@ -145,9 +146,9 @@ bool RaftContext::SendAppend(uint64_t to) {
     // load log from db
     auto entries =
         this->raftLog_->storage_->Entries(prevIndex + 1, prevIndex + 2);
-    Logger::GetInstance()->DEBUG_NEW(
-        "LOAD LOG FROM DB DIZE: " + std::to_string(entries.size()), __FILE__,
-        __LINE__, "RaftContext::SendAppend");
+    // Logger::GetInstance()->DEBUG_NEW(
+    //     "LOAD LOG FROM DB DIZE: " + std::to_string(entries.size()), __FILE__,
+    //     __LINE__, "RaftContext::SendAppend");
     if (entries.size() > 0) {
       prevLogTerm = entries[0].term();
       eraftpb::Message msg;
@@ -165,9 +166,9 @@ bool RaftContext::SendAppend(uint64_t to) {
         e->set_term(ent.term());
         e->set_data(ent.data());
         msg.set_temp_data(ent.data());
-        Logger::GetInstance()->DEBUG_NEW(
-            "SET ENTRY DATA =============================" + ent.data(),
-            __FILE__, __LINE__, "RaftContext::SendAppend");
+        // Logger::GetInstance()->DEBUG_NEW(
+        //     "SET ENTRY DATA =============================" + ent.data(),
+        //     __FILE__, __LINE__, "RaftContext::SendAppend");
       }
       this->msgs_.push_back(msg);
     }
@@ -175,10 +176,11 @@ bool RaftContext::SendAppend(uint64_t to) {
   }
 
   int64_t n = this->raftLog_->entries_.size();
-  Logger::GetInstance()->DEBUG_NEW(
-      "prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " +
-          std::to_string(prevLogTerm) + " entries_.size: " + std::to_string(n),
-      __FILE__, __LINE__, "RaftContext::SendAppend");
+  // Logger::GetInstance()->DEBUG_NEW(
+  //     "prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " +
+  //         std::to_string(prevLogTerm) + " entries_.size: " +
+  //         std::to_string(n),
+  //     __FILE__, __LINE__, "RaftContext::SendAppend");
 
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgAppend);
@@ -198,10 +200,10 @@ bool RaftContext::SendAppend(uint64_t to) {
     e->set_term(this->raftLog_->entries_[i].term());
     e->set_data(this->raftLog_->entries_[i].data());
     msg.set_temp_data(this->raftLog_->entries_[i].data());
-    Logger::GetInstance()->DEBUG_NEW(
-        "SET ENTRY DATA =============================" +
-            this->raftLog_->entries_[i].data(),
-        __FILE__, __LINE__, "RaftContext::SendAppend");
+    // Logger::GetInstance()->DEBUG_NEW(
+    //     "SET ENTRY DATA =============================" +
+    //         this->raftLog_->entries_[i].data(),
+    //     __FILE__, __LINE__, "RaftContext::SendAppend");
   }
   this->msgs_.push_back(msg);
   return true;
@@ -385,7 +387,7 @@ void RaftContext::BecomeLeader() {
   ent.set_term(this->term_);
   ent.set_index(this->raftLog_->LastIndex() + 1);
   ent.set_entry_type(eraftpb::EntryNormal);
-  ent.set_data(0);
+  ent.set_data("");
   this->raftLog_->entries_.push_back(ent);
   this->BcastAppend();
   if (this->prs_.size() == 1) {
@@ -552,9 +554,9 @@ void RaftContext::StepLeader(eraftpb::Message m) {
     }
     case eraftpb::MsgPropose: {
       if (this->leadTransferee_ == NONE) {
-        Logger::GetInstance()->DEBUG_NEW(
-            "StepLeader -> m.data() " + m.temp_data(), __FILE__, __LINE__,
-            "RaftContext::StepLeader");
+        // Logger::GetInstance()->DEBUG_NEW(
+        //     "StepLeader -> m.data() " + m.temp_data(), __FILE__, __LINE__,
+        //     "RaftContext::StepLeader");
         // append one
         this->AppendEntry(m);
       }
@@ -647,8 +649,8 @@ void RaftContext::BcastHeartbeat() {
 }
 
 void RaftContext::BcastAppend() {
-  Logger::GetInstance()->DEBUG_NEW("bcast append ", __FILE__, __LINE__,
-                                   "RaftContext::BcastAppend");
+  // Logger::GetInstance()->DEBUG_NEW("bcast append ", __FILE__, __LINE__,
+  //                                  "RaftContext::BcastAppend");
   for (auto peer : this->prs_) {
     if (peer.first == this->id_) {
       continue;
@@ -853,9 +855,10 @@ bool RaftContext::HandleHeartbeat(eraftpb::Message m) {
 }
 
 void RaftContext::AppendEntry(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG_NEW("append entry TEMP DATA: " + m.temp_data(),
-                                   __FILE__, __LINE__,
-                                   "RaftContext::AppendEntry");
+  // Logger::GetInstance()->DEBUG_NEW("append entry TEMP DATA: " +
+  // m.temp_data(),
+  //                                  __FILE__, __LINE__,
+  //                                  "RaftContext::AppendEntry");
   uint64_t lastIndex = this->raftLog_->LastIndex();
   eraftpb::Entry entry;
   if (m.temp_data() != "") {
@@ -864,9 +867,9 @@ void RaftContext::AppendEntry(eraftpb::Message m) {
     entry.set_data(m.temp_data());
     entry.set_entry_type(m.temp_type());
     this->raftLog_->entries_.push_back(entry);
-    Logger::GetInstance()->DEBUG_NEW(
-        "push on entry to raftlog: " + m.temp_data(), __FILE__, __LINE__,
-        "RaftContext::AppendEntry");
+    // Logger::GetInstance()->DEBUG_NEW(
+    //     "push on entry to raftlog: " + m.temp_data(), __FILE__, __LINE__,
+    //     "RaftContext::AppendEntry");
   } else {
     return;
   }
