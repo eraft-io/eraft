@@ -82,6 +82,9 @@ void Logger::DEBUG_NEW(const std::string& in, const std::string& file,
   }
   std::string text;
   text.append(" [ ");
+  text.append(gLogPath_);
+  text.append(" ] ");
+  text.append(" [ ");
   text.append(file);
   text.append(":");
   text.append(std::to_string(line));
