@@ -21,10 +21,10 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.8)
-set(This LoggerTests)
+set(This logger_tests)
 
 set(Sources 
-    src/LoggerTests.cc
+    src/logger_tests.cc
 )
 
 add_executable(${This} ${Sources})
