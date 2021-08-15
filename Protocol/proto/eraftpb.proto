@@ -20,7 +20,7 @@ message Entry {
     EntryType entry_type = 1;
     uint64 term = 2;
     uint64 index = 3;
-    string data = 4;
+    bytes data = 4;
 }
 
 // SnapshotMetadata contains the log index and term of the last log applied to this
@@ -81,7 +81,7 @@ message Message {
     uint64 commit = 8;
     Snapshot snapshot = 9;
     bool reject = 10;
-    string temp_data = 11;
+    bytes temp_data = 11;
     EntryType temp_type = 12;
 }
 
@@ -109,5 +109,5 @@ message ConfChange {
     ConfChangeType change_type = 1;
     // node will be add/remove
     uint64 node_id = 2;
-    string context = 3;
+    bytes context = 3;
 }
