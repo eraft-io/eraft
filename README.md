@@ -1,5 +1,5 @@
 # eraft
-Raft library implemented by C++, inspired by etcd golang version
+Raft library implemented by C++, inspired by etcd golang version and pingcap tinykv
 
 #### Overview
 

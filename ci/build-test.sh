@@ -8,6 +8,7 @@ NPROC=$(nproc || grep -c ^processor /proc/cpuinfo)
 
 if [ -d "$SRCPATH/Protocol" ]; then
   cd "$SRCPATH/Protocol"
+  chmod -R 755 scripts
   ./scripts/generate_cpp.sh
   cd -
 fi
