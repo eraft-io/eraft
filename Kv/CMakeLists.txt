@@ -24,6 +24,7 @@ cmake_minimum_required(VERSION 3.8)
 set(This Kv)
 
 set(Headers 
+    include/Kv/bench_tools.h
     include/Kv/bootstrap.h
     include/Kv/callback.h
     include/Kv/config.h
@@ -49,6 +50,7 @@ set(Headers
 )
 
 set(Sources
+    server/bench_tools.cc
     server/bootstrap.cc
     server/engines.cc
     server/file.cc
@@ -67,6 +69,7 @@ set(Sources
     server/server_transport.cc
     server/ticker.cc
     server/utils.cc
+
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -88,3 +91,4 @@ target_link_libraries(${This} PUBLIC
 
 add_subdirectory(kvserver)
 add_subdirectory(kvcli)
+add_subdirectory(kvbench)

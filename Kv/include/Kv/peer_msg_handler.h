@@ -49,8 +49,6 @@ class PeerMsgHandler {
 
   ~PeerMsgHandler();
 
-  void HandleProposal(eraftpb::Entry* entry, std::function<void(Proposal*)>);
-
   void Handle(Proposal* p);
 
   std::shared_ptr<rocksdb::WriteBatch> ProcessRequest(
