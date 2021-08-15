@@ -24,8 +24,10 @@
 #include <eraftio/kvrpcpb.grpc.pb.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <ctime>
 #include <iostream>
+#include <thread>
 
 namespace kvserver {
 BenchTools* BenchTools::instance_ = nullptr;
@@ -92,6 +94,7 @@ BenchResult BenchTools::RunBenchmarks() {
     std::cout << "set value: " << testCase.second << std::endl;
 
     this->raftClient_->PutRaw(this->targetAddr_, request);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
   return benchRes;
 }
