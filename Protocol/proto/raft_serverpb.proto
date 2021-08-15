@@ -23,7 +23,7 @@ message RaftMessage {
     // Region key range [start_key, end_key). (Used in 3B)
     bytes start_key = 7;
     bytes end_key = 8;
-    string data = 9;
+    bytes data = 9;
     RaftMessageType raft_msg_type = 10;
 }
 

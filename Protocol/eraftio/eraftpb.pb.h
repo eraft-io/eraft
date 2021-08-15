@@ -286,14 +286,14 @@ class Entry :
 
   // accessors -------------------------------------------------------
 
-  // string data = 4;
+  // bytes data = 4;
   void clear_data();
   static const int kDataFieldNumber = 4;
   const std::string& data() const;
   void set_data(const std::string& value);
   void set_data(std::string&& value);
   void set_data(const char* value);
-  void set_data(const char* value, size_t size);
+  void set_data(const void* value, size_t size);
   std::string* mutable_data();
   std::string* release_data();
   void set_allocated_data(std::string* data);
@@ -736,14 +736,14 @@ class Message :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftpb::Entry >&
       entries() const;
 
-  // string temp_data = 11;
+  // bytes temp_data = 11;
   void clear_temp_data();
   static const int kTempDataFieldNumber = 11;
   const std::string& temp_data() const;
   void set_temp_data(const std::string& value);
   void set_temp_data(std::string&& value);
   void set_temp_data(const char* value);
-  void set_temp_data(const char* value, size_t size);
+  void set_temp_data(const void* value, size_t size);
   std::string* mutable_temp_data();
   std::string* release_temp_data();
   void set_allocated_temp_data(std::string* temp_data);
@@ -1215,14 +1215,14 @@ class ConfChange :
 
   // accessors -------------------------------------------------------
 
-  // string context = 3;
+  // bytes context = 3;
   void clear_context();
   static const int kContextFieldNumber = 3;
   const std::string& context() const;
   void set_context(const std::string& value);
   void set_context(std::string&& value);
   void set_context(const char* value);
-  void set_context(const char* value, size_t size);
+  void set_context(const void* value, size_t size);
   std::string* mutable_context();
   std::string* release_context();
   void set_allocated_context(std::string* context);
@@ -1303,7 +1303,7 @@ inline void Entry::set_index(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   // @@protoc_insertion_point(field_set:eraftpb.Entry.index)
 }
 
-// string data = 4;
+// bytes data = 4;
 inline void Entry::clear_data() {
   data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -1328,7 +1328,7 @@ inline void Entry::set_data(const char* value) {
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftpb.Entry.data)
 }
-inline void Entry::set_data(const char* value, size_t size) {
+inline void Entry::set_data(const void* value, size_t size) {
   
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
@@ -1740,7 +1740,7 @@ inline void Message::set_reject(bool value) {
   // @@protoc_insertion_point(field_set:eraftpb.Message.reject)
 }
 
-// string temp_data = 11;
+// bytes temp_data = 11;
 inline void Message::clear_temp_data() {
   temp_data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -1765,7 +1765,7 @@ inline void Message::set_temp_data(const char* value) {
   temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftpb.Message.temp_data)
 }
-inline void Message::set_temp_data(const char* value, size_t size) {
+inline void Message::set_temp_data(const void* value, size_t size) {
   
   temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
@@ -1917,7 +1917,7 @@ inline void ConfChange::set_node_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   // @@protoc_insertion_point(field_set:eraftpb.ConfChange.node_id)
 }
 
-// string context = 3;
+// bytes context = 3;
 inline void ConfChange::clear_context() {
   context_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -1942,7 +1942,7 @@ inline void ConfChange::set_context(const char* value) {
   context_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftpb.ConfChange.context)
 }
-inline void ConfChange::set_context(const char* value, size_t size) {
+inline void ConfChange::set_context(const void* value, size_t size) {
   
   context_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

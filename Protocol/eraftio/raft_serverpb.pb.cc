@@ -392,7 +392,7 @@ const char descriptor_table_protodef_raft_5fserverpb_2eproto[] =
   "Peer\022!\n\007message\030\004 \001(\0132\020.eraftpb.Message\022"
   ")\n\014region_epoch\030\005 \001(\0132\023.metapb.RegionEpo"
   "ch\022\024\n\014is_tombstone\030\006 \001(\010\022\021\n\tstart_key\030\007 "
-  "\001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\t\0225\n\rra"
+  "\001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\014\0225\n\rra"
   "ft_msg_type\030\n \001(\0162\036.raft_serverpb.RaftMe"
   "ssageType\"_\n\016RaftLocalState\022&\n\nhard_stat"
   "e\030\001 \001(\0132\022.eraftpb.HardState\022\022\n\nlast_inde"
@@ -730,10 +730,10 @@ const char* RaftMessage::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string data = 9;
+      // bytes data = 9;
       case 9:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_data(), ptr, ctx, "raft_serverpb.RaftMessage.data");
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(mutable_data(), ptr, ctx);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -867,15 +867,11 @@ bool RaftMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // string data = 9;
+      // bytes data = 9;
       case 9: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (74 & 0xFF)) {
-          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadString(
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_data()));
-          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-            this->data().data(), static_cast<int>(this->data().length()),
-            ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE,
-            "raft_serverpb.RaftMessage.data"));
         } else {
           goto handle_unusual;
         }
@@ -969,13 +965,9 @@ void RaftMessage::SerializeWithCachedSizes(
       8, this->end_key(), output);
   }
 
-  // string data = 9;
+  // bytes data = 9;
   if (this->data().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->data().data(), static_cast<int>(this->data().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "raft_serverpb.RaftMessage.data");
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringMaybeAliased(
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesMaybeAliased(
       9, this->data(), output);
   }
 
@@ -1050,14 +1042,10 @@ void RaftMessage::SerializeWithCachedSizes(
         8, this->end_key(), target);
   }
 
-  // string data = 9;
+  // bytes data = 9;
   if (this->data().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->data().data(), static_cast<int>(this->data().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "raft_serverpb.RaftMessage.data");
     target =
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesToArray(
         9, this->data(), target);
   }
 
@@ -1102,10 +1090,10 @@ size_t RaftMessage::ByteSizeLong() const {
         this->end_key());
   }
 
-  // string data = 9;
+  // bytes data = 9;
   if (this->data().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->data());
   }
 
