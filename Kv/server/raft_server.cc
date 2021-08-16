@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 
 namespace kvserver {
 
-RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
+RaftStorage::RaftStorage(std::shared_ptr<Config> conf) : conf_(conf) {
   this->engs_ =
       std::make_shared<Engines>(conf->dbPath_ + "_raft", conf->dbPath_ + "_kv");
-  this->conf_ = conf;
 }
 
 RaftStorage::~RaftStorage() {}

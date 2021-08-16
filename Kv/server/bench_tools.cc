@@ -37,16 +37,15 @@ BenchTools::BenchTools(uint64_t clientNums, uint64_t connectionNums,
                        uint64_t testKeySizeInBytes,
                        uint64_t testValuesSizeInBytes,
                        std::shared_ptr<RaftClient> raftClient,
-                       std::string targetAddr) {
-  this->clientNums_ = clientNums;
-  this->connectionNums_ = connectionNums;
-  this->cmdType_ = cmdType;
-  this->testOpCount_ = opCount;
-  this->testKeySizeInBytes_ = testKeySizeInBytes;
-  this->testValuesSizeInBytes_ = testValuesSizeInBytes;
-  this->raftClient_ = raftClient;
-  this->targetAddr_ = targetAddr;
-}
+                       std::string targetAddr)
+    : clientNums_(clientNums),
+      connectionNums_(connectionNums),
+      cmdType_(cmdType),
+      testOpCount_(opCount),
+      testKeySizeInBytes_(testKeySizeInBytes),
+      testValuesSizeInBytes_(testValuesSizeInBytes),
+      raftClient_(raftClient),
+      targetAddr_(targetAddr) {}
 
 BenchTools::~BenchTools() {}
 

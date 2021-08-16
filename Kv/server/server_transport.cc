@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,8 @@
 namespace kvserver {
 
 ServerTransport::ServerTransport(std::shared_ptr<RaftClient> raftClient,
-                                 std::shared_ptr<RaftRouter> raftRouter) {
-  this->raftClient_ = raftClient;
-  this->raftRouter_ = raftRouter;
-}
+                                 std::shared_ptr<RaftRouter> raftRouter)
+    : raftClient_(raftClient), raftRouter_(raftRouter) {}
 
 ServerTransport::~ServerTransport() {}
 
