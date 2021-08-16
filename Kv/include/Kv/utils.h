@@ -179,8 +179,8 @@ class Assistant {
                       google::protobuf::Message& msg) {
     std::string val;
     // debug msg
-    std::string debugVal;
-    google::protobuf::TextFormat::PrintToString(msg, &debugVal);
+    // std::string debugVal;
+    // google::protobuf::TextFormat::PrintToString(msg, &debugVal);
     // Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
     val = msg.SerializeAsString();
     auto status = db->Put(rocksdb::WriteOptions(), key, val);
@@ -191,8 +191,8 @@ class Assistant {
                       google::protobuf::Message& msg) {
     std::string val;
     // debug msg
-    std::string debugVal;
-    google::protobuf::TextFormat::PrintToString(msg, &debugVal);
+    // std::string debugVal;
+    // google::protobuf::TextFormat::PrintToString(msg, &debugVal);
     // Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
     val = msg.SerializeAsString();
     return batch->Put(key, val).ok();

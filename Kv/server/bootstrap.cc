@@ -126,8 +126,8 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(
 
 bool BootHelper::PrepareBoostrapCluster(
     std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region) {
-  // std::shared_ptr<raft_serverpb::RegionLocalState> state(
-  //     new raft_serverpb::RegionLocalState());
+  // std::shared_ptr<raft_serverpb::RegionLocalState> state =
+  //     std::make_shared<raft_serverpb::RegionLocalState>();
   raft_serverpb::RegionLocalState* state =
       new raft_serverpb::RegionLocalState();
   state->set_allocated_region(region.get());
@@ -152,10 +152,10 @@ bool BootHelper::PrepareBoostrapCluster(
 // write initial apply state to rocksdb batch kvWB
 void BootHelper::WriteInitialApplyState(rocksdb::WriteBatch* kvWB,
                                         uint64_t regionID) {
-  // std::shared_ptr<raft_serverpb::RaftApplyState> applyState(
-  //     new raft_serverpb::RaftApplyState());
-  raft_serverpb::RaftApplyState* applyState =
-      new raft_serverpb::RaftApplyState();
+  std::shared_ptr<raft_serverpb::RaftApplyState> applyState =
+      std::make_shared<raft_serverpb::RaftApplyState>();
+  // raft_serverpb::RaftApplyState* applyState =
+  //     new raft_serverpb::RaftApplyState();
   // Will be deleted in the function set_allocated_truncated_state call
   raft_serverpb::RaftTruncatedState* truncatedState =
       new raft_serverpb::RaftTruncatedState();
@@ -170,10 +170,10 @@ void BootHelper::WriteInitialApplyState(rocksdb::WriteBatch* kvWB,
 // write initial raft state to raft batch, logindex = 5, logterm = 5
 void BootHelper::WriteInitialRaftState(rocksdb::WriteBatch* raftWB,
                                        uint64_t regionID) {
-  // std::shared_ptr<raft_serverpb::RaftLocalState> raftState(
-  //     new raft_serverpb::RaftLocalState());
-  raft_serverpb::RaftLocalState* raftState =
-      new raft_serverpb::RaftLocalState();
+  std::shared_ptr<raft_serverpb::RaftLocalState> raftState =
+      std::make_shared<raft_serverpb::RaftLocalState>();
+  // raft_serverpb::RaftLocalState* raftState =
+  //     new raft_serverpb::RaftLocalState();
   eraftpb::HardState hardState;
   hardState.set_term(Assistant::GetInstance()->kRaftInitLogTerm);
   hardState.set_commit(Assistant::GetInstance()->kRaftInitLogIndex);
