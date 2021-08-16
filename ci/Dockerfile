@@ -9,6 +9,8 @@ RUN apt update -y \
         liblld-5.0-dev libclang-5.0-dev liblld-5.0 \
         build-essential autoconf libtool pkg-config \
         libgflags-dev libgtest-dev \
+ && apt-get update -y \
+ && apt-get install -y gdb \
         wget 
         # For tests: # bash expect python python-lxml python-termcolor curl perl sudo tzdata
 #  && rm -rf /var/lib/apt/lists/*
