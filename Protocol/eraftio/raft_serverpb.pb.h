@@ -298,14 +298,14 @@ class RaftMessage :
   std::string* release_end_key();
   void set_allocated_end_key(std::string* end_key);
 
-  // string data = 9;
+  // bytes data = 9;
   void clear_data();
   static const int kDataFieldNumber = 9;
   const std::string& data() const;
   void set_data(const std::string& value);
   void set_data(std::string&& value);
   void set_data(const char* value);
-  void set_data(const char* value, size_t size);
+  void set_data(const void* value, size_t size);
   std::string* mutable_data();
   std::string* release_data();
   void set_allocated_data(std::string* data);
@@ -2240,7 +2240,7 @@ inline void RaftMessage::set_allocated_end_key(std::string* end_key) {
   // @@protoc_insertion_point(field_set_allocated:raft_serverpb.RaftMessage.end_key)
 }
 
-// string data = 9;
+// bytes data = 9;
 inline void RaftMessage::clear_data() {
   data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -2265,7 +2265,7 @@ inline void RaftMessage::set_data(const char* value) {
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:raft_serverpb.RaftMessage.data)
 }
-inline void RaftMessage::set_data(const char* value, size_t size) {
+inline void RaftMessage::set_data(const void* value, size_t size) {
   
   data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

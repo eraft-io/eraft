@@ -39,25 +39,6 @@ PeerMsgHandler::PeerMsgHandler(std::shared_ptr<Peer> peer,
 
 PeerMsgHandler::~PeerMsgHandler() {}
 
-void PeerMsgHandler::HandleProposal(eraftpb::Entry* entry,
-                                    std::function<void(Proposal*)> handle) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle_proposal size " + std::to_string(this->peer_->proposals_.size()),
-      __FILE__, __LINE__, "PeerMsgHandler::HandleProposal");
-  if (this->peer_->proposals_.size() > 0) {
-    Proposal p = this->peer_->proposals_[0];
-    if (p.index_ == entry->index()) {
-      if (p.term_ != entry->term()) {
-        Logger::GetInstance()->DEBUG_NEW("stale req", __FILE__, __LINE__,
-                                         "PeerMsgHandler::HandleProposal");
-      } else {
-        handle(&p);
-      }
-    }
-    this->peer_->proposals_.erase(this->peer_->proposals_.begin());
-  }
-}
-
 std::shared_ptr<std::string> PeerMsgHandler::GetRequestKey(
     raft_cmdpb::Request* req) {
   std::string key;
@@ -124,59 +105,6 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(
       break;
   }
 
-  this->HandleProposal(
-      entry,
-      [&](Proposal* p) {  // 以引用形式捕获所有外部变量
-        raft_cmdpb::RaftCmdResponse* resp = new raft_cmdpb::RaftCmdResponse();
-        switch (req.cmd_type()) {
-          case raft_cmdpb::CmdType::Get: {
-            // update apply state to db
-            this->peer_->peerStorage_->applyState_->set_applied_index(
-                entry->index());
-            std::string applyKey(Assistant::GetInstance()
-                                     ->ApplyStateKey(this->peer_->regionId_)
-                                     .begin(),
-                                 Assistant::GetInstance()
-                                     ->ApplyStateKey(this->peer_->regionId_)
-                                     .end());
-            Assistant::GetInstance()->SetMeta(
-                wb.get(), applyKey, *this->peer_->peerStorage_->applyState_);
-            this->peer_->peerStorage_->engines_->kvDB_->Write(
-                rocksdb::WriteOptions(), &*wb);
-            // get value from db
-            std::string value = Assistant::GetInstance()->GetCF(
-                this->peer_->peerStorage_->engines_->kvDB_, req.get().cf(),
-                req.get().key());
-            raft_cmdpb::Response* sp = resp->add_responses();
-            sp->set_cmd_type(raft_cmdpb::CmdType::Get);
-            sp->mutable_get()->set_value(value);
-            break;
-          }
-          case raft_cmdpb::CmdType::Put: {
-            raft_cmdpb::Response* sp = resp->add_responses();
-            sp->set_cmd_type(raft_cmdpb::CmdType::Put);
-            raft_cmdpb::PutResponse* psp = new raft_cmdpb::PutResponse();
-            sp->set_allocated_put(psp);
-            break;
-          }
-          case raft_cmdpb::CmdType::Delete: {
-            raft_cmdpb::Response* sp = resp->add_responses();
-            sp->set_cmd_type(raft_cmdpb::CmdType::Delete);
-            raft_cmdpb::DeleteResponse* deleteResp =
-                new raft_cmdpb::DeleteResponse();
-            sp->set_allocated_delete_(deleteResp);
-            break;
-          }
-          case raft_cmdpb::CmdType::Snap: {
-            // TODO: snap
-            break;
-          }
-          default:
-            break;
-        }
-        p->cb_->Done(resp);
-      });
-
   return wb;
 }
 
@@ -226,6 +154,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
       eraftpb::ConfChange* cc = new eraftpb::ConfChange();
       cc->ParseFromString(entry->data());
       this->ProcessConfChange(entry, cc, wb);
+      delete cc;
       break;
     }
     case eraftpb::EntryType::EntryNormal: {
@@ -245,6 +174,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
                 msg->key() + " val " + msg->value() + ")",
             __FILE__, __LINE__, "eerMsgHandler::Process");
       }
+      delete msg;
       break;
     }
     default:

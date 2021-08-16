@@ -138,6 +138,7 @@ Node::CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines,
   //     true);
   // }
   // TODO: delete state
+  delete state;
   return this->PrepareBootstrapCluster(engines, storeID);
 }
 
