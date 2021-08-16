@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,6 @@ class RaftClient {
   bool PeerConfChange(std::string addr, raft_cmdpb::ChangePeerRequest& request);
 
  private:
-  /* data */
   std::shared_ptr<Config> conf_;
 
   std::mutex mu_;

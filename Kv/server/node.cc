@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,6 @@ bool Node::Start(std::shared_ptr<Engines> engines,
       return false;
     }
   }
-  // // TODO: put scheduler store
   if (!this->StartNode(engines, trans)) {
     Logger::GetInstance()->DEBUG_NEW("err: start node error", __FILE__,
                                      __LINE__, "Node::Start");
@@ -93,12 +92,10 @@ bool Node::CheckStore(Engines& engs, uint64_t* storeId) {
                          Assistant::GetInstance()->StoreIdentKey),
                      &ident)
            .ok()) {
-    // hey store ident meta key error
     *storeId = 0;
   }
   if (ident.cluster_id() != this->clusterID_) {
     *storeId = 0;
-    // TODO: log cluster id mismatch
     return false;
   }
   if (ident.store_id() == Assistant::GetInstance()->kInvalidID) {
@@ -127,25 +124,11 @@ Node::CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines,
     return std::make_pair<std::shared_ptr<metapb::Region>, bool>(
         std::make_shared<metapb::Region>(state->region()), true);
   }
-  // if(!this->CheckClusterBoostrapped())
-  // {
-  //     return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr,
-  //     false);
-  // }
-  // else
-  // {
-  //     return std::make_pair<std::shared_ptr<metapb::Region> , bool>(nullptr,
-  //     true);
-  // }
-  // TODO: delete state
   delete state;
   return this->PrepareBootstrapCluster(engines, storeID);
 }
 
-bool Node::CheckClusterBoostrapped() {
-  // call sch to check cluster boostrapped
-  return false;
-}
+bool Node::CheckClusterBoostrapped() { return false; }
 
 std::pair<std::shared_ptr<metapb::Region>, bool> Node::PrepareBootstrapCluster(
     std::shared_ptr<Engines> engines, uint64_t storeID) {
@@ -157,8 +140,7 @@ bool Node::BoostrapCluster(std::shared_ptr<Engines> engines,
                            std::shared_ptr<metapb::Region> firstRegion,
                            bool* isNewCluster) {
   auto regionID = firstRegion->id();
-
-  // TODO: send boostrap to scheduler
+  // TODO: report to center
   return true;
 }
 

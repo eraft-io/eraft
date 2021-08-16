@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
     exit(-1);
   }
   this->engines_ = engs;
-  this->region_ = region;  // init region with peers
+  this->region_ = region;
   this->tag_ = tag;
   this->raftState_ = raftStatePair.first;
   this->applyState_ = applyStatePair.first;

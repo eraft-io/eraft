@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -90,10 +90,8 @@ Status Server::TransferLeader(
 Status Server::PeerConfChange(ServerContext* context,
                               const raft_cmdpb::ChangePeerRequest* request,
                               raft_cmdpb::ChangePeerResponse* response) {
-  // 构造配置变更的消息，发送到 raft group
   std::shared_ptr<raft_serverpb::RaftMessage> sendMsg =
       std::make_shared<raft_serverpb::RaftMessage>();
-  // sendMsg->set_allocated_to_peer(request->peer());
   sendMsg->set_data(request->SerializeAsString());
   sendMsg->set_region_id(1);
   sendMsg->set_raft_msg_type(raft_serverpb::RaftConfChange);

@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 eraft bench tools
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,8 @@ namespace kvserver {
 enum class BenchCmdType { KvRawPut, KvRawGet };
 
 struct BenchResult {
-  // test cmd name
   std::string cmdName;
 
-  // test avg qps
   uint64_t avgQps;
 
   float avgLatecy;
@@ -50,8 +48,6 @@ struct BenchResult {
 
   uint32_t numberOfClients;
 };
-
-// TODO:Support mutil client thread
 
 class BenchTools {
  public:

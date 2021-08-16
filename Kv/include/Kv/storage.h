@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include <vector>
 
 namespace kvserver {
-
-/// 对 kv 服务器操作的一些抽象
 
 enum class OpType {
   Get,
@@ -133,8 +131,7 @@ class Storage {
   virtual bool Write(const kvrpcpb::Context& ctx,
                      const kvrpcpb::RawPutRequest* put) = 0;
 
-  virtual StorageReader* Reader(
-      const kvrpcpb::Context& ctx) = 0;  // TODO: return something
+  virtual StorageReader* Reader(const kvrpcpb::Context& ctx) = 0;
 };
 
 }  // namespace kvserver

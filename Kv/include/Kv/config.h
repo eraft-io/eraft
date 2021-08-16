@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -124,7 +124,6 @@ struct Config {
       return false;
     }
     if (this->raftElectionTimeoutTicks_ != 10) {
-      // TODO: log warn
     }
     if (this->raftElectionTimeoutTicks_ <= this->raftHeartbeatTicks_) {
       // election tick must be greater than heartbeat tick
