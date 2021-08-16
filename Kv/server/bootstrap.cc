@@ -61,9 +61,8 @@ BootHelper* BootHelper::GetInstance() {
 bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
                                   uint64_t clusterID, uint64_t storeID,
                                   std::string storeAddr) {
-  // std::shared_ptr<raft_serverpb::StoreIdent> ident(
-  //     new raft_serverpb::StoreIdent());
-  raft_serverpb::StoreIdent* ident = new raft_serverpb::StoreIdent();
+  std::shared_ptr<raft_serverpb::StoreIdent> ident(
+      new raft_serverpb::StoreIdent());
   if (!IsRangeEmpty(engines->kvDB_, "",
                     std::string(Assistant::GetInstance()->MaxKey.begin(),
                                 Assistant::GetInstance()->MaxKey.end()))) {
@@ -85,7 +84,6 @@ bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
       std::string(Assistant::GetInstance()->StoreIdentKey.begin(),
                   Assistant::GetInstance()->StoreIdentKey.end()),
       *ident);
-  delete ident;
   Logger::GetInstance()->DEBUG_NEW("do bootstrap store successful", __FILE__,
                                    __LINE__, "BootHelper::DoBootstrapStore");
   return true;
