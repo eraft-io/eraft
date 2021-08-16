@@ -33,13 +33,11 @@ extern bool DoBootstrapStore(std::shared_ptr<Engines> engines,
 
 extern uint64_t gCounter;
 
-Node::Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg) {
-  this->clusterID_ = 1;
+Node::Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg)
+    : clusterID_(1), cfg_(cfg), system_(system) {
   metapb::Store store;
   store.set_address(cfg->storeAddr_);
   this->store_ = std::make_shared<metapb::Store>(store);
-  this->cfg_ = cfg;
-  this->system_ = system;
 }
 
 Node::~Node() {}

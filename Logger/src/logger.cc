@@ -49,11 +49,8 @@ Logger::Logger() {
   level_ = kDebug;
 }
 
-Logger::Logger(LogTarget target, LogLevel level, const std::string& path) {
-  target_ = target;
-  path_ = path;
-  level_ = level;
-
+Logger::Logger(LogTarget target, LogLevel level, const std::string& path)
+    : target_(target), path_(path), level_(level) {
   std::string strContent = currTime() + " : " + "=== Start logging ===\n";
   if (target != kTerminal) {
     outfile_.open(path, std::ios::out | std::ios::app);

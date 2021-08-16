@@ -29,7 +29,8 @@ namespace kvserver {
 
 PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
                          std::shared_ptr<metapb::Region> region,
-                         std::string tag) {
+                         std::string tag)
+    : engines_(engs), region_(region), tag_(tag) {
   Logger::GetInstance()->DEBUG_NEW(
       "createing peer storage for region " + std::to_string(region->id()),
       __FILE__, __LINE__, "PeerStorage::PeerStorage");
@@ -47,9 +48,6 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
         __FILE__, __LINE__, "PeerStorage::PeerStorage");
     exit(-1);
   }
-  this->engines_ = engs;
-  this->region_ = region;
-  this->tag_ = tag;
   this->raftState_ = raftStatePair.first;
   this->applyState_ = applyStatePair.first;
 }

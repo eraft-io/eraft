@@ -25,7 +25,8 @@
 
 namespace kvserver {
 
-Engines::Engines(std::string kvPath, std::string raftPath) {
+Engines::Engines(std::string kvPath, std::string raftPath)
+    : kvPath_(kvPath), raftPath_(raftPath) {
   rocksdb::Options opts;
   opts.create_if_missing = true;
   rocksdb::Status s1 = rocksdb::DB::Open(opts, kvPath, &kvDB_);
@@ -34,8 +35,6 @@ Engines::Engines(std::string kvPath, std::string raftPath) {
   opts1.create_if_missing = true;
   rocksdb::Status s2 = rocksdb::DB::Open(opts1, raftPath, &raftDB_);
   assert(s2.ok());
-  this->kvPath_ = kvPath;
-  this->raftPath_ = raftPath;
 }
 
 Engines::~Engines() {}

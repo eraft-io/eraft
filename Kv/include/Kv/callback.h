@@ -30,10 +30,7 @@
 namespace kvserver {
 
 struct Callback {
-  Callback() {
-    this->done_ = false;
-    this->resp_ = nullptr;
-  }
+  Callback() : done_(false), resp_(nullptr) {}
 
   void Done(raft_cmdpb::RaftCmdResponse* resp) {
     if (resp != nullptr) {

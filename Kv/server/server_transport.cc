@@ -28,10 +28,8 @@
 namespace kvserver {
 
 ServerTransport::ServerTransport(std::shared_ptr<RaftClient> raftClient,
-                                 std::shared_ptr<RaftRouter> raftRouter) {
-  this->raftClient_ = raftClient;
-  this->raftRouter_ = raftRouter;
-}
+                                 std::shared_ptr<RaftRouter> raftRouter)
+    : raftClient_(raftClient), raftRouter_(raftRouter) {}
 
 ServerTransport::~ServerTransport() {}
 

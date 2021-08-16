@@ -32,10 +32,8 @@ namespace kvserver {
 
 Server::Server() { this->serverAddress_ = DEFAULT_ADDR; }
 
-Server::Server(std::string addr, RaftStorage* st) {
-  this->serverAddress_ = addr;
-  this->st_ = st;
-}
+Server::Server(std::string addr, RaftStorage* st)
+    : serverAddress_(addr), st_(st) {}
 
 Status Server::Raft(ServerContext* context,
                     const raft_serverpb::RaftMessage* request, Done* response) {

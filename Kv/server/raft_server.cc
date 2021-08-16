@@ -29,10 +29,9 @@
 
 namespace kvserver {
 
-RaftStorage::RaftStorage(std::shared_ptr<Config> conf) {
+RaftStorage::RaftStorage(std::shared_ptr<Config> conf) : conf_(conf) {
   this->engs_ =
       std::make_shared<Engines>(conf->dbPath_ + "_raft", conf->dbPath_ + "_kv");
-  this->conf_ = conf;
 }
 
 RaftStorage::~RaftStorage() {}

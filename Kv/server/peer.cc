@@ -39,7 +39,8 @@ std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
 
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
            std::shared_ptr<Engines> engines,
-           std::shared_ptr<metapb::Region> region) {
+           std::shared_ptr<metapb::Region> region)
+    : stopped_(false) {
   std::shared_ptr<metapb::Peer> meta = std::make_shared<metapb::Peer>();
   // find peer
   for (auto peer : region->peers()) {
@@ -71,7 +72,6 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
   this->raftGroup_ = raftGroup;
   this->peerStorage_ = ps;
   this->tag_ = tag;
-  this->stopped_ = false;
 
   Logger::GetInstance()->DEBUG_NEW(
       "init peer with peer id = " + std::to_string(this->meta_->id()) +
