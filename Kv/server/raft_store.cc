@@ -172,7 +172,7 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers) {
   }
 
   // ticker start
-  std::chrono::duration<int, std::milli> timer_duration1(500);
+  std::chrono::duration<int, std::milli> timer_duration1(200);
   Ticker::GetInstance(std::function<void()>(Ticker::Run), router,
                       timer_duration1)
       ->Start();

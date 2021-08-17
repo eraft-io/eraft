@@ -112,7 +112,6 @@ std::vector<eraftpb::Entry> RaftLog::NextEnts() {
 uint64_t RaftLog::ToSliceIndex(uint64_t i) {
   uint64_t idx = i - this->firstIndex_;
   if (idx < 0) {
-    // exit(-1);
     return 0;
   }
   return idx;

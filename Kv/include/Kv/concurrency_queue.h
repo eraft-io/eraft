@@ -86,6 +86,7 @@ class QueueContext {
   ~QueueContext(){};
 
   static QueueContext* GetInstance() {
+
     if (instance_ == nullptr) {
       instance_ = new QueueContext();
     }
@@ -100,6 +101,7 @@ class QueueContext {
 
  protected:
   static QueueContext* instance_;
+
 
  private:
   Queue<Msg> peerSender_;

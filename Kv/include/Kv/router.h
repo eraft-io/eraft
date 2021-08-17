@@ -36,6 +36,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace kvserver {
@@ -103,6 +104,8 @@ class RaftstoreRouter : public RaftRouter {
 
  private:
   std::shared_ptr<Router> router_;
+
+  std::mutex mtx_;
 
   static raft_serverpb::RaftMessage* raft_msg_;
 };

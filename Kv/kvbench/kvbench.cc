@@ -35,11 +35,17 @@ using namespace kvserver;
 
 int main(int argc, char** argv) {
   std::string targetAddr = std::string(argv[1]);
+  uint64_t opCount = std::atoi(argv[2]);
+  uint64_t keySize = std::atoi(argv[3]);
+  uint64_t valueSize = std::atoi(argv[4]);
   std::shared_ptr<Config> conf =
       std::make_shared<Config>(targetAddr, "/tmp/data", 0);
   std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
-  BenchTools::GetInstance(1, 1, kvserver::BenchCmdType::KvRawPut, 100, 4, 4,
-                          raftClient, targetAddr)
-      ->RunBenchmarks();
+  auto benResult =
+      BenchTools::GetInstance(1, 1, kvserver::BenchCmdType::KvRawPut, opCount,
+                              keySize, valueSize, raftClient, targetAddr)
+          ->RunBenchmarks();
+  std::cout << "op avg latency: " << benResult.avgLatecy << " s" << std::endl;
+  std::cout << "op qps: " << benResult.avgQps << std::endl;
   return 0;
 }
