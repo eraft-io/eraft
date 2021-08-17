@@ -95,7 +95,7 @@ BenchResult BenchTools::RunBenchmarks() {
     std::cout << "set value: " << testCase.second << std::endl;
 
     this->raftClient_->PutRaw(this->targetAddr_, request);
-    std::this_thread::sleep_for(std::chrono::milliseconds(9));
+    std::this_thread::sleep_for(std::chrono::milliseconds(8));
   }
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;

@@ -69,19 +69,19 @@ bool RaftstoreRouter::Send(uint64_t regionID, const Msg m) {
 raft_serverpb::RaftMessage* RaftstoreRouter::raft_msg_ = nullptr;
 
 bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg) {
-  {
-    std::lock_guard<std::mutex> lk(mtx_);
+  try {
     if (RaftstoreRouter::raft_msg_ != nullptr) {
       delete RaftstoreRouter::raft_msg_;
     }
     RaftstoreRouter::raft_msg_ = new raft_serverpb::RaftMessage(*msg);
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+    return false;
   }
-
   Logger::GetInstance()->DEBUG_NEW(
       "send raft message type " +
           eraft::MsgTypeToString(
-              RaftstoreRouter::raft_msg_->message().msg_type()) +
-          " MSG_DATA: " + RaftstoreRouter::raft_msg_->message().temp_data(),
+              RaftstoreRouter::raft_msg_->message().msg_type()),
       __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
   Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(),
               RaftstoreRouter::raft_msg_);

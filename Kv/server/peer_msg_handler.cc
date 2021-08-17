@@ -183,6 +183,7 @@ void PeerMsgHandler::HandleRaftReady() {
     auto result = this->peer_->peerStorage_->SaveReadyState(
         std::make_shared<eraft::DReady>(rd));
     if (result != nullptr) {
+      // TODO
     }
     // real send raft message to transport (grpc)
     this->peer_->Send(this->ctx_->trans_, rd.messages);
@@ -234,14 +235,14 @@ void PeerMsgHandler::HandleMsg(Msg m) {
       if (m.data_ != nullptr) {
         try {
           auto raftMsg = static_cast<raft_serverpb::RaftMessage*>(m.data_);
+          if (raftMsg == nullptr) {
+            Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__,
+                                             __LINE__,
+                                             "PeerMsgHandler::HandleMsg");
+            return;
+          }
           switch (raftMsg->raft_msg_type()) {
             case raft_serverpb::RaftMsgNormal: {
-              if (raftMsg == nullptr) {
-                Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__,
-                                                 __LINE__,
-                                                 "PeerMsgHandler::HandleMsg");
-                return;
-              }
               if (!this->OnRaftMsg(raftMsg)) {
                 Logger::GetInstance()->DEBUG_NEW("err: on handle raft msg",
                                                  __FILE__, __LINE__,
@@ -286,6 +287,11 @@ void PeerMsgHandler::HandleMsg(Msg m) {
           }
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
+          // TODO:
+          Logger::GetInstance()->DEBUG_NEW("BAD CASE", __FILE__, __LINE__,
+                                           "PeerMsgHandler::HandleMsg");
+          // Try again
+          QueueContext::GetInstance()->peerSender_.Push(m);
         }
         break;
       }
@@ -432,10 +438,8 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
   newMsg.set_log_term(msg->message().log_term());
   newMsg.set_reject(msg->message().reject());
   newMsg.set_msg_type(msg->message().msg_type());
-  newMsg.set_temp_data(msg->message().temp_data());
-  Logger::GetInstance()->DEBUG_NEW(
-      "RECIVED ENTRY DATA = " + msg->message().temp_data(), __FILE__, __LINE__,
-      "RaftContext::OnRaftMsg");
+  Logger::GetInstance()->DEBUG_NEW("RECIVED ENTRY DATA", __FILE__, __LINE__,
+                                   "RaftContext::OnRaftMsg");
   for (auto e : msg->message().entries()) {
     eraftpb::Entry* newE = newMsg.add_entries();
     newE->set_index(e.index());
