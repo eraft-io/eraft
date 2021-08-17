@@ -291,7 +291,6 @@ void PeerMsgHandler::HandleMsg(Msg m) {
           Logger::GetInstance()->DEBUG_NEW("BAD CASE", __FILE__, __LINE__,
                                            "PeerMsgHandler::HandleMsg");
           // Try again
-          QueueContext::GetInstance()->peerSender_.Push(m);
         }
         break;
       }
