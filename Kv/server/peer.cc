@@ -240,15 +240,13 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_log_term(msg.log_term());
   sendMsg->mutable_message()->set_reject(msg.reject());
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
-  sendMsg->mutable_message()->set_temp_data(msg.temp_data());
   sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgNormal);
 
   Logger::GetInstance()->DEBUG_NEW(
       "on peer send msg" + std::to_string(msg.from()) + " to " +
           std::to_string(msg.to()) + " index " + std::to_string(msg.index()) +
           " term " + std::to_string(msg.term()) + " type " +
-          eraft::MsgTypeToString(msg.msg_type()) + " temp_data  " +
-          msg.temp_data(),
+          eraft::MsgTypeToString(msg.msg_type()),
       __FILE__, __LINE__, "Peer::SendRaftMessage");
 
   for (auto ent : msg.entries()) {

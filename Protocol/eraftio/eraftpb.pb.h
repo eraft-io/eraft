@@ -736,18 +736,6 @@ class Message :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftpb::Entry >&
       entries() const;
 
-  // bytes temp_data = 11;
-  void clear_temp_data();
-  static const int kTempDataFieldNumber = 11;
-  const std::string& temp_data() const;
-  void set_temp_data(const std::string& value);
-  void set_temp_data(std::string&& value);
-  void set_temp_data(const char* value);
-  void set_temp_data(const void* value, size_t size);
-  std::string* mutable_temp_data();
-  std::string* release_temp_data();
-  void set_allocated_temp_data(std::string* temp_data);
-
   // .eraftpb.Snapshot snapshot = 9;
   bool has_snapshot() const;
   void clear_snapshot();
@@ -805,19 +793,12 @@ class Message :
   ::PROTOBUF_NAMESPACE_ID::uint64 commit() const;
   void set_commit(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // .eraftpb.EntryType temp_type = 12;
-  void clear_temp_type();
-  static const int kTempTypeFieldNumber = 12;
-  ::eraftpb::EntryType temp_type() const;
-  void set_temp_type(::eraftpb::EntryType value);
-
   // @@protoc_insertion_point(class_scope:eraftpb.Message)
  private:
   class HasBitSetters;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftpb::Entry > entries_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr temp_data_;
   ::eraftpb::Snapshot* snapshot_;
   ::PROTOBUF_NAMESPACE_ID::uint64 to_;
   ::PROTOBUF_NAMESPACE_ID::uint64 from_;
@@ -827,7 +808,6 @@ class Message :
   bool reject_;
   ::PROTOBUF_NAMESPACE_ID::uint64 index_;
   ::PROTOBUF_NAMESPACE_ID::uint64 commit_;
-  int temp_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftpb_2eproto;
 };
@@ -1738,71 +1718,6 @@ inline void Message::set_reject(bool value) {
   
   reject_ = value;
   // @@protoc_insertion_point(field_set:eraftpb.Message.reject)
-}
-
-// bytes temp_data = 11;
-inline void Message::clear_temp_data() {
-  temp_data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& Message::temp_data() const {
-  // @@protoc_insertion_point(field_get:eraftpb.Message.temp_data)
-  return temp_data_.GetNoArena();
-}
-inline void Message::set_temp_data(const std::string& value) {
-  
-  temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:eraftpb.Message.temp_data)
-}
-inline void Message::set_temp_data(std::string&& value) {
-  
-  temp_data_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftpb.Message.temp_data)
-}
-inline void Message::set_temp_data(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftpb.Message.temp_data)
-}
-inline void Message::set_temp_data(const void* value, size_t size) {
-  
-  temp_data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftpb.Message.temp_data)
-}
-inline std::string* Message::mutable_temp_data() {
-  
-  // @@protoc_insertion_point(field_mutable:eraftpb.Message.temp_data)
-  return temp_data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* Message::release_temp_data() {
-  // @@protoc_insertion_point(field_release:eraftpb.Message.temp_data)
-  
-  return temp_data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void Message::set_allocated_temp_data(std::string* temp_data) {
-  if (temp_data != nullptr) {
-    
-  } else {
-    
-  }
-  temp_data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), temp_data);
-  // @@protoc_insertion_point(field_set_allocated:eraftpb.Message.temp_data)
-}
-
-// .eraftpb.EntryType temp_type = 12;
-inline void Message::clear_temp_type() {
-  temp_type_ = 0;
-}
-inline ::eraftpb::EntryType Message::temp_type() const {
-  // @@protoc_insertion_point(field_get:eraftpb.Message.temp_type)
-  return static_cast< ::eraftpb::EntryType >(temp_type_);
-}
-inline void Message::set_temp_type(::eraftpb::EntryType value) {
-  
-  temp_type_ = value;
-  // @@protoc_insertion_point(field_set:eraftpb.Message.temp_type)
 }
 
 // -------------------------------------------------------------------
