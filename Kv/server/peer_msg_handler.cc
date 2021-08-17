@@ -394,13 +394,13 @@ void PeerMsgHandler::OnTick() {
   }
 
   this->OnRaftBaseTick();
-  QueueContext::GetInstance()->regionIdCh_.Push(this->peer_->regionId_);
+  QueueContext::GetInstance()->get_regionIdCh().Push(this->peer_->regionId_);
 }
 
 void PeerMsgHandler::StartTicker() {
   Logger::GetInstance()->DEBUG_NEW("start ticker", __FILE__, __LINE__,
                                    "PeerMsgHandler::StartTicker");
-  QueueContext::GetInstance()->regionIdCh_.Push(this->peer_->regionId_);
+  QueueContext::GetInstance()->get_regionIdCh().Push(this->peer_->regionId_);
 }
 
 void PeerMsgHandler::OnRaftBaseTick() { this->peer_->raftGroup_->Tick(); }
