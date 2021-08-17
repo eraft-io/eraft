@@ -26,6 +26,10 @@ namespace kvserver {
 
 QueueContext* QueueContext::instance_ = nullptr;
 
-std::mutex QueueContext::mtx_;
+Queue<Msg>& QueueContext::get_peerSender() { return peerSender_; }
+
+Queue<Msg>& QueueContext::get_storeSender() { return storeSender_; }
+
+Queue<uint64_t>& QueueContext::get_regionIdCh() { return regionIdCh_; }
 
 }  // namespace kvserver
