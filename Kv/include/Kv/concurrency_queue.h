@@ -88,8 +88,8 @@ class QueueContext {
   static QueueContext* GetInstance() {
     if (instance_ == nullptr) {
       instance_ = new QueueContext();
-      return instance_;
     }
+    return instance_;
   }
 
   Queue<Msg> peerSender_;
