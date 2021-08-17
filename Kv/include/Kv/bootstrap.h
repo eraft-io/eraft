@@ -24,8 +24,8 @@
 // This file define some hepler function for kvserver boot
 //
 
-#ifndef ERAFT_KV_BOOTSTRAP_H
-#define ERAFT_KV_BOOTSTRAP_H
+#ifndef ERAFT_KV_BOOTSTRAP_H_
+#define ERAFT_KV_BOOTSTRAP_H_
 
 #include <Kv/engines.h>
 #include <eraftio/metapb.pb.h>

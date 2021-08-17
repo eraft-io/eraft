@@ -53,7 +53,7 @@ void Ticker::Run() {
     auto msg = NewPeerMsg(MsgType::MsgTypeTick, r.first, nullptr);
     router_->Send(r.first, msg);
   }
-  auto regionId = QueueContext::GetInstance()->regionIdCh_.Pop();
+  auto regionId = QueueContext::GetInstance()->get_regionIdCh().Pop();
   regions_.insert(std::pair<uint64_t, void*>(regionId, nullptr));
 }
 

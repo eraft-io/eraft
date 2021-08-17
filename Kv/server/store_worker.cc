@@ -43,8 +43,8 @@ StoreWorker::StoreWorker(std::shared_ptr<GlobalContext> ctx,
 StoreWorker::~StoreWorker() {}
 
 void StoreWorker::BootThread() {
-  std::thread th(
-      std::bind(&Run, std::ref(QueueContext::GetInstance()->storeSender_)));
+  std::thread th(std::bind(
+      &Run, std::ref(QueueContext::GetInstance()->get_storeSender())));
   th.detach();
 }
 

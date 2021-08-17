@@ -41,7 +41,7 @@ RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx,
 
 void RaftWorker::BootThread() {
   std::thread th(
-      std::bind(&Run, std::ref(QueueContext::GetInstance()->peerSender_)));
+      std::bind(&Run, std::ref(QueueContext::GetInstance()->get_peerSender())));
   th.detach();
 }
 
