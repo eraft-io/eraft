@@ -61,12 +61,12 @@ bool Router::Send(uint64_t regionID, Msg msg) {
   Logger::GetInstance()->DEBUG_NEW(
       "push raft msg to peer sender, type " + msg.MsgToString(), __FILE__,
       __LINE__, "Router::Register");
-  QueueContext::GetInstance()->peerSender_.Push(msg);
+  QueueContext::GetInstance()->get_peerSender().Push(msg);
   return true;
 }
 
 void Router::SendStore(Msg m) {
-  QueueContext::GetInstance()->storeSender_.Push(m);
+  QueueContext::GetInstance()->get_storeSender().Push(m);
 }
 
 bool RaftstoreRouter::Send(uint64_t regionID, const Msg m) {
