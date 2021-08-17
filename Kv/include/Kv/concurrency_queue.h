@@ -86,10 +86,14 @@ class QueueContext {
   ~QueueContext(){};
 
   static QueueContext* GetInstance() {
-    if (instance_ == nullptr) {
-      instance_ = new QueueContext();
-      return instance_;
+    // lock protect
+    {
+      std::lock_guard<std::mutex> lk(mtx_);
+      if (instance_ == nullptr) {
+        instance_ = new QueueContext();
+      }
     }
+    return instance_;
   }
 
   Queue<Msg> peerSender_;
@@ -100,6 +104,8 @@ class QueueContext {
 
  protected:
   static QueueContext* instance_;
+
+  static std::mutex mtx_;
 };
 
 }  // namespace kvserver

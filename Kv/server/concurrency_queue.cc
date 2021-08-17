@@ -26,4 +26,6 @@ namespace kvserver {
 
 QueueContext* QueueContext::instance_ = nullptr;
 
+std::mutex QueueContext::mtx_;
+
 }  // namespace kvserver

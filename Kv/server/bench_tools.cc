@@ -84,6 +84,8 @@ BenchResult BenchTools::RunBenchmarks() {
       GenRandomKvPair(this->testOpCount_, this->testKeySizeInBytes_,
                       this->testValuesSizeInBytes_);
   kvrpcpb::RawPutRequest request;
+
+  auto start = std::chrono::system_clock::now();
   for (auto testCase : testCases) {
     request.mutable_context()->set_region_id(1);
     request.set_cf("test_cf");
@@ -93,8 +95,12 @@ BenchResult BenchTools::RunBenchmarks() {
     std::cout << "set value: " << testCase.second << std::endl;
 
     this->raftClient_->PutRaw(this->targetAddr_, request);
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(9));
   }
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end - start;
+  benchRes.avgLatecy = elapsed.count() / this->testOpCount_;
+  benchRes.avgQps = static_cast<uint64_t>(1.0 / benchRes.avgLatecy);
   return benchRes;
 }
 

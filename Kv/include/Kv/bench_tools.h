@@ -38,15 +38,7 @@ struct BenchResult {
 
   uint64_t avgQps;
 
-  float avgLatecy;
-
-  uint64_t numberOfKeys;
-
-  uint64_t keySizeInBytes;
-
-  uint32_t numberOfConnections;
-
-  uint32_t numberOfClients;
+  double avgLatecy;
 };
 
 class BenchTools {

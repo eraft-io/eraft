@@ -15,7 +15,6 @@ RUN apt update -y \
 
 RUN cd / 
 
-
 RUN git clone https://github.com.cnpmjs.org/grpc/grpc.git && cd grpc && git checkout v1.24.3 && git submodule update --init \
        && cd /grpc && mkdir .build && cd .build && cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && make install -j $(nproc || grep -c ^processor /proc/cpuinfo) \
        && rm -rf /grpc/.build \
