@@ -24,6 +24,7 @@ cmake_minimum_required(VERSION 3.8)
 set(This bench_tool)
 
 set(Sources 
+    bench_tools.cc
     kvbench.cc
 )
 
