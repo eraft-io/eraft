@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 eraft bench tools
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,49 +33,49 @@ namespace kvserver {
 
 enum class BenchCmdType { KvRawPut, KvRawGet };
 
-struct BenchResult {
-  // test cmd name
-  std::string cmdName;
+class BenchResult {
+public:
+  BenchResult(const std::string& cmd_name, double avg_qps, double avg_latency, uint32_t case_num, uint32_t key_num, uint32_t valid_key_num);
 
-  // test avg qps
-  uint64_t avgQps;
+  std::string PrettyBenchResult() const;
 
-  float avgLatecy;
+private:
+  std::string cmd_name_;
 
-  uint64_t numberOfKeys;
+  double avg_qps_;
 
-  uint64_t keySizeInBytes;
+  double avg_latency_;
+  
+  uint32_t case_num_;
 
-  uint32_t numberOfConnections;
+  uint32_t key_num_;
 
-  uint32_t numberOfClients;
+  uint32_t valid_key_num_;
 };
-
-// TODO:Support mutil client thread
 
 class BenchTools {
  public:
   BenchTools();
 
-  BenchTools(uint64_t clientNums, uint64_t connectionNums, BenchCmdType cmdType,
-             uint64_t opCount, uint64_t testKeySizeInBytes,
-             uint64_t testValuesSizeInBytes,
-             std::shared_ptr<RaftClient> raftClient, std::string targetAddr);
+  BenchTools(uint64_t client_nums, uint64_t connection_nums, BenchCmdType cmd_type,
+             uint64_t test_op_count, uint64_t test_key_size_in_bytes,
+             uint64_t test_value_size_in_bytes,
+             std::shared_ptr<RaftClient> raft_client, const std::string& target_addr);
   ~BenchTools();
 
-  static BenchTools* GetInstance(uint64_t clientNums, uint64_t connectionNums,
-                                 BenchCmdType cmdType, uint64_t opCount,
-                                 uint64_t testKeySizeInBytes,
-                                 uint64_t testValuesSizeInBytes,
-                                 std::shared_ptr<RaftClient> raftClient,
-                                 std::string targetAddr) {
-    if (instance_ == nullptr) {
-      instance_ = new BenchTools(clientNums, connectionNums, cmdType, opCount,
-                                 testKeySizeInBytes, testValuesSizeInBytes,
-                                 raftClient, targetAddr);
-    }
-    return instance_;
-  }
+  // static BenchTools* GetInstance(uint64_t clientNums, uint64_t connectionNums,
+  //                                BenchCmdType cmdType, uint64_t opCount,
+  //                                uint64_t testKeySizeInBytes,
+  //                                uint64_t testValuesSizeInBytes,
+  //                                std::shared_ptr<RaftClient> raftClient,
+  //                                std::string targetAddr) {
+  //   if (instance_ == nullptr) {
+  //     instance_ = new BenchTools(clientNums, connectionNums, cmdType, opCount,
+  //                                testKeySizeInBytes, testValuesSizeInBytes,
+  //                                raftClient, targetAddr);
+  //   }
+  //   return instance_;
+  // }
 
   std::vector<std::pair<std::string, std::string>> GenRandomKvPair(
       uint64_t testOpCount, uint64_t testKeySizeInBytes,
@@ -86,23 +86,23 @@ class BenchTools {
   BenchResult RunBenchmarks();
 
  private:
-  static BenchTools* instance_;
+  // static BenchTools* instance_;
 
-  BenchCmdType cmdType_;
+  BenchCmdType cmd_type_;
 
-  std::string targetAddr_;
+  std::string target_addr_;
 
-  uint64_t clientNums_;
+  uint64_t client_nums_;
 
-  uint64_t connectionNums_;
+  uint64_t connection_nums_;
 
-  uint64_t testOpCount_;
+  uint64_t test_op_count_;
 
-  uint64_t testKeySizeInBytes_;
+  uint64_t test_key_size_in_bytes_;
 
-  uint64_t testValuesSizeInBytes_;
+  uint64_t test_value_size_in_bytes_;
 
-  std::shared_ptr<RaftClient> raftClient_;
+  std::shared_ptr<RaftClient> raft_client_;
 };
 
 }  // namespace kvserver

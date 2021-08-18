@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -99,11 +99,10 @@ class Peer {
 
   uint64_t Term();
 
-  void HeartbeatScheduler();  // heart beat
+  // TODO: report status to placement driver
+  void HeartbeatScheduler();
 
   bool SendRaftMessage(eraftpb::Message msg, std::shared_ptr<Transport> trans);
-
-  // ticker
 
   // instance of the raft moudle
   std::shared_ptr<eraft::RawNode> raftGroup_;

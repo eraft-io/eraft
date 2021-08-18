@@ -61,7 +61,6 @@ RaftLog::RaftLog(StorageInterface &st) {
   this->applied_ = lo - 1;
   this->stabled_ = hi;
   this->firstIndex_ = lo;
-  // this->commited_ = 5;
   Logger::GetInstance()->DEBUG_NEW(
       "init raft log with firstIndex " + std::to_string(this->firstIndex_) +
           " applied " + std::to_string(this->applied_) + " stabled " +
@@ -113,7 +112,6 @@ std::vector<eraftpb::Entry> RaftLog::NextEnts() {
 uint64_t RaftLog::ToSliceIndex(uint64_t i) {
   uint64_t idx = i - this->firstIndex_;
   if (idx < 0) {
-    // exit(-1);
     return 0;
   }
   return idx;

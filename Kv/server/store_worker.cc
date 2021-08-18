@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,8 @@ StoreWorker::StoreWorker(std::shared_ptr<GlobalContext> ctx,
 StoreWorker::~StoreWorker() {}
 
 void StoreWorker::BootThread() {
-  std::thread th(
-      std::bind(&Run, std::ref(QueueContext::GetInstance()->storeSender_)));
+  std::thread th(std::bind(
+      &Run, std::ref(QueueContext::GetInstance()->get_storeSender())));
   th.detach();
 }
 
@@ -79,7 +79,6 @@ void StoreWorker::HandleMsg(Msg msg) {
       break;
     }
     case MsgType::MsgTypeRaftMessage: {
-      // StoreWorker::MaybeCreatePeer(msg.regionId_, );
       break;
     }
     default:

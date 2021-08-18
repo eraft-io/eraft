@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx,
 
 void RaftWorker::BootThread() {
   std::thread th(
-      std::bind(&Run, std::ref(QueueContext::GetInstance()->peerSender_)));
+      std::bind(&Run, std::ref(QueueContext::GetInstance()->get_peerSender())));
   th.detach();
 }
 

@@ -674,7 +674,7 @@ TEST(RaftPaperTests, TestLeaderStartReplication2AB) {
 
   r->Step(proposeMsg);
 
-  ASSERT_EQ(r->raftLog_->LastIndex(), li);
+  ASSERT_EQ(r->raftLog_->LastIndex(), li + 1);
   ASSERT_EQ(r->raftLog_->commited_, li);
 
   std::vector<eraftpb::Message> msgs = r->ReadMessage();
@@ -729,7 +729,7 @@ TEST(RaftPaperTests, TestLeaderCommitEntry2AB) {
     r->Step(AcceptAndReply(m));
   }
 
-  ASSERT_EQ(r->raftLog_->commited_, li);
+  ASSERT_EQ(r->raftLog_->commited_, li + 1);
 
   std::vector<eraftpb::Entry> ents = r->raftLog_->NextEnts();
   for (auto e : ents) {

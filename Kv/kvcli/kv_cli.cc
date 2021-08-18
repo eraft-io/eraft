@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,11 +49,6 @@ int main(int argc, char** argv) {
                         put key \n \
       :./ kv_cli[leader_ip][op][cf][key][value] ");
 
-  // if (argc < 5 || argc > 6) {
-  //   std::cerr << helpStr << std::endl;
-  //   // return -1;
-  // }
-
   std::string reqType = std::string(argv[2]);
   std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
 
@@ -78,11 +73,6 @@ int main(int argc, char** argv) {
     transLeaderReq.set_allocated_peer(pr);
     raftClient->TransferLeader(std::string(argv[1]), transLeaderReq);
   } else if (reqType == "config_change") {
-    // TODO:
-    // ./kv_cli 127.0.0.1:20160 config_change add 127.0.0.1:20163 4
-    // add peer param: 1.ip 2.id
-    // 2. 构造 ChangePeerRequest
-    // raftClient 对象调用 PeerConfChange  发送 request 给 server
     raft_cmdpb::ChangePeerRequest confChange;
     std::string confChangeType = std::string(argv[3]);
     if (confChangeType == "add")
@@ -90,8 +80,8 @@ int main(int argc, char** argv) {
     else if (confChangeType == "remove")
       confChange.set_change_type(eraftpb::RemoveNode);
     metapb::Peer* pr = new metapb::Peer();
-    pr->set_addr(std::string(argv[4]));  // ip
-    pr->set_id(std::atoi(argv[5]));      // id
+    pr->set_addr(std::string(argv[4]));
+    pr->set_id(std::atoi(argv[5]));
     pr->set_store_id(std::atoi(argv[5]));
     confChange.set_allocated_peer(pr);
     raftClient->PeerConfChange(std::string(argv[1]), confChange);

@@ -50,7 +50,6 @@ set(Headers
 )
 
 set(Sources
-    server/bench_tools.cc
     server/bootstrap.cc
     server/engines.cc
     server/file.cc
@@ -69,7 +68,6 @@ set(Sources
     server/server_transport.cc
     server/ticker.cc
     server/utils.cc
-
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})

@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,6 @@ class StoreWorker {
 
   static bool running_;
 
-  // StoreState
   static std::shared_ptr<StoreState> storeState_;
 
   static std::shared_ptr<GlobalContext> ctx_;

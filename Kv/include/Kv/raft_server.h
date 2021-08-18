@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,11 +68,6 @@ class RaftStorage : public Storage {
 
   StorageReader* Reader(const kvrpcpb::Context& ctx);
 
-  //
-  // raft message passing between peer nodes.
-  //
-  // msg definition is in eraft/Protocol/proto/raft_serverpb.proto
-  //
   bool Raft(const raft_serverpb::RaftMessage* msg);
 
   bool SnapShot(raft_serverpb::RaftSnapshotData* snap);

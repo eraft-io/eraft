@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -98,8 +98,6 @@ class PeerStorage : public eraft::StorageInterface {
 
   void ClearRange(uint64_t regionID, std::string start, std::string end);
 
-  // Append the new entries to storage.
-  // entries[0].Index > ms.entries[0].Index
   bool Append(std::vector<eraftpb::Entry> entries,
               std::shared_ptr<rocksdb::WriteBatch> raftWB);
 
@@ -108,9 +106,6 @@ class PeerStorage : public eraft::StorageInterface {
   raft_serverpb::RaftLocalState* raftState_;
 
   raft_serverpb::RaftApplyState* applyState_;
-
-  // TODO: snap
-  uint64_t snapTriedCnt_;
 
   std::shared_ptr<Engines> engines_;
 

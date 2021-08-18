@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,11 +42,6 @@ std::shared_ptr<grpc::Channel> RaftConn::GetChan() { return this->chan_; }
 RaftClient::RaftClient(std::shared_ptr<Config> c) { this->conf_ = c; }
 
 RaftClient::~RaftClient() {}
-
-/***
- *  Get connection from cache, if not find, create
- *  a new one and insert it to cache map
- */
 
 std::shared_ptr<RaftConn> RaftClient::GetConn(std::string addr,
                                               uint64_t regionID) {
@@ -94,9 +89,6 @@ bool RaftClient::TransferLeader(std::string addr,
 
 bool RaftClient::PeerConfChange(std::string addr,
                                 raft_cmdpb::ChangePeerRequest& request) {
-  // TODO
-  // 1. 连接
-  // 2. 发送到 stub_ 里面
   std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
   std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
   raft_cmdpb::ChangePeerResponse response;
@@ -106,7 +98,7 @@ bool RaftClient::PeerConfChange(std::string addr,
 }
 
 bool RaftClient::PutRaw(std::string addr, kvrpcpb::RawPutRequest& request) {
-  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);  // for test
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
   std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
   kvrpcpb::RawPutResponse response;
   grpc::ClientContext context;
@@ -116,7 +108,7 @@ bool RaftClient::PutRaw(std::string addr, kvrpcpb::RawPutRequest& request) {
 
 std::string RaftClient::GetRaw(std::string addr,
                                kvrpcpb::RawGetRequest& request) {
-  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);  // for test
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
   std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
   kvrpcpb::RawGetResponse response;
   grpc::ClientContext context;

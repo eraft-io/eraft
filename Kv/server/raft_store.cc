@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -172,7 +172,7 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers) {
   }
 
   // ticker start
-  std::chrono::duration<int, std::milli> timer_duration1(500);  // 10 ms
+  std::chrono::duration<int, std::milli> timer_duration1(100);
   Ticker::GetInstance(std::function<void()>(Ticker::Run), router,
                       timer_duration1)
       ->Start();

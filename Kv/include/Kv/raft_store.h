@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,6 @@ struct StoreMeta {
 
   std::mutex mutex_;
 
-  // region end key -> region id
   std::map<std::string, uint64_t> regionRanges_;
 
   std::map<uint64_t, metapb::Region*> regions_;
@@ -93,8 +92,6 @@ struct GlobalContext {
   std::shared_ptr<Router> router_;
 
   std::shared_ptr<Transport> trans_;
-
-  // TODO: Scheduler Client
 };
 
 class RaftStore {
@@ -133,7 +130,6 @@ class RaftStore {
 
   std::shared_ptr<RaftRouter> raftRouter_;
 
-  // scheduler client: TODO
   std::deque<uint64_t> tickDriverSender_;
 
   std::atomic<bool> close_;

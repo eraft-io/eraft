@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,5 +25,11 @@
 namespace kvserver {
 
 QueueContext* QueueContext::instance_ = nullptr;
+
+Queue<Msg>& QueueContext::get_peerSender() { return peerSender_; }
+
+Queue<Msg>& QueueContext::get_storeSender() { return storeSender_; }
+
+Queue<uint64_t>& QueueContext::get_regionIdCh() { return regionIdCh_; }
 
 }  // namespace kvserver

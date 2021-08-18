@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,8 @@ std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
 
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
            std::shared_ptr<Engines> engines,
-           std::shared_ptr<metapb::Region> region) {
+           std::shared_ptr<metapb::Region> region)
+    : stopped_(false) {
   std::shared_ptr<metapb::Peer> meta = std::make_shared<metapb::Peer>();
   // find peer
   for (auto peer : region->peers()) {
@@ -71,7 +72,6 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
   this->raftGroup_ = raftGroup;
   this->peerStorage_ = ps;
   this->tag_ = tag;
-  this->stopped_ = false;
 
   Logger::GetInstance()->DEBUG_NEW(
       "init peer with peer id = " + std::to_string(this->meta_->id()) +
@@ -94,13 +94,11 @@ void Peer::InsertPeerCache(metapb::Peer* peer) {
 void Peer::RemovePeerCache(uint64_t peerID) { Peer::peerCache_.erase(peerID); }
 
 std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID) {
-  if (Peer::peerCache_.find(peerID) !=
-      Peer::peerCache_.end()) {  // peer cachehas err
+  if (Peer::peerCache_.find(peerID) != Peer::peerCache_.end()) {
     return Peer::peerCache_[peerID];
   }
   for (auto peer : peerStorage_->region_->peers()) {
     if (peer.id() == peerID) {
-      // Peer::InsertPeerCache(&peer);
       return std::make_shared<metapb::Peer>(peer);
     }
   }
@@ -119,11 +117,7 @@ bool Peer::MaybeDestory() {
 }
 
 bool Peer::Destory(std::shared_ptr<Engines> engine, bool keepData) {
-  // TODO: cal the destory cost time
-
   std::shared_ptr<metapb::Region> region = this->Region();
-  // TODO: // log p.tag begin to destory
-
   std::shared_ptr<rocksdb::WriteBatch> kvWB =
       std::make_shared<rocksdb::WriteBatch>();
   std::shared_ptr<rocksdb::WriteBatch> raftWB =
@@ -246,19 +240,13 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_log_term(msg.log_term());
   sendMsg->mutable_message()->set_reject(msg.reject());
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
-  sendMsg->mutable_message()->set_temp_data(msg.temp_data());
-  // sendMsg->mutable_message()->mutable_snapshot()->mutable_metadata()->set_index(
-  //     msg.snapshot().metadata().index());
-  // sendMsg->mutable_message()->mutable_snapshot()->mutable_metadata()->set_term(
-  //     msg.snapshot().metadata().term());
   sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgNormal);
 
   Logger::GetInstance()->DEBUG_NEW(
       "on peer send msg" + std::to_string(msg.from()) + " to " +
           std::to_string(msg.to()) + " index " + std::to_string(msg.index()) +
           " term " + std::to_string(msg.term()) + " type " +
-          eraft::MsgTypeToString(msg.msg_type()) + " temp_data  " +
-          msg.temp_data(),
+          eraft::MsgTypeToString(msg.msg_type()),
       __FILE__, __LINE__, "Peer::SendRaftMessage");
 
   for (auto ent : msg.entries()) {

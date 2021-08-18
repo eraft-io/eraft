@@ -1,35 +1,21 @@
 FROM ubuntu:18.04
 
 RUN apt update -y \
- && apt install -y cmake ccache libssl-dev libcrypto++-dev \
-        libglib2.0-dev libltdl-dev libicu-dev libmysql++-dev \
-        libreadline-dev libmysqlclient-dev unixodbc-dev \
-        unixodbc-dev devscripts dupload fakeroot debhelper \
-        gcc-7 g++-7 unixodbc-dev devscripts dupload fakeroot debhelper \
-        liblld-5.0-dev libclang-5.0-dev liblld-5.0 \
-        build-essential autoconf libtool pkg-config \
-        libgflags-dev libgtest-dev \
- && apt-get update -y \
- && apt-get install -y gdb \
-        wget 
-        # For tests: # bash expect python python-lxml python-termcolor curl perl sudo tzdata
-#  && rm -rf /var/lib/apt/lists/*
+       && apt install -y cmake ccache libssl-dev libcrypto++-dev \
+       libglib2.0-dev libltdl-dev libicu-dev libmysql++-dev \
+       libreadline-dev libmysqlclient-dev unixodbc-dev \
+       unixodbc-dev devscripts dupload fakeroot debhelper \
+       gcc-7 g++-7 unixodbc-dev devscripts dupload fakeroot debhelper \
+       liblld-5.0-dev libclang-5.0-dev liblld-5.0 \
+       build-essential autoconf libtool pkg-config \
+       libgflags-dev libgtest-dev \
+       && apt-get update -y \
+       && apt-get install -y gdb \
+       wget 
 
-#back to root dir and download golang
 RUN cd / 
 
-ENV GOLANG_VERSION 1.13.3
-
-RUN wget -O go.tgz "https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz"; \
-tar -C /usr/local -xzf go.tgz; \
-rm go.tgz; \
-export PATH="/usr/local/go/bin:$PATH"; \
-go version
-
-ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-
 RUN git clone https://github.com.cnpmjs.org/grpc/grpc.git && cd grpc && git checkout v1.24.3 && git submodule update --init \
- && cd /grpc && mkdir .build && cd .build && cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && make install -j $(nproc || grep -c ^processor /proc/cpuinfo) \
- && rm -rf /grpc/.build \
- && cd /grpc && mkdir .build && cd .build && cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && make install -j $(nproc || grep -c ^processor /proc/cpuinfo)
+       && cd /grpc && mkdir .build && cd .build && cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && make install -j $(nproc || grep -c ^processor /proc/cpuinfo) \
+       && rm -rf /grpc/.build \
+       && cd /grpc && mkdir .build && cd .build && cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && make install -j $(nproc || grep -c ^processor /proc/cpuinfo)

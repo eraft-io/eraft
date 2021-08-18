@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ void Ticker::Run() {
     auto msg = NewPeerMsg(MsgType::MsgTypeTick, r.first, nullptr);
     router_->Send(r.first, msg);
   }
-  auto regionId = QueueContext::GetInstance()->regionIdCh_.Pop();
+  auto regionId = QueueContext::GetInstance()->get_regionIdCh().Pop();
   regions_.insert(std::pair<uint64_t, void*>(regionId, nullptr));
 }
 

@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,18 +88,25 @@ class QueueContext {
   static QueueContext* GetInstance() {
     if (instance_ == nullptr) {
       instance_ = new QueueContext();
-      return instance_;
     }
+    return instance_;
   }
 
+  Queue<Msg>& get_peerSender();
+
+  Queue<Msg>& get_storeSender();
+
+  Queue<uint64_t>& get_regionIdCh();
+
+ protected:
+  static QueueContext* instance_;
+
+ private:
   Queue<Msg> peerSender_;
 
   Queue<Msg> storeSender_;
 
   Queue<uint64_t> regionIdCh_;
-
- protected:
-  static QueueContext* instance_;
 };
 
 }  // namespace kvserver

@@ -60,9 +60,9 @@ void RawNode::Campaign() {
 void RawNode::Propose(std::string data) {
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgPropose);
-  msg.set_from(this->raft->id_);
-  msg.set_temp_data(data);
-  msg.set_temp_type(eraftpb::EntryNormal);
+  eraftpb::Entry* ent = msg.add_entries();
+  ent->set_data(data);
+  ent->set_entry_type(eraftpb::EntryNormal);
   this->raft->Step(msg);
 }
 
@@ -73,9 +73,9 @@ void RawNode::ProposeConfChange(eraftpb::ConfChange cc) {
                                    __LINE__, "RawNode::ProposeConfChange");
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgPropose);
-  msg.set_from(this->raft->id_);
-  msg.set_temp_data(data);
-  msg.set_temp_type(eraftpb::EntryConfChange);
+  eraftpb::Entry* ent = msg.add_entries();
+  ent->set_data(data);
+  ent->set_entry_type(eraftpb::EntryConfChange);
   this->raft->Step(msg);
 }
 

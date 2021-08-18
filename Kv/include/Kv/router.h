@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 Colin
+// Copyright (c) 2021 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace kvserver {
@@ -103,6 +104,8 @@ class RaftstoreRouter : public RaftRouter {
 
  private:
   std::shared_ptr<Router> router_;
+
+  std::mutex mtx_;
 
   static raft_serverpb::RaftMessage* raft_msg_;
 };
