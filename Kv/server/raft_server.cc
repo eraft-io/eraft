@@ -53,9 +53,10 @@ bool RaftStorage::Write(const kvrpcpb::Context& ctx,
 
 StorageReader* RaftStorage::Reader(const kvrpcpb::Context& ctx) {
   metapb::Region region;
-  RegionReader* regionReader = new RegionReader(this->engs_, region);
+  std::shared_ptr<RegionReader> regionReader =
+      std::make_shared<RegionReader>(this->engs_, region);
   this->regionReader_ = regionReader;
-  return regionReader;
+  return regionReader.get();
 }
 
 bool RaftStorage::Raft(const raft_serverpb::RaftMessage* msg) {

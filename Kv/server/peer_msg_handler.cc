@@ -107,13 +107,13 @@ void PeerMsgHandler::ProcessAdminRequest(
     std::shared_ptr<rocksdb::WriteBatch> wb) {}
 
 void PeerMsgHandler::ProcessConfChange(
-    eraftpb::Entry* entry, eraftpb::ConfChange* cc,
+    eraftpb::Entry entry, std::unique_ptr<eraftpb::ConfChange> cc,
     std::shared_ptr<rocksdb::WriteBatch> wb) {
   switch (cc->change_type()) {
     case eraftpb::ConfChangeType::AddNode: {
       Logger::GetInstance()->DEBUG_NEW("add node", __FILE__, __LINE__,
                                        "PeerMsgHandler::ProcessConfChange");
-      metapb::Peer* peer = new metapb::Peer();
+      std::shared_ptr<metapb::Peer> peer = std::make_shared<metapb::Peer>();
       peer->set_id(cc->node_id());
       peer->set_store_id(cc->node_id());
       peer->set_addr(cc->context());
@@ -133,20 +133,19 @@ void PeerMsgHandler::ProcessConfChange(
 }
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
-    eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
-  switch (entry->entry_type()) {
+    eraftpb::Entry entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
+  switch (entry.entry_type()) {
     case eraftpb::EntryType::EntryConfChange: {
       Logger::GetInstance()->DEBUG_NEW(
           "add", __FILE__, __LINE__, "PeerMsgHandler::Proces EntryConfChanges");
-      eraftpb::ConfChange* cc = new eraftpb::ConfChange();
-      cc->ParseFromString(entry->data());
-      this->ProcessConfChange(entry, cc, wb);
-      delete cc;
+      std::unique_ptr<eraftpb::ConfChange> cc(new eraftpb::ConfChange);
+      cc->ParseFromString(entry.data());
+      this->ProcessConfChange(entry, std::move(cc), wb);
       break;
     }
     case eraftpb::EntryType::EntryNormal: {
-      kvrpcpb::RawPutRequest* msg = new kvrpcpb::RawPutRequest();
-      msg->ParseFromString(entry->data());
+      std::unique_ptr<kvrpcpb::RawPutRequest> msg(new kvrpcpb::RawPutRequest);
+      msg->ParseFromString(entry.data());
       Logger::GetInstance()->DEBUG_NEW(
           "Process Entry DATA: cf " + msg->cf() + " key " + msg->key() +
               " val " + msg->value(),
@@ -161,7 +160,6 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
                 msg->key() + " val " + msg->value() + ")",
             __FILE__, __LINE__, "eerMsgHandler::Process");
       }
-      delete msg;
       break;
     }
     default:
@@ -198,7 +196,7 @@ void PeerMsgHandler::HandleRaftReady() {
         Logger::GetInstance()->DEBUG_NEW(
             "COMMIT_ENTRY" + eraft::EntryToString(entry), __FILE__, __LINE__,
             "PeerMsgHandler::HandleRaftReady");
-        kvWB = this->Process(&entry, kvWB);
+        kvWB = this->Process(entry, kvWB);
         if (this->peer_->stopped_) {
           return;
         }
@@ -447,7 +445,7 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
     newE->set_term(e.term());
   }
 
-  this->peer_->raftGroup_->Step(newMsg);
+  this->peer_->raftGroup_->Step(std::move(newMsg));
 
   return true;
 }
