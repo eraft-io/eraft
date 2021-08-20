@@ -144,7 +144,7 @@ bool RaftContext::SendAppend(uint64_t to) {
   if (!resPair.second) {
     // load log from db
     auto entries =
-        this->raftLog_->storage_->Entries(prevIndex + 1, prevIndex + 2);
+        this->raftLog_->storage_->Entries(prevIndex + 1, prevIndex + 10);
     Logger::GetInstance()->DEBUG_NEW(
         "LOAD LOG FROM DB DIZE: " + std::to_string(entries.size()), __FILE__,
         __LINE__, "RaftContext::SendAppend");

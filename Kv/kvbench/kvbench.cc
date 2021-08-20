@@ -39,11 +39,14 @@ int main(int argc, char** argv) {
   uint64_t key_size = std::atoi(argv[3]);
   uint64_t value_size = std::atoi(argv[4]);
 
-  std::shared_ptr<Config> conf = std::make_shared<Config>(target_addr, "/tmp/data", 0);
+  std::shared_ptr<Config> conf =
+      std::make_shared<Config>(target_addr, "/tmp/data", 0);
   std::shared_ptr<RaftClient> raft_client = std::make_shared<RaftClient>(conf);
-  std::shared_ptr<BenchTools> bench_tools = std::make_shared<BenchTools>(1, 1, kvserver::BenchCmdType::KvRawPut, op_count, key_size, value_size, raft_client, target_addr);
-  
-  BenchResult benchmark_result =  bench_tools->RunBenchmarks();
+  std::shared_ptr<BenchTools> bench_tools = std::make_shared<BenchTools>(
+      1, 1, kvserver::BenchCmdType::KvRawPut, op_count, key_size, value_size,
+      raft_client, target_addr);
+
+  BenchResult benchmark_result = bench_tools->RunBenchmarks();
   std::cout << benchmark_result.PrettyBenchResult() << std::endl;
   return 0;
 }

@@ -325,10 +325,10 @@ class Assistant {
         applyState, s);
   }
 
-  static eraftpb::Entry* GetRaftEntry(rocksdb::DB* db, uint64_t regionId,
-                                      uint64_t idx) {
-    eraftpb::Entry* entry = new eraftpb::Entry();
-    GetMeta(db, RaftLogKey(regionId, idx), entry);
+  static eraftpb::Entry GetRaftEntry(rocksdb::DB* db, uint64_t regionId,
+                                     uint64_t idx) {
+    eraftpb::Entry entry;
+    GetMeta(db, RaftLogKey(regionId, idx), &entry);
     return entry;
   }
 
