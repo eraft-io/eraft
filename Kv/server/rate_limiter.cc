@@ -30,6 +30,7 @@ RateLimiter* RateLimiter::instance_ = nullptr;
 
 RateLimiter::RateLimiter(int64_t capacity)
     : capacity_(capacity),
+      failed_count_(0),
       quantum_(0),
       available_tokens_(0),
       fill_interval_(US_PER_SECOND / capacity) {
@@ -58,12 +59,12 @@ void RateLimiter::SupplyTokens() {
     }
     latest_tick_ += (quantum_ * fill_interval_);
     available_tokens_ += quantum_;
-    if (available_tokens_ > capacity_) {
+    if (available_tokens_ >= capacity_) {
       available_tokens_ = capacity_;
-      return;
     }
     mlock.unlock();
   }
+  return;
 }
 
 bool RateLimiter::TryGetToken() {
@@ -76,8 +77,14 @@ bool RateLimiter::TryGetToken() {
     }
     mlock.unlock();
   }
+  failed_count_++;
+  if (failed_count_ > 1000000) {
+    failed_count_ = 0;
+  }
   return false;
 }
+
+uint64_t RateLimiter::GetFailedCount() { return failed_count_; }
 
 void RateLimiter::TestPass() {}
 
