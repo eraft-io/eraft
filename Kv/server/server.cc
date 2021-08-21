@@ -69,7 +69,7 @@ Status Server::RawPut(ServerContext* context,
         "put failed count : " +
             std::to_string(RateLimiter::GetInstance()->GetFailedCount()),
         __FILE__, __LINE__, "Server::RawPut");
-    response->set_error("too frequent, wait and try again!");
+    // response->set_error("too frequent, wait and try again!");
     return Status::CANCELLED;
   }
   // subsequent GET on key may return old value
