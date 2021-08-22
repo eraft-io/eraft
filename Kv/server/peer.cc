@@ -37,6 +37,13 @@ std::map<uint64_t, std::shared_ptr<metapb::Peer> > Peer::peerCache_ = {};
 
 std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
 
+//
+// init peer
+// init peer meta
+// init peer storage
+// init peer raft group
+// if there is only one node in region, trigger campaign
+//
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
            std::shared_ptr<Engines> engines,
            std::shared_ptr<metapb::Region> region)
@@ -86,13 +93,22 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
 
 Peer::~Peer() {}
 
+//
+// instert peer to peer cache
+//
 void Peer::InsertPeerCache(std::shared_ptr<metapb::Peer> peer) {
   Peer::peerCache_.insert(
       std::pair<uint64_t, std::shared_ptr<metapb::Peer> >(peer->id(), peer));
 }
 
+//
+// remove peer from peer cache
+//
 void Peer::RemovePeerCache(uint64_t peerID) { Peer::peerCache_.erase(peerID); }
 
+//
+// get peer from peer chache
+//
 std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID) {
   if (Peer::peerCache_.find(peerID) != Peer::peerCache_.end()) {
     return Peer::peerCache_[peerID];
@@ -105,6 +121,9 @@ std::shared_ptr<metapb::Peer> Peer::GetPeerFromCache(uint64_t peerID) {
   return nullptr;
 }
 
+//
+// return the next proposal index for peer node
+//
 uint64_t Peer::NextProposalIndex() {
   return this->raftGroup_->raft->raftLog_->LastIndex() + 1;
 }
@@ -116,6 +135,9 @@ bool Peer::MaybeDestory() {
   return true;
 }
 
+//
+// destory the peer node
+//
 bool Peer::Destory(std::shared_ptr<Engines> engine, bool keepData) {
   std::shared_ptr<metapb::Region> region = this->Region();
   std::shared_ptr<rocksdb::WriteBatch> kvWB =

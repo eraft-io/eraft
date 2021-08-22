@@ -62,6 +62,9 @@ std::shared_ptr<std::string> PeerMsgHandler::GetRequestKey(
 
 void PeerMsgHandler::Handle(Proposal* p) {}
 
+//
+// current not used method
+//
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(
     eraftpb::Entry* entry, raft_cmdpb::RaftCmdRequest* msg,
     std::shared_ptr<rocksdb::WriteBatch> wb) {
@@ -132,6 +135,10 @@ void PeerMsgHandler::ProcessConfChange(
   this->peer_->raftGroup_->ApplyConfChange(*cc);
 }
 
+//
+// process the commit entry, return write batch
+//
+
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   switch (entry.entry_type()) {
@@ -168,6 +175,13 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
   return wb;
 }
 
+//
+// handle raft ready
+// check if raft group is ready now
+// save current ready state
+// write commit entry to state machine
+// save apply state
+//
 void PeerMsgHandler::HandleRaftReady() {
   Logger::GetInstance()->DEBUG_NEW("handle raft ready ", __FILE__, __LINE__,
                                    "PeerMsgHandler::HandleRaftReady");
@@ -224,6 +238,15 @@ void PeerMsgHandler::HandleRaftReady() {
   }
 }
 
+//
+// handle all the message
+// MsgTypeRaftMessage::RaftMsgNormal: raft group inner msg
+// MsgTypeRaftMessage::RaftMsgClientCmd: the msg from client node
+// MsgTypeRaftMessage::RaftTransferLeader: the msg for transfer group leader
+// MsgTypeRaftMessage::RaftConfChange: the msg for change the group node conf
+// MsgTypeTick: the tick msg for raft group system
+// MsgTypeStart: the msg to trigger ticker start
+//
 void PeerMsgHandler::HandleMsg(Msg m) {
   Logger::GetInstance()->DEBUG_NEW("handle raft msg type " + m.MsgToString(),
                                    __FILE__, __LINE__,

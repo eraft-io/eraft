@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 eraft dev group
+// Copyright (c) 2021 Colin
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,30 +20,4 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Kv/file.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#include <regex>
-#include <string>
-
-namespace kvserver {
-
-//
-// check if path is absolute path
-//
-bool File::IsAbsolutePath(const std::string& path) {
-  static std::regex absolutePathRegex("[~/].*");
-  return std::regex_match(path, absolutePathRegex);
-}
-
-//
-// TODO: need to impl
-//
-bool File::DeleteDirectory(const std::string& directory) {
-  // Not Support Now
-  return true;
-}
-
-}  // namespace kvserver
+int main(int argc, char* argv[]) { return 0; }

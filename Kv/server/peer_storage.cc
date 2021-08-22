@@ -27,6 +27,9 @@
 
 namespace kvserver {
 
+//
+// init peer storage
+//
 PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
                          std::shared_ptr<metapb::Region> region,
                          std::string tag)
@@ -54,7 +57,10 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
 
 PeerStorage::~PeerStorage() {}
 
+//
 // InitialState implements the Storage interface.
+// for init the peer state
+//
 std::pair<eraftpb::HardState, eraftpb::ConfState> PeerStorage::InitialState() {
   if (eraft::IsEmptyHardState(this->raftState_->hard_state())) {
     Logger::GetInstance()->DEBUG_NEW(
@@ -71,7 +77,10 @@ std::pair<eraftpb::HardState, eraftpb::ConfState> PeerStorage::InitialState() {
       Assistant::GetInstance()->ConfStateFromRegion(this->region_));
 }
 
+//
 // Entries implements the Storage interface.
+// return logs from log index in index [lo, hi)
+//
 std::vector<eraftpb::Entry> PeerStorage::Entries(uint64_t lo, uint64_t hi) {
   std::vector<eraftpb::Entry> ents;
 
@@ -102,7 +111,10 @@ std::vector<eraftpb::Entry> PeerStorage::Entries(uint64_t lo, uint64_t hi) {
   return ents;
 }
 
+//
 // Term implements the Storage interface.
+// return the log term for log index = idx
+//
 std::pair<uint64_t, bool> PeerStorage::Term(uint64_t idx) {
   if (idx == this->TruncatedIndex()) {
     return std::make_pair<uint64_t, bool>(this->TruncatedTerm(), true);
@@ -122,10 +134,15 @@ std::pair<uint64_t, bool> PeerStorage::Term(uint64_t idx) {
   return std::make_pair<uint64_t, bool>(entry->term(), true);
 }
 
+//
 // LastIndex implements the Storage interface.
+// return the last log index
+//
 uint64_t PeerStorage::LastIndex() { return this->raftState_->last_index(); }
 
+//
 // FirstIndex implements the Storage interface.
+// return the first index
 uint64_t PeerStorage::FirstIndex() { return this->TruncatedIndex() + 1; }
 
 // Snapshot implements the Storage interface.
@@ -139,8 +156,10 @@ eraftpb::Snapshot PeerStorage::Snapshot() {
   return *snap;
 }
 
+//
 // Append the new entries to storage.
 // entries[0].Index > ms.entries[0].Index
+//
 bool PeerStorage::Append(std::vector<eraftpb::Entry> entries,
                          std::shared_ptr<rocksdb::WriteBatch> raftWB) {
   Logger::GetInstance()->DEBUG_NEW(
@@ -181,20 +200,32 @@ bool PeerStorage::Append(std::vector<eraftpb::Entry> entries,
   return true;
 }
 
+//
+// return the applied index in current log
+//
 uint64_t PeerStorage::AppliedIndex() {
   return this->applyState_->applied_index();
 }
 
+//
+// check if peer's region is initialized
+//
 bool PeerStorage::IsInitialized() {
   return (this->region_->peers().size() > 0);
 }
 
+//
+// return this peerstorage's region
+//
 std::shared_ptr<metapb::Region> PeerStorage::Region() { return this->region_; }
 
 void PeerStorage::SetRegion(std::shared_ptr<metapb::Region> region) {
   this->region_ = region;
 }
 
+//
+// check if range [log, high] log entries is in peerstorge
+//
 bool PeerStorage::CheckRange(uint64_t low, uint64_t high) {
   if (low > high) {
     return false;
@@ -225,7 +256,9 @@ bool PeerStorage::ClearMeta(std::shared_ptr<rocksdb::WriteBatch> kvWB,
       this->raftState_->last_index());
 }
 
+//
 // save memory states to disk
+//
 std::shared_ptr<ApplySnapResult> PeerStorage::SaveReadyState(
     std::shared_ptr<eraft::DReady> ready) {
   std::shared_ptr<rocksdb::WriteBatch> raftWB =

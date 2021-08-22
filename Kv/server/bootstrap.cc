@@ -31,6 +31,9 @@ namespace kvserver {
 BootHelper* BootHelper::instance_ = nullptr;
 uint64_t BootHelper::gCounter_ = 0;
 
+//
+// check if range [startKey, endKey) is empty in db
+//
 bool BootHelper::IsRangeEmpty(rocksdb::DB* db, std::string startKey,
                               std::string endKey) {
   bool hasData;
@@ -46,23 +49,32 @@ bool BootHelper::IsRangeEmpty(rocksdb::DB* db, std::string startKey,
   return !hasData;
 }
 
+//
+// alloc unique, need to change this logic to scheduler node
+//
 uint64_t BootHelper::MockSchAllocID() {
   gCounter_++;
   return gCounter_;
 }
 
+//
+// Single instance pattern, return single instance for BootHepler
+//
 BootHelper* BootHelper::GetInstance() {
   if (instance_ == nullptr) {
     instance_ = new BootHelper();
-    return instance_;
   }
+  return instance_;
 }
 
+//
+// do bootstrap store, set ident data to kv db
+//
 bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
                                   uint64_t clusterID, uint64_t storeID,
                                   std::string storeAddr) {
-  std::shared_ptr<raft_serverpb::StoreIdent> ident(
-      new raft_serverpb::StoreIdent());
+  std::shared_ptr<raft_serverpb::StoreIdent> ident =
+      std::make_shared<raft_serverpb::StoreIdent>();
   if (!IsRangeEmpty(engines->kvDB_, "",
                     std::string(Assistant::GetInstance()->MaxKey.begin(),
                                 Assistant::GetInstance()->MaxKey.end()))) {
@@ -89,6 +101,9 @@ bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
   return true;
 }
 
+//
+// prepare bootstrap, make region info for PrepareBoostrapCluster method.
+//
 std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(
     std::shared_ptr<Engines> engines, std::string storeAddr,
     std::map<std::string, int> peerAddrMaps) {
@@ -122,13 +137,27 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(
   return std::make_pair(region, true);
 }
 
+//
+// write init apply state to kvDB_, write init raft state to raftDB_.
+//
 bool BootHelper::PrepareBoostrapCluster(
     std::shared_ptr<Engines> engines, std::shared_ptr<metapb::Region> region) {
-  // std::shared_ptr<raft_serverpb::RegionLocalState> state =
-  //     std::make_shared<raft_serverpb::RegionLocalState>();
-  raft_serverpb::RegionLocalState* state =
-      new raft_serverpb::RegionLocalState();
-  state->set_allocated_region(region.get());
+  std::shared_ptr<raft_serverpb::RegionLocalState> state =
+      std::make_shared<raft_serverpb::RegionLocalState>();
+  // fill state
+  state->mutable_region()->set_id(region->id());
+  state->mutable_region()->set_start_key(region->start_key());
+  state->mutable_region()->set_end_key(region->end_key());
+  state->mutable_region()->mutable_region_epoch()->set_conf_ver(
+      region->region_epoch().conf_ver());
+  state->mutable_region()->mutable_region_epoch()->set_version(
+      region->region_epoch().version());
+  for (auto peer : region->peers()) {
+    auto newPeer = state->mutable_region()->add_peers();
+    newPeer->set_id(peer.id());
+    newPeer->set_addr(peer.addr());
+    newPeer->set_store_id(peer.store_id());
+  }
   rocksdb::WriteBatch kvWB;
   std::string prepareBootstrapKey(
       Assistant::GetInstance()->PrepareBootstrapKey.begin(),
@@ -147,31 +176,33 @@ bool BootHelper::PrepareBoostrapCluster(
   return true;
 }
 
+//
 // write initial apply state to rocksdb batch kvWB
+// applied index = 5, truncated index = 5, truncated term = 5
+//
 void BootHelper::WriteInitialApplyState(rocksdb::WriteBatch* kvWB,
                                         uint64_t regionID) {
   std::shared_ptr<raft_serverpb::RaftApplyState> applyState =
       std::make_shared<raft_serverpb::RaftApplyState>();
-  // raft_serverpb::RaftApplyState* applyState =
-  //     new raft_serverpb::RaftApplyState();
-  // Will be deleted in the function set_allocated_truncated_state call
-  raft_serverpb::RaftTruncatedState* truncatedState =
-      new raft_serverpb::RaftTruncatedState();
+  std::shared_ptr<raft_serverpb::RaftTruncatedState> truncatedState =
+      std::make_shared<raft_serverpb::RaftTruncatedState>();
   applyState->set_applied_index(Assistant::GetInstance()->kRaftInitLogIndex);
   truncatedState->set_index(Assistant::GetInstance()->kRaftInitLogIndex);
   truncatedState->set_term(Assistant::GetInstance()->kRaftInitLogTerm);
-  applyState->set_allocated_truncated_state(truncatedState);
+  applyState->mutable_truncated_state()->set_index(truncatedState->index());
+  applyState->mutable_truncated_state()->set_term(truncatedState->term());
   Assistant::GetInstance()->SetMeta(
       kvWB, Assistant::GetInstance()->ApplyStateKey(regionID), *applyState);
 }
 
-// write initial raft state to raft batch, logindex = 5, logterm = 5
+//
+// write initial raft state to raft batch
+// log index = 5, log term = 5
+//
 void BootHelper::WriteInitialRaftState(rocksdb::WriteBatch* raftWB,
                                        uint64_t regionID) {
   std::shared_ptr<raft_serverpb::RaftLocalState> raftState =
       std::make_shared<raft_serverpb::RaftLocalState>();
-  // raft_serverpb::RaftLocalState* raftState =
-  //     new raft_serverpb::RaftLocalState();
   eraftpb::HardState hardState;
   hardState.set_term(Assistant::GetInstance()->kRaftInitLogTerm);
   hardState.set_commit(Assistant::GetInstance()->kRaftInitLogIndex);

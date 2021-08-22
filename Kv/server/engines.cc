@@ -25,6 +25,9 @@
 
 namespace kvserver {
 
+//
+// init engines, contains kvDB_ and raftDB_;
+//
 Engines::Engines(std::string kvPath, std::string raftPath)
     : kvPath_(kvPath), raftPath_(raftPath) {
   rocksdb::Options opts;
@@ -46,11 +49,17 @@ bool Engines::Close() {
 
 bool Engines::Destory() {}
 
+//
+// write batch to kvDB_
+//
 bool Engines::WriteKV(rocksdb::WriteBatch& batch) {
   rocksdb::Status s = kvDB_->Write(rocksdb::WriteOptions(), &batch);
   assert(s.ok());
 }
 
+//
+// write batch to raftDB_
+//
 bool Engines::WriteRaft(rocksdb::WriteBatch& batch) {
   rocksdb::Status s = raftDB_->Write(rocksdb::WriteOptions(), &batch);
   assert(s.ok());

@@ -26,10 +26,19 @@ namespace kvserver {
 
 QueueContext* QueueContext::instance_ = nullptr;
 
+//
+// return the peerSender_ queue ref
+//
 Queue<Msg>& QueueContext::get_peerSender() { return peerSender_; }
 
+//
+// return the storeSender_ queue ref
+//
 Queue<Msg>& QueueContext::get_storeSender() { return storeSender_; }
 
+//
+// return the regionIdCh_ queue ref
+//
 Queue<uint64_t>& QueueContext::get_regionIdCh() { return regionIdCh_; }
 
 }  // namespace kvserver

@@ -33,6 +33,9 @@ extern bool DoBootstrapStore(std::shared_ptr<Engines> engines,
 
 extern uint64_t gCounter;
 
+//
+// init node
+//
 Node::Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg)
     : clusterID_(1), cfg_(cfg), system_(system) {
   metapb::Store store;
@@ -42,6 +45,12 @@ Node::Node(std::shared_ptr<RaftStore> system, std::shared_ptr<Config> cfg)
 
 Node::~Node() {}
 
+//
+// start node
+// 1.bootstrap stire
+// 2.boostrap cluster
+// 3.start node
+//
 bool Node::Start(std::shared_ptr<Engines> engines,
                  std::shared_ptr<Transport> trans) {
   uint64_t storeID;
@@ -111,18 +120,17 @@ uint64_t Node::AllocID() {
 std::pair<std::shared_ptr<metapb::Region>, bool>
 Node::CheckOrPrepareBoostrapCluster(std::shared_ptr<Engines> engines,
                                     uint64_t storeID) {
-  raft_serverpb::RegionLocalState* state =
-      new raft_serverpb::RegionLocalState();
+  std::shared_ptr<raft_serverpb::RegionLocalState> state =
+      std::make_shared<raft_serverpb::RegionLocalState>();
   if (Assistant::GetInstance()
           ->GetMeta(engines->kvDB_,
                     Assistant::GetInstance()->VecToString(
                         Assistant::GetInstance()->PrepareBootstrapKey),
-                    state)
+                    state.get())
           .ok()) {
     return std::make_pair<std::shared_ptr<metapb::Region>, bool>(
         std::make_shared<metapb::Region>(state->region()), true);
   }
-  delete state;
   return this->PrepareBootstrapCluster(engines, storeID);
 }
 
@@ -142,6 +150,9 @@ bool Node::BoostrapCluster(std::shared_ptr<Engines> engines,
   return true;
 }
 
+//
+// do boostrap store
+//
 bool Node::BootstrapStore(Engines& engs, uint64_t* storeId) {
   auto storeID = this->cfg_->peerAddrMaps_[this->cfg_->storeAddr_];
   Logger::GetInstance()->DEBUG_NEW(
