@@ -76,8 +76,8 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
     }
     auto val = iter->value().ToString();
     totalCount++;
-    raft_serverpb::RegionLocalState* localState =
-        new raft_serverpb::RegionLocalState();
+    std::unique_ptr<raft_serverpb::RegionLocalState> localState(
+        new raft_serverpb::RegionLocalState);
     localState->ParseFromString(val);
 
     // debug msg
@@ -90,7 +90,7 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
 
     if (localState->state() == raft_serverpb::PeerState::Tombstone) {
       tombStoneCount++;
-      this->ClearStaleMeta(&kvWB, &raftWB, localState);
+      this->ClearStaleMeta(&kvWB, &raftWB, std::move(localState));
 
       continue;
     }
@@ -109,9 +109,9 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
   return regionPeers;
 }
 
-void RaftStore::ClearStaleMeta(rocksdb::WriteBatch* kvWB,
-                               rocksdb::WriteBatch* raftWB,
-                               raft_serverpb::RegionLocalState* originState) {
+void RaftStore::ClearStaleMeta(
+    rocksdb::WriteBatch* kvWB, rocksdb::WriteBatch* raftWB,
+    std::unique_ptr<raft_serverpb::RegionLocalState> originState) {
   auto region = originState->region();
   auto stateRes = Assistant::GetInstance()->GetRaftLocalState(
       this->ctx_->engine_->raftDB_, region.id());

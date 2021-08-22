@@ -106,8 +106,9 @@ class RaftStore {
 
   std::vector<std::shared_ptr<Peer> > LoadPeers();
 
-  void ClearStaleMeta(rocksdb::WriteBatch* kvWB, rocksdb::WriteBatch* raftWB,
-                      raft_serverpb::RegionLocalState* originState);
+  void ClearStaleMeta(
+      rocksdb::WriteBatch* kvWB, rocksdb::WriteBatch* raftWB,
+      std::unique_ptr<raft_serverpb::RegionLocalState> originState);
 
   bool Start(std::shared_ptr<metapb::Store> meta, std::shared_ptr<Config> cfg,
              std::shared_ptr<Engines> engines,

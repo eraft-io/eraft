@@ -86,7 +86,7 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
 
 Peer::~Peer() {}
 
-void Peer::InsertPeerCache(metapb::Peer* peer) {
+void Peer::InsertPeerCache(std::shared_ptr<metapb::Peer> peer) {
   Peer::peerCache_.insert(
       std::pair<uint64_t, std::shared_ptr<metapb::Peer> >(peer->id(), peer));
 }

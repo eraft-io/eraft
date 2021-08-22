@@ -84,7 +84,7 @@ class RaftStorage : public Storage {
 
   std::shared_ptr<RaftStore> raftSystem_;
 
-  RegionReader* regionReader_;
+  std::shared_ptr<RegionReader> regionReader_;
 };
 
 }  // namespace kvserver

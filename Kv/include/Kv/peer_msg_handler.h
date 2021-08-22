@@ -59,11 +59,12 @@ class PeerMsgHandler {
                            raft_cmdpb::RaftCmdRequest* req,
                            std::shared_ptr<rocksdb::WriteBatch> wb);
 
-  void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc,
+  void ProcessConfChange(eraftpb::Entry entry,
+                         std::unique_ptr<eraftpb::ConfChange>,
                          std::shared_ptr<rocksdb::WriteBatch> wb);
 
   std::shared_ptr<rocksdb::WriteBatch> Process(
-      eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb);
+      eraftpb::Entry entry, std::shared_ptr<rocksdb::WriteBatch> wb);
 
   void HandleRaftReady();
 
