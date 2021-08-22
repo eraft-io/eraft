@@ -71,29 +71,24 @@ bool RaftstoreRouter::Send(uint64_t regionID, const Msg m) {
 raft_serverpb::RaftMessage* RaftstoreRouter::raft_msg_ = nullptr;
 
 bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg) {
-  try {
-    std::mutex valMutex;
-    {
-      std::lock_guard<std::mutex> lg(valMutex);
-      if (RaftstoreRouter::raft_msg_ != nullptr) {
-        delete RaftstoreRouter::raft_msg_;
-      }
-      RaftstoreRouter::raft_msg_ = new raft_serverpb::RaftMessage(*msg);
-      Logger::GetInstance()->DEBUG_NEW(
-          "send raft message type " +
-              eraft::MsgTypeToString(
-                  RaftstoreRouter::raft_msg_->message().msg_type()),
-          __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
-    }
-    Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(),
-                RaftstoreRouter::raft_msg_);
-    return this->router_->Send(msg->region_id(), m);
-
-  } catch (const std::exception& e) {
-    std::cerr << e.what() << '\n';
-    return false;
-  }
-  return false;
+  // try {
+  //   if (RaftstoreRouter::raft_msg_ != nullptr) {
+  //     delete RaftstoreRouter::raft_msg_;
+  //   }
+  //   RaftstoreRouter::raft_msg_ = new raft_serverpb::RaftMessage(*msg);
+  // } catch (const std::exception& e) {
+  //   std::cerr << e.what() << '\n';
+  //   return false;
+  // }
+  // std::shared_ptr<raft_serverpb::RaftMessage> raftmsg_ =
+  //     std::make_shared<raft_serverpb::RaftMessage>(*msg);
+  raft_serverpb::RaftMessage* raftmsg = new raft_serverpb::RaftMessage(*msg);
+  Logger::GetInstance()->DEBUG_NEW(
+      "send raft message type " +
+          eraft::MsgTypeToString(raftmsg->message().msg_type()),
+      __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
+  Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), raftmsg);
+  return this->router_->Send(msg->region_id(), m);
 }
 
 bool RaftstoreRouter::SendRaftCommand(const kvrpcpb::RawPutRequest* put) {
