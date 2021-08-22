@@ -32,12 +32,9 @@
 namespace kvserver {
 // BenchTools* BenchTools::instance_ = nullptr;
 
-BenchResult::BenchResult(const std::string& cmd_name, 
-                         double avg_qps, 
-                         double avg_latency, 
-                         uint32_t case_num, 
-                         uint32_t key_num, 
-                         uint32_t valid_key_num)
+BenchResult::BenchResult(const std::string& cmd_name, double avg_qps,
+                         double avg_latency, uint32_t case_num,
+                         uint32_t key_num, uint32_t valid_key_num)
     : cmd_name_(cmd_name),
       avg_qps_(avg_qps),
       avg_latency_(avg_latency),
@@ -74,7 +71,8 @@ BenchTools::BenchTools(uint64_t client_nums, uint64_t connection_nums,
 BenchTools::~BenchTools() {}
 
 std::vector<std::pair<std::string, std::string>> BenchTools::GenRandomKvPair(
-    uint64_t test_op_count, uint64_t test_key_size_in_bytes, uint64_t test_values_size_in_bytes) {
+    uint64_t test_op_count, uint64_t test_key_size_in_bytes,
+    uint64_t test_values_size_in_bytes) {
   std::vector<std::pair<std::string, std::string>> test_cases;
   for (uint64_t i = 0; i < test_op_count; i++) {
     test_cases.push_back(std::make_pair<std::string, std::string>(
@@ -101,10 +99,12 @@ std::string BenchTools::GenRandomLenString(uint64_t len) {
 }
 
 BenchResult BenchTools::RunBenchmarks() {
-  std::map<std::string, std::string> validate_kv; // evaluate the correctness of raft
+  std::map<std::string, std::string>
+      validate_kv;  // evaluate the correctness of raft
   std::vector<std::pair<std::string, std::string>> test_cases =
-      GenRandomKvPair(this->test_op_count_, this->test_key_size_in_bytes_, this->test_value_size_in_bytes_);
-      
+      GenRandomKvPair(this->test_op_count_, this->test_key_size_in_bytes_,
+                      this->test_value_size_in_bytes_);
+
   kvrpcpb::RawPutRequest put_request;
   put_request.mutable_context()->set_region_id(1);
   put_request.set_cf("test_cf");
@@ -123,10 +123,11 @@ BenchResult BenchTools::RunBenchmarks() {
     validate_kv[key] = value;
     // for test, 80ms << 100ms raft tick, we must limit speed of propose, for
     // optimization, we to batch propose client request
-    std::this_thread::sleep_for(std::chrono::milliseconds(80));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
   std::cout << "start validation: ------------------------------------- \n";
   kvrpcpb::RawGetRequest get_request;
@@ -140,17 +141,16 @@ BenchResult BenchTools::RunBenchmarks() {
     const std::string& value = it->second;
 
     get_request.set_key(key);
-    std::string value_raft = raft_client_->GetRaw(this->target_addr_, get_request);
+    std::string value_raft =
+        raft_client_->GetRaw(this->target_addr_, get_request);
 
     if (value == value_raft) {
       ++valid_key_num;
     } else {
       std::cout << "ERROR: " << __FILE__ << ' ' << __LINE__
-                << " read incorrect value! " 
-                << " key= " << key
-                << " value= " << value 
-                << " value_raft= " << value_raft
-                << "\n";
+                << " read incorrect value! "
+                << " key= " << key << " value= " << value
+                << " value_raft= " << value_raft << "\n";
     }
   }
 
@@ -158,7 +158,8 @@ BenchResult BenchTools::RunBenchmarks() {
 
   double avg_qps = this->test_op_count_ / elapsed.count();
 
-  return BenchResult("", avg_qps, avg_latency, this->test_op_count_, key_num, valid_key_num);
+  return BenchResult("", avg_qps, avg_latency, this->test_op_count_, key_num,
+                     valid_key_num);
 }
 
 }  // namespace kvserver
