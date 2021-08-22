@@ -40,6 +40,7 @@ set(Headers
     include/Kv/raft_server.h
     include/Kv/raft_store.h
     include/Kv/raft_worker.h
+    include/Kv/rate_limiter.h
     include/Kv/router.h
     include/Kv/server.h
     include/Kv/server_transport.h
@@ -62,6 +63,7 @@ set(Sources
     server/raft_server.cc
     server/raft_store.cc
     server/raft_worker.cc
+    server/rate_limiter.cc
     server/router.cc
     server/server.cc
     server/store_worker.cc

@@ -285,6 +285,7 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               break;
             }
           }
+          delete raftMsg;
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
           // TODO:
@@ -294,26 +295,26 @@ void PeerMsgHandler::HandleMsg(Msg m) {
         }
         break;
       }
-      case MsgType::MsgTypeTick: {
-        this->OnTick();
-        break;
-      }
-      case MsgType::MsgTypeSplitRegion: {
-        break;
-      }
-      case MsgType::MsgTypeRegionApproximateSize: {
-        break;
-      }
-      case MsgType::MsgTypeGcSnap: {
-        break;
-      }
-      case MsgType::MsgTypeStart: {
-        this->StartTicker();
-        break;
-      }
-      default:
-        break;
     }
+    case MsgType::MsgTypeTick: {
+      this->OnTick();
+      break;
+    }
+    case MsgType::MsgTypeSplitRegion: {
+      break;
+    }
+    case MsgType::MsgTypeRegionApproximateSize: {
+      break;
+    }
+    case MsgType::MsgTypeGcSnap: {
+      break;
+    }
+    case MsgType::MsgTypeStart: {
+      this->StartTicker();
+      break;
+    }
+    default:
+      break;
   }  // namespace kvserver
 }
 
