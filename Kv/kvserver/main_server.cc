@@ -29,6 +29,7 @@
 
 #include <memory>
 
+// check version
 int main(int argc, char* argv[]) {
   // make conf
   std::shared_ptr<kvserver::Config> conf = std::make_shared<kvserver::Config>(
