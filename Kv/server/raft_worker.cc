@@ -52,7 +52,7 @@ void RaftWorker::Run(Queue<Msg>& qu) {
   std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap;
 
   while (true) {
-    auto msg = qu.Pop();
+    Msg msg = qu.Pop();
     Logger::GetInstance()->DEBUG_NEW(
         "pop new messsage with type: " + msg.MsgToString(), __FILE__, __LINE__,
         "RaftWorker::Run");

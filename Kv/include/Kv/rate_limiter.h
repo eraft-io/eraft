@@ -47,7 +47,7 @@ class RateLimiter {
 
   static RateLimiter* GetInstance() {
     if (instance_ == nullptr) {
-      instance_ = new RateLimiter(50);
+      instance_ = new RateLimiter(5);
     }
     return instance_;
   }

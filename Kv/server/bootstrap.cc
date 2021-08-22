@@ -54,8 +54,8 @@ uint64_t BootHelper::MockSchAllocID() {
 BootHelper* BootHelper::GetInstance() {
   if (instance_ == nullptr) {
     instance_ = new BootHelper();
-    return instance_;
   }
+  return instance_;
 }
 
 bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
