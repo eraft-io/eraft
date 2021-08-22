@@ -288,10 +288,8 @@ void PeerMsgHandler::HandleMsg(Msg m) {
           delete raftMsg;
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
-          // TODO:
           Logger::GetInstance()->DEBUG_NEW("BAD CASE", __FILE__, __LINE__,
                                            "PeerMsgHandler::HandleMsg");
-          // Try again
         }
         break;
       }
