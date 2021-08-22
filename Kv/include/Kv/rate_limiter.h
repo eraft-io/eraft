@@ -41,6 +41,8 @@ class RateLimiter {
 
   void TestPass();
 
+  uint64_t GetFailedCount();
+
   void SetCapacity(int64_t capacity);
 
   static RateLimiter* GetInstance() {
@@ -55,23 +57,25 @@ class RateLimiter {
 
  private:
   // capacity holds the overall capacity of the bucket.
-  int64_t capacity_;
+  uint64_t capacity_;
 
   // quantum holds how many tokens are added on each tick.
-  int64_t quantum_;
+  uint64_t quantum_;
 
   // availableTokens holds the number of available
   // tokens as of the associated latestTick.
   // It will be negative when there are consumers
   // waiting for tokens.
-  int64_t available_tokens_;
+  uint64_t available_tokens_;
 
   // latestTick holds the latest tick for which
   // we know the number of tokens in the bucket.
-  int64_t latest_tick_;
+  uint64_t latest_tick_;
 
   // fillInterval holds the interval between each tick.
-  int64_t fill_interval_;
+  uint64_t fill_interval_;
+
+  uint64_t failed_count_;
 
   // auto time_;
 
