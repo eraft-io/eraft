@@ -25,7 +25,9 @@
 #include <Kv/raft_store.h>
 #include <Kv/server.h>
 #include <Kv/ticker.h>
-#include <Logger/logger.h>
+#include <spdlog/common.h>
+#include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include <memory>
 
@@ -35,16 +37,20 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<kvserver::Config> conf = std::make_shared<kvserver::Config>(
       std::string(argv[1]), std::string(argv[2]),
       std::stoi(std::string(argv[3])));
-  conf->PrintConfigToConsole();
 
   // init logger
-  Logger::Init(Logger::kTerminal, Logger::kDebug,
-               conf->dbPath_ + "/" + conf->storeAddr_ + ".log");
+  auto console = spdlog::stdout_logger_mt("console");
+  spdlog::set_default_logger(console);
+  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_pattern("[source %s] [function %!] [line %#] %v");
+
+  conf->PrintConfigToConsole();
 
   // start raft store
   std::unique_ptr<kvserver::RaftStorage> storage(
       new kvserver::RaftStorage(conf));
   storage->Start();
+  SPDLOG_LOGGER_INFO(console, "eraft start successful!");
 
   // start rpc service server
   kvserver::Server svr(conf->storeAddr_, storage.get());

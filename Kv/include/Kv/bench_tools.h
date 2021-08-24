@@ -34,18 +34,19 @@ namespace kvserver {
 enum class BenchCmdType { KvRawPut, KvRawGet };
 
 class BenchResult {
-public:
-  BenchResult(const std::string& cmd_name, double avg_qps, double avg_latency, uint32_t case_num, uint32_t key_num, uint32_t valid_key_num);
+ public:
+  BenchResult(const std::string& cmd_name, double avg_qps, double avg_latency,
+              uint32_t case_num, uint32_t key_num, uint32_t valid_key_num);
 
   std::string PrettyBenchResult() const;
 
-private:
+ private:
   std::string cmd_name_;
 
   double avg_qps_;
 
   double avg_latency_;
-  
+
   uint32_t case_num_;
 
   uint32_t key_num_;
@@ -57,20 +58,23 @@ class BenchTools {
  public:
   BenchTools();
 
-  BenchTools(uint64_t client_nums, uint64_t connection_nums, BenchCmdType cmd_type,
-             uint64_t test_op_count, uint64_t test_key_size_in_bytes,
-             uint64_t test_value_size_in_bytes,
-             std::shared_ptr<RaftClient> raft_client, const std::string& target_addr);
+  BenchTools(uint64_t client_nums, uint64_t connection_nums,
+             BenchCmdType cmd_type, uint64_t test_op_count,
+             uint64_t test_key_size_in_bytes, uint64_t test_value_size_in_bytes,
+             std::shared_ptr<RaftClient> raft_client,
+             const std::string& target_addr);
   ~BenchTools();
 
-  // static BenchTools* GetInstance(uint64_t clientNums, uint64_t connectionNums,
+  // static BenchTools* GetInstance(uint64_t clientNums, uint64_t
+  // connectionNums,
   //                                BenchCmdType cmdType, uint64_t opCount,
   //                                uint64_t testKeySizeInBytes,
   //                                uint64_t testValuesSizeInBytes,
   //                                std::shared_ptr<RaftClient> raftClient,
   //                                std::string targetAddr) {
   //   if (instance_ == nullptr) {
-  //     instance_ = new BenchTools(clientNums, connectionNums, cmdType, opCount,
+  //     instance_ = new BenchTools(clientNums, connectionNums, cmdType,
+  //     opCount,
   //                                testKeySizeInBytes, testValuesSizeInBytes,
   //                                raftClient, targetAddr);
   //   }

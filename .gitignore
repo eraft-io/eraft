@@ -4,5 +4,6 @@ protobuf
 .vscode
 output
 grpc
+spdlog
 rocksdb/*.o
 Kv/.DS_Store

@@ -34,9 +34,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#include <Logger/logger.h>
 #include <RaftCore/log.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 
@@ -61,12 +61,11 @@ RaftLog::RaftLog(StorageInterface &st) {
   this->applied_ = lo - 1;
   this->stabled_ = hi;
   this->firstIndex_ = lo;
-  Logger::GetInstance()->DEBUG_NEW(
-      "init raft log with firstIndex " + std::to_string(this->firstIndex_) +
-          " applied " + std::to_string(this->applied_) + " stabled " +
-          std::to_string(this->stabled_) + " commited " +
-          std::to_string(this->commited_),
-      __FILE__, __LINE__, "RaftLog::RaftLog");
+  SPDLOG_INFO("init raft log with firstIndex " +
+              std::to_string(this->firstIndex_) + " applied " +
+              std::to_string(this->applied_) + " stabled " +
+              std::to_string(this->stabled_) + " commited " +
+              std::to_string(this->commited_));
 }
 
 RaftLog::~RaftLog() {}
@@ -95,11 +94,9 @@ std::vector<eraftpb::Entry> RaftLog::UnstableEntries() {
 }
 
 std::vector<eraftpb::Entry> RaftLog::NextEnts() {
-  Logger::GetInstance()->DEBUG_NEW(
-      "raftlog next ents l.applied: " + std::to_string(this->applied_) +
-          " l.firstIndex: " + std::to_string(this->firstIndex_) +
-          " l.commited: " + std::to_string(this->commited_),
-      __FILE__, __LINE__, "RaftLog::NextEnts");
+  SPDLOG_INFO("raftlog next ents l.applied: " + std::to_string(this->applied_) +
+              " l.firstIndex: " + std::to_string(this->firstIndex_) +
+              " l.commited: " + std::to_string(this->commited_));
 
   if (this->entries_.size() > 0) {
     return std::vector<eraftpb::Entry>(

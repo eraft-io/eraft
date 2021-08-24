@@ -22,8 +22,8 @@
 
 #include <Kv/peer_storage.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 
 namespace kvserver {
 
@@ -31,9 +31,8 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
                          std::shared_ptr<metapb::Region> region,
                          std::string tag)
     : engines_(engs), region_(region), tag_(tag) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "createing peer storage for region " + std::to_string(region->id()),
-      __FILE__, __LINE__, "PeerStorage::PeerStorage");
+  SPDLOG_INFO("createing peer storage for region " +
+              std::to_string(region->id()));
 
   auto raftStatePair =
       Assistant::GetInstance()->InitRaftLocalState(engs->raftDB_, region);
@@ -42,10 +41,8 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
 
   if (raftStatePair.first->last_index() <
       applyStatePair.first->applied_index()) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "err: raft log last index less than applied index! " +
-            std::to_string(region->id()),
-        __FILE__, __LINE__, "PeerStorage::PeerStorage");
+    SPDLOG_INFO("raft log last index less than applied index! " +
+                std::to_string(region->id()));
     exit(-1);
   }
   this->raftState_ = raftStatePair.first;
@@ -57,9 +54,7 @@ PeerStorage::~PeerStorage() {}
 // InitialState implements the Storage interface.
 std::pair<eraftpb::HardState, eraftpb::ConfState> PeerStorage::InitialState() {
   if (eraft::IsEmptyHardState(this->raftState_->hard_state())) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "init peerstorage state with commit 5 and term 5 ", __FILE__, __LINE__,
-        "PeerStorage::InitialState");
+    SPDLOG_INFO("init peerstorage state with commit 5 and term 5 ");
     this->raftState_->mutable_hard_state()->set_commit(5);
     this->raftState_->mutable_hard_state()->set_term(5);
     return std::pair<eraftpb::HardState, eraftpb::ConfState>(
@@ -143,9 +138,8 @@ eraftpb::Snapshot PeerStorage::Snapshot() {
 // entries[0].Index > ms.entries[0].Index
 bool PeerStorage::Append(std::vector<eraftpb::Entry> entries,
                          std::shared_ptr<rocksdb::WriteBatch> raftWB) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "append " + std::to_string(entries.size()) + " to peerstorage", __FILE__,
-      __LINE__, "PeerStorage::Append");
+  SPDLOG_INFO("append " + std::to_string(entries.size()) + " to peerstorage");
+
   if (entries.size() == 0) {
     return false;
   }

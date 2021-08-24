@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 #include <Kv/router.h>
-#include <Logger/logger.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 
 namespace kvserver {
 
@@ -36,11 +36,9 @@ std::shared_ptr<PeerState_> Router::Get(uint64_t regionID) {
 }
 
 void Router::Register(std::shared_ptr<Peer> peer) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "register peer regionId -> " + std::to_string(peer->regionId_) +
-          " peer id -> " + std::to_string(peer->PeerId()) + " peer addr -> " +
-          peer->meta_->addr() + " to router",
-      __FILE__, __LINE__, "Router::Register");
+  SPDLOG_INFO("register peer regionId -> " + std::to_string(peer->regionId_) +
+              " peer id -> " + std::to_string(peer->PeerId()) +
+              " peer addr -> " + peer->meta_->addr() + " to router");
 
   std::shared_ptr<PeerState_> ps = std::make_shared<PeerState_>(peer);
   this->peers_[peer->regionId_] = ps;
@@ -51,9 +49,7 @@ void Router::Close(uint64_t regionID) { this->peers_.erase(regionID); }
 //
 bool Router::Send(uint64_t regionID, Msg msg) {
   msg.regionId_ = regionID;
-  Logger::GetInstance()->DEBUG_NEW(
-      "push raft msg to peer sender, type " + msg.MsgToString(), __FILE__,
-      __LINE__, "Router::Register");
+  SPDLOG_INFO("push raft msg to peer sender, type " + msg.MsgToString());
   QueueContext::GetInstance()->get_peerSender().Push(msg);
   return true;
 }
@@ -69,29 +65,15 @@ bool RaftstoreRouter::Send(uint64_t regionID, const Msg m) {
 raft_serverpb::RaftMessage* RaftstoreRouter::raft_msg_ = nullptr;
 
 bool RaftstoreRouter::SendRaftMessage(const raft_serverpb::RaftMessage* msg) {
-  // try {
-  //   if (RaftstoreRouter::raft_msg_ != nullptr) {
-  //     delete RaftstoreRouter::raft_msg_;
-  //   }
-  //   RaftstoreRouter::raft_msg_ = new raft_serverpb::RaftMessage(*msg);
-  // } catch (const std::exception& e) {
-  //   std::cerr << e.what() << '\n';
-  //   return false;
-  // }
-  // std::shared_ptr<raft_serverpb::RaftMessage> raftmsg_ =
-  //     std::make_shared<raft_serverpb::RaftMessage>(*msg);
   raft_serverpb::RaftMessage* raftmsg = new raft_serverpb::RaftMessage(*msg);
-  Logger::GetInstance()->DEBUG_NEW(
-      "send raft message type " +
-          eraft::MsgTypeToString(raftmsg->message().msg_type()),
-      __FILE__, __LINE__, "RaftstoreRouter::SendRaftMessage");
+  SPDLOG_INFO("send raft message type " +
+              eraft::MsgTypeToString(raftmsg->message().msg_type()));
   Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), raftmsg);
   return this->router_->Send(msg->region_id(), m);
 }
 
 bool RaftstoreRouter::SendRaftCommand(const kvrpcpb::RawPutRequest* put) {
-  Logger::GetInstance()->DEBUG_NEW("send raft cmd message", __FILE__, __LINE__,
-                                   "RaftstoreRouter::SendRaftCommand");
+  SPDLOG_INFO("send raft cmd message");
   Msg m(MsgType::MsgTypeRaftCmd, 1, const_cast<kvrpcpb::RawPutRequest*>(put));
   return this->router_->Send(1, m);
 }

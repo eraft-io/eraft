@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include <Kv/store_worker.h>
-#include <Logger/logger.h>
+#include <spdlog/spdlog.h>
 
 namespace kvserver {
 
@@ -49,13 +49,10 @@ void StoreWorker::BootThread() {
 }
 
 void StoreWorker::Run(Queue<Msg>& qu) {
-  Logger::GetInstance()->DEBUG_NEW("store worker running!", __FILE__, __LINE__,
-                                   "StoreWorker::Run");
-
+  SPDLOG_INFO("store worker running!");
   while (IsAlive()) {
     auto msg = qu.Pop();
-    Logger::GetInstance()->DEBUG_NEW("pop new messsage from store sender",
-                                     __FILE__, __LINE__, "StoreWorker::Run");
+    SPDLOG_INFO("pop new messsage from store sender");
     StoreWorker::HandleMsg(msg);
   }
 }

@@ -24,7 +24,6 @@
 #define ERAFT_KV_UTIL_H_
 
 #include <Kv/engines.h>
-#include <Logger/logger.h>
 #include <eraftio/eraftpb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <google/protobuf/message.h>
@@ -181,7 +180,6 @@ class Assistant {
     // debug msg
     // std::string debugVal;
     // google::protobuf::TextFormat::PrintToString(msg, &debugVal);
-    // Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
     val = msg.SerializeAsString();
     auto status = db->Put(rocksdb::WriteOptions(), key, val);
     return status.ok();
@@ -193,7 +191,6 @@ class Assistant {
     // debug msg
     // std::string debugVal;
     // google::protobuf::TextFormat::PrintToString(msg, &debugVal);
-    // Logger::GetInstance()->INFO("put val: " + debugVal + " to db");
     val = msg.SerializeAsString();
     return batch->Put(key, val).ok();
   }
@@ -340,9 +337,6 @@ class Assistant {
   //
   static std::pair<raft_serverpb::RaftLocalState*, bool> InitRaftLocalState(
       rocksdb::DB* raftEngine, std::shared_ptr<metapb::Region> region) {
-    Logger::GetInstance()->DEBUG_NEW("init raft local state", __FILE__,
-                                     __LINE__,
-                                     "Assistant()->InitRaftLocalState");
     auto lst = GetRaftLocalState(raftEngine, region->id());
     if (lst.second.IsNotFound()) {
       raft_serverpb::RaftLocalState* raftState =
@@ -365,8 +359,6 @@ class Assistant {
 
   static std::pair<raft_serverpb::RaftApplyState*, bool> InitApplyState(
       rocksdb::DB* kvEngine, std::shared_ptr<metapb::Region> region) {
-    Logger::GetInstance()->DEBUG_NEW("init apply state", __FILE__, __LINE__,
-                                     "Assistant()->InitApplyState");
     auto ast = GetApplyState(kvEngine, region->id());
     if (ast.second.IsNotFound()) {
       raft_serverpb::RaftApplyState* applyState =
