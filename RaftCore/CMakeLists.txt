@@ -48,7 +48,6 @@ target_include_directories(${This} PUBLIC include)
 
 target_link_libraries(${This} PUBLIC
     Protocol
-    Logger
     gtest_main
 )
 

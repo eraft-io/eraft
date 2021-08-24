@@ -22,7 +22,7 @@
 
 #include <Kv/peer_msg_handler.h>
 #include <Kv/raft_worker.h>
-#include <Logger/logger.h>
+#include <spdlog/spdlog.h>
 
 #include <condition_variable>
 #include <iostream>
@@ -46,16 +46,13 @@ void RaftWorker::BootThread() {
 }
 
 void RaftWorker::Run(Queue<Msg>& qu) {
-  Logger::GetInstance()->DEBUG_NEW("raft worker start running!", __FILE__,
-                                   __LINE__, "RaftWorker::Run");
+  SPDLOG_INFO("raft worker start running!");
 
   std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap;
 
   while (true) {
     Msg msg = qu.Pop();
-    Logger::GetInstance()->DEBUG_NEW(
-        "pop new messsage with type: " + msg.MsgToString(), __FILE__, __LINE__,
-        "RaftWorker::Run");
+    SPDLOG_INFO("pop new messsage with type: " + msg.MsgToString());
 
     // handle m, call PeerMessageHandler
     std::shared_ptr<PeerState_> peerState =

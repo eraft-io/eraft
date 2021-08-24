@@ -23,7 +23,7 @@
 #include <Kv/engines.h>
 #include <Kv/raft_server.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
+#include <spdlog/spdlog.h>
 
 #include <cassert>
 
@@ -81,11 +81,9 @@ bool RaftStorage::Start() {
       std::make_shared<ServerTransport>(raftClient, raftRouter_);
 
   if (this->node_->Start(this->engs_, trans)) {
-    Logger::GetInstance()->DEBUG_NEW("raft storage start succeed!", __FILE__,
-                                     __LINE__, "RaftStorage::Start");
+    SPDLOG_INFO("raft storage start succeed!");
   } else {
-    Logger::GetInstance()->DEBUG_NEW("err: raft storage start error!", __FILE__,
-                                     __LINE__, "RaftStorage::Start");
+    SPDLOG_INFO("raft storage start error!");
   }
 }
 

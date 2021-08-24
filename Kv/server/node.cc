@@ -23,8 +23,8 @@
 #include <Kv/bootstrap.h>
 #include <Kv/node.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <eraftio/raft_serverpb.pb.h>
+#include <spdlog/spdlog.h>
 
 namespace kvserver {
 
@@ -46,9 +46,7 @@ bool Node::Start(std::shared_ptr<Engines> engines,
                  std::shared_ptr<Transport> trans) {
   uint64_t storeID;
   if (!this->CheckStore(*engines, &storeID)) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "err: store id " + std::to_string(storeID) + " not found", __FILE__,
-        __LINE__, "Node::Start");
+    SPDLOG_INFO("store id " + std::to_string(storeID) + " not found");
   }
   if (storeID == Assistant::GetInstance()->kInvalidID) {
     this->BootstrapStore(*engines, &storeID);
@@ -56,29 +54,20 @@ bool Node::Start(std::shared_ptr<Engines> engines,
   this->store_->set_id(storeID);
   auto checkRes = this->CheckOrPrepareBoostrapCluster(engines, storeID);
   if (!checkRes.second) {
-    Logger::GetInstance()->DEBUG_NEW("err: check or prepare boostrap cluster " +
-                                         std::to_string(storeID) + " not found",
-                                     __FILE__, __LINE__, "Node::Start");
+    SPDLOG_ERROR("check or prepare boostrap cluster " +
+                 std::to_string(storeID) + " not found");
     return false;
   }
   bool newCluster = (checkRes.first != nullptr);
   if (newCluster) {
     // try to boostrap cluster
     if (!this->BoostrapCluster(engines, checkRes.first, &newCluster)) {
-      Logger::GetInstance()->DEBUG_NEW("err: boostrap cluster error " +
-                                           std::to_string(storeID) +
-                                           " not found",
-                                       __FILE__, __LINE__, "Node::Start");
       return false;
     }
   }
   if (!this->StartNode(engines, trans)) {
-    Logger::GetInstance()->DEBUG_NEW("err: start node error", __FILE__,
-                                     __LINE__, "Node::Start");
     return false;
   }
-  Logger::GetInstance()->DEBUG_NEW("node start success! ", __FILE__, __LINE__,
-                                   "Node::Start");
   return true;
 }
 
@@ -144,14 +133,11 @@ bool Node::BoostrapCluster(std::shared_ptr<Engines> engines,
 
 bool Node::BootstrapStore(Engines& engs, uint64_t* storeId) {
   auto storeID = this->cfg_->peerAddrMaps_[this->cfg_->storeAddr_];
-  Logger::GetInstance()->DEBUG_NEW(
-      "boostrap store with storeID: " + std::to_string(storeID), __FILE__,
-      __LINE__, "Node::BootstrapStore");
+  SPDLOG_INFO("boostrap store with storeID: " + std::to_string(storeID));
   if (!BootHelper::GetInstance()->DoBootstrapStore(
           std::make_shared<Engines>(engs), this->clusterID_, storeID,
           this->store_->address())) {
-    Logger::GetInstance()->DEBUG_NEW("do bootstrap store error", __FILE__,
-                                     __LINE__, "Node::BootstrapStore");
+    SPDLOG_ERROR("do bootstrap store error!");
     return false;
   }
   *storeId = storeID;

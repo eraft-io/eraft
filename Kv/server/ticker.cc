@@ -23,7 +23,6 @@
 #include <Kv/concurrency_queue.h>
 #include <Kv/msg.h>
 #include <Kv/ticker.h>
-#include <Logger/logger.h>
 
 namespace kvserver {
 

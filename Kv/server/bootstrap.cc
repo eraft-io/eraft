@@ -22,9 +22,9 @@
 
 #include <Kv/bootstrap.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <eraftio/metapb.pb.h>
 #include <eraftio/raft_serverpb.pb.h>
+#include <spdlog/spdlog.h>
 
 namespace kvserver {
 
@@ -66,15 +66,13 @@ bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
   if (!IsRangeEmpty(engines->kvDB_, "",
                     std::string(Assistant::GetInstance()->MaxKey.begin(),
                                 Assistant::GetInstance()->MaxKey.end()))) {
-    Logger::GetInstance()->DEBUG_NEW("err: kv db is not empty", __FILE__,
-                                     __LINE__, "BootHelper::DoBootstrapStore");
+    SPDLOG_DEBUG("kv db is not empty");
     return false;
   }
   if (!IsRangeEmpty(engines->raftDB_, "",
                     std::string(Assistant::GetInstance()->MaxKey.begin(),
                                 Assistant::GetInstance()->MaxKey.end()))) {
-    Logger::GetInstance()->DEBUG_NEW("err: raft db is not empty", __FILE__,
-                                     __LINE__, "BootHelper::DoBootstrapStore");
+    SPDLOG_DEBUG("raft db is not empty");
     return false;
   }
   ident->set_cluster_id(clusterID);
@@ -84,8 +82,7 @@ bool BootHelper::DoBootstrapStore(std::shared_ptr<Engines> engines,
       std::string(Assistant::GetInstance()->StoreIdentKey.begin(),
                   Assistant::GetInstance()->StoreIdentKey.end()),
       *ident);
-  Logger::GetInstance()->DEBUG_NEW("do bootstrap store successful", __FILE__,
-                                   __LINE__, "BootHelper::DoBootstrapStore");
+  SPDLOG_DEBUG("do bootstrap store successful!");
   return true;
 }
 
@@ -106,11 +103,10 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(
       region->set_id(1);
       region->set_start_key("");
       region->set_end_key("");
-      Logger::GetInstance()->DEBUG_NEW(
+      SPDLOG_INFO(
           "bootstrap node with regionID: " + std::to_string(item.second) +
-              "  storeID: " + std::to_string(item.second) +
-              " peerID: " + std::to_string(item.second),
-          __FILE__, __LINE__, "BootHelper::PrepareBootstrap");
+          "  storeID: " + std::to_string(item.second) +
+          " peerID: " + std::to_string(item.second));
       continue;
     }
     auto addNewPeer = region->add_peers();  // add peer to region
@@ -141,9 +137,7 @@ bool BootHelper::PrepareBoostrapCluster(
   rocksdb::WriteBatch raftWB;
   WriteInitialRaftState(&raftWB, region->id());
   engines->raftDB_->Write(rocksdb::WriteOptions(), &raftWB);
-  Logger::GetInstance()->DEBUG_NEW("do prepare boostrap cluster successful",
-                                   __FILE__, __LINE__,
-                                   "BootHelper::PrepareBoostrapCluster");
+  SPDLOG_INFO("do prepare boostrap cluster successful!");
   return true;
 }
 

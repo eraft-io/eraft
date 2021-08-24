@@ -22,8 +22,8 @@
 
 #include <Kv/server_transport.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <google/protobuf/text_format.h>
+#include <spdlog/spdlog.h>
 
 namespace kvserver {
 
@@ -43,9 +43,8 @@ bool ServerTransport::Send(std::shared_ptr<raft_serverpb::RaftMessage> msg) {
 void ServerTransport::SendStore(uint64_t storeID,
                                 std::shared_ptr<raft_serverpb::RaftMessage> msg,
                                 std::string addr) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "send to store id " + std::to_string(storeID) + " store addr " + addr,
-      __FILE__, __LINE__, "ServerTransport::SendStore");
+  SPDLOG_INFO("send to store id " + std::to_string(storeID) + " store addr " +
+              addr);
   this->WriteData(storeID, addr, msg);
 }
 

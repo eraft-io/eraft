@@ -35,9 +35,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Logger/logger.h>
 #include <RaftCore/raw_node.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 
 namespace eraft {
 
@@ -50,8 +50,7 @@ RawNode::RawNode(Config& config) {
 void RawNode::Tick() { this->raft->Tick(); }
 
 void RawNode::Campaign() {
-  Logger::GetInstance()->DEBUG_NEW("rawnode start campaign", __FILE__, __LINE__,
-                                   "RawNode::Campaign");
+  SPDLOG_INFO("rawnode start campaign");
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgHup);
   this->raft->Step(msg);
@@ -69,8 +68,7 @@ void RawNode::Propose(std::string data) {
 // ...
 void RawNode::ProposeConfChange(eraftpb::ConfChange cc) {
   std::string data = cc.SerializeAsString();
-  Logger::GetInstance()->DEBUG_NEW("ProposeConfChange: " + data, __FILE__,
-                                   __LINE__, "RawNode::ProposeConfChange");
+  SPDLOG_INFO("ProposeConfChange: " + data);
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgPropose);
   eraftpb::Entry* ent = msg.add_entries();
