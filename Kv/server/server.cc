@@ -23,9 +23,9 @@
 #include <Kv/raft_server.h>
 #include <Kv/rate_limiter.h>
 #include <Kv/server.h>
-#include <Logger/logger.h>
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
+#include <spdlog/spdlog.h>
 
 #include <iostream>
 
@@ -58,24 +58,19 @@ Status Server::RawGet(ServerContext* context,
 Status Server::RawPut(ServerContext* context,
                       const kvrpcpb::RawPutRequest* request,
                       kvrpcpb::RawPutResponse* response) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle raw put with key " + request->key() + " value " +
-          request->value() + " cf " + request->cf() + " region id " +
-          std::to_string(request->context().region_id()),
-      __FILE__, __LINE__, "Server::RawPut");
+  SPDLOG_INFO("handle raw put with key " + request->key() + " value " +
+              request->value() + " cf " + request->cf() + " region id " +
+              std::to_string(request->context().region_id()));
+
   // TODO: no waiting for ack from raft. Value is not yet committed so a
   if (!RateLimiter::GetInstance()->TryGetToken()) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "put failed count : " +
-            std::to_string(RateLimiter::GetInstance()->GetFailedCount()),
-        __FILE__, __LINE__, "Server::RawPut");
-    // response->set_error("too frequent, wait and try again!");
+    SPDLOG_WARN("put failed count : " +
+                std::to_string(RateLimiter::GetInstance()->GetFailedCount()));
     return Status::CANCELLED;
   }
   // subsequent GET on key may return old value
   if (!this->st_->Write(request->context(), request)) {
-    Logger::GetInstance()->DEBUG_NEW("err: st write error!", __FILE__, __LINE__,
-                                     "Server::RawPut");
+    SPDLOG_ERROR("st write error!");
     return Status::CANCELLED;
   }
   return Status::OK;
@@ -139,9 +134,7 @@ bool Server::RunLogic() {
   // rate limit
   RateLimiter::GetInstance()->SetCapacity(5);
 
-  Logger::GetInstance()->DEBUG_NEW(
-      "server listening on: " + this->serverAddress_, __FILE__, __LINE__,
-      "Server::RunLogic");
+  SPDLOG_INFO("server listening on: " + this->serverAddress_);
 
   server->Wait();
 }

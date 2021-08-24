@@ -23,9 +23,9 @@
 #include <Kv/concurrency_queue.h>
 #include <Kv/peer_msg_handler.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <RaftCore/raw_node.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 
 #include <cassert>
 
@@ -67,8 +67,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(
     std::shared_ptr<rocksdb::WriteBatch> wb) {
   auto req = msg->requests()[0];
   std::shared_ptr<std::string> key = GetRequestKey(&req);
-  Logger::GetInstance()->DEBUG_NEW("process request key: " + *key, __FILE__,
-                                   __LINE__, "PeerMsgHandler::ProcessRequest");
+  SPDLOG_INFO("process request key: " + *key);
   switch (req.cmd_type()) {
     case raft_cmdpb::CmdType::Get: {
       break;
@@ -77,19 +76,15 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::ProcessRequest(
       wb->Put(
           Assistant::GetInstance()->KeyWithCF(req.put().cf(), req.put().key()),
           req.put().value());
-      Logger::GetInstance()->DEBUG_NEW(
-          "process put request with cf " + req.put().cf() + " key " +
-              req.put().key() + " value " + req.put().value(),
-          __FILE__, __LINE__, "PeerMsgHandler::ProcessRequest");
+      SPDLOG_INFO("process put request with cf " + req.put().cf() + " key " +
+                  req.put().key() + " value " + req.put().value());
       break;
     }
     case raft_cmdpb::CmdType::Delete: {
       wb->Delete(Assistant::GetInstance()->KeyWithCF(req.delete_().cf(),
                                                      req.delete_().key()));
-      Logger::GetInstance()->DEBUG_NEW(
-          "process delete request with cf " + req.delete_().cf() + " key " +
-              req.delete_().key(),
-          __FILE__, __LINE__, "PeerMsgHandler::ProcessRequest");
+      SPDLOG_INFO("process delete request with cf " + req.delete_().cf() +
+                  " key " + req.delete_().key());
       break;
     }
     case raft_cmdpb::CmdType::Snap: {
@@ -111,8 +106,7 @@ void PeerMsgHandler::ProcessConfChange(
     std::shared_ptr<rocksdb::WriteBatch> wb) {
   switch (cc->change_type()) {
     case eraftpb::ConfChangeType::AddNode: {
-      Logger::GetInstance()->DEBUG_NEW("add node", __FILE__, __LINE__,
-                                       "PeerMsgHandler::ProcessConfChange");
+      SPDLOG_INFO("add node");
       metapb::Peer* peer = new metapb::Peer();
       peer->set_id(cc->node_id());
       peer->set_store_id(cc->node_id());
@@ -121,8 +115,7 @@ void PeerMsgHandler::ProcessConfChange(
       break;
     }
     case eraftpb::ConfChangeType::RemoveNode: {
-      Logger::GetInstance()->DEBUG_NEW("remove node", __FILE__, __LINE__,
-                                       "PeerMsgHandler::ProcessConfChange");
+      SPDLOG_INFO("remove node");
       this->peer_->RemovePeerCache(cc->node_id());
       break;
     }
@@ -136,8 +129,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   switch (entry->entry_type()) {
     case eraftpb::EntryType::EntryConfChange: {
-      Logger::GetInstance()->DEBUG_NEW(
-          "add", __FILE__, __LINE__, "PeerMsgHandler::Proces EntryConfChanges");
+      SPDLOG_INFO("process conf change entry");
       eraftpb::ConfChange* cc = new eraftpb::ConfChange();
       cc->ParseFromString(entry->data());
       this->ProcessConfChange(entry, cc, wb);
@@ -147,19 +139,15 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     case eraftpb::EntryType::EntryNormal: {
       kvrpcpb::RawPutRequest* msg = new kvrpcpb::RawPutRequest();
       msg->ParseFromString(entry->data());
-      Logger::GetInstance()->DEBUG_NEW(
-          "Process Entry DATA: cf " + msg->cf() + " key " + msg->key() +
-              " val " + msg->value(),
-          __FILE__, __LINE__, "eerMsgHandler::Process");
+      SPDLOG_INFO("Process Entry DATA: cf " + msg->cf() + " key " + msg->key() +
+                  " val " + msg->value());
       // write to kv db
       auto status =
           wb->Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
                   msg->value());
       if (!status.ok()) {
-        Logger::GetInstance()->DEBUG_NEW(
-            "err: when process entry data() cf " + msg->cf() + " key " +
-                msg->key() + " val " + msg->value() + ")",
-            __FILE__, __LINE__, "eerMsgHandler::Process");
+        SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
+                    msg->key() + " val " + msg->value() + ")");
       }
       delete msg;
       break;
@@ -171,14 +159,12 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
 }
 
 void PeerMsgHandler::HandleRaftReady() {
-  Logger::GetInstance()->DEBUG_NEW("handle raft ready ", __FILE__, __LINE__,
-                                   "PeerMsgHandler::HandleRaftReady");
+  SPDLOG_INFO("handle raft ready ");
   if (this->peer_->stopped_) {
     return;
   }
   if (this->peer_->raftGroup_->HasReady()) {
-    Logger::GetInstance()->DEBUG_NEW("raft group is ready!", __FILE__, __LINE__,
-                                     "PeerMsgHandler::HandleRaftReady");
+    SPDLOG_INFO("raft group is ready!");
     eraft::DReady rd = this->peer_->raftGroup_->EReady();
     auto result = this->peer_->peerStorage_->SaveReadyState(
         std::make_shared<eraft::DReady>(rd));
@@ -188,16 +174,12 @@ void PeerMsgHandler::HandleRaftReady() {
     // real send raft message to transport (grpc)
     this->peer_->Send(this->ctx_->trans_, rd.messages);
     if (rd.committedEntries.size() > 0) {
-      Logger::GetInstance()->DEBUG_NEW(
-          "rd.committedEntries.size() " +
-              std::to_string(rd.committedEntries.size()),
-          __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
+      SPDLOG_INFO("rd.committedEntries.size() " +
+                  std::to_string(rd.committedEntries.size()));
       std::shared_ptr<rocksdb::WriteBatch> kvWB =
           std::make_shared<rocksdb::WriteBatch>();
       for (auto entry : rd.committedEntries) {
-        Logger::GetInstance()->DEBUG_NEW(
-            "COMMIT_ENTRY" + eraft::EntryToString(entry), __FILE__, __LINE__,
-            "PeerMsgHandler::HandleRaftReady");
+        SPDLOG_INFO("COMMIT_ENTRY" + eraft::EntryToString(entry));
         kvWB = this->Process(&entry, kvWB);
         if (this->peer_->stopped_) {
           return;
@@ -210,11 +192,10 @@ void PeerMsgHandler::HandleRaftReady() {
           ->set_index(lastEnt.index());
       this->peer_->peerStorage_->applyState_->mutable_truncated_state()
           ->set_term(lastEnt.term());
-      Logger::GetInstance()->DEBUG_NEW(
+      SPDLOG_INFO(
           "write to db applied index: " + std::to_string(lastEnt.index()) +
-              " truncated state index: " + std::to_string(lastEnt.index()) +
-              " truncated state term " + std::to_string(lastEnt.term()),
-          __FILE__, __LINE__, "PeerMsgHandler::HandleRaftReady");
+          " truncated state index: " + std::to_string(lastEnt.index()) +
+          " truncated state term " + std::to_string(lastEnt.term()));
       Assistant::GetInstance()->SetMeta(
           kvWB.get(),
           Assistant::GetInstance()->ApplyStateKey(this->peer_->regionId_),
@@ -227,36 +208,28 @@ void PeerMsgHandler::HandleRaftReady() {
 }
 
 void PeerMsgHandler::HandleMsg(Msg m) {
-  Logger::GetInstance()->DEBUG_NEW("handle raft msg type " + m.MsgToString(),
-                                   __FILE__, __LINE__,
-                                   "PeerMsgHandler::HandleMsg");
+  SPDLOG_INFO("handle raft msg type " + m.MsgToString());
   switch (m.type_) {
     case MsgType::MsgTypeRaftMessage: {
       if (m.data_ != nullptr) {
         try {
           auto raftMsg = static_cast<raft_serverpb::RaftMessage*>(m.data_);
           if (raftMsg == nullptr) {
-            Logger::GetInstance()->DEBUG_NEW("err: nil message", __FILE__,
-                                             __LINE__,
-                                             "PeerMsgHandler::HandleMsg");
+            SPDLOG_ERROR("handle nil message");
             return;
           }
           switch (raftMsg->raft_msg_type()) {
             case raft_serverpb::RaftMsgNormal: {
               if (!this->OnRaftMsg(raftMsg)) {
-                Logger::GetInstance()->DEBUG_NEW("err: on handle raft msg",
-                                                 __FILE__, __LINE__,
-                                                 "PeerMsgHandler::HandleMsg");
+                SPDLOG_ERROR("on handle raft msg");
               }
               break;
             }
             case raft_serverpb::RaftMsgClientCmd: {
               std::shared_ptr<kvrpcpb::RawPutRequest> put =
                   std::make_shared<kvrpcpb::RawPutRequest>();
-              put->set_key(raftMsg->data());  // data
-              Logger::GetInstance()->DEBUG_NEW("PROPOSE NEW: " + put->key(),
-                                               __FILE__, __LINE__,
-                                               "PeerMsgHandler::HandleMsg");
+              put->set_key(raftMsg->data());
+              SPDLOG_INFO("PROPOSE NEW: " + put->key());
               this->ProposeRaftCommand(put.get());
               break;
             }
@@ -264,10 +237,8 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               std::shared_ptr<raft_cmdpb::TransferLeaderRequest> tranLeader =
                   std::make_shared<raft_cmdpb::TransferLeaderRequest>();
               tranLeader->ParseFromString(raftMsg->data());
-              Logger::GetInstance()->DEBUG_NEW(
-                  "transfer leader with peer id = " +
-                      std::to_string(tranLeader->peer().id()),
-                  __FILE__, __LINE__, "PeerMsgHandler::HandleMsg");
+              SPDLOG_INFO("transfer leader with peer id = " +
+                          std::to_string(tranLeader->peer().id()));
               this->peer_->raftGroup_->TransferLeader(tranLeader->peer().id());
               break;
             }
@@ -288,10 +259,7 @@ void PeerMsgHandler::HandleMsg(Msg m) {
           delete raftMsg;
         } catch (const std::exception& e) {
           std::cerr << e.what() << '\n';
-          // TODO:
-          Logger::GetInstance()->DEBUG_NEW("BAD CASE", __FILE__, __LINE__,
-                                           "PeerMsgHandler::HandleMsg");
-          // Try again
+          SPDLOG_ERROR("handle with bad case!");
         }
         break;
       }
@@ -371,9 +339,7 @@ void PeerMsgHandler::ProposeAdminRequest(raft_cmdpb::RaftCmdRequest* msg,
                                          Callback* cb) {}
 
 void PeerMsgHandler::ProposeRequest(kvrpcpb::RawPutRequest* put) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "PROPOSE TEST KEY ================= " + put->key(), __FILE__, __LINE__,
-      "PeerMsgHandler::ProposeRequest");
+  SPDLOG_INFO("PROPOSE TEST KEY ================= " + put->key());
   std::string data = put->key();
   this->peer_->raftGroup_->Propose(data);
 }
@@ -384,10 +350,8 @@ void PeerMsgHandler::ProposeRaftCommand(kvrpcpb::RawPutRequest* put) {
 }
 
 void PeerMsgHandler::OnTick() {
-  Logger::GetInstance()->DEBUG_NEW(
-      "NODE STATE:" +
-          eraft::StateToString(this->peer_->raftGroup_->raft->state_),
-      __FILE__, __LINE__, "PeerMsgHandler::OnTick");
+  SPDLOG_INFO("NODE STATE:" +
+              eraft::StateToString(this->peer_->raftGroup_->raft->state_));
 
   if (this->peer_->stopped_) {
     return;
@@ -398,8 +362,7 @@ void PeerMsgHandler::OnTick() {
 }
 
 void PeerMsgHandler::StartTicker() {
-  Logger::GetInstance()->DEBUG_NEW("start ticker", __FILE__, __LINE__,
-                                   "PeerMsgHandler::StartTicker");
+  SPDLOG_INFO("start ticker!");
   QueueContext::GetInstance()->get_regionIdCh().Push(this->peer_->regionId_);
 }
 
@@ -411,18 +374,15 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
   if (toPeer == nullptr) {
     return false;
   }
-  Logger::GetInstance()->DEBUG_NEW(
-      "on raft msg from " + std::to_string(msg->message().from()) + " to " +
-          std::to_string(msg->message().to()) + " index " +
-          std::to_string(msg->message().index()) + " term " +
-          std::to_string(msg->message().term()) + " type " +
-          eraft::MsgTypeToString(msg->message().msg_type()) + " ents.size " +
-          std::to_string(msg->message().entries_size()),
-      __FILE__, __LINE__, "PeerMsgHandler::OnRaftMsg");
+  SPDLOG_INFO("on raft msg from " + std::to_string(msg->message().from()) +
+              " to " + std::to_string(msg->message().to()) + " index " +
+              std::to_string(msg->message().index()) + " term " +
+              std::to_string(msg->message().term()) + " type " +
+              eraft::MsgTypeToString(msg->message().msg_type()) +
+              " ents.size " + std::to_string(msg->message().entries_size()));
 
   if (!msg->has_message()) {
-    Logger::GetInstance()->DEBUG_NEW("nil message", __FILE__, __LINE__,
-                                     "PeerMsgHandler::OnRaftMsg");
+    SPDLOG_INFO("nil message");
     return false;
   }
 
@@ -438,8 +398,6 @@ bool PeerMsgHandler::OnRaftMsg(raft_serverpb::RaftMessage* msg) {
   newMsg.set_log_term(msg->message().log_term());
   newMsg.set_reject(msg->message().reject());
   newMsg.set_msg_type(msg->message().msg_type());
-  Logger::GetInstance()->DEBUG_NEW("RECIVED ENTRY DATA", __FILE__, __LINE__,
-                                   "RaftContext::OnRaftMsg");
   for (auto e : msg->message().entries()) {
     eraftpb::Entry* newE = newMsg.add_entries();
     newE->set_index(e.index());

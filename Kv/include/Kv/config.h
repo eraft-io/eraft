@@ -23,8 +23,8 @@
 #ifndef ERAFT_KV_CONFIG_H_
 #define ERAFT_KV_CONFIG_H_
 
-#include <Logger/logger.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 #include <stdint.h>
 
 #include <iostream>
@@ -116,7 +116,7 @@ struct Config {
         " regionMaxSize_: " + std::to_string(this->regionMaxSize_) + " \n " +
         " regionSplitSize_: " + std::to_string(this->regionSplitSize_) +
         " \n " + " dbPath_: " + this->dbPath_ + "\n" + " } ";
-    std::cout << output << std::endl;
+    SPDLOG_INFO(output);
   }
 
   bool Validate() {

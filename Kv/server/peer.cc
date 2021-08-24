@@ -23,11 +23,11 @@
 #include <Kv/peer.h>
 #include <Kv/peer_storage.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <RaftCore/raft.h>
 #include <RaftCore/raw_node.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <rocksdb/write_batch.h>
+#include <spdlog/spdlog.h>
 
 #include <memory>
 
@@ -52,8 +52,7 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
   }
 
   if (meta->id() == 0) {
-    Logger::GetInstance()->DEBUG_NEW("err: meta id can not be 0! ", __FILE__,
-                                     __LINE__, "Peer::Peer");
+    SPDLOG_ERROR(" meta id can not be 0!");
     exit(-1);
   }
 
@@ -73,11 +72,9 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
   this->peerStorage_ = ps;
   this->tag_ = tag;
 
-  Logger::GetInstance()->DEBUG_NEW(
-      "init peer with peer id = " + std::to_string(this->meta_->id()) +
-          " store id = " + std::to_string(this->meta_->store_id()) +
-          " region id " + std::to_string(this->regionId_),
-      __FILE__, __LINE__, "Peer::Peer");
+  SPDLOG_INFO("init peer with peer id = " + std::to_string(this->meta_->id()) +
+              " store id = " + std::to_string(this->meta_->store_id()) +
+              " region id " + std::to_string(this->regionId_));
 
   if (region->peers().size() == 1 && region->peers(0).store_id() == storeID) {
     this->raftGroup_->Campaign();
@@ -171,8 +168,7 @@ void Peer::Send(std::shared_ptr<Transport> trans,
                 std::vector<eraftpb::Message> msgs) {
   for (auto msg : msgs) {
     if (!this->SendRaftMessage(msg, trans)) {
-      Logger::GetInstance()->DEBUG_NEW("err: send raft msg to trans error! ",
-                                       __FILE__, __LINE__, "Peer::Send");
+      SPDLOG_ERROR("send raft msg to trans error!");
     }
   }
 }
@@ -242,13 +238,11 @@ bool Peer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
   sendMsg->set_raft_msg_type(raft_serverpb::RaftMsgNormal);
 
-  Logger::GetInstance()->DEBUG_NEW(
-      "on peer send msg" + std::to_string(msg.from()) + " to " +
-          std::to_string(msg.to()) + " index " + std::to_string(msg.index()) +
-          " term " + std::to_string(msg.term()) + " type " +
-          eraft::MsgTypeToString(msg.msg_type()),
-      __FILE__, __LINE__, "Peer::SendRaftMessage");
-
+  SPDLOG_INFO("on peer send msg" + std::to_string(msg.from()) + " to " +
+              std::to_string(msg.to()) + " index " +
+              std::to_string(msg.index()) + " term " +
+              std::to_string(msg.term()) + " type " +
+              eraft::MsgTypeToString(msg.msg_type()));
   for (auto ent : msg.entries()) {
     eraftpb::Entry* e = sendMsg->mutable_message()->add_entries();
     e->set_entry_type(ent.entry_type());

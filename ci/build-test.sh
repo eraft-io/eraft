@@ -2,6 +2,10 @@
 
 set -xe
 
+git clone --branch v1.9.2 https://github.com.cnpmjs.org/gabime/spdlog.git
+cd spdlog && mkdir build && cd build
+cmake .. && make -j && make install
+
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 SRCPATH=$(cd $SCRIPTPATH/..; pwd -P)
 NPROC=$(nproc || grep -c ^processor /proc/cpuinfo)
@@ -17,7 +21,7 @@ build_dir="$SRCPATH/build_"
 mkdir -p $build_dir && cd $build_dir
 cmake "$SRCPATH" \
     -DENABLE_TESTS=on
-make -j `nproc`
+make -j 2  # if nproc > 4, can't build
 
 if [ ! -d "$SRCPATH/output" ]; then
   mkdir $SRCPATH/output

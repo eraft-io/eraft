@@ -24,8 +24,8 @@
 #include <Kv/store_worker.h>
 #include <Kv/ticker.h>
 #include <Kv/utils.h>
-#include <Logger/logger.h>
 #include <RaftCore/util.h>
+#include <spdlog/spdlog.h>
 
 #include <chrono>
 
@@ -34,8 +34,8 @@ namespace kvserver {
 RaftStore::RaftStore(std::shared_ptr<Config> cfg) {
   this->router_ = std::make_shared<Router>();
   this->raftRouter_ = std::make_shared<RaftstoreRouter>(router_);
-  Logger::GetInstance()->DEBUG_NEW("raft store init success", __FILE__,
-                                   __LINE__, "RaftStore::RaftStore");
+
+  SPDLOG_INFO("raft store init success!");
 }
 
 RaftStore::~RaftStore() {}
@@ -48,9 +48,8 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
   auto ctx = this->ctx_;
   auto kvEngine = ctx->engine_->kvDB_;
   auto storeID = ctx->store_->id();
-  Logger::GetInstance()->DEBUG_NEW(
-      "raft store store id: " + std::to_string(storeID) + " load peers",
-      __FILE__, __LINE__, "RaftStore::LoadPeers");
+  SPDLOG_INFO("raft store store id: " + std::to_string(storeID) +
+              " load peers");
   uint64_t totalCount, tombStoneCount;
   std::vector<std::shared_ptr<Peer> > regionPeers;
 
@@ -83,8 +82,7 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
     // debug msg
     std::string debugVal;
     google::protobuf::TextFormat::PrintToString(*localState, &debugVal);
-    Logger::GetInstance()->DEBUG_NEW("local state: " + debugVal, __FILE__,
-                                     __LINE__, "RaftStore::LoadPeers");
+    SPDLOG_INFO("local state: " + debugVal);
 
     auto region = localState->region();
 
@@ -172,9 +170,8 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<Peer> > peers) {
   }
 
   // ticker start
-  std::chrono::duration<int, std::milli> timer_duration1(100);
-  Ticker::GetInstance(std::function<void()>(Ticker::Run), router,
-                      timer_duration1)
+  std::chrono::duration<int, std::milli> timer_tick(50);
+  Ticker::GetInstance(std::function<void()>(Ticker::Run), router, timer_tick)
       ->Start();
 
   return true;

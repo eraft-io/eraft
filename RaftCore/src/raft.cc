@@ -35,36 +35,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Logger/logger.h>
 #include <RaftCore/raft.h>
 #include <RaftCore/util.h>
 #include <assert.h>
 #include <google/protobuf/text_format.h>
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 
 namespace eraft {
 bool Config::Validate() {
   if (this->id == 0) {
-    Logger::GetInstance()->DEBUG_NEW("err: can't use none as id!", __FILE__,
-                                     __LINE__, "Config::Validate");
+    SPDLOG_ERROR("can't use none as id!");
     return false;
   }
   if (this->heartbeatTick <= 0) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "log heartbeat tick must be greater than 0!", __FILE__, __LINE__,
-        "Config::Validate");
+    SPDLOG_ERROR("log heartbeat tick must be greater than 0!");
     return false;
   }
   if (this->electionTick <= this->heartbeatTick) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "election tick must be greater than heartbeat tick!", __FILE__,
-        __LINE__, "Config::Validate");
+    SPDLOG_ERROR("election tick must be greater than heartbeat tick!");
     return false;
   }
   if (this->storage == nullptr) {
-    Logger::GetInstance()->DEBUG_NEW("log storage cannot be nil!", __FILE__,
-                                     __LINE__, "Config::Validate");
+    SPDLOG_ERROR("log storage cannot be nil!");
     return false;
   }
   return true;
@@ -86,10 +80,6 @@ RaftContext::RaftContext(Config& c)
   if (c.peers.size() == 0) {
     std::vector<uint64_t> peersTp;
     for (auto node : confSt.nodes()) {
-      // Logger::GetInstance()->DEBUG_NEW(
-      //     "push node to region with peer id " + std::to_string(node),
-      //     __FILE__,
-      //     __LINE__, "RaftContext::RaftContext");
       peersTp.push_back(node);
     }
     c.peers = peersTp;
@@ -105,10 +95,9 @@ RaftContext::RaftContext(Config& c)
   this->BecomeFollower(0, NONE);
   this->randomElectionTimeout_ =
       this->electionTimeout_ + RandIntn(this->electionTimeout_);
-  // Logger::GetInstance()->DEBUG_NEW(
-  //     "random election timeout is " +
-  //         std::to_string(this->randomElectionTimeout_) + " s",
-  //     __FILE__, __LINE__, "RaftContext::RaftContext");
+  SPDLOG_INFO("random election timeout is " +
+              std::to_string(this->randomElectionTimeout_) + " s");
+
   this->term_ = hardSt.term();
   this->vote_ = hardSt.vote();
   this->raftLog_->commited_ = hardSt.commit();
@@ -119,9 +108,7 @@ RaftContext::RaftContext(Config& c)
 }
 
 void RaftContext::SendSnapshot(uint64_t to) {
-  Logger::GetInstance()->DEBUG_NEW("send snap to " + std::to_string(to),
-                                   __FILE__, __LINE__,
-                                   "RaftContext::SendSnapshot");
+  SPDLOG_INFO("send snap to " + std::to_string(to));
   eraftpb::Snapshot* snapshot = new eraftpb::Snapshot();
   auto snap_ = this->raftLog_->storage_->Snapshot();
   snapshot->mutable_metadata()->set_index(snap_.metadata().index());
@@ -145,9 +132,8 @@ bool RaftContext::SendAppend(uint64_t to) {
     // load log from db
     auto entries =
         this->raftLog_->storage_->Entries(prevIndex + 1, prevIndex + 2);
-    Logger::GetInstance()->DEBUG_NEW(
-        "LOAD LOG FROM DB DIZE: " + std::to_string(entries.size()), __FILE__,
-        __LINE__, "RaftContext::SendAppend");
+    SPDLOG_INFO("LOAD LOG FROM DB DIZE: " + std::to_string(entries.size()));
+
     if (entries.size() > 0) {
       prevLogTerm = entries[0].term();
       eraftpb::Message msg;
@@ -164,9 +150,8 @@ bool RaftContext::SendAppend(uint64_t to) {
         e->set_index(ent.index());
         e->set_term(ent.term());
         e->set_data(ent.data());
-        Logger::GetInstance()->DEBUG_NEW(
-            "SET ENTRY DATA =============================" + ent.data(),
-            __FILE__, __LINE__, "RaftContext::SendAppend");
+        SPDLOG_INFO("SET ENTRY DATA =============================" +
+                    ent.data());
       }
       this->msgs_.push_back(msg);
     }
@@ -174,11 +159,6 @@ bool RaftContext::SendAppend(uint64_t to) {
   }
 
   int64_t n = this->raftLog_->entries_.size();
-  // Logger::GetInstance()->DEBUG_NEW(
-  //     "prevIndex: " + std::to_string(prevIndex) + " prevLogTerm: " +
-  //         std::to_string(prevLogTerm) + " entries_.size: " +
-  //         std::to_string(n),
-  //     __FILE__, __LINE__, "RaftContext::SendAppend");
 
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgAppend);
@@ -197,10 +177,6 @@ bool RaftContext::SendAppend(uint64_t to) {
     e->set_index(this->raftLog_->entries_[i].index());
     e->set_term(this->raftLog_->entries_[i].term());
     e->set_data(this->raftLog_->entries_[i].data());
-    // Logger::GetInstance()->DEBUG_NEW(
-    //     "SET ENTRY DATA =============================" +
-    //         this->raftLog_->entries_[i].data(),
-    //     __FILE__, __LINE__, "RaftContext::SendAppend");
   }
   this->msgs_.push_back(msg);
   return true;
@@ -216,18 +192,16 @@ void RaftContext::SendAppendResponse(uint64_t to, bool reject, uint64_t term,
   msg.set_reject(reject);
   msg.set_log_term(term);
   msg.set_index(index);
-  Logger::GetInstance()->DEBUG_NEW(
-      "send append response to -> " + std::to_string(to) + " reject -> " +
-          BoolToString(reject) + " term -> " + std::to_string(term) +
-          " index -> " + std::to_string(index),
-      __FILE__, __LINE__, "RaftContext::SendAppendResponse");
+  SPDLOG_INFO("send append response to -> " + std::to_string(to) +
+              " reject -> " + BoolToString(reject) + " term -> " +
+              std::to_string(term) + " index -> " + std::to_string(index));
+
   this->msgs_.push_back(msg);
 }
 
 void RaftContext::SendHeartbeat(uint64_t to) {
-  Logger::GetInstance()->DEBUG_NEW("send heartbeat to -> " + std::to_string(to),
-                                   __FILE__, __LINE__,
-                                   "RaftContext::SendHeartbeat");
+  SPDLOG_INFO("send heartbeat to -> " + std::to_string(to));
+
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgHeartbeat);
   msg.set_from(this->id_);
@@ -237,10 +211,8 @@ void RaftContext::SendHeartbeat(uint64_t to) {
 }
 
 void RaftContext::SendHeartbeatResponse(uint64_t to, bool reject) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "send heartbeat response to -> " + std::to_string(to) + " reject -> " +
-          BoolToString(reject),
-      __FILE__, __LINE__, "RaftContext::SendHeartbeatResponse");
+  SPDLOG_INFO("send heartbeat response to -> " + std::to_string(to) +
+              " reject -> " + BoolToString(reject));
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgHeartbeatResponse);
   msg.set_from(this->id_);
@@ -251,10 +223,8 @@ void RaftContext::SendHeartbeatResponse(uint64_t to, bool reject) {
 }
 
 void RaftContext::SendRequestVote(uint64_t to, uint64_t index, uint64_t term) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "send request vote to -> " + std::to_string(to) + " index -> " +
-          std::to_string(index) + " term -> " + std::to_string(term),
-      __FILE__, __LINE__, "RaftContext::SendRequestVote");
+  SPDLOG_INFO("send request vote to -> " + std::to_string(to) + " index -> " +
+              std::to_string(index) + " term -> " + std::to_string(term));
 
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgRequestVote);
@@ -267,10 +237,8 @@ void RaftContext::SendRequestVote(uint64_t to, uint64_t index, uint64_t term) {
 }
 
 void RaftContext::SendRequestVoteResponse(uint64_t to, bool reject) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "send request vote response to -> " + std::to_string(to) + " reject -> " +
-          BoolToString(reject),
-      __FILE__, __LINE__, "RaftContext::SendRequestVoteResponse");
+  SPDLOG_INFO("send request vote response to -> " + std::to_string(to) +
+              " reject -> " + BoolToString(reject));
 
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgRequestVoteResponse);
@@ -282,9 +250,8 @@ void RaftContext::SendRequestVoteResponse(uint64_t to, bool reject) {
 }
 
 void RaftContext::SendTimeoutNow(uint64_t to) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "timeout now send to -> " + std::to_string(to), __FILE__, __LINE__,
-      "RaftContext::SendTimeoutNow");
+  SPDLOG_INFO("timeout now send to -> " + std::to_string(to));
+
   eraftpb::Message msg;
   msg.set_msg_type(eraftpb::MsgTimeoutNow);
   msg.set_from(this->id_);
@@ -316,8 +283,8 @@ void RaftContext::TickElection() {
   this->electionElapsed_++;
   if (this->electionElapsed_ >=
       this->randomElectionTimeout_) {  // election timeout
-    Logger::GetInstance()->DEBUG_NEW("election timeout", __FILE__, __LINE__,
-                                     "RaftContext::TickElection");
+    SPDLOG_INFO("election timeout");
+
     this->electionElapsed_ = 0;
     eraftpb::Message msg;
     msg.set_msg_type(eraftpb::MsgHup);
@@ -328,8 +295,7 @@ void RaftContext::TickElection() {
 void RaftContext::TickHeartbeat() {
   this->heartbeatElapsed_++;
   if (this->heartbeatElapsed_ >= this->heartbeatTimeout_) {
-    Logger::GetInstance()->DEBUG_NEW("heartbeat timeout", __FILE__, __LINE__,
-                                     "RaftContext::TickHeartbeat");
+    SPDLOG_INFO("heartbeat timeout");
     this->heartbeatElapsed_ = 0;
     eraftpb::Message msg;
     msg.set_msg_type(eraftpb::MsgBeat);
@@ -350,9 +316,7 @@ void RaftContext::BecomeFollower(uint64_t term, uint64_t lead) {
   this->lead_ = lead;
   this->term_ = term;
   this->vote_ = NONE;
-  Logger::GetInstance()->DEBUG_NEW(
-      "node become follower at term " + std::to_string(term), __FILE__,
-      __LINE__, "RaftContext::BecomeFollower");
+  SPDLOG_INFO("node become follower at term " + std::to_string(term));
 }
 
 void RaftContext::BecomeCandidate() {
@@ -362,9 +326,7 @@ void RaftContext::BecomeCandidate() {
   this->vote_ = this->id_;
   this->votes_ = std::map<uint64_t, bool>{};
   this->votes_[this->id_] = true;  // vote for self
-  Logger::GetInstance()->DEBUG_NEW(
-      "node become candidate at term " + std::to_string(this->term_), __FILE__,
-      __LINE__, "RaftContext::BecomeCandidate");
+  SPDLOG_INFO("node become candidate at term " + std::to_string(this->term_));
 }
 
 void RaftContext::BecomeLeader() {
@@ -390,9 +352,7 @@ void RaftContext::BecomeLeader() {
   if (this->prs_.size() == 1) {
     this->raftLog_->commited_ = this->prs_[this->id_]->match;
   }
-  Logger::GetInstance()->DEBUG_NEW(
-      "node become leader at term " + std::to_string(this->term_), __FILE__,
-      __LINE__, "RaftContext::BecomeLeader");
+  SPDLOG_INFO("node become leader at term " + std::to_string(this->term_));
 }
 
 bool RaftContext::Step(eraftpb::Message m) {
@@ -467,19 +427,7 @@ void RaftContext::StepFollower(eraftpb::Message m) {
       break;
     }
     case eraftpb::MsgEntryConfChange: {
-      // std::shared_ptr<eraftpb::ConfChange> confChange =
-      //     std::make_shared<eraftpb::ConfChange>();
-      // confChange->ParseFromString(m.temp_data());
-      // if (confChange->change_type() == eraftpb::AddNode)
-      //   this->AddNode(confChange->node_id());
-      // else if (confChange->change_type() == eraftpb::RemoveNode)
-      //   this->RemoveNode(confChange->node_id());
-
-      // if (this->pendingConfIndex_ != NONE)
       this->msgs_.push_back(m);
-      Logger::GetInstance()->DEBUG_NEW("-----------add  ndoe----------",
-                                       __FILE__, __LINE__,
-                                       "---RaftContext::StepFollower----");
       break;
     }
   }
@@ -551,11 +499,6 @@ void RaftContext::StepLeader(eraftpb::Message m) {
     }
     case eraftpb::MsgPropose: {
       if (this->leadTransferee_ == NONE) {
-        // Logger::GetInstance()->DEBUG_NEW(
-        //     "StepLeader -> m.data() " + m.temp_data(), __FILE__, __LINE__,
-        //     "RaftContext::StepLeader");
-        // append one
-        // this->AppendEntry(m);
         std::vector<std::shared_ptr<eraftpb::Entry> > entries;
         for (auto ent : m.entries()) {
           auto e = std::make_shared<eraftpb::Entry>(ent);
@@ -597,26 +540,12 @@ void RaftContext::StepLeader(eraftpb::Message m) {
     }
     case eraftpb::MsgTimeoutNow:
       break;
-      // case eraftpb::MsgEntryConfChange: {
-      //   std::shared_ptr<eraftpb::ConfChange> confChange =
-      //       std::make_shared<eraftpb::ConfChange>();
-      //   confChange->ParseFromString(m.temp_data());
-      //   if (confChange->change_type() == eraftpb::AddNode)
-      //     this->AddNode(confChange->node_id());
-      //   else if (confChange->change_type() == eraftpb::RemoveNode)
-      //     this->RemoveNode(confChange->node_id());
-      //   Logger::GetInstance()->DEBUG_NEW("----------add node----------",
-      //   __FILE__,
-      //                                    __LINE__,
-      //                                    "---RaftContext::StepLeader----");
-      //   break;
-      // }
   }
 }
 
 bool RaftContext::DoElection() {
-  Logger::GetInstance()->DEBUG_NEW("node start do election", __FILE__, __LINE__,
-                                   "RaftContext::DoElection");
+  SPDLOG_INFO("node start do election");
+
   this->BecomeCandidate();
   this->heartbeatElapsed_ = 0;
   this->randomElectionTimeout_ =
@@ -638,22 +567,17 @@ bool RaftContext::DoElection() {
 }
 
 void RaftContext::BcastHeartbeat() {
-  Logger::GetInstance()->DEBUG_NEW("bcast heartbeat ", __FILE__, __LINE__,
-                                   "RaftContext::BcastHeartbeat");
+  SPDLOG_INFO("bcast heartbeat ");
   for (auto peer : this->prs_) {
     if (peer.first == this->id_) {
       continue;
     }
-    Logger::GetInstance()->DEBUG_NEW(
-        "send heartbeat to peer " + std::to_string(peer.first), __FILE__,
-        __LINE__, "RaftContext::BcastHeartbeat");
+    SPDLOG_INFO("send heartbeat to peer " + std::to_string(peer.first));
     this->SendHeartbeat(peer.first);
   }
 }
 
 void RaftContext::BcastAppend() {
-  // Logger::GetInstance()->DEBUG_NEW("bcast append ", __FILE__, __LINE__,
-  //                                  "RaftContext::BcastAppend");
   for (auto peer : this->prs_) {
     if (peer.first == this->id_) {
       continue;
@@ -663,9 +587,7 @@ void RaftContext::BcastAppend() {
 }
 
 bool RaftContext::HandleRequestVote(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle request vote from " + std::to_string(m.from()), __FILE__,
-      __LINE__, "RaftContext::HandleRequestVote");
+  SPDLOG_INFO("handle request vote from " + std::to_string(m.from()));
   if (m.term() != NONE && m.term() < this->term_) {
     this->SendRequestVoteResponse(m.from(), true);
     return true;
@@ -692,9 +614,8 @@ bool RaftContext::HandleRequestVote(eraftpb::Message m) {
 }
 
 bool RaftContext::HandleRequestVoteResponse(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle request vote response from peer " + std::to_string(m.from()),
-      __FILE__, __LINE__, "RaftContext::HandleRequestVoteResponse");
+  SPDLOG_INFO("handle request vote response from peer " +
+              std::to_string(m.from()));
   if (m.term() != NONE && m.term() < this->term_) {
     return false;
   }
@@ -715,9 +636,8 @@ bool RaftContext::HandleRequestVoteResponse(eraftpb::Message m) {
 }
 
 bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle append entries " + MessageToString(m), __FILE__, __LINE__,
-      "RaftContext::HandleAppendEntries");
+  SPDLOG_INFO("handle append entries " + MessageToString(m));
+
   if (m.term() != NONE && m.term() < this->term_) {
     this->SendAppendResponse(m.from(), true, NONE, NONE);
     return false;
@@ -780,9 +700,7 @@ bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
 }
 
 bool RaftContext::HandleAppendEntriesResponse(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle append entries response from" + std::to_string(m.from()),
-      __FILE__, __LINE__, "RaftContext::HandleAppendEntriesResponse");
+  SPDLOG_INFO("handle append entries response from" + std::to_string(m.from()));
   if (m.term() != NONE && m.term() < this->term_) {
     return false;
   }
@@ -839,13 +757,12 @@ void RaftContext::LeaderCommit() {
       this->BcastAppend();
     }
   }
-  Logger::GetInstance()->DEBUG_NEW(
-      "leader commit on log index " + std::to_string(this->raftLog_->commited_),
-      __FILE__, __LINE__, "RaftContext::LeaderCommit");
+  SPDLOG_INFO("leader commit on log index " +
+              std::to_string(this->raftLog_->commited_));
 }
 
 bool RaftContext::HandleHeartbeat(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG("raft_context::handle_heart_beat");
+  SPDLOG_INFO("raft_context::handle_heart_beat");
   if (m.term() != NONE && m.term() < this->term_) {
     this->SendHeartbeatResponse(m.from(), true);
     return false;
@@ -859,9 +776,7 @@ bool RaftContext::HandleHeartbeat(eraftpb::Message m) {
 
 void RaftContext::AppendEntries(
     std::vector<std::shared_ptr<eraftpb::Entry> > entries) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "append entries size " + std::to_string(entries.size()), __FILE__,
-      __LINE__, "RaftContext::AppendEntries");
+  SPDLOG_INFO("append entries size " + std::to_string(entries.size()));
   uint64_t lastIndex = this->raftLog_->LastIndex();
   uint64_t i = 0;
   // push entries to raftLog
@@ -898,9 +813,7 @@ std::shared_ptr<eraftpb::HardState> RaftContext::HardState() {
 }
 
 bool RaftContext::HandleSnapshot(eraftpb::Message m) {
-  Logger::GetInstance()->DEBUG_NEW(
-      "handle snapshot from: " + std::to_string(m.from()), __FILE__, __LINE__,
-      "RaftContext::HandleSnapshot");
+  SPDLOG_INFO("handle snapshot from: " + std::to_string(m.from()));
   eraftpb::SnapshotMetadata meta = m.snapshot().metadata();
   if (meta.index() <= this->raftLog_->commited_) {
     this->SendAppendResponse(m.from(), false, NONE, this->raftLog_->commited_);
@@ -942,8 +855,8 @@ bool RaftContext::HandleTransferLeader(eraftpb::Message m) {
 }
 
 void RaftContext::AddNode(uint64_t id) {
-  Logger::GetInstance()->DEBUG_NEW("add node id " + std::to_string(id),
-                                   __FILE__, __LINE__, "RaftContext::AddNode");
+  SPDLOG_INFO("add node id " + std::to_string(id));
+
   if (this->prs_[id] == nullptr) {
     this->prs_[id] = std::make_shared<Progress>(6);
   }
@@ -951,9 +864,8 @@ void RaftContext::AddNode(uint64_t id) {
 }
 
 void RaftContext::RemoveNode(uint64_t id) {
-  Logger::GetInstance()->DEBUG_NEW("remove node id " + std::to_string(id),
-                                   __FILE__, __LINE__,
-                                   "RaftContext::RemoveNode");
+  SPDLOG_INFO("remove node id " + std::to_string(id));
+
   if (this->prs_[id] != nullptr) {
     this->prs_.erase(id);
     if (this->state_ == NodeState::StateLeader) {

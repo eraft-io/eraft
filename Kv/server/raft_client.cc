@@ -21,10 +21,10 @@
 // SOFTWARE.
 
 #include <Kv/raft_client.h>
-#include <Logger/logger.h>
 #include <eraftio/raft_serverpb.pb.h>
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <grpcpp/grpcpp.h>
+#include <spdlog/spdlog.h>
 
 using raft_serverpb::Done;
 using tinykvpb::TinyKv;
@@ -69,9 +69,7 @@ bool RaftClient::Send(uint64_t storeID, std::string addr,
     conns_.erase(addr);
   }
   if (!status.ok()) {
-    Logger::GetInstance()->DEBUG_NEW(
-        "err: send msg to peer " + addr + " error! ", __FILE__, __LINE__,
-        "RaftClient::Send");
+    SPDLOG_ERROR("send msg to peer " + addr + " error! ");
     return false;
   }
   return true;
