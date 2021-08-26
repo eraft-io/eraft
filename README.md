@@ -5,7 +5,7 @@ ERaft supports academic research projects on scaling out Raft to spot instances.
 
 One may refer to @inproceedings{10.1145/3326285.3329046, author = {Xu, Zichen and Stewart, Christopher and Huang, Jiacheng}, title = {Elastic, Geo-Distributed RAFT}, year = {2019}, isbn = {9781450367783}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = {https://doi.org/10.1145/3326285.3329046}, doi = {10.1145/3326285.3329046},  booktitle = {Proceedings of the International Symposium on Quality of Service}, articleno = {11}, numpages = {9}, location = {Phoenix, Arizona}, series = {IWQoS '19} }
 
-Another team of the same root is now working on a stable version called BW-Raft, which inherits the implementation from ERaft. One may refer the latest note from the Good Lab, ![good lab](good.ncu.edu.cn)
+Another team of the same root is now working on a stable version called BW-Raft, which inherits the implementation from ERaft. One may refer the latest note from the Good Lab, (https://good.ncu.edu.cn)
 
 #### Overview
 
