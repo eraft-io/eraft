@@ -79,6 +79,10 @@ class Server : public TinyKv::Service {
                         const raft_cmdpb::ChangePeerRequest* request,
                         raft_cmdpb::ChangePeerResponse* response) override;
 
+  Status SplitRegion(ServerContext* context,
+                     const raft_cmdpb::SplitRequest* request,
+                     raft_cmdpb::SplitResponse* response) override;
+
  private:
   std::string serverAddress_;
 

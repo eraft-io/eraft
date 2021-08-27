@@ -114,6 +114,14 @@ class TinyKv final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::ChangePeerResponse>> PrepareAsyncPeerConfChange(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::ChangePeerResponse>>(PrepareAsyncPeerConfChangeRaw(context, request, cq));
     }
+    // split segion request
+    virtual ::grpc::Status SplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::raft_cmdpb::SplitResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::SplitResponse>> AsyncSplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::SplitResponse>>(AsyncSplitRegionRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::SplitResponse>> PrepareAsyncSplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::SplitResponse>>(PrepareAsyncSplitRegionRaw(context, request, cq));
+    }
     // RawKV commands.
     virtual ::grpc::Status RawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::kvrpcpb::RawGetResponse* response) = 0;
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawGetResponse>> AsyncRawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::grpc::CompletionQueue* cq) {
@@ -208,6 +216,11 @@ class TinyKv final {
       virtual void PeerConfChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::ChangePeerResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void PeerConfChange(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest* request, ::raft_cmdpb::ChangePeerResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       virtual void PeerConfChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::ChangePeerResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      // split segion request
+      virtual void SplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest* request, ::raft_cmdpb::SplitResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SplitRegion(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::SplitResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest* request, ::raft_cmdpb::SplitResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void SplitRegion(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::SplitResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // RawKV commands.
       virtual void RawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest* request, ::kvrpcpb::RawGetResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void RawGet(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::kvrpcpb::RawGetResponse* response, std::function<void(::grpc::Status)>) = 0;
@@ -260,6 +273,8 @@ class TinyKv final {
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::TransferLeaderResponse>* PrepareAsyncTransferLeaderRaw(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::ChangePeerResponse>* AsyncPeerConfChangeRaw(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::ChangePeerResponse>* PrepareAsyncPeerConfChangeRaw(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::SplitResponse>* AsyncSplitRegionRaw(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::raft_cmdpb::SplitResponse>* PrepareAsyncSplitRegionRaw(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawGetResponse>* AsyncRawGetRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawGetResponse>* PrepareAsyncRawGetRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::kvrpcpb::RawPutResponse>* AsyncRawPutRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawPutRequest& request, ::grpc::CompletionQueue* cq) = 0;
@@ -340,6 +355,13 @@ class TinyKv final {
     }
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::ChangePeerResponse>> PrepareAsyncPeerConfChange(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::ChangePeerResponse>>(PrepareAsyncPeerConfChangeRaw(context, request, cq));
+    }
+    ::grpc::Status SplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::raft_cmdpb::SplitResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::SplitResponse>> AsyncSplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::SplitResponse>>(AsyncSplitRegionRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::SplitResponse>> PrepareAsyncSplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::SplitResponse>>(PrepareAsyncSplitRegionRaw(context, request, cq));
     }
     ::grpc::Status RawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::kvrpcpb::RawGetResponse* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawGetResponse>> AsyncRawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::grpc::CompletionQueue* cq) {
@@ -429,6 +451,10 @@ class TinyKv final {
       void PeerConfChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::ChangePeerResponse* response, std::function<void(::grpc::Status)>) override;
       void PeerConfChange(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest* request, ::raft_cmdpb::ChangePeerResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void PeerConfChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::ChangePeerResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void SplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest* request, ::raft_cmdpb::SplitResponse* response, std::function<void(::grpc::Status)>) override;
+      void SplitRegion(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::SplitResponse* response, std::function<void(::grpc::Status)>) override;
+      void SplitRegion(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest* request, ::raft_cmdpb::SplitResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void SplitRegion(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::raft_cmdpb::SplitResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void RawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest* request, ::kvrpcpb::RawGetResponse* response, std::function<void(::grpc::Status)>) override;
       void RawGet(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::kvrpcpb::RawGetResponse* response, std::function<void(::grpc::Status)>) override;
       void RawGet(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest* request, ::kvrpcpb::RawGetResponse* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
@@ -486,6 +512,8 @@ class TinyKv final {
     ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::TransferLeaderResponse>* PrepareAsyncTransferLeaderRaw(::grpc::ClientContext* context, const ::raft_cmdpb::TransferLeaderRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::ChangePeerResponse>* AsyncPeerConfChangeRaw(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::ChangePeerResponse>* PrepareAsyncPeerConfChangeRaw(::grpc::ClientContext* context, const ::raft_cmdpb::ChangePeerRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::SplitResponse>* AsyncSplitRegionRaw(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::raft_cmdpb::SplitResponse>* PrepareAsyncSplitRegionRaw(::grpc::ClientContext* context, const ::raft_cmdpb::SplitRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawGetResponse>* AsyncRawGetRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawGetResponse>* PrepareAsyncRawGetRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawGetRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::kvrpcpb::RawPutResponse>* AsyncRawPutRaw(::grpc::ClientContext* context, const ::kvrpcpb::RawPutRequest& request, ::grpc::CompletionQueue* cq) override;
@@ -509,6 +537,7 @@ class TinyKv final {
     const ::grpc::internal::RpcMethod rpcmethod_KvResolveLock_;
     const ::grpc::internal::RpcMethod rpcmethod_TransferLeader_;
     const ::grpc::internal::RpcMethod rpcmethod_PeerConfChange_;
+    const ::grpc::internal::RpcMethod rpcmethod_SplitRegion_;
     const ::grpc::internal::RpcMethod rpcmethod_RawGet_;
     const ::grpc::internal::RpcMethod rpcmethod_RawPut_;
     const ::grpc::internal::RpcMethod rpcmethod_RawDelete_;
@@ -535,6 +564,8 @@ class TinyKv final {
     virtual ::grpc::Status TransferLeader(::grpc::ServerContext* context, const ::raft_cmdpb::TransferLeaderRequest* request, ::raft_cmdpb::TransferLeaderResponse* response);
     // conf change request
     virtual ::grpc::Status PeerConfChange(::grpc::ServerContext* context, const ::raft_cmdpb::ChangePeerRequest* request, ::raft_cmdpb::ChangePeerResponse* response);
+    // split segion request
+    virtual ::grpc::Status SplitRegion(::grpc::ServerContext* context, const ::raft_cmdpb::SplitRequest* request, ::raft_cmdpb::SplitResponse* response);
     // RawKV commands.
     virtual ::grpc::Status RawGet(::grpc::ServerContext* context, const ::kvrpcpb::RawGetRequest* request, ::kvrpcpb::RawGetResponse* response);
     virtual ::grpc::Status RawPut(::grpc::ServerContext* context, const ::kvrpcpb::RawPutRequest* request, ::kvrpcpb::RawPutResponse* response);
@@ -727,12 +758,32 @@ class TinyKv final {
     }
   };
   template <class BaseClass>
+  class WithAsyncMethod_SplitRegion : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_SplitRegion() {
+      ::grpc::Service::MarkMethodAsync(9);
+    }
+    ~WithAsyncMethod_SplitRegion() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestSplitRegion(::grpc::ServerContext* context, ::raft_cmdpb::SplitRequest* request, ::grpc::ServerAsyncResponseWriter< ::raft_cmdpb::SplitResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithAsyncMethod_RawGet : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RawGet() {
-      ::grpc::Service::MarkMethodAsync(9);
+      ::grpc::Service::MarkMethodAsync(10);
     }
     ~WithAsyncMethod_RawGet() override {
       BaseClassMustBeDerivedFromService(this);
@@ -743,7 +794,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawGet(::grpc::ServerContext* context, ::kvrpcpb::RawGetRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvrpcpb::RawGetResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -752,7 +803,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RawPut() {
-      ::grpc::Service::MarkMethodAsync(10);
+      ::grpc::Service::MarkMethodAsync(11);
     }
     ~WithAsyncMethod_RawPut() override {
       BaseClassMustBeDerivedFromService(this);
@@ -763,7 +814,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawPut(::grpc::ServerContext* context, ::kvrpcpb::RawPutRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvrpcpb::RawPutResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -772,7 +823,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RawDelete() {
-      ::grpc::Service::MarkMethodAsync(11);
+      ::grpc::Service::MarkMethodAsync(12);
     }
     ~WithAsyncMethod_RawDelete() override {
       BaseClassMustBeDerivedFromService(this);
@@ -783,7 +834,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawDelete(::grpc::ServerContext* context, ::kvrpcpb::RawDeleteRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvrpcpb::RawDeleteResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(12, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -792,7 +843,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RawScan() {
-      ::grpc::Service::MarkMethodAsync(12);
+      ::grpc::Service::MarkMethodAsync(13);
     }
     ~WithAsyncMethod_RawScan() override {
       BaseClassMustBeDerivedFromService(this);
@@ -803,7 +854,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawScan(::grpc::ServerContext* context, ::kvrpcpb::RawScanRequest* request, ::grpc::ServerAsyncResponseWriter< ::kvrpcpb::RawScanResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(12, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(13, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -812,7 +863,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_Raft() {
-      ::grpc::Service::MarkMethodAsync(13);
+      ::grpc::Service::MarkMethodAsync(14);
     }
     ~WithAsyncMethod_Raft() override {
       BaseClassMustBeDerivedFromService(this);
@@ -823,7 +874,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRaft(::grpc::ServerContext* context, ::raft_serverpb::RaftMessage* request, ::grpc::ServerAsyncResponseWriter< ::raft_serverpb::Done>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(13, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(14, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -832,7 +883,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_Snapshot() {
-      ::grpc::Service::MarkMethodAsync(14);
+      ::grpc::Service::MarkMethodAsync(15);
     }
     ~WithAsyncMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
@@ -843,7 +894,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestSnapshot(::grpc::ServerContext* context, ::raft_serverpb::SnapshotChunk* request, ::grpc::ServerAsyncResponseWriter< ::raft_serverpb::Done>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(14, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(15, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -852,7 +903,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_Coprocessor() {
-      ::grpc::Service::MarkMethodAsync(15);
+      ::grpc::Service::MarkMethodAsync(16);
     }
     ~WithAsyncMethod_Coprocessor() override {
       BaseClassMustBeDerivedFromService(this);
@@ -863,10 +914,10 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestCoprocessor(::grpc::ServerContext* context, ::coprocessor::Request* request, ::grpc::ServerAsyncResponseWriter< ::coprocessor::Response>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(15, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(16, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_KvGet<WithAsyncMethod_KvScan<WithAsyncMethod_KvPrewrite<WithAsyncMethod_KvCommit<WithAsyncMethod_KvCheckTxnStatus<WithAsyncMethod_KvBatchRollback<WithAsyncMethod_KvResolveLock<WithAsyncMethod_TransferLeader<WithAsyncMethod_PeerConfChange<WithAsyncMethod_RawGet<WithAsyncMethod_RawPut<WithAsyncMethod_RawDelete<WithAsyncMethod_RawScan<WithAsyncMethod_Raft<WithAsyncMethod_Snapshot<WithAsyncMethod_Coprocessor<Service > > > > > > > > > > > > > > > > AsyncService;
+  typedef WithAsyncMethod_KvGet<WithAsyncMethod_KvScan<WithAsyncMethod_KvPrewrite<WithAsyncMethod_KvCommit<WithAsyncMethod_KvCheckTxnStatus<WithAsyncMethod_KvBatchRollback<WithAsyncMethod_KvResolveLock<WithAsyncMethod_TransferLeader<WithAsyncMethod_PeerConfChange<WithAsyncMethod_SplitRegion<WithAsyncMethod_RawGet<WithAsyncMethod_RawPut<WithAsyncMethod_RawDelete<WithAsyncMethod_RawScan<WithAsyncMethod_Raft<WithAsyncMethod_Snapshot<WithAsyncMethod_Coprocessor<Service > > > > > > > > > > > > > > > > > AsyncService;
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_KvGet : public BaseClass {
    private:
@@ -1147,12 +1198,43 @@ class TinyKv final {
     virtual void PeerConfChange(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::ChangePeerRequest* /*request*/, ::raft_cmdpb::ChangePeerResponse* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
+  class ExperimentalWithCallbackMethod_SplitRegion : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    ExperimentalWithCallbackMethod_SplitRegion() {
+      ::grpc::Service::experimental().MarkMethodCallback(9,
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::raft_cmdpb::SplitRequest, ::raft_cmdpb::SplitResponse>(
+          [this](::grpc::ServerContext* context,
+                 const ::raft_cmdpb::SplitRequest* request,
+                 ::raft_cmdpb::SplitResponse* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   return this->SplitRegion(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_SplitRegion(
+        ::grpc::experimental::MessageAllocator< ::raft_cmdpb::SplitRequest, ::raft_cmdpb::SplitResponse>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::raft_cmdpb::SplitRequest, ::raft_cmdpb::SplitResponse>*>(
+          ::grpc::Service::experimental().GetHandler(9))
+              ->SetMessageAllocator(allocator);
+    }
+    ~ExperimentalWithCallbackMethod_SplitRegion() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual void SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+  };
+  template <class BaseClass>
   class ExperimentalWithCallbackMethod_RawGet : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RawGet() {
-      ::grpc::Service::experimental().MarkMethodCallback(9,
+      ::grpc::Service::experimental().MarkMethodCallback(10,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawGetRequest, ::kvrpcpb::RawGetResponse>(
           [this](::grpc::ServerContext* context,
                  const ::kvrpcpb::RawGetRequest* request,
@@ -1164,7 +1246,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_RawGet(
         ::grpc::experimental::MessageAllocator< ::kvrpcpb::RawGetRequest, ::kvrpcpb::RawGetResponse>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawGetRequest, ::kvrpcpb::RawGetResponse>*>(
-          ::grpc::Service::experimental().GetHandler(9))
+          ::grpc::Service::experimental().GetHandler(10))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RawGet() override {
@@ -1183,7 +1265,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RawPut() {
-      ::grpc::Service::experimental().MarkMethodCallback(10,
+      ::grpc::Service::experimental().MarkMethodCallback(11,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawPutRequest, ::kvrpcpb::RawPutResponse>(
           [this](::grpc::ServerContext* context,
                  const ::kvrpcpb::RawPutRequest* request,
@@ -1195,7 +1277,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_RawPut(
         ::grpc::experimental::MessageAllocator< ::kvrpcpb::RawPutRequest, ::kvrpcpb::RawPutResponse>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawPutRequest, ::kvrpcpb::RawPutResponse>*>(
-          ::grpc::Service::experimental().GetHandler(10))
+          ::grpc::Service::experimental().GetHandler(11))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RawPut() override {
@@ -1214,7 +1296,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RawDelete() {
-      ::grpc::Service::experimental().MarkMethodCallback(11,
+      ::grpc::Service::experimental().MarkMethodCallback(12,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawDeleteRequest, ::kvrpcpb::RawDeleteResponse>(
           [this](::grpc::ServerContext* context,
                  const ::kvrpcpb::RawDeleteRequest* request,
@@ -1226,7 +1308,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_RawDelete(
         ::grpc::experimental::MessageAllocator< ::kvrpcpb::RawDeleteRequest, ::kvrpcpb::RawDeleteResponse>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawDeleteRequest, ::kvrpcpb::RawDeleteResponse>*>(
-          ::grpc::Service::experimental().GetHandler(11))
+          ::grpc::Service::experimental().GetHandler(12))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RawDelete() override {
@@ -1245,7 +1327,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RawScan() {
-      ::grpc::Service::experimental().MarkMethodCallback(12,
+      ::grpc::Service::experimental().MarkMethodCallback(13,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawScanRequest, ::kvrpcpb::RawScanResponse>(
           [this](::grpc::ServerContext* context,
                  const ::kvrpcpb::RawScanRequest* request,
@@ -1257,7 +1339,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_RawScan(
         ::grpc::experimental::MessageAllocator< ::kvrpcpb::RawScanRequest, ::kvrpcpb::RawScanResponse>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::kvrpcpb::RawScanRequest, ::kvrpcpb::RawScanResponse>*>(
-          ::grpc::Service::experimental().GetHandler(12))
+          ::grpc::Service::experimental().GetHandler(13))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RawScan() override {
@@ -1276,7 +1358,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_Raft() {
-      ::grpc::Service::experimental().MarkMethodCallback(13,
+      ::grpc::Service::experimental().MarkMethodCallback(14,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(
           [this](::grpc::ServerContext* context,
                  const ::raft_serverpb::RaftMessage* request,
@@ -1288,7 +1370,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_Raft(
         ::grpc::experimental::MessageAllocator< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>*>(
-          ::grpc::Service::experimental().GetHandler(13))
+          ::grpc::Service::experimental().GetHandler(14))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_Raft() override {
@@ -1307,7 +1389,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_Snapshot() {
-      ::grpc::Service::experimental().MarkMethodCallback(14,
+      ::grpc::Service::experimental().MarkMethodCallback(15,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(
           [this](::grpc::ServerContext* context,
                  const ::raft_serverpb::SnapshotChunk* request,
@@ -1319,7 +1401,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_Snapshot(
         ::grpc::experimental::MessageAllocator< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>*>(
-          ::grpc::Service::experimental().GetHandler(14))
+          ::grpc::Service::experimental().GetHandler(15))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_Snapshot() override {
@@ -1338,7 +1420,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_Coprocessor() {
-      ::grpc::Service::experimental().MarkMethodCallback(15,
+      ::grpc::Service::experimental().MarkMethodCallback(16,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::coprocessor::Request, ::coprocessor::Response>(
           [this](::grpc::ServerContext* context,
                  const ::coprocessor::Request* request,
@@ -1350,7 +1432,7 @@ class TinyKv final {
     void SetMessageAllocatorFor_Coprocessor(
         ::grpc::experimental::MessageAllocator< ::coprocessor::Request, ::coprocessor::Response>* allocator) {
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::coprocessor::Request, ::coprocessor::Response>*>(
-          ::grpc::Service::experimental().GetHandler(15))
+          ::grpc::Service::experimental().GetHandler(16))
               ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_Coprocessor() override {
@@ -1363,7 +1445,7 @@ class TinyKv final {
     }
     virtual void Coprocessor(::grpc::ServerContext* /*context*/, const ::coprocessor::Request* /*request*/, ::coprocessor::Response* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
-  typedef ExperimentalWithCallbackMethod_KvGet<ExperimentalWithCallbackMethod_KvScan<ExperimentalWithCallbackMethod_KvPrewrite<ExperimentalWithCallbackMethod_KvCommit<ExperimentalWithCallbackMethod_KvCheckTxnStatus<ExperimentalWithCallbackMethod_KvBatchRollback<ExperimentalWithCallbackMethod_KvResolveLock<ExperimentalWithCallbackMethod_TransferLeader<ExperimentalWithCallbackMethod_PeerConfChange<ExperimentalWithCallbackMethod_RawGet<ExperimentalWithCallbackMethod_RawPut<ExperimentalWithCallbackMethod_RawDelete<ExperimentalWithCallbackMethod_RawScan<ExperimentalWithCallbackMethod_Raft<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_Coprocessor<Service > > > > > > > > > > > > > > > > ExperimentalCallbackService;
+  typedef ExperimentalWithCallbackMethod_KvGet<ExperimentalWithCallbackMethod_KvScan<ExperimentalWithCallbackMethod_KvPrewrite<ExperimentalWithCallbackMethod_KvCommit<ExperimentalWithCallbackMethod_KvCheckTxnStatus<ExperimentalWithCallbackMethod_KvBatchRollback<ExperimentalWithCallbackMethod_KvResolveLock<ExperimentalWithCallbackMethod_TransferLeader<ExperimentalWithCallbackMethod_PeerConfChange<ExperimentalWithCallbackMethod_SplitRegion<ExperimentalWithCallbackMethod_RawGet<ExperimentalWithCallbackMethod_RawPut<ExperimentalWithCallbackMethod_RawDelete<ExperimentalWithCallbackMethod_RawScan<ExperimentalWithCallbackMethod_Raft<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_Coprocessor<Service > > > > > > > > > > > > > > > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_KvGet : public BaseClass {
    private:
@@ -1518,12 +1600,29 @@ class TinyKv final {
     }
   };
   template <class BaseClass>
+  class WithGenericMethod_SplitRegion : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_SplitRegion() {
+      ::grpc::Service::MarkMethodGeneric(9);
+    }
+    ~WithGenericMethod_SplitRegion() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
   class WithGenericMethod_RawGet : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RawGet() {
-      ::grpc::Service::MarkMethodGeneric(9);
+      ::grpc::Service::MarkMethodGeneric(10);
     }
     ~WithGenericMethod_RawGet() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1540,7 +1639,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RawPut() {
-      ::grpc::Service::MarkMethodGeneric(10);
+      ::grpc::Service::MarkMethodGeneric(11);
     }
     ~WithGenericMethod_RawPut() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1557,7 +1656,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RawDelete() {
-      ::grpc::Service::MarkMethodGeneric(11);
+      ::grpc::Service::MarkMethodGeneric(12);
     }
     ~WithGenericMethod_RawDelete() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1574,7 +1673,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RawScan() {
-      ::grpc::Service::MarkMethodGeneric(12);
+      ::grpc::Service::MarkMethodGeneric(13);
     }
     ~WithGenericMethod_RawScan() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1591,7 +1690,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_Raft() {
-      ::grpc::Service::MarkMethodGeneric(13);
+      ::grpc::Service::MarkMethodGeneric(14);
     }
     ~WithGenericMethod_Raft() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1608,7 +1707,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_Snapshot() {
-      ::grpc::Service::MarkMethodGeneric(14);
+      ::grpc::Service::MarkMethodGeneric(15);
     }
     ~WithGenericMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1625,7 +1724,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_Coprocessor() {
-      ::grpc::Service::MarkMethodGeneric(15);
+      ::grpc::Service::MarkMethodGeneric(16);
     }
     ~WithGenericMethod_Coprocessor() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1817,12 +1916,32 @@ class TinyKv final {
     }
   };
   template <class BaseClass>
+  class WithRawMethod_SplitRegion : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_SplitRegion() {
+      ::grpc::Service::MarkMethodRaw(9);
+    }
+    ~WithRawMethod_SplitRegion() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestSplitRegion(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithRawMethod_RawGet : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RawGet() {
-      ::grpc::Service::MarkMethodRaw(9);
+      ::grpc::Service::MarkMethodRaw(10);
     }
     ~WithRawMethod_RawGet() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1833,7 +1952,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawGet(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1842,7 +1961,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RawPut() {
-      ::grpc::Service::MarkMethodRaw(10);
+      ::grpc::Service::MarkMethodRaw(11);
     }
     ~WithRawMethod_RawPut() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1853,7 +1972,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawPut(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1862,7 +1981,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RawDelete() {
-      ::grpc::Service::MarkMethodRaw(11);
+      ::grpc::Service::MarkMethodRaw(12);
     }
     ~WithRawMethod_RawDelete() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1873,7 +1992,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawDelete(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(12, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1882,7 +2001,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RawScan() {
-      ::grpc::Service::MarkMethodRaw(12);
+      ::grpc::Service::MarkMethodRaw(13);
     }
     ~WithRawMethod_RawScan() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1893,7 +2012,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRawScan(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(12, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(13, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1902,7 +2021,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_Raft() {
-      ::grpc::Service::MarkMethodRaw(13);
+      ::grpc::Service::MarkMethodRaw(14);
     }
     ~WithRawMethod_Raft() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1913,7 +2032,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestRaft(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(13, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(14, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1922,7 +2041,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_Snapshot() {
-      ::grpc::Service::MarkMethodRaw(14);
+      ::grpc::Service::MarkMethodRaw(15);
     }
     ~WithRawMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1933,7 +2052,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestSnapshot(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(14, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(15, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -1942,7 +2061,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_Coprocessor() {
-      ::grpc::Service::MarkMethodRaw(15);
+      ::grpc::Service::MarkMethodRaw(16);
     }
     ~WithRawMethod_Coprocessor() override {
       BaseClassMustBeDerivedFromService(this);
@@ -1953,7 +2072,7 @@ class TinyKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestCoprocessor(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(15, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(16, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -2182,12 +2301,37 @@ class TinyKv final {
     virtual void PeerConfChange(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
+  class ExperimentalWithRawCallbackMethod_SplitRegion : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    ExperimentalWithRawCallbackMethod_SplitRegion() {
+      ::grpc::Service::experimental().MarkMethodRawCallback(9,
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+          [this](::grpc::ServerContext* context,
+                 const ::grpc::ByteBuffer* request,
+                 ::grpc::ByteBuffer* response,
+                 ::grpc::experimental::ServerCallbackRpcController* controller) {
+                   this->SplitRegion(context, request, response, controller);
+                 }));
+    }
+    ~ExperimentalWithRawCallbackMethod_SplitRegion() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual void SplitRegion(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+  };
+  template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_RawGet : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RawGet() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(9,
+      ::grpc::Service::experimental().MarkMethodRawCallback(10,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2212,7 +2356,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RawPut() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(10,
+      ::grpc::Service::experimental().MarkMethodRawCallback(11,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2237,7 +2381,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RawDelete() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(11,
+      ::grpc::Service::experimental().MarkMethodRawCallback(12,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2262,7 +2406,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RawScan() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(12,
+      ::grpc::Service::experimental().MarkMethodRawCallback(13,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2287,7 +2431,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_Raft() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(13,
+      ::grpc::Service::experimental().MarkMethodRawCallback(14,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2312,7 +2456,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_Snapshot() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(14,
+      ::grpc::Service::experimental().MarkMethodRawCallback(15,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2337,7 +2481,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_Coprocessor() {
-      ::grpc::Service::experimental().MarkMethodRawCallback(15,
+      ::grpc::Service::experimental().MarkMethodRawCallback(16,
         new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
@@ -2537,12 +2681,32 @@ class TinyKv final {
     virtual ::grpc::Status StreamedPeerConfChange(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::raft_cmdpb::ChangePeerRequest,::raft_cmdpb::ChangePeerResponse>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
+  class WithStreamedUnaryMethod_SplitRegion : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_SplitRegion() {
+      ::grpc::Service::MarkMethodStreamed(9,
+        new ::grpc::internal::StreamedUnaryHandler< ::raft_cmdpb::SplitRequest, ::raft_cmdpb::SplitResponse>(std::bind(&WithStreamedUnaryMethod_SplitRegion<BaseClass>::StreamedSplitRegion, this, std::placeholders::_1, std::placeholders::_2)));
+    }
+    ~WithStreamedUnaryMethod_SplitRegion() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status SplitRegion(::grpc::ServerContext* /*context*/, const ::raft_cmdpb::SplitRequest* /*request*/, ::raft_cmdpb::SplitResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedSplitRegion(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::raft_cmdpb::SplitRequest,::raft_cmdpb::SplitResponse>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
   class WithStreamedUnaryMethod_RawGet : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RawGet() {
-      ::grpc::Service::MarkMethodStreamed(9,
+      ::grpc::Service::MarkMethodStreamed(10,
         new ::grpc::internal::StreamedUnaryHandler< ::kvrpcpb::RawGetRequest, ::kvrpcpb::RawGetResponse>(std::bind(&WithStreamedUnaryMethod_RawGet<BaseClass>::StreamedRawGet, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_RawGet() override {
@@ -2562,7 +2726,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RawPut() {
-      ::grpc::Service::MarkMethodStreamed(10,
+      ::grpc::Service::MarkMethodStreamed(11,
         new ::grpc::internal::StreamedUnaryHandler< ::kvrpcpb::RawPutRequest, ::kvrpcpb::RawPutResponse>(std::bind(&WithStreamedUnaryMethod_RawPut<BaseClass>::StreamedRawPut, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_RawPut() override {
@@ -2582,7 +2746,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RawDelete() {
-      ::grpc::Service::MarkMethodStreamed(11,
+      ::grpc::Service::MarkMethodStreamed(12,
         new ::grpc::internal::StreamedUnaryHandler< ::kvrpcpb::RawDeleteRequest, ::kvrpcpb::RawDeleteResponse>(std::bind(&WithStreamedUnaryMethod_RawDelete<BaseClass>::StreamedRawDelete, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_RawDelete() override {
@@ -2602,7 +2766,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RawScan() {
-      ::grpc::Service::MarkMethodStreamed(12,
+      ::grpc::Service::MarkMethodStreamed(13,
         new ::grpc::internal::StreamedUnaryHandler< ::kvrpcpb::RawScanRequest, ::kvrpcpb::RawScanResponse>(std::bind(&WithStreamedUnaryMethod_RawScan<BaseClass>::StreamedRawScan, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_RawScan() override {
@@ -2622,7 +2786,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_Raft() {
-      ::grpc::Service::MarkMethodStreamed(13,
+      ::grpc::Service::MarkMethodStreamed(14,
         new ::grpc::internal::StreamedUnaryHandler< ::raft_serverpb::RaftMessage, ::raft_serverpb::Done>(std::bind(&WithStreamedUnaryMethod_Raft<BaseClass>::StreamedRaft, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_Raft() override {
@@ -2642,7 +2806,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_Snapshot() {
-      ::grpc::Service::MarkMethodStreamed(14,
+      ::grpc::Service::MarkMethodStreamed(15,
         new ::grpc::internal::StreamedUnaryHandler< ::raft_serverpb::SnapshotChunk, ::raft_serverpb::Done>(std::bind(&WithStreamedUnaryMethod_Snapshot<BaseClass>::StreamedSnapshot, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_Snapshot() override {
@@ -2662,7 +2826,7 @@ class TinyKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_Coprocessor() {
-      ::grpc::Service::MarkMethodStreamed(15,
+      ::grpc::Service::MarkMethodStreamed(16,
         new ::grpc::internal::StreamedUnaryHandler< ::coprocessor::Request, ::coprocessor::Response>(std::bind(&WithStreamedUnaryMethod_Coprocessor<BaseClass>::StreamedCoprocessor, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_Coprocessor() override {
@@ -2676,9 +2840,9 @@ class TinyKv final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedCoprocessor(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::coprocessor::Request,::coprocessor::Response>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_TransferLeader<WithStreamedUnaryMethod_PeerConfChange<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Raft<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > > > > > StreamedUnaryService;
+  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_TransferLeader<WithStreamedUnaryMethod_PeerConfChange<WithStreamedUnaryMethod_SplitRegion<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Raft<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_TransferLeader<WithStreamedUnaryMethod_PeerConfChange<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Raft<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > > > > > StreamedService;
+  typedef WithStreamedUnaryMethod_KvGet<WithStreamedUnaryMethod_KvScan<WithStreamedUnaryMethod_KvPrewrite<WithStreamedUnaryMethod_KvCommit<WithStreamedUnaryMethod_KvCheckTxnStatus<WithStreamedUnaryMethod_KvBatchRollback<WithStreamedUnaryMethod_KvResolveLock<WithStreamedUnaryMethod_TransferLeader<WithStreamedUnaryMethod_PeerConfChange<WithStreamedUnaryMethod_SplitRegion<WithStreamedUnaryMethod_RawGet<WithStreamedUnaryMethod_RawPut<WithStreamedUnaryMethod_RawDelete<WithStreamedUnaryMethod_RawScan<WithStreamedUnaryMethod_Raft<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_Coprocessor<Service > > > > > > > > > > > > > > > > > StreamedService;
 };
 
 }  // namespace tinykvpb

@@ -103,6 +103,11 @@ static Msg NewPeerMsg(MsgType tp, uint64_t regionId, void* data) {
   return Msg(tp, regionId, data);
 }
 
+struct MsgSplitRegion {
+  metapb::RegionEpoch* region_epoch_;
+  std::string split_key_;
+};
+
 }  // namespace kvserver
 
 #endif

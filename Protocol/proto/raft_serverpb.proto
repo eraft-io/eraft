@@ -9,6 +9,7 @@ enum RaftMessageType {
     RaftMsgClientCmd = 1;
     RaftTransferLeader = 2;
     RaftConfChange = 3;
+    RaftSplitRegion = 4;
 }
 
 // The message sent between Raft peer, it wraps the raft meessage with some meta information.

@@ -255,6 +255,18 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               }
               break;
             }
+            case raft_serverpb::RaftSplitRegion: {
+              std::shared_ptr<raft_cmdpb::SplitRequest> splitregion =
+                  std::make_shared<raft_cmdpb::SplitRequest>();
+              splitregion->ParseFromString(raftMsg->data());
+              {
+                metapb::Region newregion;
+                newregion.set_start_key(splitregion->split_key());
+                newregion.set_id(splitregion->new_region_id());
+                this->peer_->raftGroup_->ProposeSplitRegion(newregion);
+              }
+              break;
+            }
           }
           delete raftMsg;
         } catch (const std::exception& e) {
@@ -297,7 +309,8 @@ bool PeerMsgHandler::CheckStoreID(raft_cmdpb::RaftCmdRequest* req,
 
 bool PeerMsgHandler::PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req) {
   if (!this->CheckStoreID(req, this->peer_->meta_->store_id())) {
-    // check store id, make sure that msg is dispatched to the right place
+    // check store id, make sure that msg is dispatched to the right
+    // place
     return false;
   }
   auto regionID = this->peer_->regionId_;

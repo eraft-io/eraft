@@ -86,6 +86,12 @@ int main(int argc, char** argv) {
     confChange.set_allocated_peer(pr);
     raftClient->PeerConfChange(std::string(argv[1]), confChange);
 
+  } else if (reqType == "split") {
+    //
+    raft_cmdpb::SplitRequest splitReuest;
+    splitReuest.set_split_key(argv[3]);
+    splitReuest.set_new_region_id(std::atoi(argv[4]));
+    raftClient->SplitRegion(std::string(argv[1]), splitReuest);
   } else {
     std::cerr << helpStr << std::endl;
   }

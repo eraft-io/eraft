@@ -27,7 +27,7 @@ static constexpr ::PROTOBUF_NAMESPACE_ID::Message* const* file_default_instances
 const char descriptor_table_protodef_tinykvpb_2eproto[] =
   "\n\016tinykvpb.proto\022\010tinykvpb\032\rkvrpcpb.prot"
   "o\032\023raft_serverpb.proto\032\020raft_cmdpb.proto"
-  "\032\021coprocessor.proto2\334\010\n\006TinyKv\0224\n\005KvGet\022"
+  "\032\021coprocessor.proto2\242\t\n\006TinyKv\0224\n\005KvGet\022"
   "\023.kvrpcpb.GetRequest\032\024.kvrpcpb.GetRespon"
   "se\"\000\0227\n\006KvScan\022\024.kvrpcpb.ScanRequest\032\025.k"
   "vrpcpb.ScanResponse\"\000\022C\n\nKvPrewrite\022\030.kv"
@@ -44,18 +44,20 @@ const char descriptor_table_protodef_tinykvpb_2eproto[] =
   "erLeaderRequest\032\".raft_cmdpb.TransferLea"
   "derResponse\"\000\022Q\n\016PeerConfChange\022\035.raft_c"
   "mdpb.ChangePeerRequest\032\036.raft_cmdpb.Chan"
-  "gePeerResponse\"\000\022;\n\006RawGet\022\026.kvrpcpb.Raw"
-  "GetRequest\032\027.kvrpcpb.RawGetResponse\"\000\022;\n"
-  "\006RawPut\022\026.kvrpcpb.RawPutRequest\032\027.kvrpcp"
-  "b.RawPutResponse\"\000\022D\n\tRawDelete\022\031.kvrpcp"
-  "b.RawDeleteRequest\032\032.kvrpcpb.RawDeleteRe"
-  "sponse\"\000\022>\n\007RawScan\022\027.kvrpcpb.RawScanReq"
-  "uest\032\030.kvrpcpb.RawScanResponse\"\000\0229\n\004Raft"
-  "\022\032.raft_serverpb.RaftMessage\032\023.raft_serv"
-  "erpb.Done\"\000\022\?\n\010Snapshot\022\034.raft_serverpb."
-  "SnapshotChunk\032\023.raft_serverpb.Done\"\000\022<\n\013"
-  "Coprocessor\022\024.coprocessor.Request\032\025.copr"
-  "ocessor.Response\"\000b\006proto3"
+  "gePeerResponse\"\000\022D\n\013SplitRegion\022\030.raft_c"
+  "mdpb.SplitRequest\032\031.raft_cmdpb.SplitResp"
+  "onse\"\000\022;\n\006RawGet\022\026.kvrpcpb.RawGetRequest"
+  "\032\027.kvrpcpb.RawGetResponse\"\000\022;\n\006RawPut\022\026."
+  "kvrpcpb.RawPutRequest\032\027.kvrpcpb.RawPutRe"
+  "sponse\"\000\022D\n\tRawDelete\022\031.kvrpcpb.RawDelet"
+  "eRequest\032\032.kvrpcpb.RawDeleteResponse\"\000\022>"
+  "\n\007RawScan\022\027.kvrpcpb.RawScanRequest\032\030.kvr"
+  "pcpb.RawScanResponse\"\000\0229\n\004Raft\022\032.raft_se"
+  "rverpb.RaftMessage\032\023.raft_serverpb.Done\""
+  "\000\022\?\n\010Snapshot\022\034.raft_serverpb.SnapshotCh"
+  "unk\032\023.raft_serverpb.Done\"\000\022<\n\013Coprocesso"
+  "r\022\024.coprocessor.Request\032\025.coprocessor.Re"
+  "sponse\"\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinykvpb_2eproto_deps[4] = {
   &::descriptor_table_coprocessor_2eproto,
@@ -68,7 +70,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinykvpb_2eproto_once;
 static bool descriptor_table_tinykvpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinykvpb_2eproto = {
-  &descriptor_table_tinykvpb_2eproto_initialized, descriptor_table_protodef_tinykvpb_2eproto, "tinykvpb.proto", 1226,
+  &descriptor_table_tinykvpb_2eproto_initialized, descriptor_table_protodef_tinykvpb_2eproto, "tinykvpb.proto", 1296,
   &descriptor_table_tinykvpb_2eproto_once, descriptor_table_tinykvpb_2eproto_sccs, descriptor_table_tinykvpb_2eproto_deps, 0, 4,
   schemas, file_default_instances, TableStruct_tinykvpb_2eproto::offsets,
   file_level_metadata_tinykvpb_2eproto, 0, file_level_enum_descriptors_tinykvpb_2eproto, file_level_service_descriptors_tinykvpb_2eproto,
