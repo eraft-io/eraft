@@ -1,6 +1,6 @@
 # eraft
 
-Based on Etcd-Raft and implemented by C++, Eraft is a high-performance industrial Raft library. The main idea for this project comes from the manuscript of Diego Ongaro's doctoral thesis. At present, this project has been included in https://raft.github.io. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable industrial Raft library. If you are interested, please join us. The project address is https://github.com/eraft-io/eraft.
+Based on Etcd-Raft and implemented by C++, Eraft is a high-performance industrial Raft library. The main idea for this project comes from the manuscript of Diego Ongaro's doctoral thesis. At present, this project has been included in https://raft.github.io. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable industrial Raft library. 
 
 ERaft supports academic research projects on scaling out Raft to spot instances. One of our main work has been published in IWQoS 2019.
 
