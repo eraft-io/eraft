@@ -131,11 +131,18 @@ void PeerMsgHandler::ProcessSplitRegion(
     eraftpb::Entry* entry, metapb::Region* newregion,
     std::shared_ptr<rocksdb::WriteBatch> wb) {
   uint64_t regionid = this->peer_->regionId_;
-  std::shared_ptr<StoreMeta> storemeta = this->ctx_->storeMeta_;
-  std::unique_lock<std::mutex> mlock(storemeta->mutex_);
-  metapb::Region* currentregion = storemeta->regions_[regionid];
-  currentregion->mutable_region_epoch()->set_version(
-      currentregion->mutable_region_epoch()->version() + 1);
+  SPDLOG_INFO("ProcessSplitRegion() " + std::to_string(regionid));
+  // std::unique_lock<std::mutex> mlock(storemeta->mutex_);
+  metapb::Region* currentregion = this->ctx_->storeMeta_->regions_[regionid];
+  if (currentregion == nullptr) {
+    SPDLOG_INFO("error----------------");
+  }
+  // SPDLOG_INFO("ProcessSplitRegion() " + currentregion->start_key());
+  metapb::RegionEpoch* rep =
+      new metapb::RegionEpoch(currentregion->region_epoch());
+
+  rep->set_version(1);
+  SPDLOG_INFO("ProcessSplitRegion()");
   for (int i = 0; i < currentregion->peers_size(); ++i) {
     metapb::Peer* newpeer = newregion->add_peers();
     newpeer->set_addr(currentregion->mutable_peers(i)->addr());
@@ -146,9 +153,9 @@ void PeerMsgHandler::ProcessSplitRegion(
   newregion->mutable_region_epoch()->set_version(1);
   newregion->set_end_key(currentregion->end_key());
   currentregion->set_end_key(newregion->start_key());
-  storemeta->regions_[newregion->id()] = newregion;
-  mlock.unlock();
-
+  this->ctx_->storeMeta_->regions_[newregion->id()] = newregion;
+  // mlock.unlock();
+  SPDLOG_INFO("ProcessSplitRegion()");
   Assistant::GetInstance()->WriteRegionState(
       wb, std::shared_ptr<metapb::Region>(currentregion),
       raft_serverpb::PeerState::Normal);
@@ -157,7 +164,7 @@ void PeerMsgHandler::ProcessSplitRegion(
       raft_serverpb::PeerState::Normal);
   // this->peer_->sizeDiffHint_ = 0;
   // this->peer_->approximateSize_ = 0;
-
+  SPDLOG_INFO("ProcessSplitRegion()");
   std::shared_ptr<kvserver::Peer> peer = std::make_shared<kvserver::Peer>(
       this->ctx_->store_->id(), this->ctx_->cfg_, this->ctx_->engine_,
       std::shared_ptr<metapb::Region>(newregion));
@@ -196,7 +203,8 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     case eraftpb::EntryType::EntrySplitRegion: {
       metapb::Region* newregion = new metapb::Region();
       newregion->ParseFromString(entry->data());
-      SPDLOG_INFO("process split region");
+      SPDLOG_INFO("process split region split key : " + newregion->start_key() +
+                  " id: " + std::to_string(newregion->id()));
       this->ProcessSplitRegion(entry, newregion, wb);
       break;
     }
