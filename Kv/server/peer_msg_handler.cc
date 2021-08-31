@@ -131,45 +131,51 @@ void PeerMsgHandler::ProcessSplitRegion(
     eraftpb::Entry* entry, metapb::Region* newregion,
     std::shared_ptr<rocksdb::WriteBatch> wb) {
   uint64_t regionid = this->peer_->regionId_;
-  SPDLOG_INFO("ProcessSplitRegion() " + std::to_string(regionid));
-  // std::unique_lock<std::mutex> mlock(storemeta->mutex_);
-  metapb::Region* currentregion = this->ctx_->storeMeta_->regions_[regionid];
-  if (currentregion == nullptr) {
-    SPDLOG_INFO("error----------------");
+  std::unique_lock<std::mutex> mlock(this->ctx_->storeMeta_->mutex_);
+  if (this->ctx_->storeMeta_->regions_.find(regionid) ==
+      this->ctx_->storeMeta_->regions_.end()) {
+    SPDLOG_INFO("ProcessSplitRegion() error not find");
+    return;
   }
-  // SPDLOG_INFO("ProcessSplitRegion() " + currentregion->start_key());
-  metapb::RegionEpoch* rep =
-      new metapb::RegionEpoch(currentregion->region_epoch());
-
-  rep->set_version(1);
-  SPDLOG_INFO("ProcessSplitRegion()");
-  for (int i = 0; i < currentregion->peers_size(); ++i) {
+  metapb::Region* currentregion = this->ctx_->storeMeta_->regions_[regionid];
+  metapb::RegionEpoch* rep = currentregion->mutable_region_epoch();
+  rep->set_version(rep->version() + 1);
+  for (auto per : currentregion->peers()) {
     metapb::Peer* newpeer = newregion->add_peers();
-    newpeer->set_addr(currentregion->mutable_peers(i)->addr());
-    newpeer->set_store_id(currentregion->mutable_peers(i)->store_id());
-    newpeer->set_id(currentregion->mutable_peers(i)->id());
+    newpeer->set_addr(per.addr());
+    newpeer->set_store_id(per.store_id());
+    newpeer->set_id(per.id());
   }
   newregion->mutable_region_epoch()->set_conf_ver(1);
   newregion->mutable_region_epoch()->set_version(1);
   newregion->set_end_key(currentregion->end_key());
   currentregion->set_end_key(newregion->start_key());
   this->ctx_->storeMeta_->regions_[newregion->id()] = newregion;
-  // mlock.unlock();
-  SPDLOG_INFO("ProcessSplitRegion()");
+  mlock.unlock();
+  std::string debugVal;
+  google::protobuf::TextFormat::PrintToString(*currentregion, &debugVal);
+  SPDLOG_INFO("oldregion: " + debugVal);
+  google::protobuf::TextFormat::PrintToString(*newregion, &debugVal);
+  SPDLOG_INFO("newregion: " + debugVal);
+  metapb::Region curegion = *currentregion;
+  metapb::Region neregion = *newregion;
   Assistant::GetInstance()->WriteRegionState(
-      wb, std::shared_ptr<metapb::Region>(currentregion),
+      wb, std::make_shared<metapb::Region>(curegion),
       raft_serverpb::PeerState::Normal);
   Assistant::GetInstance()->WriteRegionState(
-      wb, std::shared_ptr<metapb::Region>(newregion),
+      wb, std::make_shared<metapb::Region>(neregion),
       raft_serverpb::PeerState::Normal);
   // this->peer_->sizeDiffHint_ = 0;
   // this->peer_->approximateSize_ = 0;
   SPDLOG_INFO("ProcessSplitRegion()");
-  std::shared_ptr<kvserver::Peer> peer = std::make_shared<kvserver::Peer>(
+  std::shared_ptr<Peer> newpeer = std::make_shared<Peer>(
       this->ctx_->store_->id(), this->ctx_->cfg_, this->ctx_->engine_,
-      std::shared_ptr<metapb::Region>(newregion));
-  this->ctx_->router_->Register(peer);
+      std::make_shared<metapb::Region>(neregion));
+  SPDLOG_INFO("ProcessSplitRegion()");
+  this->ctx_->router_->Register(newpeer);
+  SPDLOG_INFO("ProcessSplitRegion()");
   Msg m(MsgType::MsgTypeStart, this->ctx_->store_.get());
+  SPDLOG_INFO("ProcessSplitRegion() before send");
   this->ctx_->router_->Send(newregion->id(), m);
 }
 
