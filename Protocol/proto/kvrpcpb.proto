@@ -29,6 +29,7 @@ message RawPutRequest {
     bytes key = 2;
     bytes value = 3;
     string cf = 4;
+    uint64 id = 5;
 }
 
 message RawPutResponse {

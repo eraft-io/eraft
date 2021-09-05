@@ -22,6 +22,7 @@
 
 #include <Kv/concurrency_queue.h>
 #include <Kv/peer_msg_handler.h>
+#include <Kv/server.h>
 #include <Kv/utils.h>
 #include <RaftCore/raw_node.h>
 #include <RaftCore/util.h>
@@ -141,13 +142,28 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
       msg->ParseFromString(entry->data());
       SPDLOG_INFO("Process Entry DATA: cf " + msg->cf() + " key " + msg->key() +
                   " val " + msg->value());
+      if (msg->cf().empty() && msg->key().empty()) {
+        delete msg;
+        return wb;
+      }
+      rocksdb::WriteBatch kvWB;
       // write to kv db
       auto status =
-          wb->Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
-                  msg->value());
+          kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+                   msg->value());
       if (!status.ok()) {
         SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
                     msg->key() + " val " + msg->value() + ")");
+      }
+      this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
+                                                        &kvWB);
+      if (this->peer_->IsLeader()) {
+        std::mutex mapMutex;
+        {
+          std::lock_guard<std::mutex> lg(mapMutex);
+          Server::readyCondVars_[msg->id()]
+              ->notify_one();  // notify client process ok
+        }
       }
       delete msg;
       break;

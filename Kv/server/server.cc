@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <Kv/bootstrap.h>
 #include <Kv/raft_server.h>
 #include <Kv/rate_limiter.h>
 #include <Kv/server.h>
@@ -27,11 +28,16 @@
 #include <grpcpp/health_check_service_interface.h>
 #include <spdlog/spdlog.h>
 
+#include <condition_variable>
 #include <iostream>
 
 namespace kvserver {
 
 Server::Server() { this->serverAddress_ = DEFAULT_ADDR; }
+
+std::map<int, std::condition_variable*> Server::readyCondVars_;
+
+std::mutex Server::readyMutex_;
 
 Server::Server(std::string addr, RaftStorage* st)
     : serverAddress_(addr), st_(st) {}
@@ -63,15 +69,28 @@ Status Server::RawPut(ServerContext* context,
               std::to_string(request->context().region_id()));
 
   // TODO: no waiting for ack from raft. Value is not yet committed so a
-  if (!RateLimiter::GetInstance()->TryGetToken()) {
-    SPDLOG_WARN("put failed count : " +
-                std::to_string(RateLimiter::GetInstance()->GetFailedCount()));
-    return Status::CANCELLED;
-  }
+  // if (!RateLimiter::GetInstance()->TryGetToken()) {
+  //   SPDLOG_WARN("put failed count : " +
+  //               std::to_string(RateLimiter::GetInstance()->GetFailedCount()));
+  //   return Status::CANCELLED;
+  // }
   // subsequent GET on key may return old value
-  if (!this->st_->Write(request->context(), request)) {
+  kvrpcpb::RawPutRequest* req = const_cast<kvrpcpb::RawPutRequest*>(request);
+  int reqId = BootHelper::MockSchAllocID();
+  req->set_id(reqId);
+  std::mutex mapMutex;
+  {
+    std::condition_variable* newVar = new std::condition_variable();
+    std::lock_guard<std::mutex> lg(mapMutex);
+    Server::readyCondVars_[reqId] = newVar;
+  }
+  if (!this->st_->Write(request->context(), req)) {
     SPDLOG_ERROR("st write error!");
     return Status::CANCELLED;
+  }
+  {
+    std::unique_lock<std::mutex> ul(Server::readyMutex_);
+    Server::readyCondVars_[reqId]->wait(ul, [] { return true; });
   }
   return Status::OK;
 }
@@ -132,7 +151,7 @@ bool Server::RunLogic() {
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
 
   // rate limit
-  RateLimiter::GetInstance()->SetCapacity(5);
+  // RateLimiter::GetInstance()->SetCapacity(5);
 
   SPDLOG_INFO("server listening on: " + this->serverAddress_);
 

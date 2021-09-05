@@ -6,7 +6,8 @@ docker run -it \
                 -v ${PWD}:/eraft \
                 -w /eraft \
                 -p 20160:20160 \
-                cxspace/ti-redis-dev-gdb:v0.1 \
+                cxspace/ti-redis-dev-gdb:v0.1 
+
                 build_/Kv/kvserver/kv_svr 172.19.0.11:20160 /tmp/db1 1
 
 docker run -it \
@@ -46,4 +47,4 @@ docker run -it \
 
                 build_/Kv/kvserver/kv_svr 172.19.0.14:20163 /tmp/db4 4
 
-docker run --rm --net eraft-network --name eraft-bench-cli  --hostname eraft-bench-cli --ip 172.19.0.15 -v ${PWD}:/eraft -w /eraft -p 20164:20164 cxspace/ti-redis-dev:v0.0.1 /eraft/build_/Kv/kvbench/bench_tool 172.19.0.11:20160 1000 64 64
+docker run --rm --net eraft-network --name eraft-bench-cli  --hostname eraft-bench-cli --ip 172.19.0.15 -v ${PWD}:/eraft -w /eraft -p 20164:20164 cxspace/ti-redis-dev:v0.0.1 /eraft/build_/Kv/kvbench/bench_tool 172.19.0.11:20160 100 64 64

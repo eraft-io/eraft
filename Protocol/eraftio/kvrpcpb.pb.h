@@ -701,6 +701,12 @@ class RawPutRequest :
   ::kvrpcpb::Context* mutable_context();
   void set_allocated_context(::kvrpcpb::Context* context);
 
+  // uint64 id = 5;
+  void clear_id();
+  static const int kIdFieldNumber = 5;
+  ::PROTOBUF_NAMESPACE_ID::uint64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+
   // @@protoc_insertion_point(class_scope:kvrpcpb.RawPutRequest)
  private:
   class HasBitSetters;
@@ -710,6 +716,7 @@ class RawPutRequest :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr cf_;
   ::kvrpcpb::Context* context_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_kvrpcpb_2eproto;
 };
@@ -5047,6 +5054,20 @@ inline void RawPutRequest::set_allocated_cf(std::string* cf) {
   }
   cf_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), cf);
   // @@protoc_insertion_point(field_set_allocated:kvrpcpb.RawPutRequest.cf)
+}
+
+// uint64 id = 5;
+inline void RawPutRequest::clear_id() {
+  id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 RawPutRequest::id() const {
+  // @@protoc_insertion_point(field_get:kvrpcpb.RawPutRequest.id)
+  return id_;
+}
+inline void RawPutRequest::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  id_ = value;
+  // @@protoc_insertion_point(field_set:kvrpcpb.RawPutRequest.id)
 }
 
 // -------------------------------------------------------------------
