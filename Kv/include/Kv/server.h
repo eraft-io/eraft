@@ -30,6 +30,7 @@
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <grpcpp/grpcpp.h>
 
+#include <atomic>
 #include <condition_variable>
 #include <iostream>
 #include <memory>
