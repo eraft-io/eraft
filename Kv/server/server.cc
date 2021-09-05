@@ -36,6 +36,7 @@ namespace kvserver {
 Server::Server() { this->serverAddress_ = DEFAULT_ADDR; }
 
 std::map<int, std::condition_variable*> Server::readyCondVars_;
+
 std::mutex Server::readyMutex_;
 
 Server::Server(std::string addr, RaftStorage* st)
