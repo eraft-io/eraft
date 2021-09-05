@@ -123,7 +123,7 @@ BenchResult BenchTools::RunBenchmarks() {
     validate_kv[key] = value;
     // for test, 80ms << 100ms raft tick, we must limit speed of propose, for
     // optimization, we to batch propose client request
-    std::this_thread::sleep_for(std::chrono::milliseconds(60));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;

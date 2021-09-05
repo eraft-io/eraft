@@ -30,7 +30,9 @@
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <grpcpp/grpcpp.h>
 
+#include <condition_variable>
 #include <iostream>
+#include <memory>
 
 using grpc::ServerContext;
 using grpc::Status;
@@ -78,6 +80,10 @@ class Server : public TinyKv::Service {
   Status PeerConfChange(ServerContext* context,
                         const raft_cmdpb::ChangePeerRequest* request,
                         raft_cmdpb::ChangePeerResponse* response) override;
+
+  static std::map<int, std::condition_variable*> readyCondVars_;
+
+  static std::mutex readyMutex_;
 
  private:
   std::string serverAddress_;
