@@ -146,17 +146,33 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
         delete msg;
         return wb;
       }
+
       rocksdb::WriteBatch kvWB;
-      // write to kv db
-      auto status =
+      if(msg->type() == 1){
           kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
-                   msg->value());
-      if (!status.ok()) {
-        SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
-                    msg->key() + " val " + msg->value() + ")");
+                    msg->value());   
+      }else if(msg->type() == 2){
+          kvWB.Delete(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()));
       }
-      this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
+
+      auto status = this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
                                                         &kvWB);
+      if (!status.ok()) {
+          SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
+                      msg->key() + " val " + msg->value() + ")");
+      }
+      //  rocksdb::WriteBatch kvWB;
+      // // write to kv db
+      // auto status =
+      //     kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+      //              msg->value());
+      // if (!status.ok()) {
+      //   SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
+      //               msg->key() + " val " + msg->value() + ")");
+      // }
+      // this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
+      //                                                   &kvWB);
+
       if (this->peer_->IsLeader()) {
         std::mutex mapMutex;
         {

@@ -29,7 +29,7 @@ if [ ! -d "$SRCPATH/output" ]; then
 fi
 
 cp $build_dir/RaftCore/test/RaftTests $SRCPATH/output
-cp $build_dir/Logger/test/logger_tests $SRCPATH/output
+#cp $build_dir/Logger/test/logger_tests $SRCPATH/output
 
 $build_dir/RaftCore/test/RaftTests
-$build_dir/Logger/test/logger_tests
+#$build_dir/Logger/test/logger_tests

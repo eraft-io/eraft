@@ -30,6 +30,7 @@ message RawPutRequest {
     bytes value = 3;
     string cf = 4;
     uint64 id = 5;
+    uint32 type = 6;
 }
 
 message RawPutResponse {
