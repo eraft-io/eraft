@@ -54,17 +54,20 @@ public:
 			bucket.for_each(p);
 		}
 	}
-
+	
+	//Insert the map elemenet, but won't cover
 	void insert(const K& key, V&& value)
 	{
 		table_[hashcode(key)].insert(key, std::move(value));
 	}
 
+	//Insert the map elemenet, but will cover
 	void put(const K& key, V&& value)
 	{
 		table_[hashcode(key)].put(key, std::move(value));
 	}
 
+	//Get the element value by the key
 	V get(const K& key)
 	{
 		if (table_[hashcode(key)].get(key) == NULL){
@@ -75,11 +78,13 @@ public:
 			return table_[hashcode(key)].get(key);
 	}
 
+	//Erase the element by the key
 	void erase(const K& key)
 	{
 		table_[hashcode(key)].erase(key);
 	}
 
+	//Return the whole element size of map
 	std::size_t size() const
 	{
 		std::size_t size = 0;
@@ -90,6 +95,7 @@ public:
 		return size;
 	}
 
+	//Return the element number. If the element exists, return 1. If not, return 0
 	std::size_t count(const K& key)
 	{
 		return table_[hashcode(key)].count(key);
