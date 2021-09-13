@@ -6,4 +6,6 @@ output
 grpc
 spdlog
 rocksdb/*.o
+engine/pmem_wrapper/target
+engine/target
 Kv/.DS_Store

@@ -144,6 +144,7 @@ name = "engine"
 version = "0.1.0"
 dependencies = [
  "corundum",
+ "pmem_wrapper",
 ]
 
 [[package]]
@@ -323,6 +324,13 @@ checksum = "05499f3756671c15885fee9034446956fff3f243d6077b91e5767df161f766b3"
 dependencies = [
  "hermit-abi",
  "libc",
+]
+
+[[package]]
+name = "pmem_wrapper"
+version = "0.1.0"
+dependencies = [
+ "corundum",
 ]
 
 [[package]]
