@@ -11,6 +11,7 @@ RUN apt update -y \
        libgflags-dev libgtest-dev \
        && apt-get update -y \
        && apt-get install -y gdb \
+       && apt-get install libspdlog-dev \
        wget 
 
 RUN cd / 
