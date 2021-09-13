@@ -64,7 +64,8 @@ class RaftLog {
 
   friend class RawNode;
 
-  RaftLog(StorageInterface &st);
+  // RaftLog(StorageInterface &st);
+  RaftLog(std::shared_ptr<StorageInterface> st);
 
   ~RaftLog();
 
@@ -110,7 +111,7 @@ class RaftLog {
 
  private:
   // storage contains all stable entries since the last snapshot.
-  StorageInterface *storage_;  // point to real storage
+  std::shared_ptr<StorageInterface> storage_;  // point to real storage
 
   // the incoming unstable snapshot, if any.
   eraftpb::Snapshot pendingSnapshot_;

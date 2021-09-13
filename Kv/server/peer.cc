@@ -35,7 +35,7 @@ namespace kvserver {
 
 std::map<uint64_t, std::shared_ptr<metapb::Peer> > Peer::peerCache_ = {};
 
-std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
+// std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
 
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
            std::shared_ptr<Engines> engines,

@@ -52,11 +52,27 @@
 namespace eraft {
 // newLog returns log using the given storage. It recovers the log
 // to the state that it just commits and applies the latest snapshot.
-RaftLog::RaftLog(StorageInterface &st) {
-  uint64_t lo = st.FirstIndex();
-  uint64_t hi = st.LastIndex();
-  std::vector<eraftpb::Entry> entries = st.Entries(lo, hi + 1);
-  this->storage_ = &st;
+// RaftLog::RaftLog(StorageInterface &st) {
+//   uint64_t lo = st.FirstIndex();
+//   uint64_t hi = st.LastIndex();
+//   std::vector<eraftpb::Entry> entries = st.Entries(lo, hi + 1);
+//   this->storage_ = &st;
+//   this->entries_ = entries;
+//   this->applied_ = lo - 1;
+//   this->stabled_ = hi;
+//   this->firstIndex_ = lo;
+//   SPDLOG_INFO("init raft log with firstIndex " +
+//               std::to_string(this->firstIndex_) + " applied " +
+//               std::to_string(this->applied_) + " stabled " +
+//               std::to_string(this->stabled_) + " commited " +
+//               std::to_string(this->commited_));
+// }
+
+RaftLog::RaftLog(std::shared_ptr<StorageInterface> st) {
+  uint64_t lo = st->FirstIndex();
+  uint64_t hi = st->LastIndex();
+  std::vector<eraftpb::Entry> entries = st->Entries(lo, hi + 1);
+  this->storage_ = st;
   this->entries_ = entries;
   this->applied_ = lo - 1;
   this->stabled_ = hi;

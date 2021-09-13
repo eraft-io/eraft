@@ -167,16 +167,13 @@ void PeerMsgHandler::ProcessSplitRegion(
       raft_serverpb::PeerState::Normal);
   // this->peer_->sizeDiffHint_ = 0;
   // this->peer_->approximateSize_ = 0;
-  SPDLOG_INFO("ProcessSplitRegion()");
   std::shared_ptr<Peer> newpeer = std::make_shared<Peer>(
       this->ctx_->store_->id(), this->ctx_->cfg_, this->ctx_->engine_,
       std::make_shared<metapb::Region>(neregion));
-  SPDLOG_INFO("ProcessSplitRegion()");
   this->ctx_->router_->Register(newpeer);
-  SPDLOG_INFO("ProcessSplitRegion()");
-  Msg m(MsgType::MsgTypeStart, this->ctx_->store_.get());
-  SPDLOG_INFO("ProcessSplitRegion() before send");
+  Msg m(MsgType::MsgTypeStart, neregion.id(), nullptr);
   this->ctx_->router_->Send(newregion->id(), m);
+  SPDLOG_INFO("ProcessSplitRegion() before send");
 }
 
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
@@ -221,7 +218,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
 }
 
 void PeerMsgHandler::HandleRaftReady() {
-  SPDLOG_INFO("handle raft ready ");
+  SPDLOG_INFO("handle raft ready " + std::to_string(this->peer_->regionId_));
   if (this->peer_->stopped_) {
     return;
   }

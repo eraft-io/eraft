@@ -108,7 +108,7 @@ class Peer {
   std::shared_ptr<eraft::RawNode> raftGroup_;
 
   // peer storage
-  static std::shared_ptr<PeerStorage> peerStorage_;
+  std::shared_ptr<PeerStorage> peerStorage_;
 
   std::shared_ptr<metapb::Peer> meta_;
 

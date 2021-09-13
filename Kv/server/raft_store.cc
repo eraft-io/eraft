@@ -87,8 +87,8 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
     auto region = localState->region();
     metapb::Region* region1 = new metapb::Region(region);
     // region->ParseFromString(val);
-    google::protobuf::TextFormat::PrintToString(*region1, &debugVal);
-    SPDLOG_INFO("region " + debugVal);
+    // google::protobuf::TextFormat::PrintToString(*region1, &debugVal);
+    // SPDLOG_INFO("region " + debugVal);
     // SPDLOG_INFO(typeid(region).name());
     if (localState->state() == raft_serverpb::PeerState::Tombstone) {
       tombStoneCount++;
