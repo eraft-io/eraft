@@ -339,8 +339,9 @@ class Assistant {
       rocksdb::DB* raftEngine, std::shared_ptr<metapb::Region> region) {
     auto lst = GetRaftLocalState(raftEngine, region->id());
     if (lst.second.IsNotFound()) {
-      raft_serverpb::RaftLocalState* raftState =
-          new raft_serverpb::RaftLocalState();
+      // raft_serverpb::RaftLocalState* raftState =
+      //     new raft_serverpb::RaftLocalState();
+      raft_serverpb::RaftLocalState* raftState = lst.first;
       raftState->set_allocated_hard_state(new eraftpb::HardState);
       // new split region
       if (region->peers().size() > 0) {
