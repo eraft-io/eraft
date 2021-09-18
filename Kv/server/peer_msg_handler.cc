@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <Kv/bootstrap.h>
 #include <Kv/concurrency_queue.h>
 #include <Kv/peer.h>
 #include <Kv/peer_msg_handler.h>
@@ -165,6 +166,8 @@ void PeerMsgHandler::ProcessSplitRegion(
   Assistant::GetInstance()->WriteRegionState(
       wb, std::make_shared<metapb::Region>(neregion),
       raft_serverpb::PeerState::Normal);
+  BootHelper::GetInstance()->PrepareBoostrapCluster(
+      this->ctx_->engine_, std::make_shared<metapb::Region>(neregion));
   // this->peer_->sizeDiffHint_ = 0;
   // this->peer_->approximateSize_ = 0;
   std::shared_ptr<Peer> newpeer = std::make_shared<Peer>(
