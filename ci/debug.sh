@@ -6,7 +6,8 @@ docker run -it \
                 -v ${PWD}:/eraft \
                 -w /eraft \
                 -p 20160:20160 \
-                eraft/eraft_dev:v0.1 \
+                eraft/eraft_dev:v0.1 
+                
                 build_/Kv/kvserver/kv_svr 172.19.0.11:20160 /tmp/db1 1
 
 docker run -it \

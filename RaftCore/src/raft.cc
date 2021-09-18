@@ -592,6 +592,7 @@ bool RaftContext::HandleRequestVote(eraftpb::Message m) {
     this->SendRequestVoteResponse(m.from(), true);
     return true;
   }
+  // ...
   if (this->vote_ != NONE && this->vote_ != m.from()) {
     this->SendRequestVoteResponse(m.from(), true);
     return true;

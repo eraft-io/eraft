@@ -58,6 +58,15 @@ int main(int argc, char** argv) {
     request.set_cf(std::string(argv[3]));
     request.set_key(std::string(argv[4]));
     request.set_value(std::string(argv[5]));
+    request.set_type(1);
+    raftClient->PutRaw(std::string(argv[1]), request);
+  } else if (reqType == "delete") {
+    kvrpcpb::RawPutRequest request;
+    request.mutable_context()->set_region_id(1);
+    request.set_cf(std::string(argv[3]));
+    request.set_key(std::string(argv[4]));
+    request.set_value("#");
+    request.set_type(2);
     raftClient->PutRaw(std::string(argv[1]), request);
   } else if (reqType == "get") {
     kvrpcpb::RawGetRequest request;

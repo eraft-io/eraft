@@ -596,6 +596,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_kvrpcpb_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::kvrpcpb::RawPutRequest, key_),
   PROTOBUF_FIELD_OFFSET(::kvrpcpb::RawPutRequest, value_),
   PROTOBUF_FIELD_OFFSET(::kvrpcpb::RawPutRequest, cf_),
+  PROTOBUF_FIELD_OFFSET(::kvrpcpb::RawPutRequest, id_),
+  PROTOBUF_FIELD_OFFSET(::kvrpcpb::RawPutRequest, type_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::kvrpcpb::RawPutResponse, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -806,31 +808,31 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 0, -1, sizeof(::kvrpcpb::RawGetRequest)},
   { 8, -1, sizeof(::kvrpcpb::RawGetResponse)},
   { 17, -1, sizeof(::kvrpcpb::RawPutRequest)},
-  { 26, -1, sizeof(::kvrpcpb::RawPutResponse)},
-  { 33, -1, sizeof(::kvrpcpb::RawDeleteRequest)},
-  { 41, -1, sizeof(::kvrpcpb::RawDeleteResponse)},
-  { 48, -1, sizeof(::kvrpcpb::RawScanRequest)},
-  { 57, -1, sizeof(::kvrpcpb::RawScanResponse)},
-  { 65, -1, sizeof(::kvrpcpb::GetRequest)},
-  { 73, -1, sizeof(::kvrpcpb::GetResponse)},
-  { 82, -1, sizeof(::kvrpcpb::PrewriteRequest)},
-  { 92, -1, sizeof(::kvrpcpb::PrewriteResponse)},
-  { 99, -1, sizeof(::kvrpcpb::CommitRequest)},
-  { 108, -1, sizeof(::kvrpcpb::CommitResponse)},
-  { 115, -1, sizeof(::kvrpcpb::ScanRequest)},
-  { 124, -1, sizeof(::kvrpcpb::ScanResponse)},
-  { 131, -1, sizeof(::kvrpcpb::BatchRollbackRequest)},
-  { 139, -1, sizeof(::kvrpcpb::BatchRollbackResponse)},
-  { 146, -1, sizeof(::kvrpcpb::CheckTxnStatusRequest)},
-  { 155, -1, sizeof(::kvrpcpb::CheckTxnStatusResponse)},
-  { 164, -1, sizeof(::kvrpcpb::ResolveLockRequest)},
-  { 172, -1, sizeof(::kvrpcpb::ResolveLockResponse)},
-  { 179, -1, sizeof(::kvrpcpb::KvPair)},
-  { 187, -1, sizeof(::kvrpcpb::Mutation)},
-  { 195, -1, sizeof(::kvrpcpb::KeyError)},
-  { 204, -1, sizeof(::kvrpcpb::LockInfo)},
-  { 213, -1, sizeof(::kvrpcpb::WriteConflict)},
-  { 222, -1, sizeof(::kvrpcpb::Context)},
+  { 28, -1, sizeof(::kvrpcpb::RawPutResponse)},
+  { 35, -1, sizeof(::kvrpcpb::RawDeleteRequest)},
+  { 43, -1, sizeof(::kvrpcpb::RawDeleteResponse)},
+  { 50, -1, sizeof(::kvrpcpb::RawScanRequest)},
+  { 59, -1, sizeof(::kvrpcpb::RawScanResponse)},
+  { 67, -1, sizeof(::kvrpcpb::GetRequest)},
+  { 75, -1, sizeof(::kvrpcpb::GetResponse)},
+  { 84, -1, sizeof(::kvrpcpb::PrewriteRequest)},
+  { 94, -1, sizeof(::kvrpcpb::PrewriteResponse)},
+  { 101, -1, sizeof(::kvrpcpb::CommitRequest)},
+  { 110, -1, sizeof(::kvrpcpb::CommitResponse)},
+  { 117, -1, sizeof(::kvrpcpb::ScanRequest)},
+  { 126, -1, sizeof(::kvrpcpb::ScanResponse)},
+  { 133, -1, sizeof(::kvrpcpb::BatchRollbackRequest)},
+  { 141, -1, sizeof(::kvrpcpb::BatchRollbackResponse)},
+  { 148, -1, sizeof(::kvrpcpb::CheckTxnStatusRequest)},
+  { 157, -1, sizeof(::kvrpcpb::CheckTxnStatusResponse)},
+  { 166, -1, sizeof(::kvrpcpb::ResolveLockRequest)},
+  { 174, -1, sizeof(::kvrpcpb::ResolveLockResponse)},
+  { 181, -1, sizeof(::kvrpcpb::KvPair)},
+  { 189, -1, sizeof(::kvrpcpb::Mutation)},
+  { 197, -1, sizeof(::kvrpcpb::KeyError)},
+  { 206, -1, sizeof(::kvrpcpb::LockInfo)},
+  { 215, -1, sizeof(::kvrpcpb::WriteConflict)},
+  { 224, -1, sizeof(::kvrpcpb::Context)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -870,74 +872,75 @@ const char descriptor_table_protodef_kvrpcpb_2eproto[] =
   "t\030\001 \001(\0132\020.kvrpcpb.Context\022\013\n\003key\030\002 \001(\014\022\n"
   "\n\002cf\030\003 \001(\t\"g\n\016RawGetResponse\022$\n\014region_e"
   "rror\030\001 \001(\0132\016.errorpb.Error\022\r\n\005error\030\002 \001("
-  "\t\022\r\n\005value\030\003 \001(\014\022\021\n\tnot_found\030\004 \001(\010\"Z\n\rR"
+  "\t\022\r\n\005value\030\003 \001(\014\022\021\n\tnot_found\030\004 \001(\010\"t\n\rR"
   "awPutRequest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb."
   "Context\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030\003 \001(\014\022\n\n\002c"
-  "f\030\004 \001(\t\"E\n\016RawPutResponse\022$\n\014region_erro"
-  "r\030\001 \001(\0132\016.errorpb.Error\022\r\n\005error\030\002 \001(\t\"N"
-  "\n\020RawDeleteRequest\022!\n\007context\030\001 \001(\0132\020.kv"
-  "rpcpb.Context\022\013\n\003key\030\002 \001(\014\022\n\n\002cf\030\003 \001(\t\"H"
-  "\n\021RawDeleteResponse\022$\n\014region_error\030\001 \001("
-  "\0132\016.errorpb.Error\022\r\n\005error\030\002 \001(\t\"a\n\016RawS"
-  "canRequest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Co"
-  "ntext\022\021\n\tstart_key\030\002 \001(\014\022\r\n\005limit\030\003 \001(\r\022"
-  "\n\n\002cf\030\004 \001(\t\"d\n\017RawScanResponse\022$\n\014region"
-  "_error\030\001 \001(\0132\016.errorpb.Error\022\r\n\005error\030\002 "
-  "\001(\t\022\034\n\003kvs\030\003 \003(\0132\017.kvrpcpb.KvPair\"M\n\nGet"
-  "Request\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Conte"
-  "xt\022\013\n\003key\030\002 \001(\014\022\017\n\007version\030\003 \001(\004\"w\n\013GetR"
-  "esponse\022$\n\014region_error\030\001 \001(\0132\016.errorpb."
-  "Error\022 \n\005error\030\002 \001(\0132\021.kvrpcpb.KeyError\022"
-  "\r\n\005value\030\003 \001(\014\022\021\n\tnot_found\030\004 \001(\010\"\231\001\n\017Pr"
-  "ewriteRequest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb"
-  ".Context\022$\n\tmutations\030\002 \003(\0132\021.kvrpcpb.Mu"
-  "tation\022\024\n\014primary_lock\030\003 \001(\014\022\025\n\rstart_ve"
-  "rsion\030\004 \001(\004\022\020\n\010lock_ttl\030\005 \001(\004\"[\n\020Prewrit"
-  "eResponse\022$\n\014region_error\030\001 \001(\0132\016.errorp"
-  "b.Error\022!\n\006errors\030\002 \003(\0132\021.kvrpcpb.KeyErr"
-  "or\"o\n\rCommitRequest\022!\n\007context\030\001 \001(\0132\020.k"
-  "vrpcpb.Context\022\025\n\rstart_version\030\002 \001(\004\022\014\n"
-  "\004keys\030\003 \003(\014\022\026\n\016commit_version\030\004 \001(\004\"X\n\016C"
-  "ommitResponse\022$\n\014region_error\030\001 \001(\0132\016.er"
-  "rorpb.Error\022 \n\005error\030\002 \001(\0132\021.kvrpcpb.Key"
-  "Error\"c\n\013ScanRequest\022!\n\007context\030\001 \001(\0132\020."
-  "kvrpcpb.Context\022\021\n\tstart_key\030\002 \001(\014\022\r\n\005li"
-  "mit\030\003 \001(\r\022\017\n\007version\030\004 \001(\004\"T\n\014ScanRespon"
-  "se\022$\n\014region_error\030\001 \001(\0132\016.errorpb.Error"
-  "\022\036\n\005pairs\030\002 \003(\0132\017.kvrpcpb.KvPair\"^\n\024Batc"
-  "hRollbackRequest\022!\n\007context\030\001 \001(\0132\020.kvrp"
-  "cpb.Context\022\025\n\rstart_version\030\002 \001(\004\022\014\n\004ke"
-  "ys\030\003 \003(\014\"_\n\025BatchRollbackResponse\022$\n\014reg"
+  "f\030\004 \001(\t\022\n\n\002id\030\005 \001(\004\022\014\n\004type\030\006 \001(\r\"E\n\016Raw"
+  "PutResponse\022$\n\014region_error\030\001 \001(\0132\016.erro"
+  "rpb.Error\022\r\n\005error\030\002 \001(\t\"N\n\020RawDeleteReq"
+  "uest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Context\022"
+  "\013\n\003key\030\002 \001(\014\022\n\n\002cf\030\003 \001(\t\"H\n\021RawDeleteRes"
+  "ponse\022$\n\014region_error\030\001 \001(\0132\016.errorpb.Er"
+  "ror\022\r\n\005error\030\002 \001(\t\"a\n\016RawScanRequest\022!\n\007"
+  "context\030\001 \001(\0132\020.kvrpcpb.Context\022\021\n\tstart"
+  "_key\030\002 \001(\014\022\r\n\005limit\030\003 \001(\r\022\n\n\002cf\030\004 \001(\t\"d\n"
+  "\017RawScanResponse\022$\n\014region_error\030\001 \001(\0132\016"
+  ".errorpb.Error\022\r\n\005error\030\002 \001(\t\022\034\n\003kvs\030\003 \003"
+  "(\0132\017.kvrpcpb.KvPair\"M\n\nGetRequest\022!\n\007con"
+  "text\030\001 \001(\0132\020.kvrpcpb.Context\022\013\n\003key\030\002 \001("
+  "\014\022\017\n\007version\030\003 \001(\004\"w\n\013GetResponse\022$\n\014reg"
   "ion_error\030\001 \001(\0132\016.errorpb.Error\022 \n\005error"
-  "\030\002 \001(\0132\021.kvrpcpb.KeyError\"t\n\025CheckTxnSta"
-  "tusRequest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Co"
-  "ntext\022\023\n\013primary_key\030\002 \001(\014\022\017\n\007lock_ts\030\003 "
-  "\001(\004\022\022\n\ncurrent_ts\030\004 \001(\004\"\211\001\n\026CheckTxnStat"
-  "usResponse\022$\n\014region_error\030\001 \001(\0132\016.error"
-  "pb.Error\022\020\n\010lock_ttl\030\002 \001(\004\022\026\n\016commit_ver"
-  "sion\030\003 \001(\004\022\037\n\006action\030\004 \001(\0162\017.kvrpcpb.Act"
-  "ion\"f\n\022ResolveLockRequest\022!\n\007context\030\001 \001"
-  "(\0132\020.kvrpcpb.Context\022\025\n\rstart_version\030\002 "
-  "\001(\004\022\026\n\016commit_version\030\003 \001(\004\"]\n\023ResolveLo"
-  "ckResponse\022$\n\014region_error\030\001 \001(\0132\016.error"
-  "pb.Error\022 \n\005error\030\002 \001(\0132\021.kvrpcpb.KeyErr"
-  "or\"F\n\006KvPair\022 \n\005error\030\001 \001(\0132\021.kvrpcpb.Ke"
-  "yError\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030\003 \001(\014\"\?\n\010Mu"
-  "tation\022\027\n\002op\030\001 \001(\0162\013.kvrpcpb.Op\022\013\n\003key\030\002"
-  " \001(\014\022\r\n\005value\030\003 \001(\014\"y\n\010KeyError\022!\n\006locke"
-  "d\030\001 \001(\0132\021.kvrpcpb.LockInfo\022\021\n\tretryable\030"
-  "\002 \001(\t\022\r\n\005abort\030\003 \001(\t\022(\n\010conflict\030\004 \001(\0132\026"
-  ".kvrpcpb.WriteConflict\"U\n\010LockInfo\022\024\n\014pr"
-  "imary_lock\030\001 \001(\014\022\024\n\014lock_version\030\002 \001(\004\022\013"
-  "\n\003key\030\003 \001(\014\022\020\n\010lock_ttl\030\004 \001(\004\"T\n\rWriteCo"
-  "nflict\022\020\n\010start_ts\030\001 \001(\004\022\023\n\013conflict_ts\030"
-  "\002 \001(\004\022\013\n\003key\030\003 \001(\014\022\017\n\007primary\030\004 \001(\014\"q\n\007C"
-  "ontext\022\021\n\tregion_id\030\001 \001(\004\022)\n\014region_epoc"
-  "h\030\002 \001(\0132\023.metapb.RegionEpoch\022\032\n\004peer\030\003 \001"
-  "(\0132\014.metapb.Peer\022\014\n\004term\030\005 \001(\004*.\n\002Op\022\007\n\003"
-  "Put\020\000\022\007\n\003Del\020\001\022\014\n\010Rollback\020\002\022\010\n\004Lock\020\003*G"
-  "\n\006Action\022\014\n\010NoAction\020\000\022\025\n\021TTLExpireRollb"
-  "ack\020\001\022\030\n\024LockNotExistRollback\020\002b\006proto3"
+  "\030\002 \001(\0132\021.kvrpcpb.KeyError\022\r\n\005value\030\003 \001(\014"
+  "\022\021\n\tnot_found\030\004 \001(\010\"\231\001\n\017PrewriteRequest\022"
+  "!\n\007context\030\001 \001(\0132\020.kvrpcpb.Context\022$\n\tmu"
+  "tations\030\002 \003(\0132\021.kvrpcpb.Mutation\022\024\n\014prim"
+  "ary_lock\030\003 \001(\014\022\025\n\rstart_version\030\004 \001(\004\022\020\n"
+  "\010lock_ttl\030\005 \001(\004\"[\n\020PrewriteResponse\022$\n\014r"
+  "egion_error\030\001 \001(\0132\016.errorpb.Error\022!\n\006err"
+  "ors\030\002 \003(\0132\021.kvrpcpb.KeyError\"o\n\rCommitRe"
+  "quest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Context"
+  "\022\025\n\rstart_version\030\002 \001(\004\022\014\n\004keys\030\003 \003(\014\022\026\n"
+  "\016commit_version\030\004 \001(\004\"X\n\016CommitResponse\022"
+  "$\n\014region_error\030\001 \001(\0132\016.errorpb.Error\022 \n"
+  "\005error\030\002 \001(\0132\021.kvrpcpb.KeyError\"c\n\013ScanR"
+  "equest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Contex"
+  "t\022\021\n\tstart_key\030\002 \001(\014\022\r\n\005limit\030\003 \001(\r\022\017\n\007v"
+  "ersion\030\004 \001(\004\"T\n\014ScanResponse\022$\n\014region_e"
+  "rror\030\001 \001(\0132\016.errorpb.Error\022\036\n\005pairs\030\002 \003("
+  "\0132\017.kvrpcpb.KvPair\"^\n\024BatchRollbackReque"
+  "st\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.Context\022\025\n"
+  "\rstart_version\030\002 \001(\004\022\014\n\004keys\030\003 \003(\014\"_\n\025Ba"
+  "tchRollbackResponse\022$\n\014region_error\030\001 \001("
+  "\0132\016.errorpb.Error\022 \n\005error\030\002 \001(\0132\021.kvrpc"
+  "pb.KeyError\"t\n\025CheckTxnStatusRequest\022!\n\007"
+  "context\030\001 \001(\0132\020.kvrpcpb.Context\022\023\n\013prima"
+  "ry_key\030\002 \001(\014\022\017\n\007lock_ts\030\003 \001(\004\022\022\n\ncurrent"
+  "_ts\030\004 \001(\004\"\211\001\n\026CheckTxnStatusResponse\022$\n\014"
+  "region_error\030\001 \001(\0132\016.errorpb.Error\022\020\n\010lo"
+  "ck_ttl\030\002 \001(\004\022\026\n\016commit_version\030\003 \001(\004\022\037\n\006"
+  "action\030\004 \001(\0162\017.kvrpcpb.Action\"f\n\022Resolve"
+  "LockRequest\022!\n\007context\030\001 \001(\0132\020.kvrpcpb.C"
+  "ontext\022\025\n\rstart_version\030\002 \001(\004\022\026\n\016commit_"
+  "version\030\003 \001(\004\"]\n\023ResolveLockResponse\022$\n\014"
+  "region_error\030\001 \001(\0132\016.errorpb.Error\022 \n\005er"
+  "ror\030\002 \001(\0132\021.kvrpcpb.KeyError\"F\n\006KvPair\022 "
+  "\n\005error\030\001 \001(\0132\021.kvrpcpb.KeyError\022\013\n\003key\030"
+  "\002 \001(\014\022\r\n\005value\030\003 \001(\014\"\?\n\010Mutation\022\027\n\002op\030\001"
+  " \001(\0162\013.kvrpcpb.Op\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030"
+  "\003 \001(\014\"y\n\010KeyError\022!\n\006locked\030\001 \001(\0132\021.kvrp"
+  "cpb.LockInfo\022\021\n\tretryable\030\002 \001(\t\022\r\n\005abort"
+  "\030\003 \001(\t\022(\n\010conflict\030\004 \001(\0132\026.kvrpcpb.Write"
+  "Conflict\"U\n\010LockInfo\022\024\n\014primary_lock\030\001 \001"
+  "(\014\022\024\n\014lock_version\030\002 \001(\004\022\013\n\003key\030\003 \001(\014\022\020\n"
+  "\010lock_ttl\030\004 \001(\004\"T\n\rWriteConflict\022\020\n\010star"
+  "t_ts\030\001 \001(\004\022\023\n\013conflict_ts\030\002 \001(\004\022\013\n\003key\030\003"
+  " \001(\014\022\017\n\007primary\030\004 \001(\014\"q\n\007Context\022\021\n\tregi"
+  "on_id\030\001 \001(\004\022)\n\014region_epoch\030\002 \001(\0132\023.meta"
+  "pb.RegionEpoch\022\032\n\004peer\030\003 \001(\0132\014.metapb.Pe"
+  "er\022\014\n\004term\030\005 \001(\004*.\n\002Op\022\007\n\003Put\020\000\022\007\n\003Del\020\001"
+  "\022\014\n\010Rollback\020\002\022\010\n\004Lock\020\003*G\n\006Action\022\014\n\010No"
+  "Action\020\000\022\025\n\021TTLExpireRollback\020\001\022\030\n\024LockN"
+  "otExistRollback\020\002b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_kvrpcpb_2eproto_deps[2] = {
   &::descriptor_table_errorpb_2eproto,
@@ -976,7 +979,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_kvr
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_kvrpcpb_2eproto_once;
 static bool descriptor_table_kvrpcpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_kvrpcpb_2eproto = {
-  &descriptor_table_kvrpcpb_2eproto_initialized, descriptor_table_protodef_kvrpcpb_2eproto, "kvrpcpb.proto", 2919,
+  &descriptor_table_kvrpcpb_2eproto_initialized, descriptor_table_protodef_kvrpcpb_2eproto, "kvrpcpb.proto", 2945,
   &descriptor_table_kvrpcpb_2eproto_once, descriptor_table_kvrpcpb_2eproto_sccs, descriptor_table_kvrpcpb_2eproto_deps, 28, 2,
   schemas, file_default_instances, TableStruct_kvrpcpb_2eproto::offsets,
   file_level_metadata_kvrpcpb_2eproto, 28, file_level_enum_descriptors_kvrpcpb_2eproto, file_level_service_descriptors_kvrpcpb_2eproto,
@@ -1867,6 +1870,8 @@ const int RawPutRequest::kContextFieldNumber;
 const int RawPutRequest::kKeyFieldNumber;
 const int RawPutRequest::kValueFieldNumber;
 const int RawPutRequest::kCfFieldNumber;
+const int RawPutRequest::kIdFieldNumber;
+const int RawPutRequest::kTypeFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 RawPutRequest::RawPutRequest()
@@ -1895,6 +1900,9 @@ RawPutRequest::RawPutRequest(const RawPutRequest& from)
   } else {
     context_ = nullptr;
   }
+  ::memcpy(&id_, &from.id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&type_) -
+    reinterpret_cast<char*>(&id_)) + sizeof(type_));
   // @@protoc_insertion_point(copy_constructor:kvrpcpb.RawPutRequest)
 }
 
@@ -1903,7 +1911,9 @@ void RawPutRequest::SharedCtor() {
   key_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   cf_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  context_ = nullptr;
+  ::memset(&context_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&type_) -
+      reinterpret_cast<char*>(&context_)) + sizeof(type_));
 }
 
 RawPutRequest::~RawPutRequest() {
@@ -1940,6 +1950,9 @@ void RawPutRequest::Clear() {
     delete context_;
   }
   context_ = nullptr;
+  ::memset(&id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&type_) -
+      reinterpret_cast<char*>(&id_)) + sizeof(type_));
   _internal_metadata_.Clear();
 }
 
@@ -1976,6 +1989,20 @@ const char* RawPutRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(mutable_cf(), ptr, ctx, "kvrpcpb.RawPutRequest.cf");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 id = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint32 type = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          type_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2057,6 +2084,32 @@ bool RawPutRequest::MergePartialFromCodedStream(
         break;
       }
 
+      // uint64 id = 5;
+      case 5: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (40 & 0xFF)) {
+
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   ::PROTOBUF_NAMESPACE_ID::uint64, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // uint32 type = 6;
+      case 6: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (48 & 0xFF)) {
+
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   ::PROTOBUF_NAMESPACE_ID::uint32, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &type_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2112,6 +2165,16 @@ void RawPutRequest::SerializeWithCachedSizes(
       4, this->cf(), output);
   }
 
+  // uint64 id = 5;
+  if (this->id() != 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64(5, this->id(), output);
+  }
+
+  // uint32 type = 6;
+  if (this->type() != 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32(6, this->type(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2155,6 +2218,16 @@ void RawPutRequest::SerializeWithCachedSizes(
     target =
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteStringToArray(
         4, this->cf(), target);
+  }
+
+  // uint64 id = 5;
+  if (this->id() != 0) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(5, this->id(), target);
+  }
+
+  // uint32 type = 6;
+  if (this->type() != 0) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(6, this->type(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2206,6 +2279,20 @@ size_t RawPutRequest::ByteSizeLong() const {
         *context_);
   }
 
+  // uint64 id = 5;
+  if (this->id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->id());
+  }
+
+  // uint32 type = 6;
+  if (this->type() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+        this->type());
+  }
+
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -2248,6 +2335,12 @@ void RawPutRequest::MergeFrom(const RawPutRequest& from) {
   if (from.has_context()) {
     mutable_context()->::kvrpcpb::Context::MergeFrom(from.context());
   }
+  if (from.id() != 0) {
+    set_id(from.id());
+  }
+  if (from.type() != 0) {
+    set_type(from.type());
+  }
 }
 
 void RawPutRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -2282,6 +2375,8 @@ void RawPutRequest::InternalSwap(RawPutRequest* other) {
   cf_.Swap(&other->cf_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(context_, other->context_);
+  swap(id_, other->id_);
+  swap(type_, other->type_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata RawPutRequest::GetMetadata() const {

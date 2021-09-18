@@ -30,7 +30,10 @@
 #include <eraftio/tinykvpb.grpc.pb.h>
 #include <grpcpp/grpcpp.h>
 
+#include <atomic>
+#include <condition_variable>
 #include <iostream>
+#include <memory>
 
 using grpc::ServerContext;
 using grpc::Status;
@@ -82,6 +85,9 @@ class Server : public TinyKv::Service {
   Status SplitRegion(ServerContext* context,
                      const raft_cmdpb::SplitRequest* request,
                      raft_cmdpb::SplitResponse* response) override;
+  static std::map<int, std::condition_variable*> readyCondVars_;
+
+  static std::mutex readyMutex_;
 
  private:
   std::string serverAddress_;
