@@ -85,19 +85,22 @@ std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {
     SPDLOG_INFO("local state: " + debugVal);
 
     auto region = localState->region();
-
+    metapb::Region* region1 = new metapb::Region(region);
+    // region->ParseFromString(val);
+    // google::protobuf::TextFormat::PrintToString(*region1, &debugVal);
+    // SPDLOG_INFO("region " + debugVal);
+    // SPDLOG_INFO(typeid(region).name());
     if (localState->state() == raft_serverpb::PeerState::Tombstone) {
       tombStoneCount++;
       this->ClearStaleMeta(&kvWB, &raftWB, localState);
-
       continue;
     }
-
     std::shared_ptr<Peer> peer =
         std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_,
                                std::make_shared<metapb::Region>(region));
-
-    ctx->storeMeta_->regions_[regionID] = &region;
+    // ctx->storeMeta_->regions_[regionID] = &region;
+    ctx->storeMeta_->regions_.insert(
+        std::pair<int, metapb::Region*>(regionID, region1));
     regionPeers.push_back(peer);
   }
 

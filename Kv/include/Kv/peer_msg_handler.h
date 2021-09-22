@@ -62,6 +62,9 @@ class PeerMsgHandler {
   void ProcessConfChange(eraftpb::Entry* entry, eraftpb::ConfChange* cc,
                          std::shared_ptr<rocksdb::WriteBatch> wb);
 
+  void ProcessSplitRegion(eraftpb::Entry* entry, metapb::Region* newregion,
+                          std::shared_ptr<rocksdb::WriteBatch> wb);
+
   std::shared_ptr<rocksdb::WriteBatch> Process(
       eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb);
 

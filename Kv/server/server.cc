@@ -120,6 +120,18 @@ Status Server::PeerConfChange(ServerContext* context,
   return Status::OK;
 }
 
+Status Server::SplitRegion(ServerContext* context,
+                           const raft_cmdpb::SplitRequest* request,
+                           raft_cmdpb::SplitResponse* response) {
+  std::shared_ptr<raft_serverpb::RaftMessage> sendMsg =
+      std::make_shared<raft_serverpb::RaftMessage>();
+  sendMsg->set_data(request->SerializeAsString());
+  sendMsg->set_region_id(1);
+  sendMsg->set_raft_msg_type(raft_serverpb::RaftSplitRegion);
+  this->Raft(context, sendMsg.get(), nullptr);
+  return Status::OK;
+}
+
 Status Server::RawDelete(ServerContext* context,
                          const kvrpcpb::RawDeleteRequest* request,
                          kvrpcpb::RawDeleteResponse* response) {

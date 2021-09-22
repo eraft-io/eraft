@@ -414,11 +414,11 @@ const char descriptor_table_protodef_raft_5fserverpb_2eproto[] =
   "pshotMeta\022/\n\010cf_files\030\001 \003(\0132\035.raft_serve"
   "rpb.SnapshotCFFile\"J\n\rSnapshotChunk\022+\n\007m"
   "essage\030\001 \001(\0132\032.raft_serverpb.RaftMessage"
-  "\022\014\n\004data\030\002 \001(\014\"\006\n\004Done*f\n\017RaftMessageTyp"
+  "\022\014\n\004data\030\002 \001(\014\"\006\n\004Done*{\n\017RaftMessageTyp"
   "e\022\021\n\rRaftMsgNormal\020\000\022\024\n\020RaftMsgClientCmd"
   "\020\001\022\026\n\022RaftTransferLeader\020\002\022\022\n\016RaftConfCh"
-  "ange\020\003*&\n\tPeerState\022\n\n\006Normal\020\000\022\r\n\tTombs"
-  "tone\020\002b\006proto3"
+  "ange\020\003\022\023\n\017RaftSplitRegion\020\004*&\n\tPeerState"
+  "\022\n\n\006Normal\020\000\022\r\n\tTombstone\020\002b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_raft_5fserverpb_2eproto_deps[2] = {
   &::descriptor_table_eraftpb_2eproto,
@@ -441,7 +441,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_raf
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_raft_5fserverpb_2eproto_once;
 static bool descriptor_table_raft_5fserverpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_raft_5fserverpb_2eproto = {
-  &descriptor_table_raft_5fserverpb_2eproto_initialized, descriptor_table_protodef_raft_5fserverpb_2eproto, "raft_serverpb.proto", 1334,
+  &descriptor_table_raft_5fserverpb_2eproto_initialized, descriptor_table_protodef_raft_5fserverpb_2eproto, "raft_serverpb.proto", 1355,
   &descriptor_table_raft_5fserverpb_2eproto_once, descriptor_table_raft_5fserverpb_2eproto_sccs, descriptor_table_raft_5fserverpb_2eproto_deps, 12, 2,
   schemas, file_default_instances, TableStruct_raft_5fserverpb_2eproto::offsets,
   file_level_metadata_raft_5fserverpb_2eproto, 12, file_level_enum_descriptors_raft_5fserverpb_2eproto, file_level_service_descriptors_raft_5fserverpb_2eproto,
@@ -460,6 +460,7 @@ bool RaftMessageType_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;

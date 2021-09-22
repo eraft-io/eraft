@@ -41,6 +41,7 @@
 
 #include <RaftCore/raft.h>
 #include <eraftio/eraftpb.pb.h>
+#include <eraftio/metapb.pb.h>
 #include <stdint.h>
 
 namespace eraft {
@@ -106,6 +107,9 @@ class RawNode {
 
   // TransferLeader tries to transfer leadership to the given transferee.
   void TransferLeader(uint64_t transferee);
+
+  // ProposeSplitRegion
+  void ProposeSplitRegion(metapb::Region region);
 
  private:
   std::shared_ptr<ESoftState> prevSoftSt;

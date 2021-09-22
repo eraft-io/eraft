@@ -29,7 +29,10 @@ service TinyKv {
 
     // conf change request
     rpc PeerConfChange(raft_cmdpb.ChangePeerRequest) returns (raft_cmdpb.ChangePeerResponse) {}
-
+    
+    // split segion request
+    rpc SplitRegion(raft_cmdpb.SplitRequest) returns (raft_cmdpb.SplitResponse) {}
+    
     // RawKV commands.
     rpc RawGet(kvrpcpb.RawGetRequest) returns (kvrpcpb.RawGetResponse) {}
     rpc RawPut(kvrpcpb.RawPutRequest) returns (kvrpcpb.RawPutResponse) {}

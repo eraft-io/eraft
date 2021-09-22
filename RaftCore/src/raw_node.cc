@@ -77,6 +77,17 @@ void RawNode::ProposeConfChange(eraftpb::ConfChange cc) {
   this->raft->Step(msg);
 }
 
+void RawNode::ProposeSplitRegion(metapb::Region region) {
+  std::string data = region.SerializeAsString();
+  SPDLOG_INFO("ProposeSplitRegion: " + data);
+  eraftpb::Message msg;
+  msg.set_msg_type(eraftpb::MsgPropose);
+  eraftpb::Entry* ent = msg.add_entries();
+  ent->set_data(data);
+  ent->set_entry_type(eraftpb::EntrySplitRegion);
+  this->raft->Step(msg);
+}
+
 eraftpb::ConfState RawNode::ApplyConfChange(eraftpb::ConfChange cc) {
   eraftpb::ConfState confState;
   if (cc.node_id() == NONE) {
@@ -152,7 +163,7 @@ void RawNode::Advance(DReady rd) {
     this->raft->raftLog_->applied_ =
         rd.committedEntries[rd.committedEntries.size() - 1].index();
   }
-  this->raft->raftLog_->MaybeCompact();
+  // this->raft->raftLog_->MaybeCompact();
 }
 
 std::map<uint64_t, Progress> RawNode::GetProgress() {

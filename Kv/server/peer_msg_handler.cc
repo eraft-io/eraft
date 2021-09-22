@@ -20,8 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <Kv/bootstrap.h>
 #include <Kv/concurrency_queue.h>
+#include <Kv/peer.h>
 #include <Kv/peer_msg_handler.h>
+#include <Kv/raft_store.h>
 #include <Kv/server.h>
 #include <Kv/utils.h>
 #include <RaftCore/raw_node.h>
@@ -126,6 +129,57 @@ void PeerMsgHandler::ProcessConfChange(
   this->peer_->raftGroup_->ApplyConfChange(*cc);
 }
 
+void PeerMsgHandler::ProcessSplitRegion(
+    eraftpb::Entry* entry, metapb::Region* newregion,
+    std::shared_ptr<rocksdb::WriteBatch> wb) {
+  uint64_t regionid = this->peer_->regionId_;
+  std::unique_lock<std::mutex> mlock(this->ctx_->storeMeta_->mutex_);
+  if (this->ctx_->storeMeta_->regions_.find(regionid) ==
+      this->ctx_->storeMeta_->regions_.end()) {
+    SPDLOG_INFO("ProcessSplitRegion() error not find");
+    return;
+  }
+  metapb::Region* currentregion = this->ctx_->storeMeta_->regions_[regionid];
+  metapb::RegionEpoch* rep = currentregion->mutable_region_epoch();
+  rep->set_version(rep->version() + 1);
+  for (auto per : currentregion->peers()) {
+    metapb::Peer* newpeer = newregion->add_peers();
+    newpeer->set_addr(per.addr());
+    newpeer->set_store_id(per.store_id());
+    newpeer->set_id(per.id());
+  }
+  newregion->mutable_region_epoch()->set_conf_ver(1);
+  newregion->mutable_region_epoch()->set_version(1);
+  newregion->set_end_key(currentregion->end_key());
+  currentregion->set_end_key(newregion->start_key());
+  this->ctx_->storeMeta_->regions_[newregion->id()] = newregion;
+  mlock.unlock();
+  std::string debugVal;
+  google::protobuf::TextFormat::PrintToString(*currentregion, &debugVal);
+  SPDLOG_INFO("oldregion: " + debugVal);
+  google::protobuf::TextFormat::PrintToString(*newregion, &debugVal);
+  SPDLOG_INFO("newregion: " + debugVal);
+  metapb::Region curegion = *currentregion;
+  metapb::Region neregion = *newregion;
+  Assistant::GetInstance()->WriteRegionState(
+      wb, std::make_shared<metapb::Region>(curegion),
+      raft_serverpb::PeerState::Normal);
+  Assistant::GetInstance()->WriteRegionState(
+      wb, std::make_shared<metapb::Region>(neregion),
+      raft_serverpb::PeerState::Normal);
+  BootHelper::GetInstance()->PrepareBoostrapCluster(
+      this->ctx_->engine_, std::make_shared<metapb::Region>(neregion));
+  // this->peer_->sizeDiffHint_ = 0;
+  // this->peer_->approximateSize_ = 0;
+  std::shared_ptr<Peer> newpeer = std::make_shared<Peer>(
+      this->ctx_->store_->id(), this->ctx_->cfg_, this->ctx_->engine_,
+      std::make_shared<metapb::Region>(neregion));
+  this->ctx_->router_->Register(newpeer);
+  Msg m(MsgType::MsgTypeStart, neregion.id(), nullptr);
+  this->ctx_->router_->Send(newregion->id(), m);
+  SPDLOG_INFO("ProcessSplitRegion() before send");
+}
+
 std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
     eraftpb::Entry* entry, std::shared_ptr<rocksdb::WriteBatch> wb) {
   switch (entry->entry_type()) {
@@ -184,6 +238,14 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
       delete msg;
       break;
     }
+    case eraftpb::EntryType::EntrySplitRegion: {
+      metapb::Region* newregion = new metapb::Region();
+      newregion->ParseFromString(entry->data());
+      SPDLOG_INFO("process split region split key : " + newregion->start_key() +
+                  " id: " + std::to_string(newregion->id()));
+      this->ProcessSplitRegion(entry, newregion, wb);
+      break;
+    }
     default:
       break;
   }
@@ -191,7 +253,7 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
 }
 
 void PeerMsgHandler::HandleRaftReady() {
-  SPDLOG_INFO("handle raft ready ");
+  SPDLOG_INFO("handle raft ready " + std::to_string(this->peer_->regionId_));
   if (this->peer_->stopped_) {
     return;
   }
@@ -287,6 +349,18 @@ void PeerMsgHandler::HandleMsg(Msg m) {
               }
               break;
             }
+            case raft_serverpb::RaftSplitRegion: {
+              std::shared_ptr<raft_cmdpb::SplitRequest> splitregion =
+                  std::make_shared<raft_cmdpb::SplitRequest>();
+              splitregion->ParseFromString(raftMsg->data());
+              {
+                metapb::Region newregion;
+                newregion.set_start_key(splitregion->split_key());
+                newregion.set_id(splitregion->new_region_id());
+                this->peer_->raftGroup_->ProposeSplitRegion(newregion);
+              }
+              break;
+            }
           }
           delete raftMsg;
         } catch (const std::exception& e) {
@@ -329,7 +403,8 @@ bool PeerMsgHandler::CheckStoreID(raft_cmdpb::RaftCmdRequest* req,
 
 bool PeerMsgHandler::PreProposeRaftCommand(raft_cmdpb::RaftCmdRequest* req) {
   if (!this->CheckStoreID(req, this->peer_->meta_->store_id())) {
-    // check store id, make sure that msg is dispatched to the right place
+    // check store id, make sure that msg is dispatched to the right
+    // place
     return false;
   }
   auto regionID = this->peer_->regionId_;

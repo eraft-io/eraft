@@ -92,12 +92,13 @@ namespace eraftpb {
 enum EntryType : int {
   EntryNormal = 0,
   EntryConfChange = 1,
+  EntrySplitRegion = 2,
   EntryType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   EntryType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool EntryType_IsValid(int value);
 constexpr EntryType EntryType_MIN = EntryNormal;
-constexpr EntryType EntryType_MAX = EntryConfChange;
+constexpr EntryType EntryType_MAX = EntrySplitRegion;
 constexpr int EntryType_ARRAYSIZE = EntryType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* EntryType_descriptor();

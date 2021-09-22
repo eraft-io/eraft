@@ -95,6 +95,16 @@ bool RaftClient::PeerConfChange(std::string addr,
   return true;
 }
 
+bool RaftClient::SplitRegion(std::string addr,
+                             raft_cmdpb::SplitRequest& request) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));
+  raft_cmdpb::SplitResponse response;
+  grpc::ClientContext context;
+  stub_->SplitRegion(&context, request, &response);
+  return true;
+}
+
 bool RaftClient::PutRaw(std::string addr, kvrpcpb::RawPutRequest& request) {
   std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
   std::unique_ptr<TinyKv::Stub> stub_(TinyKv::NewStub(conn->GetChan()));

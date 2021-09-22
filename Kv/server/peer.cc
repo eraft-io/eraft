@@ -33,10 +33,6 @@
 
 namespace kvserver {
 
-std::map<uint64_t, std::shared_ptr<metapb::Peer> > Peer::peerCache_ = {};
-
-std::shared_ptr<PeerStorage> Peer::peerStorage_ = nullptr;
-
 Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
            std::shared_ptr<Engines> engines,
            std::shared_ptr<metapb::Region> region)
@@ -70,6 +66,7 @@ Peer::Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
   this->regionId_ = region->id();
   this->raftGroup_ = raftGroup;
   this->peerStorage_ = ps;
+  this->peerCache_ = {};
   this->tag_ = tag;
 
   SPDLOG_INFO("init peer with peer id = " + std::to_string(this->meta_->id()) +
