@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
 
   std::string helpStr = std::string(
       "Usage get key :./ \n \
-                        kv_cli[leader_ip][op][cf][key] \n  \
+                        kv_cli[leader_ip][op][cf][key][region_id] \n  \
                         put key \n \
-      :./ kv_cli[leader_ip][op][cf][key][value] ");
+      :./ kv_cli[leader_ip][op][cf][key][value][region_id] ");
 
   std::string reqType = std::string(argv[2]);
   std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
