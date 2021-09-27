@@ -8,4 +8,5 @@ spdlog
 rocksdb/*.o
 engine/pmem_wrapper/target
 engine/target
+KvProxy/target
 Kv/.DS_Store
