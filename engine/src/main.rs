@@ -5,8 +5,8 @@
 //! [simplekv example]: https://github.com/pmem/libpmemobj-cpp/tree/master/examples/simplekv
 #![feature(type_name_of_val)]
 
-use corundum::open_flags::*;
 use corundum::default::*;
+use corundum::open_flags::*;
 
 type P = Allocator;
 
