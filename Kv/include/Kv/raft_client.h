@@ -70,6 +70,8 @@ class RaftClient {
 
   bool PeerConfChange(std::string addr, raft_cmdpb::ChangePeerRequest& request);
 
+  bool SplitRegion(std::string addr, raft_cmdpb::SplitRequest& request);
+
  private:
   std::shared_ptr<Config> conf_;
 

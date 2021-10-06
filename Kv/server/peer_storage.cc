@@ -42,6 +42,8 @@ PeerStorage::PeerStorage(std::shared_ptr<Engines> engs,
   if (raftStatePair.first->last_index() <
       applyStatePair.first->applied_index()) {
     SPDLOG_INFO("raft log last index less than applied index! " +
+                std::to_string(raftStatePair.first->last_index()) + " < " +
+                std::to_string(applyStatePair.first->applied_index()) + " , " +
                 std::to_string(region->id()));
     exit(-1);
   }

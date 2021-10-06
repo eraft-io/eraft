@@ -107,8 +107,8 @@ class Peer {
   // instance of the raft moudle
   std::shared_ptr<eraft::RawNode> raftGroup_;
 
-  // peer storage
-  static std::shared_ptr<PeerStorage> peerStorage_;
+  // peer storage  delete static
+  std::shared_ptr<PeerStorage> peerStorage_;
 
   std::shared_ptr<metapb::Peer> meta_;
 
@@ -118,8 +118,8 @@ class Peer {
   std::vector<Proposal> proposals_;
 
   uint64_t regionId_;
-
-  static std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
+  // delete static
+  std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
 
  private:
   std::string tag_;

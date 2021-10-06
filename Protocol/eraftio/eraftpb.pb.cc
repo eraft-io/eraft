@@ -256,16 +256,16 @@ const char descriptor_table_protodef_eraftpb_2eproto[] =
   "\"\032\n\tConfState\022\r\n\005nodes\030\001 \003(\004\"\\\n\nConfChan"
   "ge\022,\n\013change_type\030\001 \001(\0162\027.eraftpb.ConfCh"
   "angeType\022\017\n\007node_id\030\002 \001(\004\022\017\n\007context\030\003 \001"
-  "(\014*1\n\tEntryType\022\017\n\013EntryNormal\020\000\022\023\n\017Entr"
-  "yConfChange\020\001*\213\002\n\013MessageType\022\n\n\006MsgHup\020"
-  "\000\022\013\n\007MsgBeat\020\001\022\016\n\nMsgPropose\020\002\022\r\n\tMsgApp"
-  "end\020\003\022\025\n\021MsgAppendResponse\020\004\022\022\n\016MsgReque"
-  "stVote\020\005\022\032\n\026MsgRequestVoteResponse\020\006\022\017\n\013"
-  "MsgSnapshot\020\007\022\020\n\014MsgHeartbeat\020\010\022\030\n\024MsgHe"
-  "artbeatResponse\020\t\022\025\n\021MsgTransferLeader\020\013"
-  "\022\021\n\rMsgTimeoutNow\020\014\022\026\n\022MsgEntryConfChang"
-  "e\020\r*-\n\016ConfChangeType\022\013\n\007AddNode\020\000\022\016\n\nRe"
-  "moveNode\020\001b\006proto3"
+  "(\014*G\n\tEntryType\022\017\n\013EntryNormal\020\000\022\023\n\017Entr"
+  "yConfChange\020\001\022\024\n\020EntrySplitRegion\020\002*\213\002\n\013"
+  "MessageType\022\n\n\006MsgHup\020\000\022\013\n\007MsgBeat\020\001\022\016\n\n"
+  "MsgPropose\020\002\022\r\n\tMsgAppend\020\003\022\025\n\021MsgAppend"
+  "Response\020\004\022\022\n\016MsgRequestVote\020\005\022\032\n\026MsgReq"
+  "uestVoteResponse\020\006\022\017\n\013MsgSnapshot\020\007\022\020\n\014M"
+  "sgHeartbeat\020\010\022\030\n\024MsgHeartbeatResponse\020\t\022"
+  "\025\n\021MsgTransferLeader\020\013\022\021\n\rMsgTimeoutNow\020"
+  "\014\022\026\n\022MsgEntryConfChange\020\r*-\n\016ConfChangeT"
+  "ype\022\013\n\007AddNode\020\000\022\016\n\nRemoveNode\020\001b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftpb_2eproto_deps[1] = {
 };
@@ -281,7 +281,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftpb_2eproto_once;
 static bool descriptor_table_eraftpb_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftpb_2eproto = {
-  &descriptor_table_eraftpb_2eproto_initialized, descriptor_table_protodef_eraftpb_2eproto, "eraftpb.proto", 1058,
+  &descriptor_table_eraftpb_2eproto_initialized, descriptor_table_protodef_eraftpb_2eproto, "eraftpb.proto", 1080,
   &descriptor_table_eraftpb_2eproto_once, descriptor_table_eraftpb_2eproto_sccs, descriptor_table_eraftpb_2eproto_deps, 7, 0,
   schemas, file_default_instances, TableStruct_eraftpb_2eproto::offsets,
   file_level_metadata_eraftpb_2eproto, 7, file_level_enum_descriptors_eraftpb_2eproto, file_level_service_descriptors_eraftpb_2eproto,
@@ -298,6 +298,7 @@ bool EntryType_IsValid(int value) {
   switch (value) {
     case 0:
     case 1:
+    case 2:
       return true;
     default:
       return false;

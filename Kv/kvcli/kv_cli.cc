@@ -45,23 +45,32 @@ int main(int argc, char** argv) {
 
   std::string helpStr = std::string(
       "Usage get key :./ \n \
-                        kv_cli[leader_ip][op][cf][key] \n  \
+                        kv_cli[leader_ip][op][cf][key][region_id] \n  \
                         put key \n \
-      :./ kv_cli[leader_ip][op][cf][key][value] ");
+      :./ kv_cli[leader_ip][op][cf][key][value][region_id] ");
 
   std::string reqType = std::string(argv[2]);
   std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
 
   if (reqType == "put") {
     kvrpcpb::RawPutRequest request;
-    request.mutable_context()->set_region_id(1);
+    request.mutable_context()->set_region_id(std::atoi(argv[6]));
     request.set_cf(std::string(argv[3]));
     request.set_key(std::string(argv[4]));
     request.set_value(std::string(argv[5]));
+    request.set_type(1);
+    raftClient->PutRaw(std::string(argv[1]), request);
+  } else if (reqType == "delete") {
+    kvrpcpb::RawPutRequest request;
+    request.mutable_context()->set_region_id(std::atoi(argv[6]));
+    request.set_cf(std::string(argv[3]));
+    request.set_key(std::string(argv[4]));
+    request.set_value("#");
+    request.set_type(2);
     raftClient->PutRaw(std::string(argv[1]), request);
   } else if (reqType == "get") {
     kvrpcpb::RawGetRequest request;
-    request.mutable_context()->set_region_id(1);
+    request.mutable_context()->set_region_id(std::atoi(argv[6]));
     request.set_cf(std::string(argv[3]));
     request.set_key(std::string(argv[4]));
     std::string value = raftClient->GetRaw(std::string(argv[1]), request);
@@ -86,6 +95,12 @@ int main(int argc, char** argv) {
     confChange.set_allocated_peer(pr);
     raftClient->PeerConfChange(std::string(argv[1]), confChange);
 
+  } else if (reqType == "split") {
+    //
+    raft_cmdpb::SplitRequest splitReuest;
+    splitReuest.set_split_key(argv[3]);
+    splitReuest.set_new_region_id(std::atoi(argv[4]));
+    raftClient->SplitRegion(std::string(argv[1]), splitReuest);
   } else {
     std::cerr << helpStr << std::endl;
   }

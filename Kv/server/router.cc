@@ -41,7 +41,9 @@ void Router::Register(std::shared_ptr<Peer> peer) {
               " peer addr -> " + peer->meta_->addr() + " to router");
 
   std::shared_ptr<PeerState_> ps = std::make_shared<PeerState_>(peer);
-  this->peers_[peer->regionId_] = ps;
+  // this->peers_[peer->regionId_] = ps;
+  this->peers_.insert(
+      std::pair<uint64_t, std::shared_ptr<PeerState_> >(peer->regionId_, ps));
 }
 
 void Router::Close(uint64_t regionID) { this->peers_.erase(regionID); }

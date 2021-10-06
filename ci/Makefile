@@ -8,7 +8,7 @@ image:
 build-dev:
 	chmod +x build-test.sh
 	# This images is pull from my(LiuJ) docker hub, you can build with the Dockerfile by youself.
-	docker run --rm -v $(realpath ..):/eraft cxspace/ti-redis-dev:v0.0.1 /eraft/ci/build-test.sh;
+	docker run --rm -v $(realpath ..):/eraft eraft/eraft_dev:v0.1 /eraft/ci/build-test.sh;
 
 clean:
 	docker rm $(docker ps -aq)
