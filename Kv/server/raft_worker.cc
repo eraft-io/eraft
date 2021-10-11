@@ -45,13 +45,16 @@ void RaftWorker::BootThread() {
   th.detach();
 }
 
-void RaftWorker::Run(Queue<Msg>& qu) {
+void RaftWorker::Run(moodycamel::ConcurrentQueue<Msg>& qu) {
   SPDLOG_INFO("raft worker start running!");
 
   std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap;
 
   while (true) {
-    Msg msg = qu.Pop();
+    Msg msg;
+    if (!qu.try_dequeue(msg)) {
+      continue;
+    }
     SPDLOG_INFO("pop new messsage with type: " + msg.MsgToString());
 
     // handle m, call PeerMessageHandler

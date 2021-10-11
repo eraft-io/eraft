@@ -202,26 +202,29 @@ std::shared_ptr<rocksdb::WriteBatch> PeerMsgHandler::Process(
       }
 
       rocksdb::WriteBatch kvWB;
-      if(msg->type() == 1){
-          kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
-                    msg->value());   
-      }else if(msg->type() == 2){
-          kvWB.Delete(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()));
+      if (msg->type() == 1) {
+        kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+                 msg->value());
+      } else if (msg->type() == 2) {
+        kvWB.Delete(
+            Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()));
       }
 
-      auto status = this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
-                                                        &kvWB);
+      auto status = this->peer_->peerStorage_->engines_->kvDB_->Write(
+          rocksdb::WriteOptions(), &kvWB);
       if (!status.ok()) {
-          SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
-                      msg->key() + " val " + msg->value() + ")");
+        SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
+                    msg->key() + " val " + msg->value() + ")");
       }
       //  rocksdb::WriteBatch kvWB;
       // // write to kv db
       // auto status =
-      //     kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+      //     kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(),
+      //     msg->key()),
       //              msg->value());
       // if (!status.ok()) {
-      //   SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
+      //   SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key
+      //   " +
       //               msg->key() + " val " + msg->value() + ")");
       // }
       // this->peer_->peerStorage_->engines_->kvDB_->Write(rocksdb::WriteOptions(),
@@ -465,12 +468,12 @@ void PeerMsgHandler::OnTick() {
   }
 
   this->OnRaftBaseTick();
-  QueueContext::GetInstance()->get_regionIdCh().Push(this->peer_->regionId_);
+  QueueContext::GetInstance()->get_regionIdCh().enqueue(this->peer_->regionId_);
 }
 
 void PeerMsgHandler::StartTicker() {
   SPDLOG_INFO("start ticker!");
-  QueueContext::GetInstance()->get_regionIdCh().Push(this->peer_->regionId_);
+  QueueContext::GetInstance()->get_regionIdCh().enqueue(this->peer_->regionId_);
 }
 
 void PeerMsgHandler::OnRaftBaseTick() { this->peer_->raftGroup_->Tick(); }

@@ -2,7 +2,7 @@
 
 set -xe
 
-git clone --branch v1.9.2 https://github.com.cnpmjs.org/gabime/spdlog.git
+git clone --branch v1.9.2 https://github.com/gabime/spdlog.git
 cd spdlog && mkdir build && cd build
 cmake .. && make -j && make install
 

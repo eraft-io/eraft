@@ -43,7 +43,7 @@ class RaftWorker {
   RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm);
   ~RaftWorker();
 
-  static void Run(Queue<Msg>& qu);
+  static void Run(moodycamel::ConcurrentQueue<Msg>& qu);
 
   static void BootThread();
 

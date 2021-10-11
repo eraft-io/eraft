@@ -52,12 +52,11 @@ void Router::Close(uint64_t regionID) { this->peers_.erase(regionID); }
 bool Router::Send(uint64_t regionID, Msg msg) {
   msg.regionId_ = regionID;
   SPDLOG_INFO("push raft msg to peer sender, type " + msg.MsgToString());
-  QueueContext::GetInstance()->get_peerSender().Push(msg);
-  return true;
+  QueueContext::GetInstance()->get_peerSender().enqueue(msg);
 }
 
 void Router::SendStore(Msg m) {
-  QueueContext::GetInstance()->get_storeSender().Push(m);
+  QueueContext::GetInstance()->get_storeSender().enqueue(m);
 }
 
 bool RaftstoreRouter::Send(uint64_t regionID, const Msg m) {

@@ -48,10 +48,13 @@ void StoreWorker::BootThread() {
   th.detach();
 }
 
-void StoreWorker::Run(Queue<Msg>& qu) {
+void StoreWorker::Run(moodycamel::ConcurrentQueue<Msg>& qu) {
   SPDLOG_INFO("store worker running!");
   while (IsAlive()) {
-    auto msg = qu.Pop();
+    Msg msg;
+    if (!qu.try_dequeue(msg)) {
+      continue;
+    }
     SPDLOG_INFO("pop new messsage from store sender");
     StoreWorker::HandleMsg(msg);
   }

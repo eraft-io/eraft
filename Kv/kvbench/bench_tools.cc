@@ -104,10 +104,13 @@ BenchResult BenchTools::RunBenchmarks() {
   std::vector<std::pair<std::string, std::string>> test_cases =
       GenRandomKvPair(this->test_op_count_, this->test_key_size_in_bytes_,
                       this->test_value_size_in_bytes_);
-
+  std::shared_ptr<Config> conf =
+      std::make_shared<Config>(target_addr_, "put", 0);
+  std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(conf);
   kvrpcpb::RawPutRequest put_request;
   put_request.mutable_context()->set_region_id(1);
   put_request.set_cf("test_cf");
+  put_request.set_type(1);
 
   auto start = std::chrono::system_clock::now();
   for (auto it = test_cases.begin(); it != test_cases.end(); ++it) {
@@ -118,8 +121,8 @@ BenchResult BenchTools::RunBenchmarks() {
     put_request.set_value(value);
     std::cout << "set key: " << key << '\n';
     std::cout << "set value: " << value << '\n';
-    this->raft_client_->PutRaw(this->target_addr_, put_request);
-
+    // this->raft_client_->PutRaw(this->target_addr_, put_request);
+    raftClient->PutRaw(this->target_addr_, put_request);
     validate_kv[key] = value;
     // for test, 80ms << 100ms raft tick, we must limit speed of propose, for
     // optimization, we to batch propose client request
@@ -129,6 +132,10 @@ BenchResult BenchTools::RunBenchmarks() {
   std::chrono::duration<double> elapsed = end - start;
 
   std::cout << "start validation: ------------------------------------- \n";
+  std::shared_ptr<Config> conf1 =
+      std::make_shared<Config>(target_addr_, "get", 0);
+  std::shared_ptr<RaftClient> raftClient1 = std::make_shared<RaftClient>(conf1);
+
   kvrpcpb::RawGetRequest get_request;
   get_request.mutable_context()->set_region_id(1);
   get_request.set_cf("test_cf");
@@ -141,7 +148,7 @@ BenchResult BenchTools::RunBenchmarks() {
 
     get_request.set_key(key);
     std::string value_raft =
-        raft_client_->GetRaw(this->target_addr_, get_request);
+        raftClient1->GetRaw(this->target_addr_, get_request);
 
     if (value == value_raft) {
       ++valid_key_num;

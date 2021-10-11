@@ -48,7 +48,7 @@ class StoreWorker {
 
   static void Stop() { running_ = false; }
 
-  static void Run(Queue<Msg>& qu);
+  static void Run(moodycamel::ConcurrentQueue<Msg>& qu);
 
   static void BootThread();
 

@@ -23,6 +23,7 @@
 #ifndef ERAFT_KV_CONCURRENCY_QUEUE_H_
 #define ERAFT_KV_CONCURRENCY_QUEUE_H_
 
+#include <Kv/concurrentqueue.h>
 #include <Kv/msg.h>
 #include <stdint.h>
 
@@ -92,21 +93,23 @@ class QueueContext {
     return instance_;
   }
 
-  Queue<Msg>& get_peerSender();
-
-  Queue<Msg>& get_storeSender();
-
-  Queue<uint64_t>& get_regionIdCh();
+  // Queue<Msg>& get_peerSender();
+  moodycamel::ConcurrentQueue<Msg>& get_peerSender();
+  // Queue<Msg>& get_storeSender();
+  moodycamel::ConcurrentQueue<Msg>& get_storeSender();
+  // Queue<uint64_t>& get_regionIdCh();
+  moodycamel::ConcurrentQueue<uint64_t>& get_regionIdCh();
 
  protected:
   static QueueContext* instance_;
 
  private:
-  Queue<Msg> peerSender_;
-
-  Queue<Msg> storeSender_;
-
-  Queue<uint64_t> regionIdCh_;
+  // Queue<Msg> peerSender_;
+  moodycamel::ConcurrentQueue<Msg> peerSender_;
+  // Queue<Msg> storeSender_;
+  moodycamel::ConcurrentQueue<Msg> storeSender_;
+  // Queue<uint64_t> regionIdCh_;
+  moodycamel::ConcurrentQueue<uint64_t> regionIdCh_;
 };
 
 }  // namespace kvserver

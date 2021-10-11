@@ -34,6 +34,7 @@ set(Headers
     include/Kv/node.h
     include/Kv/peer_msg_handler.h
     include/Kv/peer_storage.h
+    include/Kv/concurrentqueue.h
     include/Kv/concurrency_queue.h
     include/Kv/peer.h
     include/Kv/raft_client.h
