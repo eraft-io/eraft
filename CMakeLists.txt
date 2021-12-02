@@ -121,9 +121,9 @@ if(ParentDirectory STREQUAL "")
         rocksdb/include/utilities
     )
 
-    add_subdirectory(Protocol)
-    add_subdirectory(RaftCore)
-    add_subdirectory(Kv)
+    add_subdirectory(protocol)
+    add_subdirectory(raftcore)
+    add_subdirectory(kv)
 
 endif(ParentDirectory STREQUAL "")
 
