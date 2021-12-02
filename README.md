@@ -15,10 +15,10 @@ Raft is a protocol with which a cluster of nodes can maintain a replicated state
 #### Demo
 
 ##### Leader election and log replication
-![Leader election](Doc/img/eraft-demo1.gif)
+![Leader election](document/img/eraft-demo1.gif)
 
 ##### Membership changes
-![Membership changes](Doc/img/eraft-demo2.gif)
+![Membership changes](document/img/eraft-demo2.gif)
 
 
 #### Basic Dev Schedule
