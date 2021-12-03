@@ -109,21 +109,43 @@ if(ParentDirectory STREQUAL "")
     find_package(ZLIB REQUIRED)
     message(STATUS "Using ZLIB: ${ZLIB_INCLUDE_DIRS}, ${ZLIB_LIBRARIES}")
 
-    find_package(gRPC CONFIG REQUIRED)
-    message(STATUS "Using gRPC: ${gRPC_VERSION}")
+    # find_package(gRPC CONFIG REQUIRED)
+    # message(STATUS "Using gRPC: ${gRPC_VERSION}")
 
     find_package(Gflags REQUIRED)
     include_directories(${GFLAGS_INCLUDE_DIRS})
 
-    add_subdirectory(rocksdb)
-    include_directories(
-        rocksdb/include
-        rocksdb/include/utilities
+    find_path(ROCKSDB_ROOT_DIR
+        NAMES include/rocksdb/db.h
+    )
+
+    find_library(ROCKSDB_LIBRARIES
+        NAMES rocksdb
+        HINTS ${ROCKSDB_ROOT_DIR}/lib
+    )
+
+    find_path(ROCKSDB_INCLUDE_DIRS
+        NAMES rocksdb/db.h
+        HINTS ${ROCKSDB_ROOT_DIR}/include
+    )
+
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(RocksDB DEFAULT_MSG
+        ROCKSDB_LIBRARIES
+        ROCKSDB_INCLUDE_DIRS
+    )
+
+    mark_as_advanced(
+        ROCKSDB_ROOT_DIR
+        ROCKSDB_LIBRARIES
+        ROCKSDB_INCLUDE_DIRS
     )
 
     add_subdirectory(protocol)
     add_subdirectory(raftcore)
     add_subdirectory(kv)
+    
+    add_subdirectory(cppstringplus)
 
 endif(ParentDirectory STREQUAL "")
 
