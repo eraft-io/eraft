@@ -83,6 +83,11 @@ target_include_directories(${This} PUBLIC include)
 target_link_libraries(${This} PUBLIC
     gtest
     rocksdb
+    snappy
+    bz2
+    zstd
+    lz4
+    z
     gRPC::grpc++
     protocol
     raftcore

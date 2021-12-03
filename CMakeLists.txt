@@ -109,8 +109,8 @@ if(ParentDirectory STREQUAL "")
     find_package(ZLIB REQUIRED)
     message(STATUS "Using ZLIB: ${ZLIB_INCLUDE_DIRS}, ${ZLIB_LIBRARIES}")
 
-    # find_package(gRPC CONFIG REQUIRED)
-    # message(STATUS "Using gRPC: ${gRPC_VERSION}")
+    find_package(gRPC CONFIG REQUIRED)
+    message(STATUS "Using gRPC: ${gRPC_VERSION}")
 
     find_package(Gflags REQUIRED)
     include_directories(${GFLAGS_INCLUDE_DIRS})

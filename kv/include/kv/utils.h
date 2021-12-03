@@ -415,7 +415,7 @@ class Assistant {
 
   static rocksdb::Iterator* NewCFIterator(rocksdb::DB* db, std::string cf) {
     rocksdb::ReadOptions read_options;
-    read_options.auto_prefix_mode = true;
+    // read_options.auto_prefix_mode = true;
     auto iter = db->NewIterator(read_options);
     iter->Seek(cf + "_");
     return iter;

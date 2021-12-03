@@ -18,6 +18,11 @@ target_link_libraries(${This} PUBLIC
     gtest
     gRPC::grpc++
     rocksdb
+    snappy
+    bz2
+    zstd
+    lz4
+    z
     protocol
     kv
 )
