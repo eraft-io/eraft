@@ -40,6 +40,16 @@ RaftStore::RaftStore(std::shared_ptr<Config> cfg) {
 
 RaftStore::~RaftStore() {}
 
+std::shared_ptr<Peer> RaftStore::GetLeader() {
+  // find leader peer
+  auto regionPeers = this->LoadPeers();
+  for (auto peer : regionPeers) {
+    if (peer->PeerId() == peer->LeaderId()) {
+      return peer;
+    }
+  }
+}
+
 // load peers in this store. It scans the db engine, loads all regions and their
 // peers from it
 std::vector<std::shared_ptr<Peer> > RaftStore::LoadPeers() {

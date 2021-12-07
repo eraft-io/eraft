@@ -144,7 +144,7 @@ if(ParentDirectory STREQUAL "")
     add_subdirectory(protocol)
     add_subdirectory(raftcore)
     add_subdirectory(kv)
-    
+    add_subdirectory(meta_server)
     add_subdirectory(cppstringplus)
 
 endif(ParentDirectory STREQUAL "")

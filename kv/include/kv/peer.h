@@ -58,6 +58,7 @@ class Peer {
   Peer(uint64_t storeID, std::shared_ptr<Config> cfg,
        std::shared_ptr<Engines> engines,
        std::shared_ptr<metapb::Region> region);
+
   ~Peer();
 
   void InsertPeerCache(metapb::Peer* peer);

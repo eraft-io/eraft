@@ -73,7 +73,10 @@ class RaftStorage : public Storage {
   bool SnapShot(raft_serverpb::RaftSnapshotData* snap);
 
   bool Start();
+
   std::shared_ptr<Engines> engs_;
+
+  std::shared_ptr<RaftStore> raftSystem_;
 
  private:
   std::shared_ptr<Config> conf_;
@@ -81,8 +84,6 @@ class RaftStorage : public Storage {
   std::shared_ptr<Node> node_;
 
   std::shared_ptr<RaftRouter> raftRouter_;
-
-  std::shared_ptr<RaftStore> raftSystem_;
 
   RegionReader* regionReader_;
 };

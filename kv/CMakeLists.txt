@@ -44,6 +44,7 @@ set(Headers
     include/kv/rate_limiter.h
     include/kv/router.h
     include/kv/server.h
+    include/kv/scheduler_server.h
     include/kv/server_transport.h
     include/kv/storage.h
     include/kv/store_worker.h
@@ -66,6 +67,7 @@ set(Sources
     server/raft_worker.cc
     server/rate_limiter.cc
     server/router.cc
+    server/scheduler_server.cc
     server/server.cc
     server/store_worker.cc
     server/server_transport.cc

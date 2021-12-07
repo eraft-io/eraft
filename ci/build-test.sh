@@ -18,7 +18,7 @@ build_dir="$SRCPATH/build_"
 mkdir -p $build_dir && cd $build_dir
 cmake "$SRCPATH" \
     -DENABLE_TESTS=on
-make -j 1  # if nproc > 4, can't build
+make -j 8  # if nproc > 4, can't build
 
 if [ ! -d "$SRCPATH/output" ]; then
   mkdir $SRCPATH/output
