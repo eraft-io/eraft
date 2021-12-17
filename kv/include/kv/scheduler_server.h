@@ -76,6 +76,10 @@ class ScheServer : public Scheduler::Service {
                         const schedulerpb::StoreHeartbeatRequest* request,
                         schedulerpb::StoreHeartbeatResponse* response) override;
 
+  Status RegionHeartbeat(ServerContext* context,
+                   const schedulerpb::RegionHeartbeatRequest* request,
+                   schedulerpb::RegionHeartbeatResponse* response) override;
+
   Status GetRegion(ServerContext* context,
                    const schedulerpb::GetRegionRequest* request,
                    schedulerpb::GetRegionResponse* response) override;
