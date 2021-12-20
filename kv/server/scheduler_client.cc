@@ -46,15 +46,43 @@ std::shared_ptr<RaftConn> SchedulerClient::GetConn(std::string addr,
 }
 
 bool SchedulerClient::GetMembers(std::string addr,
-                                 schedulerpb::GetMembersRequest& erquest);
+                                 schedulerpb::GetMembersRequest& erquest) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<Scheduler::Stub> stub_(Scheduler::NewStub(conn->GetChan()));
+  schedulerpb::GetMembersResponse response;
+  grpc::ClientContext context;
+  auto status = stub_->GetMembers(&context, request, &response);
+  return;
+}
 
 bool SchedulerClient::GetRegion(std::string addr,
-                                schedulerpb::GetRegionRequest& request);
+                                schedulerpb::GetRegionRequest& request) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<Scheduler::Stub> stub_(Scheduler::NewStub(conn->GetChan()));
+  schedulerpb::GetRegionResponse response;
+  grpc::ClientContext context;
+  stub_->GetRegion(&context, request, &response);
+  return;
+}
 
 bool SchedulerClient::AskSplit(std::string addr,
-                               schedulerpb::AskSplitRequest& request);
+                               schedulerpb::AskSplitRequest& request) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<Scheduler::Stub> stub_(Scheduler::NewStub(conn->GetChan()));
+  schedulerpb::AskSplitResponse response;
+  grpc::ClientContext context;
+  stub_->AskSplit(&context, request, &response);
+  return;
+}
 
 bool SchedulerClient::RegionHeartbeat(
-    std::string addr, schedulerpb::RegionHeartbeatRequest& request);
+    std::string addr, schedulerpb::RegionHeartbeatRequest& request) {
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, 1);
+  std::unique_ptr<Scheduler::Stub> stub_(Scheduler::NewStub(conn->GetChan()));
+  schedulerpb::RegionHeartbeatResponse response;
+  grpc::ClientContext context;
+  stub_->RegionHeartbeat(&context, request, &response);
+  return;
+}
 
 }  // namespace kvserver

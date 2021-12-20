@@ -83,6 +83,12 @@ Status ScheServer::GetRegion(ServerContext* context,
   return Status::OK;
 }
 
+Status ScheServer::RegionHeartbeat(
+    ServerContext* context, const schedulerpb::RegionHeartbeatRequest* request,
+    schedulerpb::RegionHeartbeatResponse* response) {
+  return Status::OK;
+}
+
 Status ScheServer::GetPrevRegion(ServerContext* context,
                                  const schedulerpb::GetRegionRequest* request,
                                  schedulerpb::GetRegionResponse* response) {
