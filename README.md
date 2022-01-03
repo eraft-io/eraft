@@ -1,16 +1,10 @@
-# eraft
-
-Based on Etcd-Raft and implemented by C++, Eraft is a high-performance industrial Raft library. The main idea for this project comes from the manuscript of Diego Ongaro's doctoral thesis. At present, this project has been included in https://raft.github.io. We hope to explore the possibility of optimizing the existing algorithms on the basis of realizing a stable industrial Raft library. 
-
-ERaft supports academic research projects on scaling out Raft to spot instances. One of our main work has been published in IWQoS 2019.
-
-One may refer to @inproceedings{10.1145/3326285.3329046, author = {Xu, Zichen and Stewart, Christopher and Huang, Jiacheng}, title = {Elastic, Geo-Distributed RAFT}, year = {2019}, isbn = {9781450367783}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = { https://doi.org/10.1145/3326285.3329046 } , doi = {10.1145/3326285.3329046},  booktitle = {Proceedings of the International Symposium on Quality of Service}, articleno = {11}, numpages = {9}, location = {Phoenix, Arizona}, series = {IWQoS '19} }
-
-Another team of the same root is now working on a stable version called BW-Raft, which inherits the implementation from ERaft. One may refer the latest note from the Good Lab, (https://good.ncu.edu.cn)
+# Bw-Raft
 
 #### Overview
 
-Raft is a protocol with which a cluster of nodes can maintain a replicated state machine. The state machine is kept in sync through the use of a replicated log. For more details on Raft, see "In Search of an Understandable Consensus Algorithm" (https://raft.github.io/raft.pdf) by Diego Ongaro and John Ousterhout.
+BW-Raft inherits and extends the original ERaft with the following abstractions: (1) secretary nodes that take over expensive log synchronization operations from the leader, relaxing the performance constraint on locks. (2) observer nodes that handle reads only, improving throughput for typical data intensive  services. These abstractions are stateless, allowing elastic scale-out on unreliable yet cheap spot instances.   Our initial code is implemented in golang. You can refer to the code in the Bw-Raft's OriginalCode directory. For better performance, we choose to use cpp to rewrite the code.
+
+One may refer to @inproceedings{10.1145/3326285.3329046, author = {Xu, Zichen and Stewart, Christopher and Huang, Jiacheng}, title = {Elastic, Geo-Distributed RAFT}, year = {2019}, isbn = {9781450367783}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = { https://doi.org/10.1145/3326285.3329046 } , doi = {10.1145/3326285.3329046},  booktitle = {Proceedings of the International Symposium on Quality of Service}, articleno = {11}, numpages = {9}, location = {Phoenix, Arizona}, series = {IWQoS '19} }
 
 #### Demo
 
@@ -30,6 +24,8 @@ Raft is a protocol with which a cluster of nodes can maintain a replicated state
 | Log compaction                |          done            |    done    |
 | Membership changes            |          done            |    done    |
 | Leadership transfer extension |          done            |    done    |
+| Secretary | Testing              |  |
+| Observer | Testing |  |
 
 
 #### Documents
