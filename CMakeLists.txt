@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2021 Colin
+# Copyright (c) 2021 eraft group
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -90,62 +90,8 @@ if(ParentDirectory STREQUAL "")
         FOLDER libraries
     )
 
-    # grpc
-    include_directories(grpc/include)
-
-    # gRPC and relateds
-
-    find_package (OpenSSL)
-    message (STATUS "Using ssl=${OPENSSL_FOUND}: ${OPENSSL_INCLUDE_DIR} : ${OPENSSL_LIBRARIES}")
-
-    find_package(Protobuf REQUIRED)
-    message(STATUS "Using protobuf: ${Protobuf_VERSION} : ${Protobuf_INCLUDE_DIRS}, ${Protobuf_LIBRARIES}")
-
-    include_directories(${PROTOBUF_INCLUDE_DIRS})
-
-    find_package(c-ares REQUIRED)
-    message(STATUS "Lib c-ares found")
-
-    find_package(ZLIB REQUIRED)
-    message(STATUS "Using ZLIB: ${ZLIB_INCLUDE_DIRS}, ${ZLIB_LIBRARIES}")
-
-    find_package(gRPC CONFIG REQUIRED)
-    message(STATUS "Using gRPC: ${gRPC_VERSION}")
-
-    find_package(Gflags REQUIRED)
-    include_directories(${GFLAGS_INCLUDE_DIRS})
-
-    find_path(ROCKSDB_ROOT_DIR
-        NAMES include/rocksdb/db.h
-    )
-
-    find_library(ROCKSDB_LIBRARIES
-        NAMES rocksdb
-        HINTS ${ROCKSDB_ROOT_DIR}/lib
-    )
-
-    find_path(ROCKSDB_INCLUDE_DIRS
-        NAMES rocksdb/db.h
-        HINTS ${ROCKSDB_ROOT_DIR}/include
-    )
-
-    include(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args(RocksDB DEFAULT_MSG
-        ROCKSDB_LIBRARIES
-        ROCKSDB_INCLUDE_DIRS
-    )
-
-    mark_as_advanced(
-        ROCKSDB_ROOT_DIR
-        ROCKSDB_LIBRARIES
-        ROCKSDB_INCLUDE_DIRS
-    )
-
     add_subdirectory(protocol)
     add_subdirectory(raftcore)
-    add_subdirectory(kv)
-    add_subdirectory(meta_server)
-    add_subdirectory(cppstringplus)
 
 endif(ParentDirectory STREQUAL "")
 

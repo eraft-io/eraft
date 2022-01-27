@@ -628,7 +628,7 @@ static bool CommitNoopEntry(std::shared_ptr<eraft::RaftContext> r,
   std::vector<eraftpb::Message> msgs = r->ReadMessage();
   for (auto m : msgs) {
     if (m.msg_type() != eraftpb::MsgAppend || m.entries().size() != 1 ||
-        !m.entries()[0].data().empty()) {
+        !m.entries(0).data().empty()) {
       return false;
     }
     // std::cout << "AcceptAndReply " << "m.from(): " << m.from() << "m.to() "
@@ -1126,7 +1126,6 @@ TEST(RaftPaperTests, TestFollowerAppendEntries2AB) {
       std::cout << eraft::EntryToString(en) << std::endl;
     }
     std::cout << "r->raftLog_->entries_ end" << std::endl;
-
     std::cout << "r->raftLog_->UnstableEntries() start" << std::endl;
     // == wunstable_
     for (auto en : r->raftLog_->UnstableEntries()) {

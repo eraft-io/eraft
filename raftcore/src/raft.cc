@@ -687,7 +687,7 @@ bool RaftContext::HandleAppendEntries(eraftpb::Message m) {
     } else {
       uint64_t n = m.entries().size();
       for (uint64_t j = count; j < n; j++) {
-        this->raftLog_->entries_.push_back(m.entries()[j]);
+        this->raftLog_->entries_.push_back(m.entries(j));
       }
       break;
     }

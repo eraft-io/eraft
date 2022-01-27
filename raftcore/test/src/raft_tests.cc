@@ -70,7 +70,6 @@ struct NetWork {
 
   std::map<eraftpb::MessageType, bool> ignorem;
 
-  // std::function<bool(eraftpb::Message)> msgHook;
 };
 
 enum class PeerType {
@@ -112,7 +111,6 @@ std::shared_ptr<NetWork> NewNetworkWithConfig(
         break;
       }
       case PeerType::Raft:
-
         break;
       case PeerType::BlackHole:
         break;
@@ -128,27 +126,6 @@ std::shared_ptr<NetWork> NewNetworkWithConfig(
 
 }  // namespace eraft
 
-// TEST(RaftTests, TestProgressLeader2AB) {
-//     std::shared_ptr<eraft::StorageInterface> memSt =
-//     std::make_shared<eraft::MemoryStorage>(); std::vector<uint64_t> peers =
-//     {1, 2}; eraft::Config c(1, peers, 5, 1, memSt);
-//     std::shared_ptr<eraft::RaftContext> r =
-//     std::make_shared<eraft::RaftContext>(c); r->BecomeCandidate();
-//     r->BecomeLeader();
-//     eraftpb::Message propMsg;
-//     propMsg.set_from(1);
-//     propMsg.set_to(1);
-//     propMsg.set_msg_type(eraftpb::MsgPropose);
-//     eraftpb::Entry* ent = propMsg.add_entries();
-//     ent->set_data(std::string("foo"));
-//     for(uint8_t i = 0; i < 5; i++) {
-//         std::shared_ptr<eraft::Progress> pr = r->prs_[r->id_];
-//         // ASSERT_EQ(pr->match, i + 1);
-//         // ASSERT_EQ(pr->next, pr->match + 1);
-//         r->Step(propMsg);
-//     }
-// }
-
 TEST(RaftTests, MemoryStorage) {
   eraftpb::Entry en1, en2, en3;
   en1.set_term(2);
@@ -163,11 +140,6 @@ TEST(RaftTests, MemoryStorage) {
   std::shared_ptr<eraft::MemoryStorage> memSt =
       std::make_shared<eraft::MemoryStorage>();
   std::cout << memSt->Append(std::vector<eraftpb::Entry>{en1}) << std::endl;
-  // std::cout << memSt->Append(std::vector<eraftpb::Entry>{en2}) << std::endl;
-  // std::cout << memSt->Append(std::vector<eraftpb::Entry>{en3}) << std::endl;
-
-  // std::cout << "LastIndex(): " << memSt->LastIndex() << std::endl;
-  // std::cout << "FirstIndex(): " << memSt->FirstIndex() << std::endl;
 }
 
 // TestLeaderSyncFollowerLog tests that the leader could bring a follower's log
@@ -176,7 +148,6 @@ TEST(RaftTests, MemoryStorage) {
 TEST(RaftTests, TestLeaderSyncFollowerLog2AB) {
   eraftpb::Entry en_1_1, en_1_2, en_1_3, en_4_4, en_4_5, en_5_6, en_5_7, en_6_8,
       en_6_9, en_6_10;
-  // std::vector<eraftpb::Entry> { {},  }
   // TODO: with mock newwork
 }
 
