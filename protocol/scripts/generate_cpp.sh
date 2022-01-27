@@ -21,7 +21,6 @@ sed_inplace -e 's/\[.*gogoproto.*\]//g' proto-cpp/*
 
 push proto-cpp
 protoc -I${GRPC_INCLUDE} --cpp_out ../eraftio/ *.proto || exit $?
-protoc -I${GRPC_INCLUDE} --grpc_out ../eraftio/ --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN} *.proto || exit $?
 pop
 
 rm -rf proto-cpp

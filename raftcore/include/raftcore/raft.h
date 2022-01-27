@@ -207,7 +207,6 @@ class RaftContext : StateMachine {
     for (auto pr : raft->prs_) {
       nodes.push_back(pr.first);
     }
-    std::sort(nodes.begin(), nodes.end());
     return nodes;
   }
 
