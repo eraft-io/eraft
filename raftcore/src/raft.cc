@@ -748,7 +748,11 @@ void RaftContext::LeaderCommit() {
     i++;
   }
   std::sort(match.begin(), match.end());
-  uint64_t n = match[(this->prs_.size() - 1) / 2];
+  uint64_t thresh = this->prs_.size()/2;
+  if (!(this->prs_.size() % 2) && this->pendingConfIndex == NONE) {
+    thresh--; //relax quorum
+  }
+  uint64_t n = match[thresh];
   if (n > this->raftLog_->commited_) {
     auto resPair = this->raftLog_->Term(n);
     uint64_t logTerm = resPair.first;
