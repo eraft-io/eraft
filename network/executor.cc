@@ -19,7 +19,8 @@ void Executor::Init(const std::vector<std::string> &params)
 	cfg.put_create_if_missing(true);
 	engine_ = new pmem::kv::db();
 	pmem::kv::db kv;
-	s = engine_->open("stree", std::move(cfg));
+	s = engine_->open("radix", std::move(cfg));
+	std::cout << s << std::endl;
 	if (s != pmem::kv::status::OK) {
 		std::cout << "open pmemkv error" << std::endl;
 	}

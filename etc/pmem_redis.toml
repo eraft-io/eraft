@@ -1,0 +1,9 @@
+[server]
+
+addr = "0.0.0.0:6379"
+
+logdir = "logs/tiredis.log"
+
+[db]
+
+path = "/tmp/pmem1_radix"

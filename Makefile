@@ -12,5 +12,11 @@ build-dev:
 	chmod +x build.sh
 	docker run --rm -v ${PWD}:/eraft eraft/eraft_pmem:v1 /eraft/build.sh;
 
+run-single:
+	docker run --rm -it -p 127.0.0.1:6379:6379 --user root -v ${PWD}:/eraft eraft/eraft_pmem:v1 /eraft/build_/cmd/pmemkv_redisd /eraft/etc/pmem_redis.toml 
+
+into:
+	docker run --rm -it -p 127.0.0.1:6379:6379 --user root -v ${PWD}:/eraft eraft/eraft_pmem:v1 /bin/bash
+
 test:
 	docker run --rm -v ${PWD}:/eraft eraft/eraft_pmem:v1 /eraft/build_/raftcore/test/raft_tests;
