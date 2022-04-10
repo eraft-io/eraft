@@ -1,0 +1,32 @@
+set(pmem_kvredis_sources)
+
+list(APPEND pmem_kvredis_sources async_buffer.cc)
+list(APPEND pmem_kvredis_sources client.cc)
+list(APPEND pmem_kvredis_sources cmd_string.cc)
+list(APPEND pmem_kvredis_sources cmd.cc)
+list(APPEND pmem_kvredis_sources common.cc)
+list(APPEND pmem_kvredis_sources config.cc)
+list(APPEND pmem_kvredis_sources epoller.cc)
+list(APPEND pmem_kvredis_sources executor.cc)
+list(APPEND pmem_kvredis_sources listen_socket.cc)
+list(APPEND pmem_kvredis_sources net_thread_pool.cc)
+# list(APPEND pmem_kvredis_sources pmem_redis.cc)
+list(APPEND pmem_kvredis_sources proto_parser.cc)
+list(APPEND pmem_kvredis_sources server.cc)
+list(APPEND pmem_kvredis_sources socket.cc)
+list(APPEND pmem_kvredis_sources stream_socket.cc)
+list(APPEND pmem_kvredis_sources task_manager.cc)
+list(APPEND pmem_kvredis_sources thread_pool.cc)
+list(APPEND pmem_kvredis_sources unbounded_buffer.cc)
+list(APPEND pmem_kvredis_sources regex.cc)
+
+set(pmem_kvredis_INCLUDE_DIR ${pmem_kvredis_sources_SOURCE_DIR})
+
+add_library(pmem_kv_redis ${pmem_kvredis_sources})
+target_include_directories(pmem_kv_redis PUBLIC ${pmem_kvredis_INCLUDE_DIR})
+
+
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
+# add_executable(pmemkv_redisd pmem_redis.cc)
+# target_include_directories(pmemkv_redisd PUBLIC ${pmem_kvredis_INCLUDE_DIR})
+# target_link_libraries(pmemkv_redisd pmem_kv_redis pthread pmemkv)

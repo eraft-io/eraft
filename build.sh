@@ -13,7 +13,7 @@ if [ -d "$SRCPATH/protocol" ]; then
   cd -
 fi
 
-build_dir="$SRCPATH/build"
+build_dir="$SRCPATH/build_"
 mkdir -p $build_dir && cd $build_dir
 cmake "$SRCPATH" \
     -DENABLE_TESTS=on
