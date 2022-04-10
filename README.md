@@ -4,7 +4,7 @@
 
 如果对我们的课程解读感兴趣，可以关注我们的知乎账号
 
-![知乎码](document/img/zhihu.jpeg)
+![知乎码](https://eraft.oss-cn-beijing.aliyuncs.com/zhihu.jpeg)
 
 或者访问我们的官方网站 [https://eraft.cn](https://eraft.cn)
 
