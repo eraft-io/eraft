@@ -21,78 +21,29 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.8)
-set(This ectdraftcpp)
+set(This eraft)
 project(${This} C CXX)
 
+set(ERAFT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+set(CXX_STANDARD 17 CACHE STRING "C++ language standard")
+
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD ${CXX_STANDARD})
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-enable_testing()
+# Google Test
+set(BUILD_GTEST ON CACHE BOOL "Builds the googletest subproject" FORCE)
+set(BUILD_GMOCK OFF CACHE BOOL "Builds the googlemock subproject" FORCE)
 
-get_directory_property(ParentDirectory PARENT_DIRECTORY)
-if(ParentDirectory STREQUAL "")
-    # Define option for linking with runtime statically
-    if(MSVC)
-        option(RUNTIME_STATIC_LINKAGE "Link with runtime library statically" OFF)
-    endif(MSVC)
+add_subdirectory(googletest)
+set_target_properties(gtest_main gtest PROPERTIES
+    FOLDER libraries
+)
 
-    if(MSVC AND RUNTIME_STATIC_LINKAGE)
-        foreach(flag
-            CMAKE_C_FLAGS
-            CMAKE_CXX_FLAGS
-            CMAKE_C_FLAGS_DEBUG
-            CMAKE_CXX_FLAGS_DEBUG
-            CMAKE_C_FLAGS_RELEASE
-            CMAKE_CXX_FLAGS_RELEASE
-            CMAKE_C_FLAGS_MINSIZEREL
-            CMAKE_CXX_FLAGS_MINSIZEREL
-            CMAKE_C_FLAGS_RELWITHDEBINFO
-            CMAKE_CXX_FLAGS_RELWITHDEBINFO
-        )
-            if(${flag} MATCHES "/MD")
-                string(REGEX REPLACE "/MD" "/MI" ${flag} "${${flag}}")
-            endif(${flag} MATCHES "/MD")
-        endforeach(flag)
-    endif(MSVC AND RUNTIME_STATIC_LINKAGE)
-
-    # Keep Google Test's linkage of the runtime in sync our own
-    if(RUNTIME_STATIC_LINKAGE)
-        set(gtest_force_shared_crt OFF CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-    else(RUNTIME_STATIC_LINKAGE)
-        set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-    endif(RUNTIME_STATIC_LINKAGE)
-
-    # Orgnize application, libraries, etc. in floders in the IDE.
-    set_property(GLOBAL PROPERTY USE_FLODERS ON)
-
-    # Ensure proper loading of side-loaded shared libraries on all target
-    set(CMAKE_SKIP_BUILD_RPATH FALSE)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    if(APPLE)
-        set(CMAKE_INSTALL_RPATH "@loader_path")
-    elseif(UNIX)
-        set(CMAKE_INSTALL_RPATH "\$ORIGIN")
-    endif()
-    
-    # Don't add the goofy "d" postfix for debug builds of libraries.
-    set(CMAKE_DEBUG_POSTFIX "")
-    
-    # Suppress Microsoft warnings about functions being unsafe.
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
-
-    # Google Test
-    set(BUILD_GTEST ON CACHE BOOL "Builds the googletest subproject" FORCE)
-    set(BUILD_GMOCK OFF CACHE BOOL "Builds the googlemock subproject" FORCE)
-
-    add_subdirectory(googletest)
-    set_target_properties(gtest_main gtest PROPERTIES
-        FOLDER libraries
-    )
-
-    add_subdirectory(protocol)
-    add_subdirectory(raftcore)
-
-endif(ParentDirectory STREQUAL "")
+add_subdirectory(protocol)
+add_subdirectory(raftcore)
+add_subdirectory(network)
+add_subdirectory(cmd)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
