@@ -52,7 +52,6 @@ bool PMemRedis::_RunLogic()
 
 bool PMemRedis::_Recycle()
 {
-	// delete Executor::engine_;
 	// free resources
 }
 
