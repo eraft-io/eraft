@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2021 eraft group
+# Copyright (c) 2021 eraft dev group
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +21,27 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.8)
-set(This eraft)
-project(${This} C CXX)
+set(This storage)
 
-set(ERAFT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_C_STANDARD 99)
-set(CXX_STANDARD 17 CACHE STRING "C++ language standard")
-
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD ${CXX_STANDARD})
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# Google Test
-set(BUILD_GTEST ON CACHE BOOL "Builds the googletest subproject" FORCE)
-set(BUILD_GMOCK OFF CACHE BOOL "Builds the googlemock subproject" FORCE)
-
-add_subdirectory(googletest)
-set_target_properties(gtest_main gtest PROPERTIES
-    FOLDER libraries
+set(Headers 
+    include/storage/engine_interface.h
+    include/storage/pmem_engine.h
 )
 
-add_subdirectory(protocol)
-add_subdirectory(raftcore)
-add_subdirectory(network)
-add_subdirectory(storage)
-add_subdirectory(cmd)
+set(Sources
+    src/pmem_engine.cc
+)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+add_library(${This} STATIC ${Sources} ${Headers})
+set_target_properties(${This} PROPERTIES
+    FOLDER Libraries
+)
+
+target_include_directories(${This} PUBLIC include)
+
+target_link_libraries(${This} PUBLIC
+    gtest_main
+    pmemkv
+)
+
+add_subdirectory(test)

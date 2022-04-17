@@ -1,13 +1,12 @@
-# CMakeLists.txt for RaftTests
+# CMakeLists.txt for pmem_engine_tests
 # 
-# © 2022 by LiuJ
+# © 2022 by eraft dev group
 
 cmake_minimum_required(VERSION 3.8)
-set(This raft_tests)
+set(This storage_test)
 
 set(Sources 
-    src/raft_paper_tests.cc
-    src/raft_tests.cc
+    src/pmem_engine_tests.cc
 )
 
 add_executable(${This} ${Sources})
@@ -16,8 +15,7 @@ set_target_properties(${This} PROPERTIES
 )
 
 target_link_libraries(${This} PUBLIC
-    protocol
-    raftcore
+    storage
 )
 
 add_test(
