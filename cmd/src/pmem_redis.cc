@@ -2,12 +2,12 @@
 //  TiRedis.cc
 //
 
-#include "pmem_redis.h"
-#include "client.h"
-#include "command.h"
-#include "config.h"
-#include "executor.h"
-#include "socket.h"
+#include <cmd/pmem_redis.h>
+#include <network/client.h>
+#include <network/command.h>
+#include <network/config.h>
+#include <network/executor.h>
+#include <network/socket.h>
 #include <iostream>
 
 PMemRedis::PMemRedis() : port_(0)

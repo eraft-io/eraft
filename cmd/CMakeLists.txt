@@ -1,13 +1,55 @@
-set(cmd)
+# MIT License
 
-list(APPEND cmd pmem_redis.cc)
+# Copyright (c) 2021 Colin
 
-set(cmd_INCLUDE_DIR ${cmd_SOURCE_DIR})
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 
-add_library(cmd ${cmd})
-target_include_directories(cmd PUBLIC ${cmd_INCLUDE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../network)
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 
-add_executable(pmemkv_redisd pmem_redis.cc)
-target_include_directories(pmemkv_redisd PUBLIC ${cmd_INCLUDE_DIR})
-target_link_libraries(pmemkv_redisd pthread pmemkv cmd network)
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+cmake_minimum_required(VERSION 3.8)
+set(This cmd)
+
+set(Headers 
+    include/cmd/pmem_redis.h
+)
+
+set(Sources
+    src/pmem_redis.cc
+)
+
+add_library(${This} STATIC ${Sources} ${Headers})
+set_target_properties(${This} PROPERTIES
+    FOLDER Libraries
+)
+
+target_link_libraries(${This} PUBLIC
+    storage
+    pthread
+    pmemkv
+    network
+)
+
+target_include_directories(${This} PUBLIC include)
+
+add_executable(pmemredisd ${Sources})
+set_target_properties(pmemredisd PROPERTIES
+    FOLDER Tests
+)
+
+target_link_libraries(pmemredisd PUBLIC
+    cmd
+)
