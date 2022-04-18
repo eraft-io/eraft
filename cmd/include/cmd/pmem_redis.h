@@ -1,4 +1,4 @@
-#include "server.h"
+#include <network/server.h>
 
 #define VERSION "1.0.0"
 

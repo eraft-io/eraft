@@ -14,7 +14,7 @@ void Executor::Init(const std::vector<std::string> &params)
 	if (s != pmem::kv::status::OK) {
 		std::cout << "put_path error" << std::endl;
 		return;
-	
+	}
 	cfg.put_size(PMEM_USED_SIZE_DEFAULT);
 	cfg.put_create_if_missing(true);
 	engine_ = new pmem::kv::db();

@@ -1,5 +1,3 @@
-
-
 // MIT License
 
 // Copyright (c) 2022 eraft dev group
@@ -22,20 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ERAFT_NETWORK_TRANSPORT_INTERFACE_H_
-#define ERAFT_NETWORK_TRANSPORT_INTERFACE_H_
-
-#include <eraftio/raft_messagepb.pb.h>
-
-#include <memory>
-
-namespace network {
-
-class TransportInterface {
- public:
-  virtual bool Send(std::shared_ptr<raft_messagepb::RaftMessage> msg) = 0;
-};
-
-}  // namespace network
+#ifndef ERAFT_NETWORK_RAFT_STORAGE_INTERFACE_H_
+#define ERAFT_NETWORK_RAFT_STORAGE_INTERFACE_H_
 
 #endif

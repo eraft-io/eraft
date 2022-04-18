@@ -3,7 +3,7 @@
 #include <network/command.h>
 #include <network/common.h>
 #include <network/unbounded_buffer.h>
-#include  <libpmemkv.hpp>
+#include <libpmemkv.hpp>
 
 const uint64_t PMEM_USED_SIZE_DEFAULT = 1024UL * 1024UL * 1024UL;
 
