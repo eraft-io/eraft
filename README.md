@@ -1,19 +1,63 @@
-# eraft
+### Overview
 
-我们是一个专注于解读分布式存储系统的开源组织，我们会对相关优秀的开源课程以及前沿论文进行解读，并整理形成了分布式存储相关知识体系。
+Raft is a protocol with which a cluster of nodes can maintain a replicated state machine. The state machine is kept in sync through the use of a replicated log. For more details on Raft, see "In Search of an Understandable Consensus Algorithm" (https://raft.github.io/raft.pdf) by Diego Ongaro and John Ousterhout.
 
-如果对我们的课程解读感兴趣，可以关注我们的知乎账号
+
+### Features
+
+- Leader election 
+- Log replication 
+- Log compaction
+- Membership changes
+- Leadership transfer extension
+
+
+### Build
+```
+make image
+make build-dev
+```
+
+### Run test
+```
+make test
+```
+
+### How to build a kv store with eraft
+
+- example
+
+[https://github.com/eraft-io/eraft/tree/eraft_with_rocksdb]
+
+##### Leader election and log replication
+![Leader election](document/img/eraft-demo1.gif)
+
+##### Membership changes
+![Membership changes](document/img/eraft-demo2.gif)
+
+#### Code Style
+https://google.github.io/styleguide/cppguide.html
+
+#### Join Us on discussions
+
+https://github.com/eraft-io/eraft/discussions
+
+### Scan QR code and follow our Zhihu account
 
 ![知乎码](https://eraft.oss-cn-beijing.aliyuncs.com/zhihu.jpeg)
 
-或者访问我们的官方网站 [https://eraft.cn](https://eraft.cn)
+Our webiste
+[https://eraft.cn](https://eraft.cn)
 
-改项目主要以 project 项目的方式，带着大家从 0 到 1 实现一个分布式系统。
+### Project
 
-## project 1 实现一个基于 pmemkv 的持久化内存 KV 引擎
+Follow these projects to learn how to build a distributed key value system on Persistent memory device。
 
-## project 2 基于 epoll 和多线程技术实现一个高并发的网络服务器
 
-## project 3 实现分布式一致性协议 raft 算法库
+#### project 1 Implement a persistent memory kv engine based on pmemkv
 
-## project 4 应用算法库实现一个分布式 KV 存储系统
+#### project 2 Implement a concurrent web server based on epoll and multithreading technology
+
+#### project 3 Implement a distributed consistency protocol : raft algorithm library
+
+#### project 4 Implement a distributed kv storage system based on above project modules.

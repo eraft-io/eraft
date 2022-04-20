@@ -34,6 +34,52 @@
 #include <mutex>
 #include <thread>
 
+namespace network
+{
+    class Ticker
+    {
 
+    public:
+        typedef std::chrono::duration<int64_t, std::nano> tick_interval_t;
+        typedef std::function<void()> on_tick_t;
+
+        Ticker(on_tick_t onTick, tick_interval_t tickInterval);
+        ~Ticker();
+
+        static void Run();
+
+        void Start();
+
+        void Stop();
+
+        void SetDuration(tick_interval_t tickInterval);
+
+        void TimerLoop();
+
+        static Ticker *GetInstance(
+            on_tick_t onTick, tick_interval_t tickInterval)
+        {
+            if (instance_ == nullptr)
+            {
+                instance_ = new Ticker(onTick, tickInterval);
+            }
+            return instance_;
+        }
+
+    private:
+        static Ticker *instance_;
+
+        static std::map<uint64_t, void *> regions_;
+
+        on_tick_t onTick_;
+
+        tick_interval_t tickInterval_;
+
+        volatile bool running_;
+
+        std::mutex tickIntervalMutex_;
+    };
+
+} // namespace network
 
 #endif
