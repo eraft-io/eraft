@@ -54,13 +54,36 @@ bool PMemEngine::PutK(std::string k, std::string v) {
   return (s == pmem::kv::status::OK);
 }
 
-bool PMemEngine::GetV(std::string k, std::string &v) {
+bool PMemEngine::GetV(std::string k, std::string& v) {
   std::string val;
-	auto s = engine_->get(k, &val);
-	if (s == pmem::kv::status::NOT_FOUND) {
+  auto s = engine_->get(k, &val);
+  if (s == pmem::kv::status::NOT_FOUND) {
     return false;
-	}
+  }
   v = std::move(val);
   return true;
 }
+
+bool PMemEngine::RemoveK(std::string k) {
+  auto s = engine_->remove(k);
+  return (s == pmem::kv::status::OK);
+}
+
+bool PMemEngine::PutWriteBatch(WriteBatch& batch) {
+  for (auto& item : batch.GetItems()) {
+    switch (item.second) {
+      case BacthOpCode::Put: {
+        PutK(item.first.first, item.first.second);
+        break;
+      }
+      case BacthOpCode::Delete: {
+        RemoveK(item.first.first);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+}
+
 }  // namespace storage

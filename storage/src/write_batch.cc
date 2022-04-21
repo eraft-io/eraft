@@ -20,28 +20,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ERAFT_STORAGE_ENGINE_H_
-#define ERAFT_STORAGE_ENGINE_H_
-
 #include <storage/write_batch.h>
-
-#include <string>
 
 namespace storage {
 
-class StorageEngineInterface {
- public:
-  virtual ~StorageEngineInterface(){};
+WriteBatch::WriteBatch() {}
 
-  virtual bool PutK(std::string k, std::string v) = 0;
+WriteBatch::~WriteBatch() {}
 
-  virtual bool GetV(std::string k, std::string& v) = 0;
+bool WriteBatch::Put(std::string key, std::string value) {
+  this->items_.push_back(std::make_pair<KVPair, BacthOpCode>(
+      std::make_pair<std::string, std::string>(key, value), BacthOpCode::Put));
+}
 
-  virtual bool RemoveK(std::string k) = 0;
+bool WriteBatch::Delete(std::string key) {
+  this->items_.push_back(std::make_pair<KVPair, BacthOpCode>(
+      std::make_pair<std::string, std::string>(key, std::string("")),
+      BacthOpCode::Delete));
+}
 
-  virtual bool PutWriteBatch(WriteBatch& batch) = 0;
-};
+std::deque<std::pair<KVPair, BacthOpCode> > WriteBatch::GetItems() {
+  return this->items_;
+}
 
 }  // namespace storage
-
-#endif

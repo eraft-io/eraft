@@ -45,11 +45,11 @@ target_link_libraries(${This} PUBLIC
 
 target_include_directories(${This} PUBLIC include)
 
-add_executable(pmemredisd ${Sources})
-set_target_properties(pmemredisd PROPERTIES
+add_executable(pmemkv_redisd ${Sources})
+set_target_properties(pmemkv_redisd PROPERTIES
     FOLDER Tests
 )
 
-target_link_libraries(pmemredisd PUBLIC
+target_link_libraries(pmemkv_redisd PUBLIC
     cmd
 )

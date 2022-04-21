@@ -24,6 +24,7 @@
 #define ERAFT_PMEM_ENGINE_H_
 
 #include <storage/engine_interface.h>
+#include <storage/write_batch.h>
 
 #include <cstdint>
 #include <libpmemkv.hpp>
@@ -42,7 +43,11 @@ class PMemEngine : public StorageEngineInterface {
 
   bool PutK(std::string k, std::string v) override;
 
-  bool GetV(std::string k, std::string &v) override;
+  bool GetV(std::string k, std::string& v) override;
+
+  bool PutWriteBatch(WriteBatch& batch) override;
+
+  bool RemoveK(std::string k) override;
 
  private:
   std::unique_ptr<pmem::kv::db> engine_;

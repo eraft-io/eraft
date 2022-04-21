@@ -26,10 +26,12 @@ set(This storage)
 set(Headers 
     include/storage/engine_interface.h
     include/storage/pmem_engine.h
+    include/storage/write_batch.h
 )
 
 set(Sources
     src/pmem_engine.cc
+    src/write_batch.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
