@@ -28,7 +28,9 @@ RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) {}
 RaftClient::~RaftClient() {}
 
 bool RaftClient::Send(uint64_t storeId, std::string addr,
-                      raft_messagepb::RaftMessage &msg) {}
+                      raft_messagepb::RaftMessage &msg) {
+  // hiredis, send pushraftmsg msg -> stream array
+}
 
 bool RaftClient::TransferLeader(std::string addr,
                                 raft_messagepb::TransferLeaderRequest &req) {}

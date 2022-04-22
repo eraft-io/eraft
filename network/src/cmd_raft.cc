@@ -31,7 +31,7 @@ Error pushraftmsg(const std::vector<std::string> &params,
                   UnboundedBuffer *reply) {
   std::string raftMsg = params[1];
   std::cout << raftMsg << std::endl;
-  // -> router
+  // this->raftRouter_->SendRaftMessage(msg);
 
   return FormatOK(reply);
 }
