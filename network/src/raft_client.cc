@@ -22,18 +22,21 @@
 
 #include <network/raft_client.h>
 
-namespace network
-{
-    RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) {}
+namespace network {
+RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) {}
 
-    RaftClient::~RaftClient() {}
+RaftClient::~RaftClient() {}
 
-    bool RaftClient::Send(uint64_t storeId, std::string addr, raft_messagepb::RaftMessage &msg) {}
+bool RaftClient::Send(uint64_t storeId, std::string addr,
+                      raft_messagepb::RaftMessage &msg) {}
 
-    bool RaftClient::TransferLeader(std::string addr, raft_messagepb::TransferLeaderRequest &req) {}
+bool RaftClient::TransferLeader(std::string addr,
+                                raft_messagepb::TransferLeaderRequest &req) {}
 
-    bool RaftClient::PeerConfChange(std::string addr, raft_messagepb::ChangePeerRequest &req) {}
+bool RaftClient::PeerConfChange(std::string addr,
+                                raft_messagepb::ChangePeerRequest &req) {}
 
-    bool RaftClient::SplitRegion(std::string addr, raft_messagepb::SplitRequest &req) {}
+bool RaftClient::SplitRegion(std::string addr,
+                             raft_messagepb::SplitRequest &req) {}
 
-} // namespace network
+}  // namespace network

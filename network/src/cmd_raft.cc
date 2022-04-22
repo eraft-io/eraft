@@ -22,17 +22,18 @@
 
 #include <network/command.h>
 #include <network/common.h>
+
 #include <string>
 
-namespace network
-{
+namespace network {
 
-    Error pushraftmsg(const std::vector<std::string> &params,
-                      UnboundedBuffer *reply)
-    {
-        std::string raftMsg = params[1];
-        std::cout << raftMsg << std::endl;
-        return FormatOK(reply);
-    }
+Error pushraftmsg(const std::vector<std::string> &params,
+                  UnboundedBuffer *reply) {
+  std::string raftMsg = params[1];
+  std::cout << raftMsg << std::endl;
+  // -> router
 
-} // namespace network
+  return FormatOK(reply);
+}
+
+}  // namespace network

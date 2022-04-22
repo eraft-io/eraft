@@ -22,36 +22,55 @@
 
 #include <network/raft_store.h>
 
-namespace network
-{
+namespace network {
 
-    RaftStore::RaftStore()
-    {
-        router_ = std::make_shared<Router>();
-        raftRouter_ = std::make_shared<RaftStoreRouter>(router_);
-    }
+RaftStore::RaftStore() {
+  router_ = std::make_shared<Router>();
+  raftRouter_ = std::make_shared<RaftStoreRouter>(router_);
+}
 
-    RaftStore::RaftStore(std::shared_ptr<RaftConfig> cfg) {}
+RaftStore::RaftStore(std::shared_ptr<RaftConfig> cfg) {}
 
-    RaftStore::~RaftStore() {}
+RaftStore::~RaftStore() {}
 
-    std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {}
+std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {}
 
-    std::shared_ptr<RaftPeer> RaftStore::GetLeader() {}
+std::shared_ptr<RaftPeer> RaftStore::GetLeader() {}
 
-    void RaftStore::ClearStaleMeta(storage::WriteBatch &kvWB, storage::WriteBatch &raftWB,
-                                   raft_messagepb::RegionLocalState &originState) {}
+void RaftStore::ClearStaleMeta(storage::WriteBatch &kvWB,
+                               storage::WriteBatch &raftWB,
+                               raft_messagepb::RegionLocalState &originState) {}
 
-    bool RaftStore::Start(std::shared_ptr<metapb::Store> meta, std::shared_ptr<RaftConfig> cfg,
-                          std::shared_ptr<StorageEngineInterface> engines,
-                          std::shared_ptr<TransportInterface> trans) {}
+bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
+                      std::shared_ptr<RaftConfig> cfg,
+                      std::shared_ptr<StorageEngineInterface> engines,
+                      std::shared_ptr<TransportInterface> trans) {
+  // TODO:
+  // 1. Check Cfg
 
-    bool RaftStore::StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers) {}
+  // 2. GlobalContext
 
-    void RaftStore::ShutDown() {}
+  // 3. LoadPeers
 
-    bool RaftStore::Write() {}
+  // 4. Register Router
 
-    std::string RaftStore::Reader() {}
+  // return ??
+}
 
-} // namespace network
+bool RaftStore::StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers) {
+  // TODO:
+
+  // boot raft worker
+
+  // send MsgTypeStart
+
+  // ticker worker, raftConf tick
+}
+
+void RaftStore::ShutDown() {}
+
+bool RaftStore::Write() {}
+
+std::string RaftStore::Reader() {}
+
+}  // namespace network

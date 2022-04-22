@@ -4,18 +4,17 @@
 #include <string>
 #include <vector>
 
-struct Config
-{
-	// [server]
-	std::string listenAddr;
+struct Config {
+  // [server]
+  std::string listenAddr;
 
-	std::string logDir;
+  std::string logDir;
 
-	// [db]
-	std::string dbPath;
+  // [db]
+  std::string dbPath;
 
-	// [raft]
-	int nodeId;
+  // [raft]
+  int nodeId;
 };
 
 extern Config g_config;

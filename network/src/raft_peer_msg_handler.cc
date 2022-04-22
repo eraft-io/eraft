@@ -22,38 +22,44 @@
 
 #include <network/raft_peer_msg_handler.h>
 
-namespace network
-{
+namespace network {
 
-    RaftPeerMsgHandler::RaftPeerMsgHandler() {}
-    RaftPeerMsgHandler::~RaftPeerMsgHandler() {}
+RaftPeerMsgHandler::RaftPeerMsgHandler() {}
+RaftPeerMsgHandler::~RaftPeerMsgHandler() {}
 
-    std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::ProcessRequest(
-        eraftpb::Entry *entry, raft_messagepb::RaftCmdRequest *msg, std::shared_ptr<storage::WriteBatch> wb) {}
+std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::ProcessRequest(
+    eraftpb::Entry *entry, raft_messagepb::RaftCmdRequest *msg,
+    std::shared_ptr<storage::WriteBatch> wb) {}
 
-    void RaftPeerMsgHandler::ProcessConfChange(eraftpb::Entry *entry, eraftpb::ConfChange *cc, std::shared_ptr<storage::WriteBatch> wb) {}
+void RaftPeerMsgHandler::ProcessConfChange(
+    eraftpb::Entry *entry, eraftpb::ConfChange *cc,
+    std::shared_ptr<storage::WriteBatch> wb) {}
 
-    void RaftPeerMsgHandler::ProcessSplitRegion(eraftpb::Entry *entry, metapb::Region *newRegion, std::shared_ptr<storage::WriteBatch> wb) {}
+void RaftPeerMsgHandler::ProcessSplitRegion(
+    eraftpb::Entry *entry, metapb::Region *newRegion,
+    std::shared_ptr<storage::WriteBatch> wb) {}
 
-    std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
-        eraftpb::Entry *entry, std::shared_ptr<storage::WriteBatch> wb) {}
+std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
+    eraftpb::Entry *entry, std::shared_ptr<storage::WriteBatch> wb) {}
 
-    void RaftPeerMsgHandler::HandleRaftReady() {}
+void RaftPeerMsgHandler::HandleRaftReady() {}
 
-    void RaftPeerMsgHandler::HandleMsg(Msg m) {}
+void RaftPeerMsgHandler::HandleMsg(Msg m) {
+  // msg type do something
+}
 
-    void RaftPeerMsgHandler::ProposeRequest(std::string palyload) {}
+void RaftPeerMsgHandler::ProposeRequest(std::string palyload) {}
 
-    void RaftPeerMsgHandler::ProposeRaftCommand(std::string playload) {}
+void RaftPeerMsgHandler::ProposeRaftCommand(std::string playload) {}
 
-    void RaftPeerMsgHandler::OnTick() {}
+void RaftPeerMsgHandler::OnTick() {}
 
-    void RaftPeerMsgHandler::StartTicker() {}
+void RaftPeerMsgHandler::StartTicker() {}
 
-    void RaftPeerMsgHandler::OnRaftBaseTick() {}
+void RaftPeerMsgHandler::OnRaftBaseTick() {}
 
-    bool RaftPeerMsgHandler::OnRaftMsg(raft_messagepb::RaftMessage *msg) {}
+bool RaftPeerMsgHandler::OnRaftMsg(raft_messagepb::RaftMessage *msg) {}
 
-    bool RaftPeerMsgHandler::CheckMessage(raft_messagepb::RaftMessage *msg) {}
+bool RaftPeerMsgHandler::CheckMessage(raft_messagepb::RaftMessage *msg) {}
 
-} // namespace network
+}  // namespace network

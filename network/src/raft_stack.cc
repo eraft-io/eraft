@@ -21,48 +21,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <network/raft_stack.h>
 #include <network/raft_client.h>
 #include <network/raft_server_transport.h>
+#include <network/raft_stack.h>
 
-namespace network
-{
+namespace network {
 
-    RaftStack::RaftStack(std::shared_ptr<RaftConfig> raftConf) : raftConf_(raftConf)
-    {
-        this->dbEngs_ = std::make_shared<DBEngines>(raftConf->dbPath_ + "_raft", raftConf->dbPath_ + "_kv");
-    }
+RaftStack::RaftStack(std::shared_ptr<RaftConfig> raftConf)
+    : raftConf_(raftConf) {
+  this->dbEngs_ = std::make_shared<DBEngines>(raftConf->dbPath_ + "_raft",
+                                              raftConf->dbPath_ + "_kv");
+}
 
-    RaftStack::~RaftStack() {}
+RaftStack::~RaftStack() {}
 
-    bool RaftStack::Write(std::string playload) {}
+bool RaftStack::Write(std::string playload) {}
 
-    std::string RaftStack::Read() {}
+std::string RaftStack::Read() {}
 
-    bool RaftStack::Start()
-    {
-        // raft system init
-        raftSystem_ = std::make_shared<RaftStore>(this->raftConf_);
+bool RaftStack::Start() {
+  // raft system init
+  raftSystem_ = std::make_shared<RaftStore>(this->raftConf_);
 
-        // router init
-        raftRouter_ = this->raftSystem_->raftRouter_;
+  // router init
+  raftRouter_ = this->raftSystem_->raftRouter_;
 
-        // raft client init
-        std::shared_ptr<RaftClient> raftClient = std::make_shared<RaftClient>(this->raftConf_);
+  // raft client init
+  std::shared_ptr<RaftClient> raftClient =
+      std::make_shared<RaftClient>(this->raftConf_);
 
-        // raft node init
-        raftNode_ = std::make_shared<RaftNode>(this->raftSystem_, this->raftConf_);
+  // raft node init
+  raftNode_ = std::make_shared<RaftNode>(this->raftSystem_, this->raftConf_);
 
-        // init server transport
-        std::shared_ptr<RaftServerTransport> trans = std::make_shared<RaftServerTransport>(raftClient, raftRouter_);
+  // init server transport
+  std::shared_ptr<RaftServerTransport> trans =
+      std::make_shared<RaftServerTransport>(raftClient, raftRouter_);
 
-        if (this->raftNode_->Start(this->dbEngs_, trans))
-        {
-            SPDLOG_INFO("raftstack start succeed!");
-        }
-        else
-        {
-            SPDLOG_ERROR("raftstack start failed!");
-        }
-    }
-} // namespace network
+  if (this->raftNode_->Start(this->dbEngs_, trans)) {
+    SPDLOG_INFO("raftstack start succeed!");
+  } else {
+    SPDLOG_ERROR("raftstack start failed!");
+  }
+}
+}  // namespace network

@@ -20,70 +20,58 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <eraftio/raft_messagepb.pb.h>
 #include <network/raft_router.h>
 #include <spdlog/spdlog.h>
-#include <eraftio/raft_messagepb.pb.h>
 
-namespace network
-{
+namespace network {
 
-    Router::Router() {}
+Router::Router() {}
 
-    std::shared_ptr<RaftPeerState> Router::Get(uint64_t regionId)
-    {
-        if (peers_->find(regionId) != peers_.end())
-        {
-            return peers[regionId];
-        }
-        return nullptr;
-    }
+std::shared_ptr<RaftPeerState> Router::Get(uint64_t regionId) {
+  if (peers_->find(regionId) != peers_.end()) {
+    return peers[regionId];
+  }
+  return nullptr;
+}
 
-    void Router::Register(std::shared_ptr<RaftPeer> peer)
-    {
-        SPDLOG_DEBUG("register peer regionId -> " + std::to_string(peer->regionId_) +
-                     " peer id -> " + std::to_string(peer->PeerId()) +
-                     " peer addr -> " + peer->meta_->addr() + " to router");
+void Router::Register(std::shared_ptr<RaftPeer> peer) {
+  SPDLOG_DEBUG("register peer regionId -> " + std::to_string(peer->regionId_) +
+               " peer id -> " + std::to_string(peer->PeerId()) +
+               " peer addr -> " + peer->meta_->addr() + " to router");
 
-        std::shared_ptr<RaftPeerState> peerState = std::make_shared<RaftPeerState>(peer);
-        peers_.insert(std::pair<uint64_t, std::shared_ptr<RaftPeerState> >(peer->regionId_, peerState));
-    }
+  std::shared_ptr<RaftPeerState> peerState =
+      std::make_shared<RaftPeerState>(peer);
+  peers_.insert(std::pair<uint64_t, std::shared_ptr<RaftPeerState> >(
+      peer->regionId_, peerState));
+}
 
-    void Router::Close(uint64_t regionId)
-    {
-        this->peers_.erase(regionId);
-    }
+void Router::Close(uint64_t regionId) { this->peers_.erase(regionId); }
 
-    bool Router::Send(uint64_t regionId, Msg m)
-    {
-        m.regionId_ = regionId;
-        SPDLOG_INFO("push raft msg to peer sender, type " + msg.MsgToString());
-        QueueContext::GetInstance()->get_peerSender().enqueue(m);
-    }
+bool Router::Send(uint64_t regionId, Msg m) {
+  m.regionId_ = regionId;
+  SPDLOG_INFO("push raft msg to peer sender, type " + msg.MsgToString());
+  QueueContext::GetInstance()->get_peerSender().enqueue(m);
+}
 
-    void Router::SendStore(Msg m)
-    {
-        QueueContext::GetInstance()->get_storeSender().enqueue(m);
-    }
+void Router::SendStore(Msg m) {
+  QueueContext::GetInstance()->get_storeSender().enqueue(m);
+}
 
-    RaftStoreRouter::RaftStoreRouter(std::shared_ptr<Router> r)
-        : router_(r)
-    {
-    }
+RaftStoreRouter::RaftStoreRouter(std::shared_ptr<Router> r) : router_(r) {}
 
-    RaftStoreRouter::~RaftStoreRouter() {}
+RaftStoreRouter::~RaftStoreRouter() {}
 
-    bool RaftStoreRouter::Send(uint64_t regionId, Msg m)
-    {
-        router_->Send(regionId, m);
-    }
+bool RaftStoreRouter::Send(uint64_t regionId, Msg m) {
+  router_->Send(regionId, m);
+}
 
-    bool RaftStoreRouter::SendRaftMessage(const raft_messagepb::RaftMessage *msg)
-    {
-        raft_messagepb::RaftMessage *raftMsg = new raft_messagepb::RaftMessage(*msg);
-        SPDLOG_DEBUG("send raft message type " +
-                     eraft::MsgTypeToString(raftMsg->message().msg_type()));
-        Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), raftMsg);
-        return router_->Send(msg->region_id(), m);
-    }
+bool RaftStoreRouter::SendRaftMessage(const raft_messagepb::RaftMessage *msg) {
+  raft_messagepb::RaftMessage *raftMsg = new raft_messagepb::RaftMessage(*msg);
+  SPDLOG_DEBUG("send raft message type " +
+               eraft::MsgTypeToString(raftMsg->message().msg_type()));
+  Msg m = Msg(MsgType::MsgTypeRaftMessage, msg->region_id(), raftMsg);
+  return router_->Send(msg->region_id(), m);
+}
 
-} // namespace network
+}  // namespace network

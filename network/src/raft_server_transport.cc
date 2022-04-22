@@ -22,29 +22,31 @@
 
 #include <network/raft_server_transport.h>
 
-namespace network
-{
+namespace network {
 
-    RaftServerTransport::RaftServerTransport(std::shared_ptr<RaftClient> raftClient, std::shared_ptr<RaftRouter> raftRouter)
-        : raftClient_(raftClient), raftRouter_(raftRouter) {}
+RaftServerTransport::RaftServerTransport(std::shared_ptr<RaftClient> raftClient,
+                                         std::shared_ptr<RaftRouter> raftRouter)
+    : raftClient_(raftClient), raftRouter_(raftRouter) {}
 
-    RaftServerTransport::~RaftServerTransport() {}
+RaftServerTransport::~RaftServerTransport() {}
 
-    void RaftServerTransport::Send(std::shared_ptr<raft_messagepb::RaftMessage> msg)
-    {
-        auto storeID = msg->to_peer().store_id();
-        auto addr = msg->to_peer().add();
-        SendStore(storeID, msg, addr);
-    }
+void RaftServerTransport::Send(
+    std::shared_ptr<raft_messagepb::RaftMessage> msg) {
+  auto storeID = msg->to_peer().store_id();
+  auto addr = msg->to_peer().add();
+  SendStore(storeID, msg, addr);
+}
 
-    void RaftServerTransport::SendStore(uint64_t storeId, std::shared_ptr<raft_messagepb::RaftMessage> msg, std::string addr)
-    {
-        WriteData(storeId, msg, addr);
-    }
+void RaftServerTransport::SendStore(
+    uint64_t storeId, std::shared_ptr<raft_messagepb::RaftMessage> msg,
+    std::string addr) {
+  WriteData(storeId, msg, addr);
+}
 
-    void RaftServerTransport::WriteData(uint64_t storeId, std::string addr, std::shared_ptr<raft_messagepb::RaftMessage> msg)
-    {
-        raftClient_->Send(storeId, addr, *msg);
-    }
+void RaftServerTransport::WriteData(
+    uint64_t storeId, std::string addr,
+    std::shared_ptr<raft_messagepb::RaftMessage> msg) {
+  raftClient_->Send(storeId, addr, *msg);
+}
 
-} // namespace network
+}  // namespace network

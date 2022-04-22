@@ -22,35 +22,36 @@
 
 #include <network/raft_peer.h>
 
-namespace network
-{
+namespace network {
 
-    RaftPeer::RaftPeer() {}
+RaftPeer::RaftPeer() {}
 
-    RaftPeer::RaftPeer(uint64_t storeId, std::shared_ptr<RaftConfig> cfg,
-                       std::shared_ptr<DBEngines> dbEngines,
-                       std::shared_ptr<metapb::Region> region) {}
+RaftPeer::RaftPeer(uint64_t storeId, std::shared_ptr<RaftConfig> cfg,
+                   std::shared_ptr<DBEngines> dbEngines,
+                   std::shared_ptr<metapb::Region> region) {}
 
-    void RaftPeer::InsertPeerCache(metapb::Peer *peer) {}
+void RaftPeer::InsertPeerCache(metapb::Peer *peer) {}
 
-    void RaftPeer::RemovePeerCache(uint64_t peerId) {}
+void RaftPeer::RemovePeerCache(uint64_t peerId) {}
 
-    std::shared_ptr<metapb::Peer> RaftPeer::GetPeerFromCache(uint64_t peerId) {}
+std::shared_ptr<metapb::Peer> RaftPeer::GetPeerFromCache(uint64_t peerId) {}
 
-    uint64_t RaftPeer::Destory(std::shared_ptr<DBEngines> engines, bool keepData) {}
+uint64_t RaftPeer::Destory(std::shared_ptr<DBEngines> engines, bool keepData) {}
 
-    void RaftPeer::SetRegion(std::shared_ptr<metapb::Region> region) {}
+void RaftPeer::SetRegion(std::shared_ptr<metapb::Region> region) {}
 
-    uint64_t RaftPeer::PeerId() {}
+uint64_t RaftPeer::PeerId() {}
 
-    uint64_t RaftPeer::LeaderId() {}
+uint64_t RaftPeer::LeaderId() {}
 
-    bool RaftPeer::IsLeader() {}
+bool RaftPeer::IsLeader() {}
 
-    void RaftPeer::Send(std::shared_ptr<RaftTransport> trans, std::vector<eraftpb::Message> msgs) {}
+void RaftPeer::Send(std::shared_ptr<RaftTransport> trans,
+                    std::vector<eraftpb::Message> msgs) {}
 
-    uint64_t RaftPeer::Term() {}
+uint64_t RaftPeer::Term() {}
 
-    bool RaftPeer::SendRaftMessage(eraftpb::Message msg, std::shared_ptr<RaftTransport> trans) {}
+bool RaftPeer::SendRaftMessage(eraftpb::Message msg,
+                               std::shared_ptr<RaftTransport> trans) {}
 
-} // namespace network
+}  // namespace network

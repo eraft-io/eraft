@@ -22,18 +22,26 @@
 
 #include <network/raft_worker.h>
 
-namespace network
-{
+namespace network {
 
-    RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm) {}
-    RaftWorker::~RaftWorker() {}
+RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx,
+                       std::shared_ptr<Router> pm) {}
+RaftWorker::~RaftWorker() {}
 
-    void RaftWorker::Run(moodycamel::ConcurrentQueue<Msg> &qu) {}
+void RaftWorker::Run(moodycamel::ConcurrentQueue<Msg> &qu) {
+  // 1.loop true op
 
-    void RaftWorker::BootThread() {}
+  // 2.pop msg from dequeue
 
-    std::shared_ptr<RaftPeerState> RaftWorker::GetPeerState(
-        std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
-        uint64_t regionId) {}
+  // 3.handle msg
 
-} // namespace network
+  // 4.raft ready
+}
+
+void RaftWorker::BootThread() {}
+
+std::shared_ptr<RaftPeerState> RaftWorker::GetPeerState(
+    std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
+    uint64_t regionId) {}
+
+}  // namespace network

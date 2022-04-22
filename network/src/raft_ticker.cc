@@ -22,61 +22,47 @@
 
 #include <network/raft_ticker.h>
 
-namespace network
-{
+namespace network {
 
-    Ticker *Ticker::instance_ = nullptr;
-    std::map<uint64_t, void *> Ticker::regions_ = {};
+Ticker *Ticker::instance_ = nullptr;
+std::map<uint64_t, void *> Ticker::regions_ = {};
 
-    Ticker::Ticker(on_tick_t onTick, tick_interval_t tickInterval)
-        : onTick_(onTick), tickInterval_(tickInterval), running_(false)
-    {
-    }
+Ticker::Ticker(on_tick_t onTick, tick_interval_t tickInterval)
+    : onTick_(onTick), tickInterval_(tickInterval), running_(false) {}
 
-    Ticker::~Ticker()
-    {
-        delete instance_;
-    }
+Ticker::~Ticker() { delete instance_; }
 
-    void Ticker::Start()
-    {
-        if (running_)
-        {
-            return;
-        }
-        running_ = true;
-        std::thread runT(&Ticker::TimerLoop, this);
-        runT.detach();
-    }
+void Ticker::Start() {
+  if (running_) {
+    return;
+  }
+  running_ = true;
+  std::thread runT(&Ticker::TimerLoop, this);
+  runT.detach();
+}
 
-    void Ticker::Stop()
-    {
-        running_ = false;
-    }
+void Ticker::Stop() { running_ = false; }
 
-    void Ticker::Run()
-    {
-        // send tick msg
-    }
+void Ticker::Run() {
+  // send tick msg
+  // ->
+}
 
-    void Ticker::SetDuration(tick_interval_t tickInterval)
-    {
-        tickIntervalMutex_.lock();
-        tickInterval_ = tickInterval;
-        tickIntervalMutex_.unlock();
-    }
+void Ticker::SetDuration(tick_interval_t tickInterval) {
+  tickIntervalMutex_.lock();
+  tickInterval_ = tickInterval;
+  tickIntervalMutex_.unlock();
+}
 
-    void Ticker::TimerLoop()
-    {
-        while (running_)
-        {
-            std::thread runT(onTick_);
-            runT.detach();
-            tickIntervalMutex_.lock();
-            std::chrono::duration<int64_t, std::nano> tickInterval = tickInterval_;
-            tickIntervalMutex_.unlock();
-            std::this_thread::sleep_for(tickInterval);
-        }
-    }
+void Ticker::TimerLoop() {
+  while (running_) {
+    std::thread runT(onTick_);
+    runT.detach();
+    tickIntervalMutex_.lock();
+    std::chrono::duration<int64_t, std::nano> tickInterval = tickInterval_;
+    tickIntervalMutex_.unlock();
+    std::this_thread::sleep_for(tickInterval);
+  }
+}
 
-} // namespace network
+}  // namespace network

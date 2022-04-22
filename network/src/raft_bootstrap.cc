@@ -20,66 +20,76 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <eraftio/raft_messagepb.pb.h>
 #include <network/raft_bootstrap.h>
 #include <network/raft_encode_assistant.h>
-#include <memory>
-#include <eraftio/raft_messagepb.pb.h>
 #include <spdlog/spdlog.h>
 
-namespace network
-{
+#include <memory>
 
-    BootHepler *BootHepler::instance_ = nullptr;
+namespace network {
 
-    uint64_t BootHepler::gCounter_ = 0;
+BootHepler *BootHepler::instance_ = nullptr;
 
-    BootHepler::BootHepler() {}
+uint64_t BootHepler::gCounter_ = 0;
 
-    BootHepler::~BootHepler() {}
+BootHepler::BootHepler() {}
 
-    bool BootHepler::IsRangeEmpty(std::shared_ptr<StorageEngineInterface> db,
-                                  std::string startKey, std::string endKey)
-    {
-        // TODO: checkout is range empty in db
+BootHepler::~BootHepler() {}
+
+bool BootHepler::IsRangeEmpty(std::shared_ptr<StorageEngineInterface> db,
+                              std::string startKey, std::string endKey) {
+  // TODO: checkout is range empty in db
+}
+
+bool BootHepler::DoBootstrapStore(std::shared_ptr<DBEngines> engines,
+                                  uint64_t clusterId, uint64_t storeId,
+                                  std::string storeAddr) {
+  std::shared_ptr<raft_messagepb::StoreIdent> storeIdent(
+      new raft_messagepb::StoreIdent());
+  if (!IsRangeEmpty(
+          engines->kvDB_, "",
+          std::string(RaftEncodeAssistant::GetInstance()->MaxKey.begin(),
+                      RaftEncodeAssistant::GetInstance()->MaxKey.end()))) {
+    SPDLOG_ERROR("kv db is not empty");
+    return false;
+  }
+  // check raft db is empty
+
+  storeIdent->set_cluster_id(clusterId);
+}
+
+uint64_t BootHepler::AllocID() {
+  gCounter_++;
+  return gCounter_;
+}
+
+std::pair<std::shared_ptr<metapb::Region>, bool> BootHepler::PrepareBootstrap(
+    std::shared_ptr<DBEngines> engines, std::string storeAddr,
+    std::map<std::string, int> peerAddrMaps) {
+  std::shared_ptr<metapb::Region> region =
+      std::make::make_shared<metapb::Region>();
+  for (auto item : peerAddrMaps) {
+    if (item.first == storeAddr) {
     }
+  }
+}
 
-    bool BootHepler::DoBootstrapStore(std::shared_ptr<DBEngines> engines, uint64_t clusterId,
-                                      uint64_t storeId, std::string storeAddr)
-    {
-        std::shared_ptr<raft_messagepb::StoreIdent> storeIdent(new raft_messagepb::StoreIdent());
-        if (!IsRangeEmpty(engines->kvDB_, "", std::string(RaftEncodeAssistant::GetInstance()->MaxKey.begin(), RaftEncodeAssistant::GetInstance()->MaxKey.end())))
-        {
-            SPDLOG_ERROR("kv db is not empty");
-            return false;
-        }
-        // check raft db is empty
+bool BootHepler::PrepareBoostrapCluster(
+    std::shared_ptr<DBEngines> engines,
+    std::shared_ptr<metapb::Region> region) {}
 
-        storeIdent->set_cluster_id(clusterId);
-    }
+void BootHepler::WriteInitialApplyState(storage::WriteBatch &kvWB,
+                                        uint64_t regionId) {}
 
-    uint64_t BootHepler::AllocID()
-    {
-        gCounter_++;
-        return gCounter_;
-    }
+void BootHepler::WriteInitialRaftState(storage::WriteBatch &raftWB,
+                                       uint64_t regionId) {}
 
-    std::pair<std::shared_ptr<metapb::Region>, bool> BootHepler::PrepareBootstrap(
-        std::shared_ptr<DBEngines> engines, std::string storeAddr,
-        std::map<std::string, int> peerAddrMaps) {}
+BootHepler *BootHepler::GetInstance() {
+  if (instance_ == nullptr) {
+    instance_ = new BootHepler();
+  }
+  return instance_;
+}
 
-    bool BootHepler::PrepareBoostrapCluster(std::shared_ptr<DBEngines> engines, std::shared_ptr<metapb::Region> region) {}
-
-    void BootHepler::WriteInitialApplyState(storage::WriteBatch &kvWB, uint64_t regionId) {}
-
-    void BootHepler::WriteInitialRaftState(storage::WriteBatch &raftWB, uint64_t regionId) {}
-
-    BootHepler *BootHepler::GetInstance()
-    {
-        if (instance_ == nullptr)
-        {
-            instance_ = new BootHepler();
-        }
-        return instance_;
-    }
-
-} // namespace network
+}  // namespace network
