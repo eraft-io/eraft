@@ -6,22 +6,25 @@
 #include <string>
 #include <vector>
 
-enum CommandAttr {
+enum CommandAttr
+{
 	Attr_read = 0x1,
 	Attr_write = 0x1 << 1,
 };
 
 class UnboundedBuffer;
-using CommandHandler = Error(pmem::kv::db *engine, const std::vector<std::string> &params,
-			     UnboundedBuffer *reply);
+using CommandHandler = Error(const std::vector<std::string> &params,
+							 UnboundedBuffer *reply);
 
 CommandHandler set;
 CommandHandler get;
 CommandHandler del;
 CommandHandler scan;
 CommandHandler info;
+CommandHandler pushraftmsg;
 
-struct CommandInfo {
+struct CommandInfo
+{
 	std::string cmd;
 	int attr;
 	int params;
@@ -31,7 +34,8 @@ struct CommandInfo {
 
 class Executor;
 
-class CommandTable {
+class CommandTable
+{
 
 public:
 	friend class Executor;

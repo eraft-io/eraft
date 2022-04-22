@@ -25,6 +25,7 @@
 
 #include <queue>
 #include <string>
+#include <map>
 
 namespace storage {
 
@@ -41,10 +42,10 @@ class WriteBatch {
 
   bool Delete(std::string key);
 
-  std::deque<std::pair<KVPair, BacthOpCode> > GetItems();
+  std::deque<std::pair<BacthOpCode, KVPair>>  GetItems();
 
  private:
-  std::deque<std::pair<KVPair, BacthOpCode> > items_;
+  std::deque<std::pair<BacthOpCode, KVPair>> items_;
 };
 
 }  // namespace storage

@@ -7,3 +7,7 @@ logdir = "logs/tiredis.log"
 [db]
 
 path = "/tmp/pmem1_radix"
+
+[raft]
+
+node_id = 1

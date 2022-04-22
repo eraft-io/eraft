@@ -5,6 +5,7 @@ const CommandInfo CommandTable::s_info[] = {
 	{"get", Attr_write, 2, &get},
 	{"del", Attr_write, 2, &del},
 	{"scan", Attr_read, -2, &scan},
+	{"pushraftmsg", Attr_write, 2, &pushraftmsg},
 };
 
 std::map<std::string, const CommandInfo *, NocaseComp> CommandTable::s_handlers;

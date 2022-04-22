@@ -23,4 +23,39 @@
 #ifndef ERAFT_NETWORK_RAFT_CLIENT_H_
 #define ERAFT_NETWORK_RAFT_CLIENT_H_
 
+#include <third_party/libredis/hiredis.h>
+#include <eraftio/raft_messagepb.pb.h>
+#include <network/raft_config.h>
+#include <memory>
+#include <mutex>
+
+namespace network
+{
+    class RaftClient
+    {
+    public:
+        RaftClient(std::shared_ptr<RaftConfig> conf);
+
+        ~RaftClient();
+
+        bool Send(uint64_t storeId, std::string addr, raft_messagepb::RaftMessage &msg);
+
+        bool TransferLeader(std::string addr, raft_messagepb::TransferLeaderRequest &req);
+
+        bool PeerConfChange(std::string addr, raft_messagepb::ChangePeerRequest &req);
+
+        bool SplitRegion(std::string addr, raft_messagepb::SplitRequest &req);
+
+    private:
+        static redisContext *redisClientContext_;
+
+        std::shared_ptr<RaftConfig> conf_;
+
+        std::mutex mu_;
+
+        std::map<uint64_t, std::string> addrs_;
+    };
+
+} // namespace network
+
 #endif

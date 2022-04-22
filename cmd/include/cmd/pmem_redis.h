@@ -2,12 +2,14 @@
 
 #define VERSION "1.0.0"
 
-class PMemRedis : public Server {
+class PMemRedis : public Server
+{
 public:
 	PMemRedis();
 	~PMemRedis();
 
 	// bool ParseArgs(int ac, char* av[]);
+	void InitSpdLogger();
 
 private:
 	std::shared_ptr<StreamSocket> _OnNewConnection(int fd, int tag) override;

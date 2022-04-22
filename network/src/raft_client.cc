@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2021 eraft dev group
+// Copyright (c) 2022 eraft dev group
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ERAFT_NETWORK_RAFT_UTILS_H_
-#define ERAFT_NETWORK_RAFT_UTILS_H_
+#include <network/raft_client.h>
 
-#endif
+namespace network
+{
+    RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) {}
 
+    RaftClient::~RaftClient() {}
+
+    bool RaftClient::Send(uint64_t storeId, std::string addr, raft_messagepb::RaftMessage &msg) {}
+
+    bool RaftClient::TransferLeader(std::string addr, raft_messagepb::TransferLeaderRequest &req) {}
+
+    bool RaftClient::PeerConfChange(std::string addr, raft_messagepb::ChangePeerRequest &req) {}
+
+    bool RaftClient::SplitRegion(std::string addr, raft_messagepb::SplitRequest &req) {}
+
+} // namespace network

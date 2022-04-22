@@ -20,7 +20,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ERAFT_NETWORK_RAFT_SERVER_H_
-#define ERAFT_NETWORK_RAFT_SERVER_H_
+#include <network/raft_config.h>
+#include <network/db_engines.h>
+#include <network/raft_node.h>
+#include <network/raft_store.h>
 
-#endif
+namespace network
+{
+
+    class RaftStack
+    {
+    public:
+        RaftStack(std::shared_ptr<RaftConfig> raftConf);
+
+        ~RaftStack();
+
+        bool Write(std::string playload);
+
+        std::string Read();
+
+        bool Start();
+
+    private:
+        std::shared_ptr<DBEngines> dbEngs_;
+
+        std::shared_ptr<RaftStore> raftSystem_;
+
+        std::shared_ptr<RaftConfig> raftConf_;
+
+        std::shared_ptr<RaftNode> raftNode_;
+
+        std::shared_ptr<RaftRouter> raftRouter_;
+    }
+
+} // namespace network

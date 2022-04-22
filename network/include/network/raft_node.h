@@ -28,15 +28,55 @@
 #include <storage/engine_interface.h>
 #include <network/raft_config.h>
 #include <network/transport_interface.h>
+#include <network/raft_store.h>
+#include <network/db_engines.h>
 #include <memory>
 
 namespace network
 {
-public:
+    class RaftNode
+    {
+    public:
+        RaftNode(std::shared_ptr<RaftStore> system, std::shared_ptr<RaftConfig> cfg);
 
-    
+        bool Start(std::shared_ptr<DBEngines> engines, std::shared_ptr<TransportInterface> trans);
 
-} // namespace network
+        bool CheckStore(DBEngines &engs, uint64_t *storeId);
 
+        bool BootstrapStore(DBEngines &engs, uint64_t *storeId);
+
+        uint64_t AllocID();
+
+        std::pair<std::shared_ptr<metapb::Region>, bool>
+        CheckOrPrepareBoostrapCluster(std::shared_ptr<DBEngines> engines, uint64_t storeId);
+
+        bool CheckClusterBoostrapped();
+
+        std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrapCluster(
+            std::shared_ptr<DBEngines> engines, uint64_t storeId);
+
+        bool BoostrapCluster(std::shared_ptr<DBEngines> engines, std::shared_ptr<metapb::Region> firstRegion, bool *isNewCluster);
+
+        bool StartNode(std::shared_ptr<DBEngines> engines, std::shared_ptr<TransportInterface> trans);
+
+        void Stop();
+
+        uint64_t GetStoreID();
+
+        ~RaftNode();
+
+    private:
+        std::shared_ptr<DBEngines> engs_;
+
+        uint64_t clusterID_;
+
+        std::shared_ptr<metapb::Store> store_;
+
+        std::shared_ptr<RaftConfig> raftCfg_;
+
+        std::shared_ptr<RaftStore> raftSystem_;
+    };
+
+}
 
 #endif

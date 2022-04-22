@@ -23,5 +23,41 @@
 #ifndef ERAFT_NETWORK_RAFT_WORKER_H_
 #define ERAFT_NETWORK_RAFT_WORKER_H_
 
-#endif
+#include <network/raft_msg.h>
+#include <network/raft_store.h>
+#include <network/raft_router.h>
+#include <network/concurrency_msg_queue.h>
 
+namespace network
+{
+
+    struct GlobalContext;
+
+    struct Router;
+
+    struct RaftPeerState;
+
+    class RaftWorker
+    {
+
+    public:
+        RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm);
+        ~RaftWorker();
+
+        static void Run(moodycamel::ConcurrentQueue<Msg> &qu);
+
+        static void BootThread();
+
+        static std::shared_ptr<RaftPeerState> GetPeerState(
+            std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
+            uint64_t regionId);
+
+    private:
+        static std::shared_ptr<Router> pr_;
+
+        static std::shared_ptr<GlobalContext> ctx_;
+    };
+
+} // namespace network
+
+#endif

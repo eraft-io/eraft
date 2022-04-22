@@ -28,6 +28,10 @@
 #include <network/raft_config.h>
 #include <network/concurrency_msg_queue.h>
 #include <network/transport_interface.h>
+#include <network/db_engines.h>
+#include <storage/write_batch.h>
+#include <network/raft_stack.h>
+#include <network/raft_peer.h>
 
 #include <deque>
 #include <map>
@@ -37,103 +41,108 @@
 namespace network
 {
 
-class Router;
+  class Router;
 
-class RaftstoreRouter;
+  class RaftstoreRouter;
 
-class RaftRouter;
+  class RaftRouter;
 
-struct StoreState {
-  uint64_t id_;
-};
+  struct StoreState
+  {
+    uint64_t id_;
+  };
 
-struct StoreMeta {
-  StoreMeta() {
-    regions_ = std::map<uint64_t, metapb::Region*>{};
-    pendingVotes_ = std::vector<raft_serverpb::RaftMessage*>{};
-    regionRanges_ = std::map<std::string, uint64_t>{};
-  }
+  struct StoreMeta
+  {
+    StoreMeta()
+    {
+      regions_ = std::map<uint64_t, metapb::Region *>{};
+      pendingVotes_ = std::vector<raft_serverpb::RaftMessage *>{};
+      regionRanges_ = std::map<std::string, uint64_t>{};
+    }
 
-  std::mutex mutex_;
+    std::mutex mutex_;
 
-  std::map<std::string, uint64_t> regionRanges_;
+    std::map<std::string, uint64_t> regionRanges_;
 
-  std::map<uint64_t, metapb::Region*> regions_;
+    std::map<uint64_t, metapb::Region *> regions_;
 
-  std::vector<raft_serverpb::RaftMessage*> pendingVotes_;
-};
+    std::vector<raft_serverpb::RaftMessage *> pendingVotes_;
+  };
 
-struct GlobalContext {
-  GlobalContext(std::shared_ptr<Config> cfg, std::shared_ptr<Engines> engine,
-                std::shared_ptr<metapb::Store> store,
-                std::shared_ptr<StoreMeta> storeMeta,
-                std::shared_ptr<Router> router,
-                std::shared_ptr<Transport> trans) {
-    this->cfg_ = cfg;
-    this->engine_ = engine;
-    this->store_ = store;
-    this->storeMeta_ = storeMeta;
-    this->router_ = router;
-    this->trans_ = trans;
-  }
+  struct GlobalContext
+  {
+    GlobalContext(std::shared_ptr<RaftConfig> cfg, std::shared_ptr<DBEngines> engine,
+                  std::shared_ptr<metapb::Store> store,
+                  std::shared_ptr<StoreMeta> storeMeta,
+                  std::shared_ptr<Router> router,
+                  std::shared_ptr<Transport> trans)
+    {
+      this->cfg_ = cfg;
+      this->engine_ = engine;
+      this->store_ = store;
+      this->storeMeta_ = storeMeta;
+      this->router_ = router;
+      this->trans_ = trans;
+    }
 
-  std::shared_ptr<Config> cfg_;
+    std::shared_ptr<RaftConfig> cfg_;
 
-  std::shared_ptr<Engines> engine_;
+    std::shared_ptr<DBEngines> engine_;
 
-  std::shared_ptr<metapb::Store> store_;
+    std::shared_ptr<metapb::Store> store_;
 
-  std::shared_ptr<StoreMeta> storeMeta_;
+    std::shared_ptr<StoreMeta> storeMeta_;
 
-  std::shared_ptr<Router> router_;
+    std::shared_ptr<Router> router_;
 
-  std::shared_ptr<Transport> trans_;
-};
+    std::shared_ptr<TransportInterface> trans_;
+  };
 
-class RaftStore {
-  friend class RaftStorage;
+  class RaftStore
+  {
+    friend class RaftStack;
 
- public:
-  RaftStore();
+  public:
+    RaftStore();
 
-  RaftStore(std::shared_ptr<RaftConfig> cfg);
+    RaftStore(std::shared_ptr<RaftConfig> cfg);
 
-  ~RaftStore();
+    ~RaftStore();
 
-  std::vector<std::shared_ptr<Peer> > LoadPeers();
+    std::vector<std::shared_ptr<Peer> > LoadPeers();
 
-  std::shared_ptr<Peer> GetLeader();
+    std::shared_ptr<Peer> GetLeader();
 
-//   void ClearStaleMeta(rocksdb::WriteBatch* kvWB, rocksdb::WriteBatch* raftWB,
-//                       raft_serverpb::RegionLocalState* originState);
+    void ClearStaleMeta(storage::WriteBatch &kvWB, storage::WriteBatch &raftWB,
+                        raft_messagepb::RegionLocalState &originState);
 
-  bool Start(std::shared_ptr<metapb::Store> meta, std::shared_ptr<RaftConfig> cfg,
-             std::shared_ptr<StorageEngineInterface> engines,
-             std::shared_ptr<Transport> trans);
+    bool Start(std::shared_ptr<metapb::Store> meta, std::shared_ptr<RaftConfig> cfg,
+               std::shared_ptr<StorageEngineInterface> engines,
+               std::shared_ptr<TransportInterface> trans);
 
-  bool StartWorkers(std::vector<std::shared_ptr<Peer> > peers);
+    bool StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers);
 
-  void ShutDown();
+    void ShutDown();
 
-  bool Write(kvrpcpb::Context* ctx, std::vector<Modify>);
+    bool RaftStore::Write() {}
 
-  StorageReader* Reader(kvrpcpb::Context* ctx);
+    std::string RaftStore::Reader() {}
 
- private:
-  std::shared_ptr<GlobalContext> ctx_;
+  private:
+    std::shared_ptr<GlobalContext> ctx_;
 
-  std::shared_ptr<StoreState> state_;
+    std::shared_ptr<StoreState> state_;
 
-  std::shared_ptr<Router> router_;
+    std::shared_ptr<Router> router_;
 
-  std::shared_ptr<RaftRouter> raftRouter_;
+    std::shared_ptr<RaftRouter> raftRouter_;
 
-  std::deque<uint64_t> tickDriverSender_;
+    std::deque<uint64_t> tickDriverSender_;
 
-  std::atomic<bool> close_;
-};
+    std::atomic<bool> close_;
+  };
 
 } // namespace network
-
 
 #endif

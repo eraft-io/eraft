@@ -22,25 +22,28 @@
 
 #include <storage/write_batch.h>
 
-namespace storage {
+namespace storage
+{
 
-WriteBatch::WriteBatch() {}
+  WriteBatch::WriteBatch() {}
 
-WriteBatch::~WriteBatch() {}
+  WriteBatch::~WriteBatch() {}
 
-bool WriteBatch::Put(std::string key, std::string value) {
-  this->items_.push_back(std::make_pair<KVPair, BacthOpCode>(
-      std::make_pair<std::string, std::string>(key, value), BacthOpCode::Put));
-}
+  bool WriteBatch::Put(std::string key, std::string value)
+  {
+    KVPair kvPair(key, value);
+    this->items_.emplace_back(std::make_pair<BacthOpCode, KVPair&>(BacthOpCode::Put, kvPair));
+  }
 
-bool WriteBatch::Delete(std::string key) {
-  this->items_.push_back(std::make_pair<KVPair, BacthOpCode>(
-      std::make_pair<std::string, std::string>(key, std::string("")),
-      BacthOpCode::Delete));
-}
+  bool WriteBatch::Delete(std::string key)
+  {
+    KVPair kvPair(key, "");
+    this->items_.emplace_back(std::make_pair<BacthOpCode, KVPair&>(BacthOpCode::Delete, kvPair));
+  }
 
-std::deque<std::pair<KVPair, BacthOpCode> > WriteBatch::GetItems() {
-  return this->items_;
-}
+  std::deque<std::pair<BacthOpCode, KVPair> > WriteBatch::GetItems()
+  {
+    return this->items_;
+  }
 
-}  // namespace storage
+} // namespace storage

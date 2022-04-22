@@ -71,13 +71,13 @@ bool PMemEngine::RemoveK(std::string k) {
 
 bool PMemEngine::PutWriteBatch(WriteBatch& batch) {
   for (auto& item : batch.GetItems()) {
-    switch (item.second) {
+    switch (item.first) {
       case BacthOpCode::Put: {
-        PutK(item.first.first, item.first.second);
+        PutK(item.second.first, item.second.second);
         break;
       }
       case BacthOpCode::Delete: {
-        RemoveK(item.first.first);
+        RemoveK(item.second.first);
         break;
       }
       default:

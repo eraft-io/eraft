@@ -23,5 +23,57 @@
 #ifndef ERAFT_RAFT_PEER_MSG_HANDLER_H_
 #define ERAFT_RAFT_PEER_MSG_HANDLER_H_
 
+#include <memory>
+#include <network/concurrency_msg_queue.h>
+#include <eraftio/raft_messagepb.pb.h>
+#include <eraftio/eraftpb.pb.h>
+#include <storage/engine_interface.h>
+#include <network/raft_peer.h>
+#include <network/raft_store.h>
+
+namespace network
+{
+
+    class RaftPeerMsgHandler
+    {
+
+    public:
+        RaftPeerMsgHandler();
+        ~RaftPeerMsgHandler();
+
+        std::shared_ptr<storage::WriteBatch> ProcessRequest(
+            eraftpb::Entry *entry, raft_messagepb::RaftCmdRequest *msg, std::shared_ptr<storage::WriteBatch> wb);
+
+        void ProcessConfChange(eraftpb::Entry *entry, eraftpb::ConfChange *cc, std::shared_ptr<storage::WriteBatch> wb);
+
+        void ProcessSplitRegion(eraftpb::Entry *entry, metapb::Region *newRegion, std::shared_ptr<storage::WriteBatch> wb);
+
+        std::shared_ptr<storage::WriteBatch> Process(
+            eraftpb::Entry *entry, std::shared_ptr<storage::WriteBatch> wb);
+
+        void HandleRaftReady();
+
+        void HandleMsg(Msg m);
+
+        void ProposeRequest(std::string palyload);
+
+        void ProposeRaftCommand(std::string playload);
+
+        void OnTick();
+
+        void StartTicker();
+
+        void OnRaftBaseTick();
+
+        bool OnRaftMsg(raft_messagepb::RaftMessage *msg);
+
+        bool CheckMessage(raft_messagepb::RaftMessage *msg);
+
+    private:
+        std::shared_ptr<RaftPeer> peer_;
+
+        std::shared_ptr<GlobalContext> ctx_;
+    };
+} // namespace network
 
 #endif

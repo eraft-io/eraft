@@ -1,4 +1,3 @@
-   
 // MIT License
 
 // Copyright (c) 2022 eraft dev group
@@ -23,5 +22,73 @@
 
 #ifndef ERAFT_NETWORK_RAFT_PEER_H_
 #define ERAFT_NETWORK_RAFT_PEER_H_
+
+#include <network/raft_peer_storage.h>
+#include <network/raft_config.h>
+#include <network/db_engines.h>
+#include <network/raft_server_transport.h>
+#include <eraftio/metapb.pb.h>
+#include <raftcore/raw_node.h>
+#include <cstdint>
+#include <memory>
+#include <map>
+namespace network
+{
+
+    class RaftPeerStorage;
+
+    class RaftPeer
+    {
+
+    public:
+        RaftPeer();
+
+        RaftPeer(uint64_t storeId, std::shared_ptr<RaftConfig> cfg,
+                 std::shared_ptr<DBEngines> dbEngines,
+                 std::shared_ptr<metapb::Region> region);
+
+        void InsertPeerCache(metapb::Peer *peer);
+
+        void RemovePeerCache(uint64_t peerId);
+
+        std::shared_ptr<metapb::Peer> GetPeerFromCache(uint64_t peerId);
+
+        uint64_t Destory(std::shared_ptr<DBEngines> engines, bool keepData);
+
+        void SetRegion(std::shared_ptr<metapb::Region> region);
+
+        uint64_t PeerId();
+
+        uint64_t LeaderId();
+
+        bool IsLeader();
+
+        void Send(std::shared_ptr<RaftTransport> trans, std::vector<eraftpb::Message> msgs);
+
+        uint64_t Term();
+
+        bool SendRaftMessage(eraftpb::Message msg, std::shared_ptr<RaftTransport> trans);
+
+    private:
+        std::shared_ptr<eraft::RawNode> raftGroup_;
+
+        std::shared_ptr<RaftPeerStorage> peerStorage_;
+
+        std::shared_ptr<metapb::Peer> meta_;
+
+        bool stopped_;
+
+        uint64_t regionId_;
+
+        std::map<uint64_t, std::shared_ptr<metapb::Peer> > peerCache_;
+
+        std::string tag_;
+
+        uint64_t lastCompactedIdx_;
+
+        uint64_t approximateSize_;
+    };
+
+} // namespace network
 
 #endif

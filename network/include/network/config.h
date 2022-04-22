@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 
-struct Config {
+struct Config
+{
 	// [server]
 	std::string listenAddr;
 
@@ -12,6 +13,9 @@ struct Config {
 
 	// [db]
 	std::string dbPath;
+
+	// [raft]
+	int nodeId;
 };
 
 extern Config g_config;

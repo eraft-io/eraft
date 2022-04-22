@@ -5,7 +5,8 @@
 #include <atomic>
 #include <mutex>
 
-class AsyncBuffer {
+class AsyncBuffer
+{
 public:
 	explicit AsyncBuffer(std::size_t size = 128 * 1024);
 	~AsyncBuffer();

@@ -68,6 +68,7 @@ set(Sources
     src/async_buffer.cc
     src/client.cc
     src/cmd_string.cc
+    src/cmd_raft.cc
     src/cmd.cc
     src/common.cc
     src/config.cc

@@ -41,10 +41,11 @@ set_target_properties(gtest_main gtest PROPERTIES
     FOLDER libraries
 )
 
-add_subdirectory(protocol)
-add_subdirectory(raftcore)
-add_subdirectory(network)
+# add_subdirectory(protocol)
+# add_subdirectory(raftcore)
+# add_subdirectory(network)
 add_subdirectory(storage)
-add_subdirectory(cmd)
+add_subdirectory(third_party/libredis)
+# add_subdirectory(cmd)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
