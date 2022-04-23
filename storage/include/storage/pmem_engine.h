@@ -41,13 +41,13 @@ class PMemEngine : public StorageEngineInterface {
 
   ~PMemEngine();
 
-  bool PutK(std::string k, std::string v) override;
+  EngOpStatus PutK(std::string k, std::string v) override;
 
-  bool GetV(std::string k, std::string& v) override;
+  EngOpStatus GetV(std::string k, std::string& v) override;
 
-  bool PutWriteBatch(WriteBatch& batch) override;
+  EngOpStatus PutWriteBatch(WriteBatch& batch) override;
 
-  bool RemoveK(std::string k) override;
+  EngOpStatus RemoveK(std::string k) override;
 
  private:
   std::unique_ptr<pmem::kv::db> engine_;

@@ -23,9 +23,9 @@
 #ifndef ERAFT_WRITE_BATCH_H_
 #define ERAFT_WRITE_BATCH_H_
 
+#include <map>
 #include <queue>
 #include <string>
-#include <map>
 
 namespace storage {
 
@@ -38,11 +38,11 @@ class WriteBatch {
   WriteBatch();
   ~WriteBatch();
 
-  bool Put(std::string key, std::string value);
+  void Put(std::string key, std::string value);
 
-  bool Delete(std::string key);
+  void Delete(std::string key);
 
-  std::deque<std::pair<BacthOpCode, KVPair>>  GetItems();
+  std::deque<std::pair<BacthOpCode, KVPair>> GetItems();
 
  private:
   std::deque<std::pair<BacthOpCode, KVPair>> items_;

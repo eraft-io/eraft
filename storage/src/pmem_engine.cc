@@ -49,27 +49,31 @@ PMemEngine::PMemEngine(std::string dbPath, std::string engName, uint64_t dbSize,
 
 PMemEngine::~PMemEngine() {}
 
-bool PMemEngine::PutK(std::string k, std::string v) {
+EngOpStatus PMemEngine::PutK(std::string k, std::string v) {
   auto s = engine_->put(k, v);
-  return (s == pmem::kv::status::OK);
+  if (s == pmem::kv::status::OK) {
+    return EngOpStatus::OK;
+  }
+  return EngOpStatus::ERROR;
 }
 
-bool PMemEngine::GetV(std::string k, std::string& v) {
+EngOpStatus PMemEngine::GetV(std::string k, std::string& v) {
   std::string val;
   auto s = engine_->get(k, &val);
   if (s == pmem::kv::status::NOT_FOUND) {
-    return false;
+    return EngOpStatus::NOT_FOUND;
   }
   v = std::move(val);
-  return true;
+  return EngOpStatus::OK;
 }
 
-bool PMemEngine::RemoveK(std::string k) {
+EngOpStatus PMemEngine::RemoveK(std::string k) {
   auto s = engine_->remove(k);
+
   return (s == pmem::kv::status::OK);
 }
 
-bool PMemEngine::PutWriteBatch(WriteBatch& batch) {
+EngOpStatus PMemEngine::PutWriteBatch(WriteBatch& batch) {
   for (auto& item : batch.GetItems()) {
     switch (item.first) {
       case BacthOpCode::Put: {

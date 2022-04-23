@@ -29,17 +29,19 @@
 
 namespace storage {
 
+enum class EngOpStatus { OK, NOT_FOUND, ERROR };
+
 class StorageEngineInterface {
  public:
   virtual ~StorageEngineInterface(){};
 
-  virtual bool PutK(std::string k, std::string v) = 0;
+  virtual EngOpStatus PutK(std::string k, std::string v) = 0;
 
-  virtual bool GetV(std::string k, std::string& v) = 0;
+  virtual EngOpStatus GetV(std::string k, std::string& v) = 0;
 
-  virtual bool RemoveK(std::string k) = 0;
+  virtual EngOpStatus RemoveK(std::string k) = 0;
 
-  virtual bool PutWriteBatch(WriteBatch& batch) = 0;
+  virtual EngOpStatus PutWriteBatch(WriteBatch& batch) = 0;
 };
 
 }  // namespace storage

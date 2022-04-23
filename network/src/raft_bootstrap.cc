@@ -114,7 +114,7 @@ void BootHepler::WriteInitialApplyState(storage::WriteBatch &kvWB,
       *applyState);
 }
 
-// need ？
+// need
 void BootHepler::WriteInitialRaftState(storage::WriteBatch &raftWB,
                                        uint64_t regionId) {}
 

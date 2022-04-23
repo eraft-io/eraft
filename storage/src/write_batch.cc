@@ -28,13 +28,13 @@ WriteBatch::WriteBatch() {}
 
 WriteBatch::~WriteBatch() {}
 
-bool WriteBatch::Put(std::string key, std::string value) {
+void WriteBatch::Put(std::string key, std::string value) {
   KVPair kvPair(key, value);
   this->items_.emplace_back(
       std::make_pair<BacthOpCode, KVPair&>(BacthOpCode::Put, kvPair));
 }
 
-bool WriteBatch::Delete(std::string key) {
+void WriteBatch::Delete(std::string key) {
   KVPair kvPair(key, "");
   this->items_.emplace_back(
       std::make_pair<BacthOpCode, KVPair&>(BacthOpCode::Delete, kvPair));
