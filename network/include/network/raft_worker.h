@@ -23,41 +23,39 @@
 #ifndef ERAFT_NETWORK_RAFT_WORKER_H_
 #define ERAFT_NETWORK_RAFT_WORKER_H_
 
-#include <network/raft_msg.h>
-#include <network/raft_store.h>
-#include <network/raft_router.h>
 #include <network/concurrency_msg_queue.h>
+#include <network/raft_msg.h>
+#include <network/raft_router.h>
+#include <network/raft_store.h>
 
-namespace network
-{
+namespace network {
 
-    struct GlobalContext;
+struct GlobalContext;
 
-    struct Router;
+struct Router;
 
-    struct RaftPeerState;
+struct RaftPeerState;
 
-    class RaftWorker
-    {
+class RaftWorker {
+ public:
+  RaftWorker(std::shared_ptr<GlobalContext> ctx,
+             std::shared_ptr<Router> router);
+  ~RaftWorker();
 
-    public:
-        RaftWorker(std::shared_ptr<GlobalContext> ctx, std::shared_ptr<Router> pm);
-        ~RaftWorker();
+  static void Run(moodycamel::ConcurrentQueue<Msg> &qu);
 
-        static void Run(moodycamel::ConcurrentQueue<Msg> &qu);
+  static void BootThread();
 
-        static void BootThread();
+  static std::shared_ptr<RaftPeerState> GetPeerState(
+      std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
+      uint64_t regionId);
 
-        static std::shared_ptr<RaftPeerState> GetPeerState(
-            std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
-            uint64_t regionId);
+ private:
+  static std::shared_ptr<Router> router_ = nullptr;
+  static std::shared_ptr<GlobalContext> ctx_ = nullptr;
+  bool loop_op_;
+};
 
-    private:
-        static std::shared_ptr<Router> pr_;
-
-        static std::shared_ptr<GlobalContext> ctx_;
-    };
-
-} // namespace network
+}  // namespace network
 
 #endif

@@ -25,23 +25,59 @@
 namespace network {
 
 RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx,
-                       std::shared_ptr<Router> pm) {}
+                       std::shared_ptr<Router> router) {
+  RaftWorker::ctx_ = ctx;
+  RaftWorker::router_ = router;
+  loop_op_ = true;
+}
+
 RaftWorker::~RaftWorker() {}
 
 void RaftWorker::Run(moodycamel::ConcurrentQueue<Msg> &qu) {
+  SPDLOG_INFO("raft worker start running!");
+  std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap;
   // 1.loop true op
+  while (loop_op_) {
+    Msg msg;
+    // 2.pop msg from dequeue
+    if (!qu.try_dequeue(msg)) {
+      continue;
+    }
+    SPDLOG_INFO("pop new messsage with type: " + msg.MsgToString());
 
-  // 2.pop msg from dequeue
+    std::shared_ptr<PeerState_> peerState =
+        RaftWorker::GetPeerState(peerStMap, msg.regionId_);
+    if (peerState == nullptr) {
+      continue;
+    }
 
-  // 3.handle msg
+    // 3.handle msg
+    PeerMsgHandler pmHandler(peerState->peer_, RaftWorker::ctx_);
+    pmHandler.HandleMsg(msg);
 
-  // 4.raft ready
+    // 4.raft ready
+    PeerMsgHandler pmHandlerRaftRd(peerState->peer_, RaftWorker::ctx_);
+    pmHandlerRaftRd.HandleRaftReady();
+  }
 }
 
-void RaftWorker::BootThread() {}
+void RaftWorker::BootThread() {
+  std::thread th(
+      std::bind(&Run, std::ref(QueueContext::GetInstance()->get_peerSender())));
+  th.detach();
+}
 
 std::shared_ptr<RaftPeerState> RaftWorker::GetPeerState(
     std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
-    uint64_t regionId) {}
+    uint64_t regionId) {
+  if (peersStateMap.find(regionID) == peersStateMap.end()) {
+    auto peer = RaftWorker::pr_->Get(regionID);
+    if (peer == nullptr) {
+      return nullptr;
+    }
+    peersStateMap[regionID] = peer;
+  }
+  return peersStateMap[regionID];
+}
 
 }  // namespace network
