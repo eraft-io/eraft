@@ -23,38 +23,36 @@
 #ifndef ERAFT_NETWORK_DB_ENGINES_H_
 #define ERAFT_NETWORK_DB_ENGINES_H_
 
-#include <string>
-#include <memory>
 #include <storage/engine_interface.h>
 #include <storage/write_batch.h>
 
-namespace network
-{
-    class DBEngines
-    {
+#include <memory>
+#include <string>
 
-    public:
-        DBEngines(std::string kvPath, std::string raftPath);
+namespace network {
+class DBEngines {
+ public:
+  DBEngines(std::string kvPath, std::string raftPath);
 
-        ~DBEngines();
+  ~DBEngines();
 
-        bool WriteKV(storage::WriteBatch &batch);
+  bool WriteKV(storage::WriteBatch &batch);
 
-        bool WriteRaft(storage::WriteBatch &batch);
+  bool WriteRaft(storage::WriteBatch &batch);
 
-        bool Close();
+  bool Close();
 
-        bool Destory();
+  bool Destory();
 
-    private:
-        std::shared_ptr<StorageEngineInterface> kvDB_;
+ private:
+  std::shared_ptr<StorageEngineInterface> kvDB_;
 
-        std::string kvPath_;
+  std::string kvPath_;
 
-        std::shared_ptr<StorageEngineInterface> raftDB_;
+  std::shared_ptr<StorageEngineInterface> raftDB_;
 
-        std::string raftPath_;
-    };
-} // namespace network
+  std::string raftPath_;
+};
+}  // namespace network
 
 #endif

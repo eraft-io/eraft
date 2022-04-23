@@ -23,39 +23,58 @@
 #ifndef ERAFT_NETWORK_RAFT_CLIENT_H_
 #define ERAFT_NETWORK_RAFT_CLIENT_H_
 
-#include <third_party/libredis/hiredis.h>
 #include <eraftio/raft_messagepb.pb.h>
 #include <network/raft_config.h>
+#include <third_party/libredis/hiredis.h>
+
 #include <memory>
 #include <mutex>
 
-namespace network
-{
-    class RaftClient
-    {
-    public:
-        RaftClient(std::shared_ptr<RaftConfig> conf);
+namespace network {
 
-        ~RaftClient();
+class RaftConn {
+ public:
+  RaftConn(std::string targetAddr_);
+  ~RaftConn();
 
-        bool Send(uint64_t storeId, std::string addr, raft_messagepb::RaftMessage &msg);
+  bool Send(raft_messagepb::RaftMessage &msg, std::string cmd);
 
-        bool TransferLeader(std::string addr, raft_messagepb::TransferLeaderRequest &req);
+  redisContext *GetConnContext();
 
-        bool PeerConfChange(std::string addr, raft_messagepb::ChangePeerRequest &req);
+ private:
+  std::mutex connMu_;
 
-        bool SplitRegion(std::string addr, raft_messagepb::SplitRequest &req);
+  redisContext *redisConnContext_;
+};
 
-    private:
-        static redisContext *redisClientContext_;
+class RaftClient {
+ public:
+  RaftClient(std::shared_ptr<RaftConfig> conf);
 
-        std::shared_ptr<RaftConfig> conf_;
+  ~RaftClient();
 
-        std::mutex mu_;
+  std::shared_ptr<RaftConn> GetConn(std::string addr, uint64_t regionId);
 
-        std::map<uint64_t, std::string> addrs_;
-    };
+  bool Send(uint64_t storeId, std::string addr,
+            raft_messagepb::RaftMessage &msg);
 
-} // namespace network
+  bool TransferLeader(std::string addr,
+                      raft_messagepb::TransferLeaderRequest &req);
+
+  bool PeerConfChange(std::string addr, raft_messagepb::ChangePeerRequest &req);
+
+  bool SplitRegion(std::string addr, raft_messagepb::SplitRequest &req);
+
+ private:
+  std::shared_ptr<RaftConfig> conf_;
+
+  std::mutex mu_;
+
+  std::map<std::string, std::shared_ptr<RaftConn> > conns_;
+
+  std::map<uint64_t, std::string> addrs_;
+};
+
+}  // namespace network
 
 #endif

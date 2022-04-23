@@ -1,20 +1,20 @@
 #pragma once
 
 #include <network/common.h>
+
 #include <libpmemkv.hpp>
 #include <map>
 #include <string>
 #include <vector>
 
-enum CommandAttr
-{
-	Attr_read = 0x1,
-	Attr_write = 0x1 << 1,
+enum CommandAttr {
+  Attr_read = 0x1,
+  Attr_write = 0x1 << 1,
 };
 
 class UnboundedBuffer;
 using CommandHandler = Error(const std::vector<std::string> &params,
-							 UnboundedBuffer *reply);
+                             UnboundedBuffer *reply);
 
 CommandHandler set;
 CommandHandler get;
@@ -23,38 +23,35 @@ CommandHandler scan;
 CommandHandler info;
 CommandHandler pushraftmsg;
 
-struct CommandInfo
-{
-	std::string cmd;
-	int attr;
-	int params;
-	CommandHandler *handler;
-	bool CheckParamsCount(int nParams) const;
+struct CommandInfo {
+  std::string cmd;
+  int attr;
+  int params;
+  CommandHandler *handler;
+  bool CheckParamsCount(int nParams) const;
 };
 
 class Executor;
 
-class CommandTable
-{
+class CommandTable {
+ public:
+  friend class Executor;
 
-public:
-	friend class Executor;
+ public:
+  CommandTable();
 
-public:
-	CommandTable();
+  static void Init();
 
-	static void Init();
+  static const CommandInfo *GetCommandInfo(const std::string &cmd);
 
-	static const CommandInfo *GetCommandInfo(const std::string &cmd);
+  static bool AddCommand(const std::string &cmd, const CommandInfo *info);
 
-	static bool AddCommand(const std::string &cmd, const CommandInfo *info);
+  static const CommandInfo *DelCommand(const std::string &cmd);
 
-	static const CommandInfo *DelCommand(const std::string &cmd);
+  CommandHandler cmdlist;
 
-	CommandHandler cmdlist;
+ private:
+  static std::map<std::string, const CommandInfo *, NocaseComp> s_handlers;
 
-private:
-	static std::map<std::string, const CommandInfo *, NocaseComp> s_handlers;
-
-	static const CommandInfo s_info[];
+  static const CommandInfo s_info[];
 };

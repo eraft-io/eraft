@@ -21,15 +21,56 @@
 // SOFTWARE.
 
 #include <network/raft_client.h>
+#include <spdlog/spdlog.h>
 
 namespace network {
-RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) {}
+
+RaftConn::RaftConn(std::string targetAddr_) {
+  auto ipPortPair =
+      RaftEncodeAssistant::GetInstance()->AddrStrToIpPort(targetAddr_);
+  redisConnContext_ = redisConnect(ipPortPair.first, ipPortPair.second);
+  if (redisConnContext_->err) {
+    SPDLOG_ERROR("connect to " + targetAddr_ + " error!");
+  }
+}
+RaftConn::~RaftConn() { redisFree(redisConnContext_); }
+
+bool RaftConn::Send(raft_messagepb::RaftMessage &msg, std::string cmd) {
+  std::string sendMsg = msg.SerializeAsString();
+  redisReply *reply =
+      redisCommand(redisConnContext_, "%s %s", cmd.c_str(), sendMsg.c_str());
+  if (std::string(reply->str) != "OK") {
+    SPDLOG_ERROR("send raftmessage error: " + std::string(reply->str));
+    return false;
+  }
+  freeReplyObject(reply);
+  return true;
+}
+
+std::shared_ptr<RaftConn> RaftClient::GetConn(std::string addr,
+                                              uint64_t regionId) {
+  if (this->conns_.find(addr) != this->conns_.end()) {
+    return this->conns_[addr];
+  }
+
+  std::shared_ptr<RaftConn> newConn = std::make_shared<RaftConn>(addr);
+  {
+    std::lock_guard<std::mutex> lck(this->mu_);
+    this->conns_[addr] = newConn;
+  }
+  return newConn;
+}
+
+redisContext *RaftConn::GetConnContext() {}
+
+RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) : conf_(conf) {}
 
 RaftClient::~RaftClient() {}
 
 bool RaftClient::Send(uint64_t storeId, std::string addr,
                       raft_messagepb::RaftMessage &msg) {
-  // hiredis, send pushraftmsg msg -> stream array
+  std::shared_ptr<RaftConn> conn = this->GetConn(addr, msg.region_id());
+  return conn->Send(msg, "pushraftmsg")
 }
 
 bool RaftClient::TransferLeader(std::string addr,

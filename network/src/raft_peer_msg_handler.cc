@@ -42,7 +42,10 @@ void RaftPeerMsgHandler::ProcessSplitRegion(
 std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
     eraftpb::Entry *entry, std::shared_ptr<storage::WriteBatch> wb) {}
 
-void RaftPeerMsgHandler::HandleRaftReady() {}
+void RaftPeerMsgHandler::HandleRaftReady() {
+  // pop ready message, send to tran
+  // ServerTransport::Send(std::shared_ptr<raft_serverpb::RaftMessage> msg)
+}
 
 void RaftPeerMsgHandler::HandleMsg(Msg m) {
   // msg type do something

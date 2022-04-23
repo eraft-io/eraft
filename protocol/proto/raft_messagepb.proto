@@ -41,7 +41,8 @@ message RaftApplyState {
     // not apply any index twice after restart.
     uint64 applied_index = 1;
     // Record the index and term of the last raft log that have been truncated. (Used in 2C)
-    RaftTruncatedState truncated_state = 2; 
+    uint64 index = 2;
+    uint64 term = 3;
 }
 
 // The truncated state for Raft log compaction.
