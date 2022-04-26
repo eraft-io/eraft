@@ -21,21 +21,26 @@
 // SOFTWARE.
 
 #include <network/db_engines.h>
+#include <storage/pmem_engine.h>
 
 namespace network {
 
-DBEngines::DBEngines(std::string kvPath, std::string raftPath) {
-  // TODO: init kvDB_ and raftDB_
+DBEngines::DBEngines(std::string kvPath, std::string raftPath)
+    : kvPath_(kvPath), raftPath_(raftPath) {
+  const uint64_t PMEM_USED_SIZE_DEFAULT = 1024UL * 1024UL * 1024UL;
+  kvDB_ = std::make_shared<PMemEngine>(kvPath, "radix", PMEM_USED_SIZE_DEFAULT);
+  raftDB_ =
+      std::make_shared<PMemEngine>(raftPath, "radix", PMEM_USED_SIZE_DEFAULT);
 }
 
 DBEngines::~DBEngines() {}
 
 bool DBEngines::WriteKV(storage::WriteBatch &batch) {
-  // TODO: write batch to kv engine
+  kvDB_->PutWriteBatch(batch);
 }
 
 bool DBEngines::WriteRaft(storage::WriteBatch &batch) {
-  // TODO: write batch to raft engine
+  raftDB_->PutWriteBatch(batch);
 }
 
 bool DBEngines::Close() {}

@@ -32,98 +32,97 @@
 #include <iostream>
 #include <memory>
 
-namespace network
-{
+namespace network {
 
-  class ApplySnapResult
-  {
-  public:
-    std::shared_ptr<metapb::Region> prevRegion;
+class ApplySnapResult {
+ public:
+  std::shared_ptr<metapb::Region> prevRegion;
 
-    std::shared_ptr<metapb::Region> region;
+  std::shared_ptr<metapb::Region> region;
 
-    ApplySnapResult() {}
+  ApplySnapResult() {}
 
-    ~ApplySnapResult() {}
-  };
+  ~ApplySnapResult() {}
+};
 
-  class RaftPeerStorage : public eraft::StorageInterface
-  {
-  public:
-    RaftPeerStorage(std::shared_ptr<storage::StorageEngineInterface> engs,
-                    std::shared_ptr<metapb::Region> region, std::string tag);
+class RaftPeerStorage : public eraft::StorageInterface {
+ public:
+  RaftPeerStorage(std::shared_ptr<storage::StorageEngineInterface> engs,
+                  std::shared_ptr<metapb::Region> region, std::string tag);
 
-    ~RaftPeerStorage();
+  ~RaftPeerStorage();
 
-    // InitialState returns the saved HardState and ConfState information.
-    std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
+  // InitialState returns the saved HardState and ConfState information.
+  std::pair<eraftpb::HardState, eraftpb::ConfState> InitialState() override;
 
-    // Entries returns a slice of log entries in the range [lo,hi).
-    // MaxSize limits the total size of the log entries returned, but
-    // Entries returns at least one entry if any.
-    std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;
+  // Entries returns a slice of log entries in the range [lo,hi).
+  // MaxSize limits the total size of the log entries returned, but
+  // Entries returns at least one entry if any.
+  std::vector<eraftpb::Entry> Entries(uint64_t lo, uint64_t hi) override;
 
-    // Term returns the term of entry i, which must be in the range
-    // [FirstIndex()-1, LastIndex()]. The term of the entry before
-    // FirstIndex is retained for matching purposes even though the
-    // rest of that entry may not be available.
-    std::pair<uint64_t, bool> Term(uint64_t i) override;
+  // Term returns the term of entry i, which must be in the range
+  // [FirstIndex()-1, LastIndex()]. The term of the entry before
+  // FirstIndex is retained for matching purposes even though the
+  // rest of that entry may not be available.
+  std::pair<uint64_t, bool> Term(uint64_t i) override;
 
-    // LastIndex returns the index of the last entry in the log.
-    uint64_t LastIndex() override;
+  // LastIndex returns the index of the last entry in the log.
+  uint64_t LastIndex() override;
 
-    // FirstIndex returns the index of the first log entry that is
-    // possibly available via Entries (older entries have been incorporated
-    // into the latest Snapshot; if storage only contains the dummy entry the
-    // first log entry is not available).
-    uint64_t FirstIndex() override;
+  uint64_t AppliedIndex();
 
-    // Snapshot returns the most recent snapshot.
-    // If snapshot is temporarily unavailable, it should return
-    // ErrSnapshotTemporarilyUnavailable, so raft state machine could know that
-    // Storage needs some time to prepare snapshot and call Snapshot later.
-    eraftpb::Snapshot Snapshot() override;
+  // FirstIndex returns the index of the first log entry that is
+  // possibly available via Entries (older entries have been incorporated
+  // into the latest Snapshot; if storage only contains the dummy entry the
+  // first log entry is not available).
+  uint64_t FirstIndex() override;
 
-    bool IsInitialized();
+  // Snapshot returns the most recent snapshot.
+  // If snapshot is temporarily unavailable, it should return
+  // ErrSnapshotTemporarilyUnavailable, so raft state machine could know that
+  // Storage needs some time to prepare snapshot and call Snapshot later.
+  eraftpb::Snapshot Snapshot() override;
 
-    std::shared_ptr<metapb::Region> Region();
+  bool IsInitialized();
 
-    void SetRegion(std::shared_ptr<metapb::Region> region);
+  std::shared_ptr<metapb::Region> Region();
 
-    bool CheckRange(uint64_t low, uint64_t high);
+  void SetRegion(std::shared_ptr<metapb::Region> region);
 
-    uint64_t TruncatedIndex();
+  bool CheckRange(uint64_t low, uint64_t high);
 
-    uint64_t TruncatedTerm();
+  uint64_t TruncatedIndex();
 
-    bool ClearMeta();
+  uint64_t TruncatedTerm();
 
-    std::shared_ptr<ApplySnapResult> SaveReadyState(
-        std::shared_ptr<eraft::DReady> ready);
+  bool ClearMeta();
 
-    void ClearRange(uint64_t regionID, std::string start, std::string end);
+  std::shared_ptr<ApplySnapResult> SaveReadyState(
+      std::shared_ptr<eraft::DReady> ready);
 
-    bool Append(std::vector<eraftpb::Entry> entries,
-                std::shared_ptr<storage::StorageEngineInterface> raftEng);
+  void ClearRange(uint64_t regionID, std::string start, std::string end);
 
-    std::shared_ptr<metapb::Region> GetRegion();
+  bool Append(std::vector<eraftpb::Entry> entries,
+              std::shared_ptr<storage::StorageEngineInterface> raftEng);
 
-    raft_messagepb::RaftLocalState *GetRaftLocalState();
+  std::shared_ptr<metapb::Region> GetRegion();
 
-    raft_messagepb::RaftApplyState *getRaftApplyState();
+  raft_messagepb::RaftLocalState *GetRaftLocalState();
 
-  private:
-    std::string tag_;
+  raft_messagepb::RaftApplyState *GetRaftApplyState();
 
-    std::shared_ptr<metapb::Region> region_;
+ private:
+  std::string tag_;
 
-    raft_messagepb::RaftLocalState *raftState_;
+  std::shared_ptr<metapb::Region> region_;
 
-    raft_messagepb::RaftApplyState *applyState_;
+  raft_messagepb::RaftLocalState *raftState_;
 
-    std::shared_ptr<storage::StorageEngineInterface> engines_;
-  };
+  raft_messagepb::RaftApplyState *applyState_;
 
-} // namespace network
+  std::shared_ptr<storage::StorageEngineInterface> engines_;
+};
+
+}  // namespace network
 
 #endif

@@ -24,17 +24,34 @@
 
 namespace network {
 
-bool FileSys::IsAbsolutePath(const std::string &path) {}
+bool FileSys::IsAbsolutePath(const std::string &path) {
+  // NOT SUPPORT
+  return false;
+}
 
-std::string FileSys::GetExeImagePath() {}
+std::string FileSys::GetExeImagePath() {
+  // NOT SUPPORT
+  return "";
+}
 
-std::string FileSys::GetExeParentDirectory() {}
+std::string FileSys::GetExeParentDirectory() {
+  // NOT SUPPORT
+  return "";
+}
 
 void FileSys::ListDirectory(const std::string &directory,
-                            std::vector<std::string> &list) {}
+                            std::vector<std::string> &list) {
+  // NOT SUPPORT
+}
 
-bool FileSys::CreateDirectory(const std::string &directory) {}
+bool FileSys::CreateDirectory(const std::string &directory) {
+  // NOT SUPPORT
+  return true;
+}
 
-bool FileSys::DeleteDirectory(const std::string &directory) {}
+bool FileSys::DeleteDirectory(const std::string &directory) {
+  // NOT SUPPORT
+  return true;
+}
 
 }  // namespace network

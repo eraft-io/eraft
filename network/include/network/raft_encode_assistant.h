@@ -394,6 +394,15 @@ class RaftEncodeAssistant {
         raftLocalStatePair.first, true);
   }
 
+  static eraftpb::ConfState ConfStateFromRegion(
+      std::shared_ptr<metapb::Region> region) {
+    eraftpb::ConfState confState;
+    for (auto p : region->peers()) {
+      confState.add_nodes(p.id());
+    }
+    return confState;
+  }
+
   static EngOpStatus GetMessageFromEngine(
       std::shared_ptr<StorageEngineInterface> db, std::string key,
       google::protobuf::Message &msg) {
