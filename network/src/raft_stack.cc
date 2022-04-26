@@ -37,6 +37,10 @@ RaftStack::~RaftStack() {}
 
 bool RaftStack::Write(std::string playload) {}
 
+bool RaftStack::Raft(const raft_messagepb::RaftMessage* msg) {
+  return this->raftRouter_->SendRaftMessage(msg);
+}
+
 std::string RaftStack::Read() {}
 
 bool RaftStack::Start() {

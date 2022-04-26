@@ -44,8 +44,13 @@ void Ticker::Start() {
 void Ticker::Stop() { running_ = false; }
 
 void Ticker::Run() {
-  // send tick msg
-  // ->
+  for (auto r : regions_) {
+    auto msg = NewPeerMsg(MsgType::MsgTypeTick, r.first, nullptr);
+    router_->Send(r.first, msg);
+  }
+  uint64_t regionId = 0;
+  QueueContext::GetInstance()->get_regionIdCh().try_dequeue(regionId);
+  regions_.insert(std::pair<uint64_t, void *>(regionId, nullptr));
 }
 
 void Ticker::SetDuration(tick_interval_t tickInterval) {

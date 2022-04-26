@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <cmd/pmem_redis.h>
+#include <eraftio/raft_messagepb.pb.h>
 #include <network/command.h>
 #include <network/common.h>
 
@@ -29,10 +31,10 @@ namespace network {
 
 Error pushraftmsg(const std::vector<std::string> &params,
                   UnboundedBuffer *reply) {
-  std::string raftMsg = params[1];
-  std::cout << raftMsg << std::endl;
-  // this->raftRouter_->SendRaftMessage(msg);
-
+  std::shared_ptr<raft_messagepb::RaftMessage> raftMessage =
+      std::make_shared<raft_messagepb::RaftMessage>();
+  raftMessage->ParseFromString(params[1]);
+  PMemRedis::GetStackInstance()->Raft(raftMessage);
   return FormatOK(reply);
 }
 

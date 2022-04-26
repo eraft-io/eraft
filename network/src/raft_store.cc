@@ -27,15 +27,21 @@ namespace network {
 RaftStore::RaftStore() {
   router_ = std::make_shared<Router>();
   raftRouter_ = std::make_shared<RaftStoreRouter>(router_);
+  SPDLOG_INFO("raft store init success!");
 }
-
-RaftStore::RaftStore(std::shared_ptr<RaftConfig> cfg) {}
 
 RaftStore::~RaftStore() {}
 
 std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {}
 
-std::shared_ptr<RaftPeer> RaftStore::GetLeader() {}
+std::shared_ptr<RaftPeer> RaftStore::GetLeader() {
+  auto regionPeers = this->LoadPeers();
+  for (auto peer : regionPeers) {
+    if (peer->PeerId() == peer->LeaderId()) {
+      return peer;
+    }
+  }
+}
 
 void RaftStore::ClearStaleMeta(storage::WriteBatch &kvWB,
                                storage::WriteBatch &raftWB,
@@ -45,26 +51,42 @@ bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
                       std::shared_ptr<RaftConfig> cfg,
                       std::shared_ptr<StorageEngineInterface> engines,
                       std::shared_ptr<TransportInterface> trans) {
-  // TODO:
-  // 1. Check Cfg
+  assert(cfg->Validate());
 
-  // 2. GlobalContext
+  std::shared_ptr<StoreMeta> storeMeta = std::make_shared<StoreMeta>();
 
-  // 3. LoadPeers
+  this->ctx_ = std::make_shared<GlobalContext>(cfg, engines, meta, storeMeta,
+                                               this->router_, trans);
 
-  // 4. Register Router
+  // register peer
+  auto regionPeers = this->LoadPeers();
 
-  // return ??
+  for (auto peer : regionPeers) {
+    this->router_->Register(peer);
+  }
+
+  this->StartWorkers(regionPeers);
 }
 
 bool RaftStore::StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers) {
-  // TODO:
+  auto ctx = this->ctx_;
+  auto router = this->router_;
+  auto state = this->state_;
+  auto rw = RaftWorker(ctx, router);
+  rw.BootThread();
+  Msg m(MsgType::MsgTypeStoreStart, ctx->store_.get());
+  router->SendStore(m);
+  for (uint64_t i = 0; i < peers.size(); i++) {
+    auto regionID = peers[i]->regionId_;
+    Msg m(MsgType::MsgTypeStart, ctx->store_.get());
+    router->Send(regionID, m);
+  }
+  // ticker start
+  std::chrono::duration<int, std::milli> timer_tick(50);
+  Ticker::GetInstance(std::function<void()>(Ticker::Run), router, timer_tick)
+      ->Start();
 
-  // boot raft worker
-
-  // send MsgTypeStart
-
-  // ticker worker, raftConf tick
+  return true;
 }
 
 void RaftStore::ShutDown() {}

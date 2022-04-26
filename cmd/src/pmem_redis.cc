@@ -20,6 +20,8 @@ PMemRedis::PMemRedis() : port_(0) {}
 
 PMemRedis::~PMemRedis() {}
 
+network::RaftStack* PMemRedis::instance_ = nullptr;
+
 std::shared_ptr<StreamSocket> PMemRedis::_OnNewConnection(int connfd, int tag) {
   // new connection comming
   SocketAddr peer;
@@ -56,9 +58,8 @@ bool PMemRedis::_Init() {
       std::make_shared<network::RaftConfig>(g_config.listenAddr,
                                             g_config.dbPath, g_config.nodeId);
 
-  std::unique_ptr<network::RaftStack> raftStack(
-      new network::RaftStack(raftConf));
-  raftStack->Start();
+  network::RaftStack* stack = PMemRedis::MakeStackInstance(raftConf);
+  stack->Start();
   SPDLOG_INFO("eraft start successful!");
   return true;
 }
@@ -69,7 +70,7 @@ bool PMemRedis::_Recycle() {
   // free resources
 }
 
-int main(int ac, char *av[]) {
+int main(int ac, char* av[]) {
   PMemRedis svr;
 
   if (!LoadServerConfig(std::string(av[1]).c_str(), g_config)) {

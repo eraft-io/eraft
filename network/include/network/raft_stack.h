@@ -20,37 +20,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <network/raft_config.h>
+#include <eraftio/raft_messagepb.pb.h>
 #include <network/db_engines.h>
+#include <network/raft_config.h>
 #include <network/raft_node.h>
 #include <network/raft_store.h>
 
-namespace network
-{
+namespace network {
 
-    class RaftStack
-    {
-    public:
-        RaftStack(std::shared_ptr<RaftConfig> raftConf);
+class RaftStack {
+ public:
+  RaftStack(std::shared_ptr<RaftConfig> raftConf);
 
-        ~RaftStack();
+  ~RaftStack();
 
-        bool Write(std::string playload);
+  bool Write(std::string playload);
 
-        std::string Read();
+  std::string Read();
 
-        bool Start();
+  bool Raft(const raft_messagepb::RaftMessage* msg);
 
-    private:
-        std::shared_ptr<DBEngines> dbEngs_;
+  bool Start();
 
-        std::shared_ptr<RaftStore> raftSystem_;
+ private:
+  std::shared_ptr<DBEngines> dbEngs_;
 
-        std::shared_ptr<RaftConfig> raftConf_;
+  std::shared_ptr<RaftStore> raftSystem_;
 
-        std::shared_ptr<RaftNode> raftNode_;
+  std::shared_ptr<RaftConfig> raftConf_;
 
-        std::shared_ptr<RaftRouter> raftRouter_;
-    }
+  std::shared_ptr<RaftNode> raftNode_;
 
-} // namespace network
+  std::shared_ptr<RaftRouter> raftRouter_;
+}
+
+}  // namespace network
