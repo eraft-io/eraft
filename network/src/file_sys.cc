@@ -22,20 +22,19 @@
 
 #include <network/file_sys.h>
 
-namespace network
-{
+namespace network {
 
-    bool FileSys::IsAbsolutePath(const std::string &path) {}
+bool FileSys::IsAbsolutePath(const std::string &path) {}
 
-    std::string FileSys::GetExeImagePath() {}
+std::string FileSys::GetExeImagePath() {}
 
-    std::string FileSys::GetExeParentDirectory() {}
+std::string FileSys::GetExeParentDirectory() {}
 
-    void FileSys::ListDirectory(const std::string &directory,
-                                std::vector<std::string> &list) {}
+void FileSys::ListDirectory(const std::string &directory,
+                            std::vector<std::string> &list) {}
 
-    bool FileSys::CreateDirectory(const std::string &directory) {}
+bool FileSys::CreateDirectory(const std::string &directory) {}
 
-    bool FileSys::DeleteDirectory(const std::string &directory) {}
+bool FileSys::DeleteDirectory(const std::string &directory) {}
 
-} // namespace network
+}  // namespace network

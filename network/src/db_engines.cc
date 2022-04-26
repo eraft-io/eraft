@@ -22,28 +22,24 @@
 
 #include <network/db_engines.h>
 
-namespace network
-{
+namespace network {
 
-    DBEngines::DBEngines(std::string kvPath, std::string raftPath)
-    {
-        // TODO: init kvDB_ and raftDB_
-    }
+DBEngines::DBEngines(std::string kvPath, std::string raftPath) {
+  // TODO: init kvDB_ and raftDB_
+}
 
-    DBEngines::~DBEngines() {}
+DBEngines::~DBEngines() {}
 
-    bool DBEngines::WriteKV(storage::WriteBatch &batch)
-    {
-        // TODO: write batch to kv engine
-    }
+bool DBEngines::WriteKV(storage::WriteBatch &batch) {
+  // TODO: write batch to kv engine
+}
 
-    bool DBEngines::WriteRaft(storage::WriteBatch &batch)
-    {
-        // TODO: write batch to raft engine
-    }
+bool DBEngines::WriteRaft(storage::WriteBatch &batch) {
+  // TODO: write batch to raft engine
+}
 
-    bool DBEngines::Close() {}
+bool DBEngines::Close() {}
 
-    bool DBEngines::Destory() {}
+bool DBEngines::Destory() {}
 
-} // namespace network
+}  // namespace network

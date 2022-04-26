@@ -359,11 +359,15 @@ class RaftEncodeAssistant {
         applyState->set_index(kRaftInitLogIndex);
         applyState->set_term(kRaftInitLogTerm);
       }
-      auto status =
-          PutMessageToEngine(kvEngine, ApplyStateKey(region->id()), applyState);
+      auto status = PutMessageToEngine(kvEngine, ApplyStateKey(region->id()),
+                                       *applyState);
+      if (status == storage::EngOpStatus::ERROR) {
+        return std::pair<raft_messagepb::RaftApplyState *, bool>(
+            appyStatePair.first, false);
+      }
     }
     return std::pair<raft_messagepb::RaftApplyState *, bool>(
-        appyStatePair.first, false);
+        appyStatePair.first, true);
   }
 
   static std::pair<raft_messagepb::RaftLocalState *, bool> InitRaftLocalState(
@@ -371,9 +375,23 @@ class RaftEncodeAssistant {
       std::shared_ptr<metapb::Region> region) {
     auto raftLocalStatePair = GetRaftLocalState(raftEngine, region->id());
     if (raftLocalStatePair.second == storage::EngOpStatus::NOT_FOUND) {
+      raft_messagepb::RaftLocalState *raftState = raftLocalStatePair.first;
+      raftState->set_allocated_hard_state(new eraftpb::HardState);
+      if (region->peers().size() > 0) {
+        raftState->set_last_index(kRaftInitLogIndex);
+        raftState->set_last_term(kRaftInitLogTerm);
+        raftState->mutable_hard_state()->set_term(kRaftInitLogTerm);
+        raftState->mutable_hard_state()->set_commit(kRaftInitLogIndex);
+        auto status = PutMessageToEngine(raftEngine, RaftStateKey(region->id()),
+                                         *raftState);
+        if (status == storage::EngOpStatus::ERROR) {
+          return std::pair<raft_messagepb::RaftLocalState *, bool>(
+              appyStatePair.first, false);
+        }
+      }
     }
     return std::pair<raft_messagepb::RaftLocalState *, bool>(
-        raftLocalStatePair.first, false);
+        raftLocalStatePair.first, true);
   }
 
   static EngOpStatus GetMessageFromEngine(
