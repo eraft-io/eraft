@@ -32,6 +32,7 @@ set(Headers
     include/network/common.h
     include/network/concurrency_msg_queue.h
     include/network/config.h
+    include/network/db_engines.h
     include/network/epoller.h
     include/network/executor.h
     include/network/file_sys.h
@@ -40,19 +41,19 @@ set(Headers
     include/network/net_thread_pool.h
     include/network/poller.h
     include/network/proto_parser.h
+    include/network/raft_bootstrap.h
     include/network/raft_client.h
     include/network/raft_config.h
+    include/network/raft_encode_assistant.h
     include/network/raft_node.h
     include/network/raft_peer_msg_handler.h
     include/network/raft_peer_storage.h
     include/network/raft_peer.h
     include/network/raft_router.h
     include/network/raft_server_transport.h
-    include/network/raft_server.h
-    include/network/raft_storage_interface.h
+    include/network/raft_stack.h
     include/network/raft_store.h
     include/network/raft_ticker.h
-    include/network/raft_utils.h
     include/network/raft_worker.h
     include/network/regex.h
     include/network/server.h
@@ -72,18 +73,32 @@ set(Sources
     src/cmd.cc
     src/common.cc
     src/config.cc
+    src/db_engines.cc
     src/epoller.cc
     src/executor.cc
     src/listen_socket.cc
     src/net_thread_pool.cc
     src/proto_parser.cc
+    src/raft_bootstrap.cc
+    src/raft_client.cc
+    src/raft_encode_assistant.cc
+    src/raft_node.cc
+    src/raft_peer_msg_handler.cc
+    src/raft_peer_storage.cc
+    src/raft_peer.cc
+    src/raft_router.cc
+    src/raft_server_transport.cc
+    src/raft_stack.cc
+    src/raft_store.cc
+    src/raft_ticker.cc
+    src/raft_worker.cc
+    src/regex.cc
     src/server.cc
     src/socket.cc
     src/stream_socket.cc
     src/task_manager.cc
     src/thread_pool.cc
     src/unbounded_buffer.cc
-    src/regex.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -98,4 +113,7 @@ target_link_libraries(${This} PUBLIC
     gtest_main
     pmemkv
     pthread
+    cmd
+    raftcore
+    hiredis_static
 )

@@ -49,6 +49,10 @@ class PMemEngine : public StorageEngineInterface {
 
   EngOpStatus RemoveK(std::string k) override;
 
+  EngOpStatus RangeQuery(std::string startK, std::string endK,
+                         std::vector<std::string>& matchKeys,
+                         std::vector<std::string>& matchValues);
+
  private:
   std::unique_ptr<pmem::kv::db> engine_;
 };

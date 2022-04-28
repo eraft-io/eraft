@@ -53,7 +53,7 @@ struct StoreState {
 struct StoreMeta {
   StoreMeta() {
     regions_ = std::map<uint64_t, metapb::Region *>{};
-    pendingVotes_ = std::vector<raft_serverpb::RaftMessage *>{};
+    pendingVotes_ = std::vector<raft_messagepb::RaftMessage *>{};
     regionRanges_ = std::map<std::string, uint64_t>{};
   }
 
@@ -63,7 +63,7 @@ struct StoreMeta {
 
   std::map<uint64_t, metapb::Region *> regions_;
 
-  std::vector<raft_serverpb::RaftMessage *> pendingVotes_;
+  std::vector<raft_messagepb::RaftMessage *> pendingVotes_;
 };
 
 struct GlobalContext {
@@ -72,7 +72,7 @@ struct GlobalContext {
                 std::shared_ptr<metapb::Store> store,
                 std::shared_ptr<StoreMeta> storeMeta,
                 std::shared_ptr<Router> router,
-                std::shared_ptr<Transport> trans) {
+                std::shared_ptr<TransportInterface> trans) {
     this->cfg_ = cfg;
     this->engine_ = engine;
     this->store_ = store;
@@ -104,25 +104,21 @@ class RaftStore {
 
   ~RaftStore();
 
-  std::vector<std::shared_ptr<Peer> > LoadPeers();
+  std::vector<std::shared_ptr<RaftPeer> > LoadPeers();
 
-  std::shared_ptr<Peer> GetLeader();
+  std::shared_ptr<RaftPeer> GetLeader();
 
   void ClearStaleMeta(storage::WriteBatch &kvWB, storage::WriteBatch &raftWB,
                       raft_messagepb::RegionLocalState &originState);
 
   bool Start(std::shared_ptr<metapb::Store> meta,
              std::shared_ptr<RaftConfig> cfg,
-             std::shared_ptr<StorageEngineInterface> engines,
+             std::shared_ptr<storage::StorageEngineInterface> engines,
              std::shared_ptr<TransportInterface> trans);
 
   bool StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers);
 
   void ShutDown();
-
-  bool RaftStore::Write() {}
-
-  std::string RaftStore::Reader() {}
 
  private:
   std::shared_ptr<GlobalContext> ctx_;

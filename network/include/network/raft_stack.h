@@ -20,6 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifndef ERAFT_NETWORK_RAFT_STACK_H_
+#define ERAFT_NETWORK_RAFT_STACK_H_
+
 #include <eraftio/raft_messagepb.pb.h>
 #include <network/db_engines.h>
 #include <network/raft_config.h>
@@ -27,6 +30,8 @@
 #include <network/raft_store.h>
 
 namespace network {
+
+class RaftStore;
 
 class RaftStack {
  public:
@@ -52,6 +57,8 @@ class RaftStack {
   std::shared_ptr<RaftNode> raftNode_;
 
   std::shared_ptr<RaftRouter> raftRouter_;
-}
+};
 
 }  // namespace network
+
+#endif

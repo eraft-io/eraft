@@ -23,6 +23,8 @@
 #ifndef ERAFT_NETWORK_RAFT_TICKER_H_
 #define ERAFT_NETWORK_RAFT_TICKER_H_
 
+#include <network/raft_router.h>
+
 #include <chrono>
 #include <condition_variable>
 #include <cstdint>
@@ -34,52 +36,48 @@
 #include <mutex>
 #include <thread>
 
-namespace network
-{
-    class Ticker
-    {
+namespace network {
+class Ticker {
+ public:
+  typedef std::chrono::duration<int64_t, std::nano> tick_interval_t;
+  typedef std::function<void()> on_tick_t;
 
-    public:
-        typedef std::chrono::duration<int64_t, std::nano> tick_interval_t;
-        typedef std::function<void()> on_tick_t;
+  Ticker(on_tick_t onTick, tick_interval_t tickInterval);
+  ~Ticker();
 
-        Ticker(on_tick_t onTick, tick_interval_t tickInterval);
-        ~Ticker();
+  static void Run();
 
-        static void Run();
+  void Start();
 
-        void Start();
+  void Stop();
 
-        void Stop();
+  void SetDuration(tick_interval_t tickInterval);
 
-        void SetDuration(tick_interval_t tickInterval);
+  void TimerLoop();
 
-        void TimerLoop();
+  static Ticker *GetInstance(on_tick_t onTick, tick_interval_t tickInterval) {
+    if (instance_ == nullptr) {
+      instance_ = new Ticker(onTick, tickInterval);
+    }
+    return instance_;
+  }
 
-        static Ticker *GetInstance(
-            on_tick_t onTick, tick_interval_t tickInterval)
-        {
-            if (instance_ == nullptr)
-            {
-                instance_ = new Ticker(onTick, tickInterval);
-            }
-            return instance_;
-        }
+ private:
+  static Ticker *instance_;
 
-    private:
-        static Ticker *instance_;
+  static std::shared_ptr<Router> router_;
 
-        static std::map<uint64_t, void *> regions_;
+  static std::map<uint64_t, void *> regions_;
 
-        on_tick_t onTick_;
+  on_tick_t onTick_;
 
-        tick_interval_t tickInterval_;
+  tick_interval_t tickInterval_;
 
-        volatile bool running_;
+  volatile bool running_;
 
-        std::mutex tickIntervalMutex_;
-    };
+  std::mutex tickIntervalMutex_;
+};
 
-} // namespace network
+}  // namespace network
 
 #endif

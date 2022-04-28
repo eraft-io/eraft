@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <eraftio/raft_messagepb.pb.h>
+#include <network/raft_encode_assistant.h>
 #include <network/raft_store.h>
 
 namespace network {
@@ -32,7 +34,45 @@ RaftStore::RaftStore() {
 
 RaftStore::~RaftStore() {}
 
-std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {}
+std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {
+  auto startKey = RaftEncodeAssistant::GetInstance()->RegionMetaMinKey;
+  auto endKey = RaftEncodeAssistant::GetInstance()->RegionMetaMaxKey;
+  auto ctx = this->ctx_;
+  auto storeID = ctx->store_->id();
+  SPDLOG_INFO("raft store store id: " + std::to_string(storeID) +
+              " load peers");
+  std::vector<std::string> keys;
+  std::vector<std::string> values;
+  ctx->engine_->kvDB_->RangeQuery(startKey, endKey, keys, values);
+  for (int i = 0; i < keys.size(); i++) {
+    uint64_t regionID;
+    uint8_t suffix;
+
+    RaftEncodeAssistant::GetInstance()->DecodeRegionMetaKey(
+        RaftEncodeAssistant::GetInstance()->StringToVec(keys[i]), &regionID,
+        &suffix);
+
+    if (suffix != RaftEncodeAssistant::GetInstance()->kRegionStateSuffix[0]) {
+      continue;
+    }
+
+    raft_messagepb::RegionLocalState *localState =
+        new raft_messagepb::RegionLocalState();
+    localState->ParseFromString(values[i]);
+
+    auto region = localState->region();
+    metapb::Region *region1 = new metapb::Region(region);
+
+    // TODO: clear stale meta
+    std::shared_ptr<Peer> peer =
+        std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_,
+                               std::make_shared<metapb::Region>(region));
+    // ctx->storeMeta_->regions_[regionID] = &region;
+    ctx->storeMeta_->regions_.insert(
+        std::pair<int, metapb::Region *>(regionID, region1));
+    regionPeers.push_back(peer);
+  }
+}
 
 std::shared_ptr<RaftPeer> RaftStore::GetLeader() {
   auto regionPeers = this->LoadPeers();
@@ -90,9 +130,5 @@ bool RaftStore::StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers) {
 }
 
 void RaftStore::ShutDown() {}
-
-bool RaftStore::Write() {}
-
-std::string RaftStore::Reader() {}
 
 }  // namespace network

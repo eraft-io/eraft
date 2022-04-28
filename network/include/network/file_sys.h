@@ -28,27 +28,26 @@
 #include <string>
 #include <vector>
 
-class FileSys
-{
-public:
+class FileSys {
+ public:
   ~FileSys() noexcept;
   FileSys(const FileSys &) = delete;
   FileSys(FileSys &&other) noexcept;
   FileSys &operator=(const FileSys &) = delete;
   FileSys &operator=(FileSys &&other) noexcept;
 
-  static bool IsAbsolutePath(const std::string &path);
+  bool IsAbsolutePath(const std::string &path);
 
-  static std::string GetExeImagePath();
+  std::string GetExeImagePath();
 
-  static std::string GetExeParentDirectory();
+  std::string GetExeParentDirectory();
 
-  static void ListDirectory(const std::string &directory,
-                            std::vector<std::string> &list);
+  void ListDirectory(const std::string &directory,
+                     std::vector<std::string> &list);
 
-  static bool CreateDirectory(const std::string &directory);
+  bool CreateDirectory(const std::string &directory);
 
-  static bool DeleteDirectory(const std::string &directory);
+  bool DeleteDirectory(const std::string &directory);
 };
 
 #endif

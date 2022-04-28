@@ -44,12 +44,12 @@ class DBEngines {
 
   bool Destory();
 
+  std::shared_ptr<storage::StorageEngineInterface> kvDB_;
+
+  std::shared_ptr<storage::StorageEngineInterface> raftDB_;
+
  private:
-  std::shared_ptr<StorageEngineInterface> kvDB_;
-
   std::string kvPath_;
-
-  std::shared_ptr<StorageEngineInterface> raftDB_;
 
   std::string raftPath_;
 };

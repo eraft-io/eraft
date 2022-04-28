@@ -69,8 +69,11 @@ EngOpStatus PMemEngine::GetV(std::string k, std::string& v) {
 
 EngOpStatus PMemEngine::RemoveK(std::string k) {
   auto s = engine_->remove(k);
-
-  return (s == pmem::kv::status::OK);
+  if (s == pmem::kv::status::OK) {
+    return EngOpStatus::OK;
+  } else {
+    return EngOpStatus::ERROR;
+  }
 }
 
 EngOpStatus PMemEngine::PutWriteBatch(WriteBatch& batch) {
@@ -88,22 +91,27 @@ EngOpStatus PMemEngine::PutWriteBatch(WriteBatch& batch) {
         break;
     }
   }
+  return EngOpStatus::OK;
 }
 
 EngOpStatus PMemEngine::RangeQuery(std::string startK, std::string endK,
-                                   std::vector<string>& matchValues) {
+                                   std::vector<std::string>& matchKeys,
+                                   std::vector<std::string>& matchValues) {
   auto rangeIter = engine_->new_read_iterator();
   auto& sIt = rangeIter.get_value();
   auto seekStatus = sIt.seek_higher_eq(startK);
   do {
     pmem::kv::result<pmem::kv::string_view> keyRes = sIt.key();
     std::string currentKey = keyRes.get_value().data();
+    matchKeys.push_back(currentKey);
     if (currentKey.compare(endK) <= 0) {
       std::string currentValue = sIt.read_range().get_value().data();
       matchValues.push_back(currentValue);
     } else {
       return EngOpStatus::OK;
     }
-  } while (sIt.next() == pmem::kv::status::OK) return EngOpStatus::OK;
+  } while (sIt.next() == pmem::kv::status::OK);
+  return EngOpStatus::OK;
 }
+
 }  // namespace storage

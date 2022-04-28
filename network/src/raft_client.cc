@@ -33,6 +33,7 @@ RaftConn::RaftConn(std::string targetAddr_) {
     SPDLOG_ERROR("connect to " + targetAddr_ + " error!");
   }
 }
+
 RaftConn::~RaftConn() { redisFree(redisConnContext_); }
 
 bool RaftConn::Send(raft_messagepb::RaftMessage &msg, std::string cmd) {
@@ -61,7 +62,7 @@ std::shared_ptr<RaftConn> RaftClient::GetConn(std::string addr,
   return newConn;
 }
 
-redisContext *RaftConn::GetConnContext() {}
+redisContext *RaftConn::GetConnContext() { return redisConnContext_; }
 
 RaftClient::RaftClient(std::shared_ptr<RaftConfig> conf) : conf_(conf) {}
 

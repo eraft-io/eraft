@@ -59,6 +59,7 @@ class RaftLocalState;
 class RaftMessage;
 class RaftRequestHeader;
 class RaftResponseHeader;
+class RaftTruncatedState;
 class RegionLocalState;
 class Request;
 class Response;
@@ -527,6 +528,95 @@ class RaftApplyState : public ::google::protobuf::Message /* @@protoc_insertion_
 
   void InitAsDefaultInstance();
   static RaftApplyState* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class RaftTruncatedState : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:raft_messagepb.RaftTruncatedState) */ {
+ public:
+  RaftTruncatedState();
+  virtual ~RaftTruncatedState();
+
+  RaftTruncatedState(const RaftTruncatedState& from);
+
+  inline RaftTruncatedState& operator=(const RaftTruncatedState& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const RaftTruncatedState& default_instance();
+
+  void Swap(RaftTruncatedState* other);
+
+  // implements Message ----------------------------------------------
+
+  inline RaftTruncatedState* New() const { return New(NULL); }
+
+  RaftTruncatedState* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const RaftTruncatedState& from);
+  void MergeFrom(const RaftTruncatedState& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(RaftTruncatedState* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint64 index = 1;
+  void clear_index();
+  static const int kIndexFieldNumber = 1;
+  ::google::protobuf::uint64 index() const;
+  void set_index(::google::protobuf::uint64 value);
+
+  // optional uint64 term = 2;
+  void clear_term();
+  static const int kTermFieldNumber = 2;
+  ::google::protobuf::uint64 term() const;
+  void set_term(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:raft_messagepb.RaftTruncatedState)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::uint64 index_;
+  ::google::protobuf::uint64 term_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_raft_5fmessagepb_2eproto();
+  friend void protobuf_AssignDesc_raft_5fmessagepb_2eproto();
+  friend void protobuf_ShutdownFile_raft_5fmessagepb_2eproto();
+
+  void InitAsDefaultInstance();
+  static RaftTruncatedState* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -3382,6 +3472,38 @@ inline void RaftApplyState::set_term(::google::protobuf::uint64 value) {
 
 // -------------------------------------------------------------------
 
+// RaftTruncatedState
+
+// optional uint64 index = 1;
+inline void RaftTruncatedState::clear_index() {
+  index_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 RaftTruncatedState::index() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RaftTruncatedState.index)
+  return index_;
+}
+inline void RaftTruncatedState::set_index(::google::protobuf::uint64 value) {
+  
+  index_ = value;
+  // @@protoc_insertion_point(field_set:raft_messagepb.RaftTruncatedState.index)
+}
+
+// optional uint64 term = 2;
+inline void RaftTruncatedState::clear_term() {
+  term_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 RaftTruncatedState::term() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RaftTruncatedState.term)
+  return term_;
+}
+inline void RaftTruncatedState::set_term(::google::protobuf::uint64 value) {
+  
+  term_ = value;
+  // @@protoc_insertion_point(field_set:raft_messagepb.RaftTruncatedState.term)
+}
+
+// -------------------------------------------------------------------
+
 // RegionLocalState
 
 // optional .raft_messagepb.PeerState state = 1;
@@ -5205,6 +5327,8 @@ RaftCmdResponse::responses() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

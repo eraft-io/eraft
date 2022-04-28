@@ -25,76 +25,72 @@
 
 #include <network/concurrency_msg_queue.h>
 #include <network/raft_peer.h>
-#include <cstdint>
+
 #include <atomic>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>
 
-namespace network
-{
+namespace network {
 
-    struct RaftPeerState
-    {
-        RaftPeerState(std::shared_ptr<RaftPeer> peer)
-            : closed_(0), peer_(peer)
-        {
-        }
+class RaftPeer;
 
-        std::atomic<uint32_t> closed_;
+class RaftNode;
 
-        std::shared_ptr<RaftPeer> peer_;
-    };
+struct RaftPeerState {
+  RaftPeerState(std::shared_ptr<RaftPeer> peer) : closed_(0), peer_(peer) {}
 
-    class Router
-    {
-    public:
-        Router();
+  std::atomic<uint32_t> closed_;
 
-        std::shared_ptr<RaftPeerState> Get(uint64_t regionId);
+  std::shared_ptr<RaftPeer> peer_;
+};
 
-        void Register(std::shared_ptr<RaftPeer> peer);
+class Router {
+ public:
+  Router();
 
-        void Close(uint64_t regionId);
+  std::shared_ptr<RaftPeerState> Get(uint64_t regionId);
 
-        bool Send(uint64_t regionId, Msg m);
+  void Register(std::shared_ptr<RaftPeer> peer);
 
-        void SendStore(Msg m);
+  void Close(uint64_t regionId);
 
-        ~Router() {}
+  bool Send(uint64_t regionId, Msg m);
 
-    protected:
-        std::map<uint64_t, std::shared_ptr<RaftPeerState> > peers_;
-    };
+  void SendStore(Msg m);
 
-    class RaftRouter
-    {
-    public:
-        virtual bool Send(uint64_t regionID, Msg m) = 0;
+  ~Router() {}
 
-        virtual bool SendRaftMessage(const raft_messagepb::RaftMessage *msg) = 0;
-    };
+ protected:
+  std::map<uint64_t, std::shared_ptr<RaftPeerState> > peers_;
+};
 
-    class RaftStoreRouter : public RaftRouter
-    {
+class RaftRouter {
+ public:
+  virtual bool Send(uint64_t regionID, Msg m) = 0;
 
-    public:
-        RaftStoreRouter(std::shared_ptr<Router> r);
+  virtual bool SendRaftMessage(const raft_messagepb::RaftMessage *msg) = 0;
+};
 
-        ~RaftStoreRouter();
+class RaftStoreRouter : public RaftRouter {
+ public:
+  RaftStoreRouter(std::shared_ptr<Router> r);
 
-        bool Send(uint64_t regionId, Msg m) override;
+  ~RaftStoreRouter();
 
-        bool SendRaftMessage(const raft_messagepb::RaftMessage *msg) override;
+  bool Send(uint64_t regionId, Msg m) override;
 
-    private:
-        std::shared_ptr<Router> router_;
+  bool SendRaftMessage(const raft_messagepb::RaftMessage *msg) override;
 
-        std::mutex mtx_;
+ private:
+  std::shared_ptr<Router> router_;
 
-        static raft_messagepb::RaftMessage *raft_msg_;
-    }
+  std::mutex mtx_;
 
-} // namespace network
+  static raft_messagepb::RaftMessage *raft_msg_;
+};
+
+}  // namespace network
 
 #endif

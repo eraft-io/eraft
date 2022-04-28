@@ -25,6 +25,8 @@
 namespace network {
 
 Ticker *Ticker::instance_ = nullptr;
+std::shared_ptr<Router> Ticker::router_ = nullptr;
+
 std::map<uint64_t, void *> Ticker::regions_ = {};
 
 Ticker::Ticker(on_tick_t onTick, tick_interval_t tickInterval)

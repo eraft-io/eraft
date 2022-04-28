@@ -24,9 +24,13 @@
 #define ERAFT_NETWORK_RAFT_ENCODE_ASSISTANT_H_
 
 #include <eraftio/raft_messagepb.pb.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/text_format.h>
 #include <storage/engine_interface.h>
 
 #include <cstdint>
+#include <cstring>
+#include <memory>
 #include <vector>
 
 namespace network {
@@ -99,7 +103,8 @@ class RaftEncodeAssistant {
     std::string ip = addr.substr(0, p);
     std::string port = addr.substr(p + 1);
     uint16_t portInt = static_cast<uint16_t>(std::stoi(port));
-    return std::make_pair<std::string, uint16_t>(ip, portInt);
+    return std::make_pair<std::string, uint16_t>(std::move(ip),
+                                                 std::move(portInt));
   }
 
   static const std::vector<uint8_t> MinKey;
@@ -261,16 +266,16 @@ class RaftEncodeAssistant {
   static void DecodeRegionMetaKey(std::vector<uint8_t> key, uint64_t *regionId,
                                   uint8_t *suffix) {
     if ((RegionMetaMinKey.size() + 8 + 1) != (key.size())) {
-      *regionID = 0;
+      *regionId = 0;
       *suffix = 0;
       return;
     }
     if (!((key[0] == RegionMetaMinKey[0]) && (key[1] == RegionMetaMinKey[1]))) {
-      *regionID = 0;
+      *regionId = 0;
       *suffix = 0;
       return;
     }
-    *regionID = DecodeFixed64(&key[2]);
+    *regionId = DecodeFixed64(&key[2]);
     *suffix = key[key.size() - 1];
   }
 
@@ -302,23 +307,24 @@ class RaftEncodeAssistant {
   }
 
   static raft_messagepb::RegionLocalState *GetRegionLocalState(
-      std::shared_ptr<StorageEngineInterface> db, uint64_t regionId) {
+      std::shared_ptr<storage::StorageEngineInterface> db, uint64_t regionId) {
     raft_messagepb::RegionLocalState *regionLocalState;
-    GetMessageFromEngine(db, RegionStateKey(regionId), regionLocalState);
+    GetMessageFromEngine(db, RegionStateKey(regionId), *regionLocalState);
     return regionLocalState;
   }
 
-  static EngOpStatus PutMessageToEngine(
-      std::shared_ptr<StorageEngineInterface> db, std::string key,
+  static storage::EngOpStatus PutMessageToEngine(
+      std::shared_ptr<storage::StorageEngineInterface> db, std::string key,
       google::protobuf::Message &msg) {
     std::string val = msg.SerializeAsString();
     return db->PutK(key, val);
   }
 
   static eraftpb::Entry *GetRaftEntry(
-      std::shared_ptr<StorageEngineInterface> db, uint64_t regionId, uint64_t) {
+      std::shared_ptr<storage::StorageEngineInterface> db, uint64_t regionId,
+      uint64_t idx) {
     eraftpb::Entry *entry = new eraftpb::Entry();
-    GetMessageFromEngine(db, RaftLogKey(regionId, idx), entry);
+    GetMessageFromEngine(db, RaftLogKey(regionId, idx), *entry);
     return entry;
   }
 
@@ -326,33 +332,33 @@ class RaftEncodeAssistant {
   static const uint8_t kRaftInitLogIndex = 5;
 
   static std::pair<raft_messagepb::RaftLocalState *, storage::EngOpStatus>
-  GetRaftLocalState(std::shared_ptr<StorageEngineInterface> raftEngine,
+  GetRaftLocalState(std::shared_ptr<storage::StorageEngineInterface> raftEngine,
                     uint64_t regionId) {
     raft_messagepb::RaftLocalState *raftLocalState =
         new raft_messagepb::RaftLocalState();
     auto status = GetMessageFromEngine(raftEngine, RaftStateKey(regionId),
-                                       raftLocalState);
+                                       *raftLocalState);
     return std::pair<raft_messagepb::RaftLocalState *, storage::EngOpStatus>(
         raftLocalState, status);
   }
 
   static std::pair<raft_messagepb::RaftApplyState *, storage::EngOpStatus>
-  GetApplyState(std::shared_ptr<StorageEngineInterface> raftEngine,
+  GetApplyState(std::shared_ptr<storage::StorageEngineInterface> raftEngine,
                 uint64_t regionId) {
     raft_messagepb::RaftApplyState *applyState =
         new raft_messagepb::RaftApplyState();
     auto status =
-        GetMessageFromEngine(raftEngine, ApplyStateKey(regionId), applyState);
-    return std::pair<raft_messagepb::RaftApplyState *, rocksdb::Status>(
+        GetMessageFromEngine(raftEngine, ApplyStateKey(regionId), *applyState);
+    return std::pair<raft_messagepb::RaftApplyState *, storage::EngOpStatus>(
         applyState, status);
   }
 
   static std::pair<raft_messagepb::RaftApplyState *, bool> InitApplyState(
-      std::shared_ptr<StorageEngineInterface> kvEngine,
+      std::shared_ptr<storage::StorageEngineInterface> kvEngine,
       std::shared_ptr<metapb::Region> region) {
-    auto appyStatePair = GetApplyState(kvEngine, region->id());
-    if (appyStatePair.second == storage::EngOpStatus::NOT_FOUND) {
-      raft_serverpb::RaftApplyState *applyState =
+    auto applyStatePair = GetApplyState(kvEngine, region->id());
+    if (applyStatePair.second == storage::EngOpStatus::NOT_FOUND) {
+      raft_messagepb::RaftApplyState *applyState =
           new raft_messagepb::RaftApplyState();
       if (region->peers().size() > 0) {
         applyState->set_applied_index(kRaftInitLogIndex);
@@ -363,15 +369,15 @@ class RaftEncodeAssistant {
                                        *applyState);
       if (status == storage::EngOpStatus::ERROR) {
         return std::pair<raft_messagepb::RaftApplyState *, bool>(
-            appyStatePair.first, false);
+            applyStatePair.first, false);
       }
     }
     return std::pair<raft_messagepb::RaftApplyState *, bool>(
-        appyStatePair.first, true);
+        applyStatePair.first, true);
   }
 
   static std::pair<raft_messagepb::RaftLocalState *, bool> InitRaftLocalState(
-      std::shared_ptr<StorageEngineInterface> raftEngine,
+      std::shared_ptr<storage::StorageEngineInterface> raftEngine,
       std::shared_ptr<metapb::Region> region) {
     auto raftLocalStatePair = GetRaftLocalState(raftEngine, region->id());
     if (raftLocalStatePair.second == storage::EngOpStatus::NOT_FOUND) {
@@ -386,7 +392,7 @@ class RaftEncodeAssistant {
                                          *raftState);
         if (status == storage::EngOpStatus::ERROR) {
           return std::pair<raft_messagepb::RaftLocalState *, bool>(
-              appyStatePair.first, false);
+              raftLocalStatePair.first, false);
         }
       }
     }
@@ -403,8 +409,8 @@ class RaftEncodeAssistant {
     return confState;
   }
 
-  static EngOpStatus GetMessageFromEngine(
-      std::shared_ptr<StorageEngineInterface> db, std::string key,
+  static storage::EngOpStatus GetMessageFromEngine(
+      std::shared_ptr<storage::StorageEngineInterface> db, std::string key,
       google::protobuf::Message &msg) {
     std::string msgStr;
     auto status = db->GetV(key, msgStr);

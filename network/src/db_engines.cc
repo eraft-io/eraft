@@ -28,9 +28,10 @@ namespace network {
 DBEngines::DBEngines(std::string kvPath, std::string raftPath)
     : kvPath_(kvPath), raftPath_(raftPath) {
   const uint64_t PMEM_USED_SIZE_DEFAULT = 1024UL * 1024UL * 1024UL;
-  kvDB_ = std::make_shared<PMemEngine>(kvPath, "radix", PMEM_USED_SIZE_DEFAULT);
-  raftDB_ =
-      std::make_shared<PMemEngine>(raftPath, "radix", PMEM_USED_SIZE_DEFAULT);
+  kvDB_ = std::make_shared<storage::PMemEngine>(kvPath, "radix",
+                                                PMEM_USED_SIZE_DEFAULT);
+  raftDB_ = std::make_shared<storage::PMemEngine>(raftPath, "radix",
+                                                  PMEM_USED_SIZE_DEFAULT);
 }
 
 DBEngines::~DBEngines() {}

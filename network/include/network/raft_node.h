@@ -24,59 +24,63 @@
 #define ERAFT_NETWORK_RAFT_NODE_H_
 
 #include <eraftio/metapb.pb.h>
-#include <cstdint>
-#include <storage/engine_interface.h>
-#include <network/raft_config.h>
-#include <network/transport_interface.h>
-#include <network/raft_store.h>
 #include <network/db_engines.h>
+#include <network/raft_config.h>
+#include <network/raft_store.h>
+#include <network/transport_interface.h>
+#include <storage/engine_interface.h>
+
+#include <cstdint>
 #include <memory>
 
-namespace network
-{
-    class RaftNode
-    {
-    public:
-        RaftNode(std::shared_ptr<RaftStore> system, std::shared_ptr<RaftConfig> cfg);
+namespace network {
+class RaftNode {
+ public:
+  RaftNode(std::shared_ptr<RaftStore> system, std::shared_ptr<RaftConfig> cfg);
 
-        bool Start(std::shared_ptr<DBEngines> engines, std::shared_ptr<TransportInterface> trans);
+  bool Start(std::shared_ptr<DBEngines> engines,
+             std::shared_ptr<TransportInterface> trans);
 
-        bool CheckStore(DBEngines &engs, uint64_t *storeId);
+  bool CheckStore(DBEngines &engs, uint64_t *storeId);
 
-        bool BootstrapStore(DBEngines &engs, uint64_t *storeId);
+  bool BootstrapStore(DBEngines &engs, uint64_t *storeId);
 
-        uint64_t AllocID();
+  uint64_t AllocID();
 
-        std::pair<std::shared_ptr<metapb::Region>, bool>
-        CheckOrPrepareBoostrapCluster(std::shared_ptr<DBEngines> engines, uint64_t storeId);
+  std::pair<std::shared_ptr<metapb::Region>, bool>
+  CheckOrPrepareBoostrapCluster(std::shared_ptr<DBEngines> engines,
+                                uint64_t storeId);
 
-        bool CheckClusterBoostrapped();
+  bool CheckClusterBoostrapped();
 
-        std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrapCluster(
-            std::shared_ptr<DBEngines> engines, uint64_t storeId);
+  std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrapCluster(
+      std::shared_ptr<DBEngines> engines, uint64_t storeId);
 
-        bool BoostrapCluster(std::shared_ptr<DBEngines> engines, std::shared_ptr<metapb::Region> firstRegion, bool *isNewCluster);
+  bool BoostrapCluster(std::shared_ptr<DBEngines> engines,
+                       std::shared_ptr<metapb::Region> firstRegion,
+                       bool *isNewCluster);
 
-        bool StartNode(std::shared_ptr<DBEngines> engines, std::shared_ptr<TransportInterface> trans);
+  bool StartNode(std::shared_ptr<DBEngines> engines,
+                 std::shared_ptr<TransportInterface> trans);
 
-        void Stop();
+  void Stop();
 
-        uint64_t GetStoreID();
+  uint64_t GetStoreID();
 
-        ~RaftNode();
+  ~RaftNode();
 
-    private:
-        std::shared_ptr<DBEngines> engs_;
+ private:
+  std::shared_ptr<DBEngines> engs_;
 
-        uint64_t clusterID_;
+  uint64_t clusterID_;
 
-        std::shared_ptr<metapb::Store> store_;
+  std::shared_ptr<metapb::Store> store_;
 
-        std::shared_ptr<RaftConfig> raftCfg_;
+  std::shared_ptr<RaftConfig> raftCfg_;
 
-        std::shared_ptr<RaftStore> raftSystem_;
-    };
+  std::shared_ptr<RaftStore> raftSystem_;
+};
 
-}
+}  // namespace network
 
 #endif

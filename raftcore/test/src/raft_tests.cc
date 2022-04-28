@@ -69,7 +69,6 @@ struct NetWork {
   std::map<Connem, float> dropm;
 
   std::map<eraftpb::MessageType, bool> ignorem;
-
 };
 
 enum class PeerType {

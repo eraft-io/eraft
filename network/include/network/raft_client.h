@@ -24,11 +24,13 @@
 #define ERAFT_NETWORK_RAFT_CLIENT_H_
 
 #include <eraftio/raft_messagepb.pb.h>
+#include <hiredis.h>
 #include <network/raft_config.h>
-#include <third_party/libredis/hiredis.h>
 
 #include <memory>
 #include <mutex>
+
+#include "../../../third_party/libredis/hiredis.h"
 
 namespace network {
 

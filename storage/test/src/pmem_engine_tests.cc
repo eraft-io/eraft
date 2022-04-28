@@ -16,9 +16,9 @@ TEST(PMemEngineTests, PMemEngineTestPutGet) {
   std::shared_ptr<StorageEngineInterface> engFace =
       std::make_shared<PMemEngine>("/tmp/test_db_put_get", "radix",
                                    PMEM_USED_SIZE_DEFAULT);
-  ASSERT_EQ(true, engFace->PutK("testkey", "hello eraft!"));
+  ASSERT_EQ(EngOpStatus::OK, engFace->PutK("testkey", "hello eraft!"));
   std::string gotV;
-  ASSERT_EQ(true, engFace->GetV("testkey", gotV));
+  ASSERT_EQ(EngOpStatus::OK, engFace->GetV("testkey", gotV));
   ASSERT_EQ("hello eraft!", gotV);
 }
 
@@ -28,7 +28,7 @@ TEST(PMemEngineTests, PMemEngineTestGetFromExistsDB) {
       std::make_shared<PMemEngine>("/tmp/test_db_put_get", "radix",
                                    PMEM_USED_SIZE_DEFAULT);
   std::string gotV;
-  ASSERT_EQ(true, engFace->GetV("testkey", gotV));
+  ASSERT_EQ(EngOpStatus::OK, engFace->GetV("testkey", gotV));
   ASSERT_EQ("hello eraft!", gotV);
 }
 
@@ -42,16 +42,16 @@ TEST(PMemEngineTests, PMemEngineTestsPutWriteBatch) {
   testBatch.Put("test2", "v2");
   engFace->PutWriteBatch(testBatch);
   std::string gotV1, gotV2;
-  ASSERT_EQ(true, engFace->GetV("test1", gotV1));
-  ASSERT_EQ(true, engFace->GetV("test2", gotV2));
+  ASSERT_EQ(EngOpStatus::OK, engFace->GetV("test1", gotV1));
+  ASSERT_EQ(EngOpStatus::OK, engFace->GetV("test2", gotV2));
   ASSERT_EQ("v1", gotV1);
   ASSERT_EQ("v2", gotV2);
 
   WriteBatch delBatch;
   delBatch.Delete("test1");
   delBatch.Delete("test2");
-  ASSERT_EQ(false, engFace->GetV("test1", gotV1));
-  ASSERT_EQ(false, engFace->GetV("test2", gotV2));
+  ASSERT_EQ(EngOpStatus::NOT_FOUND, engFace->GetV("test1", gotV1));
+  ASSERT_EQ(EngOpStatus::NOT_FOUND, engFace->GetV("test2", gotV2));
 }
 
 }  // namespace storage

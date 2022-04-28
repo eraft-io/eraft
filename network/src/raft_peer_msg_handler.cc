@@ -117,10 +117,10 @@ void RaftPeerMsgHandler::ProcessSplitRegion(
   metapb::Region neregion = *newregion;
   Assistant::GetInstance()->WriteRegionState(
       wb, std::make_shared<metapb::Region>(curegion),
-      raft_serverpb::PeerState::Normal);
+      raft_messagepb::PeerState::Normal);
   Assistant::GetInstance()->WriteRegionState(
       wb, std::make_shared<metapb::Region>(neregion),
-      raft_serverpb::PeerState::Normal);
+      raft_messagepb::PeerState::Normal);
   BootHelper::GetInstance()->PrepareBoostrapCluster(
       this->ctx_->engine_, std::make_shared<metapb::Region>(neregion));
   // this->peer_->sizeDiffHint_ = 0;
@@ -205,19 +205,19 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
     case MsgType::MsgTypeRaftMessage: {
       if (m.data_ != nullptr) {
         try {
-          auto raftMsg = static_cast<raft_serverpb::RaftMessage *>(m.data_);
+          auto raftMsg = static_cast<raft_messagepb::RaftMessage *>(m.data_);
           if (raftMsg == nullptr) {
             SPDLOG_ERROR("handle nil message");
             return;
           }
           switch (raftMsg->raft_msg_type()) {
-            case raft_serverpb::RaftMsgNormal: {
+            case raft_messagepb::RaftMsgNormal: {
               if (!this->OnRaftMsg(raftMsg)) {
                 SPDLOG_ERROR("on handle raft msg");
               }
               break;
             }
-            case raft_serverpb::RaftMsgClientCmd: {
+            case raft_messagepb::RaftMsgClientCmd: {
               // std::shared_ptr<kvrpcpb::RawPutRequest> put =
               //     std::make_shared<kvrpcpb::RawPutRequest>();
               // put->set_key(raftMsg->data());
@@ -225,7 +225,7 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
               this->ProposeRaftCommand(raftMsg->data());
               break;
             }
-            case raft_serverpb::RaftTransferLeader: {
+            case raft_messagepb::RaftTransferLeader: {
               std::shared_ptr<raft_cmdpb::TransferLeaderRequest> tranLeader =
                   std::make_shared<raft_cmdpb::TransferLeaderRequest>();
               tranLeader->ParseFromString(raftMsg->data());
@@ -234,7 +234,7 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
               this->peer_->raftGroup_->TransferLeader(tranLeader->peer().id());
               break;
             }
-            case raft_serverpb::RaftConfChange: {
+            case raft_messagepb::RaftConfChange: {
               std::shared_ptr<raft_cmdpb::ChangePeerRequest> peerChange =
                   std::make_shared<raft_cmdpb::ChangePeerRequest>();
               peerChange->ParseFromString(raftMsg->data());
@@ -247,7 +247,7 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
               }
               break;
             }
-            case raft_serverpb::RaftSplitRegion: {
+            case raft_messagepb::RaftSplitRegion: {
               std::shared_ptr<raft_cmdpb::SplitRequest> splitregion =
                   std::make_shared<raft_cmdpb::SplitRequest>();
               splitregion->ParseFromString(raftMsg->data());

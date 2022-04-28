@@ -34,8 +34,8 @@ Error pushraftmsg(const std::vector<std::string> &params,
   std::shared_ptr<raft_messagepb::RaftMessage> raftMessage =
       std::make_shared<raft_messagepb::RaftMessage>();
   raftMessage->ParseFromString(params[1]);
-  PMemRedis::GetStackInstance()->Raft(raftMessage);
-  return FormatOK(reply);
+  PMemRedis::GetInstance()->GetRaftStack()->Raft(raftMessage.get());
+  return Error_ok;
 }
 
 }  // namespace network

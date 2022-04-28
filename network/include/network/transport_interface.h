@@ -27,15 +27,13 @@
 
 #include <memory>
 
-namespace network
-{
+namespace network {
 
-  class TransportInterface
-  {
-  public:
-    virtual bool Send(std::shared_ptr<raft_messagepb::RaftMessage> msg) = 0;
-  };
+class TransportInterface {
+ public:
+  virtual bool Send(std::shared_ptr<raft_messagepb::RaftMessage> msg) = 0;
+};
 
-} // namespace network
+}  // namespace network
 
 #endif

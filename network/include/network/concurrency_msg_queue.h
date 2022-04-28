@@ -23,18 +23,17 @@
 #ifndef ERAFT_NETWORK_MSG_H_
 #define ERAFT_NETWORK_MSG_H_
 
-#include <eraftio/raft_messagepb.pb.h>
 #include <eraftio/metapb.pb.h>
-
+#include <eraftio/raft_messagepb.pb.h>
 #include <network/lock_free_queue.h>
-#include <cstdint>
+
 #include <condition_variable>
+#include <cstdint>
 #include <mutex>
 #include <queue>
 #include <thread>
 
-enum class MsgType
-{
+enum class MsgType {
   MsgTypeNull,
   MsgTypeStart,
   MsgTypeTick,
@@ -48,8 +47,7 @@ enum class MsgType
   MsgTypeStoreStart,
 };
 
-struct Msg
-{
+struct Msg {
   MsgType type_;
 
   uint64_t regionId_;
@@ -63,61 +61,50 @@ struct Msg
   Msg(MsgType tp, uint64_t regionId, void *data)
       : type_(tp), regionId_(regionId), data_(data) {}
 
-  std::string MsgToString()
-  {
-    switch (type_)
-    {
-    case MsgType::MsgTypeNull:
-    {
-      return "MsgTypeNull";
-      break;
-    }
-    case MsgType::MsgTypeStart:
-    {
-      return "MsgTypeStart";
-      break;
-    }
-    case MsgType::MsgTypeTick:
-    {
-      return "MsgTypeTick";
-      break;
-    }
-    case MsgType::MsgTypeRaftMessage:
-    {
-      return "MsgTypeRaftMessage";
-      break;
-    }
-    case MsgType::MsgTypeRaftCmd:
-    {
-      return "MsgTypeRaftCmd";
-      break;
-    }
-    default:
-      break;
+  std::string MsgToString() {
+    switch (type_) {
+      case MsgType::MsgTypeNull: {
+        return "MsgTypeNull";
+        break;
+      }
+      case MsgType::MsgTypeStart: {
+        return "MsgTypeStart";
+        break;
+      }
+      case MsgType::MsgTypeTick: {
+        return "MsgTypeTick";
+        break;
+      }
+      case MsgType::MsgTypeRaftMessage: {
+        return "MsgTypeRaftMessage";
+        break;
+      }
+      case MsgType::MsgTypeRaftCmd: {
+        return "MsgTypeRaftCmd";
+        break;
+      }
+      default:
+        break;
     }
     return "unknow";
   }
 };
 
-struct MsgRaftCmd
-{
+struct MsgRaftCmd {
   raft_messagepb::RaftCmdRequest *request_;
 
-  MsgRaftCmd(raft_messagepb::RaftCmdRequest *request)
-  {
+  MsgRaftCmd(raft_messagepb::RaftCmdRequest *request) {
     this->request_ = request;
   }
 };
 
 static Msg NewMsg(MsgType tp, void *data) { return Msg(tp, data); }
 
-static Msg NewPeerMsg(MsgType tp, uint64_t regionId, void *data)
-{
+static Msg NewPeerMsg(MsgType tp, uint64_t regionId, void *data) {
   return Msg(tp, regionId, data);
 }
 
-struct MsgSplitRegion
-{
+struct MsgSplitRegion {
   metapb::RegionEpoch *region_epoch_;
   std::string split_key_;
 };
@@ -126,14 +113,12 @@ struct MsgSplitRegion
 // A concurrency queue impl
 //
 
-class Queue
-{
-public:
-  T Pop()
-  {
+template <typename T>
+class Queue {
+ public:
+  T Pop() {
     std::unique_lock<std::mutex> mlock(mutex_);
-    while (queue_.empty())
-    {
+    while (queue_.empty()) {
       cond_.wait(mlock);
     }
     auto val = queue_.front();
@@ -141,19 +126,16 @@ public:
     return val;
   }
 
-  void Pop(T &item)
-  {
+  void Pop(T &item) {
     std::unique_lock<std::mutex> mlock(mutex_);
-    while (queue_.empty())
-    {
+    while (queue_.empty()) {
       cond_.wait(mlock);
     }
     item = queue_.front();
     queue_.pop();
   }
 
-  void Push(const T &item)
-  {
+  void Push(const T &item) {
     std::unique_lock<std::mutex> mlock(mutex_);
     queue_.push(item);
     mlock.unlock();
@@ -169,7 +151,7 @@ public:
   // disable assignment
   Queue &operator=(const Queue &) = delete;
 
-private:
+ private:
   std::queue<T> queue_;
 
   std::mutex mutex_;
@@ -177,17 +159,14 @@ private:
   std::condition_variable cond_;
 };
 
-class QueueContext
-{
-public:
+class QueueContext {
+ public:
   QueueContext(){};
 
   ~QueueContext(){};
 
-  static QueueContext *GetInstance()
-  {
-    if (instance_ == nullptr)
-    {
+  static QueueContext *GetInstance() {
+    if (instance_ == nullptr) {
       instance_ = new QueueContext();
     }
     return instance_;
@@ -200,10 +179,10 @@ public:
   // Queue<uint64_t>& get_regionIdCh();
   moodycamel::ConcurrentQueue<uint64_t> &get_regionIdCh();
 
-protected:
+ protected:
   static QueueContext *instance_;
 
-private:
+ private:
   // Queue<Msg> peerSender_;
   moodycamel::ConcurrentQueue<Msg> peerSender_;
   // Queue<Msg> storeSender_;

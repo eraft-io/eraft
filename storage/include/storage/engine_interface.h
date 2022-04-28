@@ -43,7 +43,9 @@ class StorageEngineInterface {
 
   virtual EngOpStatus PutWriteBatch(WriteBatch& batch) = 0;
 
-  virtual EngOpStatus RangeQuery(std::string startK, std::string endK) = 0;
+  virtual EngOpStatus RangeQuery(std::string startK, std::string endK,
+                                 std::vector<std::string>& matchKeys,
+                                 std::vector<std::string>& matchValues) = 0;
 };
 
 }  // namespace storage

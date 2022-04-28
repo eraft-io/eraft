@@ -23,52 +23,54 @@
 #ifndef ERAFT_NETWORK_RAFT_BOOTSTRAP_H_
 #define ERAFT_NETWORK_RAFT_BOOTSTRAP_H_
 
-#include <string>
+#include <eraftio/metapb.pb.h>
+#include <network/db_engines.h>
 #include <storage/engine_interface.h>
 #include <storage/write_batch.h>
-#include <network/db_engines.h>
-#include <eraftio/metapb.pb.h>
 
-namespace network
-{
+#include <string>
 
-    class BootHepler
-    {
+namespace network {
 
-    public:
-        BootHepler();
-        ~BootHepler();
+class BootHepler {
+ public:
+  BootHepler();
+  ~BootHepler();
 
-        static bool IsRangeEmpty(std::shared_ptr<StorageEngineInterface> db,
-                                 std::string startKey, std::string endKey);
+  static bool IsRangeEmpty(std::shared_ptr<storage::StorageEngineInterface> db,
+                           std::string startKey, std::string endKey);
 
-        static bool DoBootstrapStore(std::shared_ptr<DBEngines> engines, uint64_t clusterId,
-                                     uint64_t storeId, std::string storeAddr);
+  static bool DoBootstrapStore(std::shared_ptr<DBEngines> engines,
+                               uint64_t clusterId, uint64_t storeId,
+                               std::string storeAddr);
 
-        static uint64_t AllocID();
+  static uint64_t AllocID();
 
-        static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
-            std::shared_ptr<DBEngines> engines, std::string storeAddr,
-            std::map<std::string, int> peerAddrMaps);
+  static std::pair<std::shared_ptr<metapb::Region>, bool> PrepareBootstrap(
+      std::shared_ptr<DBEngines> engines, std::string storeAddr,
+      std::map<std::string, int> peerAddrMaps);
 
-        static bool PrepareBoostrapCluster(std::shared_ptr<DBEngines> engines, std::shared_ptr<metapb::Region> region);
+  static bool PrepareBoostrapCluster(std::shared_ptr<DBEngines> engines,
+                                     std::shared_ptr<metapb::Region> region);
 
-        static void WriteInitialApplyState(storage::WriteBatch &kvWB, uint64_t regionId);
+  static void WriteInitialApplyState(storage::WriteBatch &kvWB,
+                                     uint64_t regionId);
 
-        static void WriteInitialRaftState(storage::WriteBatch &raftWB, uint64_t regionId);
+  static void WriteInitialRaftState(storage::WriteBatch &raftWB,
+                                    uint64_t regionId);
 
-        static BootHepler *GetInstance();
+  static BootHepler *GetInstance();
 
-        static const uint64_t kInitEpochVer = 1;
+  static const uint64_t kInitEpochVer = 1;
 
-        static const uint64_t kInitEpoceConfVer = 1;
+  static const uint64_t kInitEpoceConfVer = 1;
 
-    protected:
-        static BootHepler *instance_;
+ protected:
+  static BootHepler *instance_;
 
-        static uint64_t gCounter_;
-    };
+  static uint64_t gCounter_;
+};
 
-} // namespace network
+}  // namespace network
 
 #endif
