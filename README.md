@@ -27,7 +27,9 @@ make test
 
 - example
 
-[https://github.com/eraft-io/eraft/tree/eraft_with_rocksdb]
+![Leader election](document/img/pmemredis.png)
+
+
 
 ##### Leader election and log replication
 ![Leader election](document/img/eraft-demo1.gif)

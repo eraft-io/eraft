@@ -39,6 +39,8 @@ class RaftPeerStorage;
 
 class RaftServerTransport;
 
+class TransportInterface;
+
 class RaftPeer {
  public:
   RaftPeer();
@@ -63,7 +65,7 @@ class RaftPeer {
 
   bool IsLeader();
 
-  void Send(std::shared_ptr<RaftServerTransport> trans,
+  void Send(std::shared_ptr<TransportInterface> trans,
             std::vector<eraftpb::Message> msgs);
 
   uint64_t Term();
@@ -71,7 +73,7 @@ class RaftPeer {
   std::shared_ptr<metapb::Region> Region();
 
   void SendRaftMessage(eraftpb::Message msg,
-                       std::shared_ptr<RaftServerTransport> trans);
+                       std::shared_ptr<TransportInterface> trans);
 
   std::shared_ptr<eraft::RawNode> GetRaftGroup();
 

@@ -107,7 +107,7 @@ bool RaftPeer::IsLeader() {
   return this->raftGroup_->raft->state_ == eraft::NodeState::StateLeader;
 }
 
-void RaftPeer::Send(std::shared_ptr<RaftServerTransport> trans,
+void RaftPeer::Send(std::shared_ptr<TransportInterface> trans,
                     std::vector<eraftpb::Message> msgs) {
   for (auto msg : msgs) {
     SendRaftMessage(msg, trans);
@@ -127,7 +127,7 @@ std::shared_ptr<metapb::Region> RaftPeer::Region() {
 }
 
 void RaftPeer::SendRaftMessage(eraftpb::Message msg,
-                               std::shared_ptr<RaftServerTransport> trans) {
+                               std::shared_ptr<TransportInterface> trans) {
   std::shared_ptr<raft_messagepb::RaftMessage> sendMsg =
       std::make_shared<raft_messagepb::RaftMessage>();
   sendMsg->set_region_id(this->regionId_);

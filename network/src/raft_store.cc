@@ -67,7 +67,6 @@ std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {
     auto region = localState->region();
     metapb::Region *region1 = new metapb::Region(region);
 
-    // TODO: clear stale meta
     std::shared_ptr<RaftPeer> peer =
         std::make_shared<RaftPeer>(storeID, ctx->cfg_, ctx->engine_,
                                    std::make_shared<metapb::Region>(region));

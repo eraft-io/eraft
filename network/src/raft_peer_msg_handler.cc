@@ -26,6 +26,7 @@
 #include <network/raft_encode_assistant.h>
 #include <network/raft_peer.h>
 #include <network/raft_peer_msg_handler.h>
+#include <spdlog/spdlog.h>
 
 namespace network {
 
@@ -227,7 +228,43 @@ std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
 
 void RaftPeerMsgHandler::HandleRaftReady() {
   // pop ready message, send to tran
-  // ServerTransport::Send(std::shared_ptr<raft_serverpb::RaftMessage> msg)
+  SPDLOG_INFO("handle raft ready " + std::to_string(this->peer_->regionId_));
+  if (this->peer_->stopped_) {
+    return;
+  }
+  if (this->peer_->raftGroup_->HasReady()) {
+    SPDLOG_INFO("raft group is ready!");
+    eraft::DReady rd = this->peer_->raftGroup_->EReady();
+    auto result = this->peer_->peerStorage_->SaveReadyState(
+        std::make_shared<eraft::DReady>(rd));
+    peer_->Send(ctx_->trans_, rd.messages);
+    if (rd.committedEntries.size() > 0) {
+      SPDLOG_INFO("rd.committedEntries.size() " +
+                  std::to_string(rd.committedEntries.size()));
+      std::shared_ptr<storage::WriteBatch> kvWB =
+          std::make_shared<storage::WriteBatch>();
+      for (auto entry : rd.committedEntries) {
+        SPDLOG_INFO("COMMIT_ENTRY " + eraft::EntryToString(entry));
+        this->Process(&entry, kvWB);
+        if (this->peer_->stopped_) {
+          return;
+        }
+      }
+      auto lastEnt = rd.committedEntries[rd.committedEntries.size() - 1];
+      this->peer_->peerStorage_->applyState_->set_applied_index(
+          lastEnt.index());
+      this->peer_->peerStorage_->applyState_->set_index(lastEnt.index());
+      this->peer_->peerStorage_->applyState_->set_term(lastEnt.term());
+
+      RaftEncodeAssistant::GetInstance()->PutMessageToEngine(
+          this->peer_->peerStorage_->engines_->kvDB_,
+          RaftEncodeAssistant::GetInstance()->ApplyStateKey(
+              this->peer_->regionId_),
+          *this->peer_->peerStorage_->applyState_);
+      this->peer_->peerStorage_->engines_->kvDB_->PutWriteBatch(*kvWB);
+    }
+    this->peer_->raftGroup_->Advance(rd);
+  }
 }
 
 void RaftPeerMsgHandler::HandleMsg(Msg m) {

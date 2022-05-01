@@ -56,12 +56,12 @@ bool RaftNode::Start(std::shared_ptr<DBEngines> engines,
   }
   // 3.start node, no jump!!  system_->Start(this->store_, this->cfg_, engines,
   // trans);
-  bool isNewCluster = (checkPrepareRes.first != nullptr);
-  if (isNewCluster) {
-    if (!BoostrapCluster(engines, checkPrepareRes.first, &isNewCluster)) {
-      return false;
-    }
-  }
+  // bool isNewCluster = (checkPrepareRes.first != nullptr);
+  // if (isNewCluster) {
+  //   if (!BoostrapCluster(engines, checkPrepareRes.first, &isNewCluster)) {
+  //     return false;
+  //   }
+  // }
   if (StartNode(engines, trans)) {
     return false;
   }
