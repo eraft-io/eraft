@@ -33,14 +33,14 @@ RaftServerTransport::~RaftServerTransport() {}
 void RaftServerTransport::Send(
     std::shared_ptr<raft_messagepb::RaftMessage> msg) {
   auto storeID = msg->to_peer().store_id();
-  auto addr = msg->to_peer().add();
+  auto addr = msg->to_peer().addr();
   SendStore(storeID, msg, addr);
 }
 
 void RaftServerTransport::SendStore(
     uint64_t storeId, std::shared_ptr<raft_messagepb::RaftMessage> msg,
     std::string addr) {
-  WriteData(storeId, msg, addr);
+  WriteData(storeId, addr, msg);
 }
 
 void RaftServerTransport::WriteData(

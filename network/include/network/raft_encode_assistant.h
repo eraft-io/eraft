@@ -40,7 +40,7 @@ class RaftEncodeAssistant {
   static RaftEncodeAssistant *instance_;
 
  public:
-  RaftEncodeAssistant();
+  RaftEncodeAssistant() {}
   ~RaftEncodeAssistant() { delete instance_; }
 
   static RaftEncodeAssistant *GetInstance() {
@@ -48,6 +48,7 @@ class RaftEncodeAssistant {
       instance_ = new RaftEncodeAssistant();
       return instance_;
     }
+    return instance_;
   }
 
   static const std::vector<uint8_t> kLocalPrefix;
@@ -74,6 +75,21 @@ class RaftEncodeAssistant {
 
   static const uint64_t kInvalidID;
 
+  static std::string KeyWithCF(std::string cf, std::string key) {
+    return cf + "_" + key;
+  }
+
+  static void WriteRegionState(
+      std::shared_ptr<storage::StorageEngineInterface> kvDB,
+      std::shared_ptr<metapb::Region> region,
+      const raft_messagepb::PeerState &state) {
+    raft_messagepb::RegionLocalState *regionState =
+        new raft_messagepb::RegionLocalState();
+    regionState->set_state(state);
+    regionState->set_allocated_region(region.get());
+    PutMessageToEngine(kvDB, RegionStateKey(region->id()), *regionState);
+  }
+
   static const std::vector<uint8_t> kRaftLogSuffix;
 
   static std::string RaftLogSuffixStr() {
@@ -98,13 +114,12 @@ class RaftEncodeAssistant {
     return std::string(kRegionStateSuffix.begin(), kRegionStateSuffix.end());
   }
 
-  static std::pair<std::string, uint16_t> AddrStrToIpPort(std::string addr) {
+  static std::pair<std::string, int> AddrStrToIpPort(std::string addr) {
     std::string::size_type p = addr.find_first_of(':');
     std::string ip = addr.substr(0, p);
     std::string port = addr.substr(p + 1);
-    uint16_t portInt = static_cast<uint16_t>(std::stoi(port));
-    return std::make_pair<std::string, uint16_t>(std::move(ip),
-                                                 std::move(portInt));
+    uint16_t portInt = static_cast<int>(std::stoi(port));
+    return std::make_pair<std::string, int>(std::move(ip), std::move(portInt));
   }
 
   static const std::vector<uint8_t> MinKey;

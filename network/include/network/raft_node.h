@@ -26,14 +26,19 @@
 #include <eraftio/metapb.pb.h>
 #include <network/db_engines.h>
 #include <network/raft_config.h>
+#include <network/raft_server_transport.h>
 #include <network/raft_store.h>
-#include <network/transport_interface.h>
 #include <storage/engine_interface.h>
 
 #include <cstdint>
 #include <memory>
 
 namespace network {
+
+class RaftStore;
+
+class RaftConfig;
+
 class RaftNode {
  public:
   RaftNode(std::shared_ptr<RaftStore> system, std::shared_ptr<RaftConfig> cfg);

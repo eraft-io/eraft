@@ -32,10 +32,10 @@
 
 namespace network {
 
-class BootHepler {
+class BootHelper {
  public:
-  BootHepler();
-  ~BootHepler();
+  BootHelper();
+  ~BootHelper();
 
   static bool IsRangeEmpty(std::shared_ptr<storage::StorageEngineInterface> db,
                            std::string startKey, std::string endKey);
@@ -59,14 +59,14 @@ class BootHepler {
   static void WriteInitialRaftState(storage::WriteBatch &raftWB,
                                     uint64_t regionId);
 
-  static BootHepler *GetInstance();
+  static BootHelper *GetInstance();
 
   static const uint64_t kInitEpochVer = 1;
 
   static const uint64_t kInitEpoceConfVer = 1;
 
  protected:
-  static BootHepler *instance_;
+  static BootHelper *instance_;
 
   static uint64_t gCounter_;
 };

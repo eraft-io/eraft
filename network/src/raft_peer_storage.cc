@@ -28,9 +28,9 @@
 
 namespace network {
 
-RaftPeerStorage::RaftPeerStorage(
-    std::shared_ptr<storage::StorageEngineInterface> engs,
-    std::shared_ptr<metapb::Region> region, std::string tag)
+RaftPeerStorage::RaftPeerStorage(std::shared_ptr<DBEngines> engs,
+                                 std::shared_ptr<metapb::Region> region,
+                                 std::string tag)
     : engines_(engs), region_(region), tag_(tag) {
   SPDLOG_INFO("createing peer storage for region " +
               std::to_string(region->id()));
@@ -38,7 +38,7 @@ RaftPeerStorage::RaftPeerStorage(
       engs->raftDB_, region);
 
   auto applyStatePair =
-      RaftEncodeAssistant()->GetInstance()->InitApplyState(engs->kvDB_, region);
+      RaftEncodeAssistant::GetInstance()->InitApplyState(engs->kvDB_, region);
 
   // checkout last index < applied_index
   this->raftState_ = raftStatePair.first;
@@ -86,13 +86,13 @@ std::pair<uint64_t, bool> RaftPeerStorage::Term(uint64_t idx) {
       idx == this->raftState_->last_index()) {
     return std::make_pair<uint64_t, bool>(this->raftState_->last_term(), true);
   }
-  eraftpb::Entry *entry;
+  eraftpb::Entry entry;
   RaftEncodeAssistant *assistant = RaftEncodeAssistant::GetInstance();
   assistant->GetMessageFromEngine(
       this->engines_->raftDB_, assistant->RaftLogKey(this->region_->id(), idx),
       entry);
 
-  return std::make_pair<uint64_t, bool>(entry->term(), true);
+  return std::make_pair<uint64_t, bool>(entry.term(), true);
 }
 
 // LastIndex returns the index of the last entry in the log.
@@ -114,7 +114,9 @@ bool RaftPeerStorage::IsInitialized() {
   return (this->region_->peers().size() > 0);
 }
 
-std::shared_ptr<metapb::Region> RaftPeerStorage::Region() {}
+std::shared_ptr<metapb::Region> RaftPeerStorage::Region() {
+  return this->region_;
+}
 
 void RaftPeerStorage::SetRegion(std::shared_ptr<metapb::Region> region) {
   this->region_ = region;
@@ -127,12 +129,10 @@ uint64_t RaftPeerStorage::AppliedIndex() {
 }
 
 uint64_t RaftPeerStorage::TruncatedIndex() {
-  return this->applyState_->truncated_state().index();
+  return this->applyState_->index();
 }
 
-uint64_t RaftPeerStorage::TruncatedTerm() {
-  return this->applyState_->truncated_state().term();
-}
+uint64_t RaftPeerStorage::TruncatedTerm() { return this->applyState_->term(); }
 
 bool RaftPeerStorage::ClearMeta() {}
 
@@ -146,10 +146,8 @@ std::shared_ptr<ApplySnapResult> RaftPeerStorage::SaveReadyState(
     this->raftState_->set_last_index(ready->snapshot.metadata().index());
     this->raftState_->set_last_term(ready->snapshot.metadata().term());
     this->applyState_->set_applied_index(ready->snapshot.metadata().index());
-    this->applyState_->mutable_truncated_state()->set_index(
-        ready->snapshot.metadata().index());
-    this->applyState_->mutable_truncated_state()->set_term(
-        ready->snapshot.metadata().term());
+    this->applyState_->set_index(ready->snapshot.metadata().index());
+    this->applyState_->set_term(ready->snapshot.metadata().term());
   }
 
   this->Append(ready->entries, this->engines_->raftDB_);

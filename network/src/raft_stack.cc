@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include <network/raft_client.h>
+#include <network/raft_config.h>
 #include <network/raft_server_transport.h>
 #include <network/raft_stack.h>
 
@@ -45,7 +46,7 @@ std::string RaftStack::Read() {}
 
 bool RaftStack::Start() {
   // raft system init
-  raftSystem_ = std::make_shared<RaftStore>(this->raftConf_);
+  raftSystem_ = std::make_shared<RaftStore>();
 
   // router init
   raftRouter_ = this->raftSystem_->raftRouter_;
@@ -60,7 +61,6 @@ bool RaftStack::Start() {
   // init server transport
   std::shared_ptr<RaftServerTransport> trans =
       std::make_shared<RaftServerTransport>(raftClient, raftRouter_);
-
   if (this->raftNode_->Start(this->dbEngs_, trans)) {
     SPDLOG_INFO("raftstack start succeed!");
   } else {

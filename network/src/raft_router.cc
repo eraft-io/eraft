@@ -29,8 +29,8 @@ namespace network {
 Router::Router() {}
 
 std::shared_ptr<RaftPeerState> Router::Get(uint64_t regionId) {
-  if (peers_->find(regionId) != peers_.end()) {
-    return peers[regionId];
+  if (peers_.find(regionId) != peers_.end()) {
+    return peers_[regionId];
   }
   return nullptr;
 }
@@ -50,8 +50,9 @@ void Router::Close(uint64_t regionId) { this->peers_.erase(regionId); }
 
 bool Router::Send(uint64_t regionId, Msg m) {
   m.regionId_ = regionId;
-  SPDLOG_INFO("push raft msg to peer sender, type " + msg.MsgToString());
+  SPDLOG_INFO("push raft msg to peer sender, type " + m.MsgToString());
   QueueContext::GetInstance()->get_peerSender().enqueue(m);
+  return true;
 }
 
 void Router::SendStore(Msg m) {

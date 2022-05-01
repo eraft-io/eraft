@@ -20,34 +20,61 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <eraftio/metapb.pb.h>
+#include <eraftio/raft_messagepb.pb.h>
+#include <network/raft_bootstrap.h>
+#include <network/raft_encode_assistant.h>
+#include <network/raft_peer.h>
 #include <network/raft_peer_msg_handler.h>
 
 namespace network {
 
-RaftPeerMsgHandler::RaftPeerMsgHandler(std::shared_ptr<Peer> peer,
+RaftPeerMsgHandler::RaftPeerMsgHandler(std::shared_ptr<RaftPeer> peer,
                                        std::shared_ptr<GlobalContext> ctx)
     : peer_(peer), ctx_(ctx) {}
 
 RaftPeerMsgHandler::~RaftPeerMsgHandler() {}
 
+std::shared_ptr<std::string> RaftPeerMsgHandler::GetRequestKey(
+    raft_messagepb::Request *req) {
+  std::string key;
+  switch (req->cmd_type()) {
+    case raft_messagepb::CmdType::Get: {
+      key = req->get().key();
+      break;
+    }
+    case raft_messagepb::CmdType::Put: {
+      key = req->put().key();
+      break;
+    }
+    case raft_messagepb::CmdType::Delete: {
+      key = req->delete_().key();
+      break;
+    }
+    default:
+      break;
+  }
+  return std::make_shared<std::string>(key);
+}
+
 std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::ProcessRequest(
     eraftpb::Entry *entry, raft_messagepb::RaftCmdRequest *msg,
     std::shared_ptr<storage::WriteBatch> wb) {
-  auto req = msg->requests()[0];
+  auto req = msg->requests(0);
   std::shared_ptr<std::string> key = GetRequestKey(&req);
   SPDLOG_INFO("process request key: " + *key);
   switch (req.cmd_type()) {
-    case raft_cmdpb::CmdType::Put: {
-      wb->Put(
-          Assistant::GetInstance()->KeyWithCF(req.put().cf(), req.put().key()),
-          req.put().value());
+    case raft_messagepb::CmdType::Put: {
+      wb->Put(RaftEncodeAssistant::GetInstance()->KeyWithCF(req.put().cf(),
+                                                            req.put().key()),
+              req.put().value());
       SPDLOG_INFO("process put request with cf " + req.put().cf() + " key " +
                   req.put().key() + " value " + req.put().value());
       break;
     }
-    case raft_cmdpb::CmdType::Delete: {
-      wb->Delete(Assistant::GetInstance()->KeyWithCF(req.delete_().cf(),
-                                                     req.delete_().key()));
+    case raft_messagepb::CmdType::Delete: {
+      wb->Delete(RaftEncodeAssistant::GetInstance()->KeyWithCF(
+          req.delete_().cf(), req.delete_().key()));
       SPDLOG_INFO("process delete request with cf " + req.delete_().cf() +
                   " key " + req.delete_().key());
       break;
@@ -80,57 +107,61 @@ void RaftPeerMsgHandler::ProcessConfChange(
     default:
       break;
   }
-  this->peer_->raftGroup_->ApplyConfChange(*cc);
+  this->peer_->GetRaftGroup()->ApplyConfChange(*cc);
+}
+
+std::shared_ptr<RaftPeer> RaftPeerMsgHandler::GetRaftPeer() {
+  return this->peer_;
 }
 
 void RaftPeerMsgHandler::ProcessSplitRegion(
     eraftpb::Entry *entry, metapb::Region *newRegion,
     std::shared_ptr<storage::WriteBatch> wb) {
-  uint64_t regionid = this->peer_->regionId_;
+  uint64_t regionid = this->GetRaftPeer()->GetRegionID();
   std::unique_lock<std::mutex> mlock(this->ctx_->storeMeta_->mutex_);
   if (this->ctx_->storeMeta_->regions_.find(regionid) ==
       this->ctx_->storeMeta_->regions_.end()) {
     SPDLOG_INFO("ProcessSplitRegion() error not find");
     return;
   }
-  metapb::Region *currentregion = this->ctx_->storeMeta_->regions_[regionid];
-  metapb::RegionEpoch *rep = currentregion->mutable_region_epoch();
+  metapb::Region *currentRegion = this->ctx_->storeMeta_->regions_[regionid];
+  metapb::RegionEpoch *rep = currentRegion->mutable_region_epoch();
   rep->set_version(rep->version() + 1);
-  for (auto per : currentregion->peers()) {
-    metapb::Peer *newpeer = newregion->add_peers();
+  for (auto per : currentRegion->peers()) {
+    metapb::Peer *newpeer = newRegion->add_peers();
     newpeer->set_addr(per.addr());
     newpeer->set_store_id(per.store_id());
     newpeer->set_id(per.id());
   }
-  newregion->mutable_region_epoch()->set_conf_ver(1);
-  newregion->mutable_region_epoch()->set_version(1);
-  newregion->set_end_key(currentregion->end_key());
-  currentregion->set_end_key(newregion->start_key());
-  this->ctx_->storeMeta_->regions_[newregion->id()] = newregion;
+  newRegion->mutable_region_epoch()->set_conf_ver(1);
+  newRegion->mutable_region_epoch()->set_version(1);
+  newRegion->set_end_key(currentRegion->end_key());
+  currentRegion->set_end_key(newRegion->start_key());
+  this->ctx_->storeMeta_->regions_[newRegion->id()] = newRegion;
   mlock.unlock();
   std::string debugVal;
-  google::protobuf::TextFormat::PrintToString(*currentregion, &debugVal);
+  google::protobuf::TextFormat::PrintToString(*currentRegion, &debugVal);
   SPDLOG_INFO("oldregion: " + debugVal);
-  google::protobuf::TextFormat::PrintToString(*newregion, &debugVal);
+  google::protobuf::TextFormat::PrintToString(*newRegion, &debugVal);
   SPDLOG_INFO("newregion: " + debugVal);
-  metapb::Region curegion = *currentregion;
-  metapb::Region neregion = *newregion;
-  Assistant::GetInstance()->WriteRegionState(
-      wb, std::make_shared<metapb::Region>(curegion),
+  metapb::Region curegion = *currentRegion;
+  metapb::Region newregion = *newRegion;
+  RaftEncodeAssistant::GetInstance()->WriteRegionState(
+      this->ctx_->engine_->kvDB_, std::make_shared<metapb::Region>(curegion),
       raft_messagepb::PeerState::Normal);
-  Assistant::GetInstance()->WriteRegionState(
-      wb, std::make_shared<metapb::Region>(neregion),
+  RaftEncodeAssistant::GetInstance()->WriteRegionState(
+      this->ctx_->engine_->kvDB_, std::make_shared<metapb::Region>(newregion),
       raft_messagepb::PeerState::Normal);
   BootHelper::GetInstance()->PrepareBoostrapCluster(
-      this->ctx_->engine_, std::make_shared<metapb::Region>(neregion));
+      this->ctx_->engine_, std::make_shared<metapb::Region>(newregion));
   // this->peer_->sizeDiffHint_ = 0;
   // this->peer_->approximateSize_ = 0;
-  std::shared_ptr<Peer> newpeer = std::make_shared<Peer>(
+  std::shared_ptr<RaftPeer> newpeer = std::make_shared<RaftPeer>(
       this->ctx_->store_->id(), this->ctx_->cfg_, this->ctx_->engine_,
-      std::make_shared<metapb::Region>(neregion));
+      std::make_shared<metapb::Region>(newregion));
   this->ctx_->router_->Register(newpeer);
-  Msg m(MsgType::MsgTypeStart, neregion.id(), nullptr);
-  this->ctx_->router_->Send(newregion->id(), m);
+  Msg m(MsgType::MsgTypeStart, newregion.id(), nullptr);
+  this->ctx_->router_->Send(newregion.id(), m);
 }
 
 std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
@@ -145,7 +176,7 @@ std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
       break;
     }
     case eraftpb::EntryType::EntryNormal: {
-      kvrpcpb::RawPutRequest *msg = new kvrpcpb::RawPutRequest();
+      raft_messagepb::RawPutRequest *msg = new raft_messagepb::RawPutRequest();
       msg->ParseFromString(entry->data());
       SPDLOG_INFO("Process Entry DATA: cf " + msg->cf() + " key " + msg->key() +
                   " val " + msg->value());
@@ -155,26 +186,27 @@ std::shared_ptr<storage::WriteBatch> RaftPeerMsgHandler::Process(
       }
       storage::WriteBatch kvWB;
       if (msg->type() == 1) {
-        kvWB.Put(Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()),
+        kvWB.Put(RaftEncodeAssistant::GetInstance()->KeyWithCF(msg->cf(),
+                                                               msg->key()),
                  msg->value());
       } else if (msg->type() == 2) {
-        kvWB.Delete(
-            Assistant().GetInstance()->KeyWithCF(msg->cf(), msg->key()));
+        kvWB.Delete(RaftEncodeAssistant::GetInstance()->KeyWithCF(msg->cf(),
+                                                                  msg->key()));
       }
 
-      auto status = this->peer_->peerStorage_->engines_->kvDB_->Write(
-          rocksdb::WriteOptions(), &kvWB);
-      if (!status.ok()) {
+      auto status =
+          this->peer_->peerStorage_->engines_->kvDB_->PutWriteBatch(kvWB);
+      if (status != storage::EngOpStatus::OK) {
         SPDLOG_INFO("err: when process entry data() cf " + msg->cf() + " key " +
                     msg->key() + " val " + msg->value() + ")");
       }
       if (this->peer_->IsLeader()) {
-        std::mutex mapMutex;
-        {
-          std::lock_guard<std::mutex> lg(mapMutex);
-          Server::readyCondVars_[msg->id()]
-              ->notify_one();  // notify client process ok
-        }
+        // std::mutex mapMutex;
+        // {
+        //   std::lock_guard<std::mutex> lg(mapMutex);
+        //   Server::readyCondVars_[msg->id()]
+        //       ->notify_one();  // notify client process ok
+        // }
       }
       delete msg;
       break;
@@ -211,13 +243,13 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
             return;
           }
           switch (raftMsg->raft_msg_type()) {
-            case raft_messagepb::RaftMsgNormal: {
+            case raft_messagepb::RaftMessageType::RaftMsgNormal: {
               if (!this->OnRaftMsg(raftMsg)) {
                 SPDLOG_ERROR("on handle raft msg");
               }
               break;
             }
-            case raft_messagepb::RaftMsgClientCmd: {
+            case raft_messagepb::RaftMessageType::RaftMsgClientCmd: {
               // std::shared_ptr<kvrpcpb::RawPutRequest> put =
               //     std::make_shared<kvrpcpb::RawPutRequest>();
               // put->set_key(raftMsg->data());
@@ -225,38 +257,40 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
               this->ProposeRaftCommand(raftMsg->data());
               break;
             }
-            case raft_messagepb::RaftTransferLeader: {
-              std::shared_ptr<raft_cmdpb::TransferLeaderRequest> tranLeader =
-                  std::make_shared<raft_cmdpb::TransferLeaderRequest>();
+            case raft_messagepb::RaftMessageType::RaftTransferLeader: {
+              std::shared_ptr<raft_messagepb::TransferLeaderRequest>
+                  tranLeader =
+                      std::make_shared<raft_messagepb::TransferLeaderRequest>();
               tranLeader->ParseFromString(raftMsg->data());
               SPDLOG_INFO("transfer leader with peer id = " +
                           std::to_string(tranLeader->peer().id()));
-              this->peer_->raftGroup_->TransferLeader(tranLeader->peer().id());
+              this->peer_->GetRaftGroup()->TransferLeader(
+                  tranLeader->peer().id());
               break;
             }
-            case raft_messagepb::RaftConfChange: {
-              std::shared_ptr<raft_cmdpb::ChangePeerRequest> peerChange =
-                  std::make_shared<raft_cmdpb::ChangePeerRequest>();
+            case raft_messagepb::RaftMessageType::RaftConfChange: {
+              std::shared_ptr<raft_messagepb::ChangePeerRequest> peerChange =
+                  std::make_shared<raft_messagepb::ChangePeerRequest>();
               peerChange->ParseFromString(raftMsg->data());
               {
                 eraftpb::ConfChange confChange;
                 confChange.set_node_id(peerChange->peer().id());
                 confChange.set_context(peerChange->peer().addr());
                 confChange.set_change_type(peerChange->change_type());
-                this->peer_->raftGroup_->ProposeConfChange(confChange);
+                this->peer_->GetRaftGroup()->ProposeConfChange(confChange);
               }
               break;
             }
-            case raft_messagepb::RaftSplitRegion: {
-              std::shared_ptr<raft_cmdpb::SplitRequest> splitregion =
-                  std::make_shared<raft_cmdpb::SplitRequest>();
-              splitregion->ParseFromString(raftMsg->data());
-              {
-                metapb::Region newregion;
-                newregion.set_start_key(splitregion->split_key());
-                newregion.set_id(splitregion->new_region_id());
-                this->peer_->raftGroup_->ProposeSplitRegion(newregion);
-              }
+            case raft_messagepb::RaftMessageType::RaftSplitRegion: {
+              // std::shared_ptr<raft_cmdpb::SplitRequest> splitregion =
+              //     std::make_shared<raft_cmdpb::SplitRequest>();
+              // splitregion->ParseFromString(raftMsg->data());
+              // {
+              //   metapb::Region newregion;
+              //   newregion.set_start_key(splitregion->split_key());
+              //   newregion.set_id(splitregion->new_region_id());
+              //   this->peer_->GetRaftGroup()->ProposeSplitRegion(newregion);
+              // }
               break;
             }
           }
@@ -291,18 +325,18 @@ void RaftPeerMsgHandler::HandleMsg(Msg m) {
 }
 
 void RaftPeerMsgHandler::ProposeRequest(std::string palyload) {
-  this->peer_->raftGroup_->Propose(palyload);
+  this->peer_->GetRaftGroup()->Propose(palyload);
 }
 
 void RaftPeerMsgHandler::ProposeRaftCommand(std::string playload) {
-  SPDLOG_INFO("PROPOSE TEST KEY ================= " + put->key());
+  // SPDLOG_INFO("PROPOSE TEST CMD ================= " + playload);
   // std::string data = put->key();
-  this->peer_->raftGroup_->Propose(playload);
+  this->peer_->GetRaftGroup()->Propose(playload);
 }
 
 void RaftPeerMsgHandler::OnTick() {
   SPDLOG_INFO("NODE STATE:" +
-              eraft::StateToString(this->peer_->raftGroup_->raft->state_));
+              eraft::StateToString(this->peer_->GetRaftGroup()->raft->state_));
 
   if (this->peer_->stopped_) {
     return;
@@ -317,7 +351,9 @@ void RaftPeerMsgHandler::StartTicker() {
   QueueContext::GetInstance()->get_regionIdCh().enqueue(this->peer_->regionId_);
 }
 
-void RaftPeerMsgHandler::OnRaftBaseTick() { this->peer_->raftGroup_->Tick(); }
+void RaftPeerMsgHandler::OnRaftBaseTick() {
+  this->peer_->GetRaftGroup()->Tick();
+}
 
 bool RaftPeerMsgHandler::OnRaftMsg(raft_messagepb::RaftMessage *msg) {
   auto toPeer = this->peer_->GetPeerFromCache(msg->message().from());
@@ -357,26 +393,12 @@ bool RaftPeerMsgHandler::OnRaftMsg(raft_messagepb::RaftMessage *msg) {
     newE->set_term(e.term());
   }
 
-  this->peer_->raftGroup_->Step(newMsg);
+  this->peer_->GetRaftGroup()->Step(newMsg);
 
   return true;
 }
 
 bool RaftPeerMsgHandler::CheckMessage(raft_messagepb::RaftMessage *msg) {
-  auto fromEpoch = msg->region_epoch();
-  auto isVoteMsg =
-      (msg->message().msg_type() == eraftpb::MessageType::MsgRequestVote);
-  auto fromStoreID = msg->from_peer().store_id();
-
-  auto region = this->peer_->Region();
-  auto target = msg->to_peer();
-
-  if (target.id() < this->peer_->PeerId()) {
-    return true;
-  } else if (target.id() > this->peer_->PeerId()) {
-    return true;
-  }
-
   return false;
 }
 

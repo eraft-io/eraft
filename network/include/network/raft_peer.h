@@ -37,6 +37,8 @@ namespace network {
 
 class RaftPeerStorage;
 
+class RaftServerTransport;
+
 class RaftPeer {
  public:
   RaftPeer();
@@ -61,15 +63,21 @@ class RaftPeer {
 
   bool IsLeader();
 
-  void Send(std::shared_ptr<RaftTransport> trans,
+  void Send(std::shared_ptr<RaftServerTransport> trans,
             std::vector<eraftpb::Message> msgs);
 
   uint64_t Term();
 
-  bool SendRaftMessage(eraftpb::Message msg,
-                       std::shared_ptr<RaftTransport> trans);
+  std::shared_ptr<metapb::Region> Region();
 
- private:
+  void SendRaftMessage(eraftpb::Message msg,
+                       std::shared_ptr<RaftServerTransport> trans);
+
+  std::shared_ptr<eraft::RawNode> GetRaftGroup();
+
+  uint64_t GetRegionID();
+
+  //  private:
   std::shared_ptr<eraft::RawNode> raftGroup_;
 
   std::shared_ptr<RaftPeerStorage> peerStorage_;

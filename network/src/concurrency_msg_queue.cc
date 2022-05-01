@@ -22,8 +22,6 @@
 
 #include <network/concurrency_msg_queue.h>
 
-namespace kvserver {
-
 QueueContext *QueueContext::instance_ = nullptr;
 
 moodycamel::ConcurrentQueue<Msg> &QueueContext::get_peerSender() {
@@ -37,5 +35,3 @@ moodycamel::ConcurrentQueue<Msg> &QueueContext::get_storeSender() {
 moodycamel::ConcurrentQueue<uint64_t> &QueueContext::get_regionIdCh() {
   return regionIdCh_;
 }
-
-}  // namespace kvserver

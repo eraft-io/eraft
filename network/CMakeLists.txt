@@ -61,17 +61,17 @@ set(Headers
     include/network/task_manager.h
     include/network/thread_pool.h
     include/network/toml.h
-    include/network/transport_interface.h
     include/network/unbounded_buffer.h
 )
 
 set(Sources
     src/async_buffer.cc
     src/client.cc
-    src/cmd_string.cc
     src/cmd_raft.cc
+    src/cmd_string.cc
     src/cmd.cc
     src/common.cc
+    src/concurrency_msg_queue.cc
     src/config.cc
     src/db_engines.cc
     src/epoller.cc

@@ -30,7 +30,8 @@
 #include <network/raft_config.h>
 #include <network/raft_peer.h>
 #include <network/raft_stack.h>
-#include <network/transport_interface.h>
+#include <network/raft_ticker.h>
+#include <network/raft_worker.h>
 #include <storage/write_batch.h>
 
 #include <deque>
@@ -45,6 +46,10 @@ class Router;
 class RaftstoreRouter;
 
 class RaftRouter;
+
+class RaftWorker;
+
+class Ticker;
 
 struct StoreState {
   uint64_t id_;
@@ -113,12 +118,14 @@ class RaftStore {
 
   bool Start(std::shared_ptr<metapb::Store> meta,
              std::shared_ptr<RaftConfig> cfg,
-             std::shared_ptr<storage::StorageEngineInterface> engines,
+             std::shared_ptr<DBEngines> engines,
              std::shared_ptr<TransportInterface> trans);
 
   bool StartWorkers(std::vector<std::shared_ptr<RaftPeer> > peers);
 
   void ShutDown();
+
+  std::shared_ptr<GlobalContext> GetContext();
 
  private:
   std::shared_ptr<GlobalContext> ctx_;

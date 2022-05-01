@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <network/raft_client.h>
+#include <network/raft_encode_assistant.h>
 #include <spdlog/spdlog.h>
 
 namespace network {
@@ -28,7 +29,7 @@ namespace network {
 RaftConn::RaftConn(std::string targetAddr_) {
   auto ipPortPair =
       RaftEncodeAssistant::GetInstance()->AddrStrToIpPort(targetAddr_);
-  redisConnContext_ = redisConnect(ipPortPair.first, ipPortPair.second);
+  redisConnContext_ = redisConnect(ipPortPair.first.c_str(), ipPortPair.second);
   if (redisConnContext_->err) {
     SPDLOG_ERROR("connect to " + targetAddr_ + " error!");
   }
@@ -38,8 +39,8 @@ RaftConn::~RaftConn() { redisFree(redisConnContext_); }
 
 bool RaftConn::Send(raft_messagepb::RaftMessage &msg, std::string cmd) {
   std::string sendMsg = msg.SerializeAsString();
-  redisReply *reply =
-      redisCommand(redisConnContext_, "%s %s", cmd.c_str(), sendMsg.c_str());
+  redisReply *reply = static_cast<redisReply *>(
+      redisCommand(redisConnContext_, "%s %s", cmd.c_str(), sendMsg.c_str()));
   if (std::string(reply->str) != "OK") {
     SPDLOG_ERROR("send raftmessage error: " + std::string(reply->str));
     return false;
@@ -71,16 +72,22 @@ RaftClient::~RaftClient() {}
 bool RaftClient::Send(uint64_t storeId, std::string addr,
                       raft_messagepb::RaftMessage &msg) {
   std::shared_ptr<RaftConn> conn = this->GetConn(addr, msg.region_id());
-  return conn->Send(msg, "pushraftmsg")
+  return conn->Send(msg, "pushraftmsg");
 }
 
 bool RaftClient::TransferLeader(std::string addr,
-                                raft_messagepb::TransferLeaderRequest &req) {}
+                                raft_messagepb::TransferLeaderRequest &req) {
+  return false;
+}
 
 bool RaftClient::PeerConfChange(std::string addr,
-                                raft_messagepb::ChangePeerRequest &req) {}
+                                raft_messagepb::ChangePeerRequest &req) {
+  return false;
+}
 
 bool RaftClient::SplitRegion(std::string addr,
-                             raft_messagepb::SplitRequest &req) {}
+                             raft_messagepb::SplitRequest &req) {
+  return false;
+}
 
 }  // namespace network

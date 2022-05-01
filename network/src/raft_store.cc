@@ -34,16 +34,20 @@ RaftStore::RaftStore() {
 
 RaftStore::~RaftStore() {}
 
+std::shared_ptr<GlobalContext> RaftStore::GetContext() { return ctx_; }
+
 std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {
-  auto startKey = RaftEncodeAssistant::GetInstance()->RegionMetaMinKey;
-  auto endKey = RaftEncodeAssistant::GetInstance()->RegionMetaMaxKey;
   auto ctx = this->ctx_;
   auto storeID = ctx->store_->id();
   SPDLOG_INFO("raft store store id: " + std::to_string(storeID) +
               " load peers");
+  std::vector<std::shared_ptr<RaftPeer> > regionPeers;
+
   std::vector<std::string> keys;
   std::vector<std::string> values;
-  ctx->engine_->kvDB_->RangeQuery(startKey, endKey, keys, values);
+  ctx->engine_->kvDB_->RangeQuery(
+      RaftEncodeAssistant::GetInstance()->RegionMetaMinKeyStr(),
+      RaftEncodeAssistant::GetInstance()->RegionMetaMaxKeyStr(), keys, values);
   for (int i = 0; i < keys.size(); i++) {
     uint64_t regionID;
     uint8_t suffix;
@@ -64,14 +68,16 @@ std::vector<std::shared_ptr<RaftPeer> > RaftStore::LoadPeers() {
     metapb::Region *region1 = new metapb::Region(region);
 
     // TODO: clear stale meta
-    std::shared_ptr<Peer> peer =
-        std::make_shared<Peer>(storeID, ctx->cfg_, ctx->engine_,
-                               std::make_shared<metapb::Region>(region));
+    std::shared_ptr<RaftPeer> peer =
+        std::make_shared<RaftPeer>(storeID, ctx->cfg_, ctx->engine_,
+                                   std::make_shared<metapb::Region>(region));
     // ctx->storeMeta_->regions_[regionID] = &region;
     ctx->storeMeta_->regions_.insert(
         std::pair<int, metapb::Region *>(regionID, region1));
     regionPeers.push_back(peer);
   }
+
+  return regionPeers;
 }
 
 std::shared_ptr<RaftPeer> RaftStore::GetLeader() {
@@ -89,7 +95,7 @@ void RaftStore::ClearStaleMeta(storage::WriteBatch &kvWB,
 
 bool RaftStore::Start(std::shared_ptr<metapb::Store> meta,
                       std::shared_ptr<RaftConfig> cfg,
-                      std::shared_ptr<StorageEngineInterface> engines,
+                      std::shared_ptr<DBEngines> engines,
                       std::shared_ptr<TransportInterface> trans) {
   assert(cfg->Validate());
 

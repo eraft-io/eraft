@@ -165,6 +165,8 @@ class QueueContext {
 
   ~QueueContext(){};
 
+  static QueueContext *instance_;
+
   static QueueContext *GetInstance() {
     if (instance_ == nullptr) {
       instance_ = new QueueContext();
@@ -179,8 +181,7 @@ class QueueContext {
   // Queue<uint64_t>& get_regionIdCh();
   moodycamel::ConcurrentQueue<uint64_t> &get_regionIdCh();
 
- protected:
-  static QueueContext *instance_;
+  //  protected:
 
  private:
   // Queue<Msg> peerSender_;

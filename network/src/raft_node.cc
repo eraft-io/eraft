@@ -21,6 +21,9 @@
 // SOFTWARE.
 
 #include <eraftio/metapb.pb.h>
+#include <network/db_engines.h>
+#include <network/raft_bootstrap.h>
+#include <network/raft_encode_assistant.h>
 #include <network/raft_node.h>
 
 namespace network {
@@ -28,16 +31,15 @@ namespace network {
 RaftNode::RaftNode(std::shared_ptr<RaftStore> system,
                    std::shared_ptr<RaftConfig> cfg)
     : clusterID_(1), raftCfg_(cfg), raftSystem_(system) {
-  metapb::Region store;
-  store.set_address(raftCfg_->storeAddr_);
-  store_ = std::make_shared<metapb::Store>(store);
+  store_ = std::make_shared<metapb::Store>();
+  store_->set_address(raftCfg_->storeAddr_);
 }
 
 bool RaftNode::Start(std::shared_ptr<DBEngines> engines,
                      std::shared_ptr<TransportInterface> trans) {
   // 1.check store
   uint64_t storeID;
-  if (!ChechStore(engines, &storeID)) {
+  if (!CheckStore(*engines, &storeID)) {
     SPDLOG_ERROR("store id " + std::to_string(storeID) + " not found");
   }
   if (storeID == RaftEncodeAssistant::GetInstance()->kInvalidID) {
@@ -70,9 +72,9 @@ bool RaftNode::CheckStore(DBEngines &engs, uint64_t *storeId) { return true; }
 
 bool RaftNode::BootstrapStore(DBEngines &engs, uint64_t *storeId) {
   auto storeID = raftCfg_->peerAddrMaps_[raftCfg_->storeAddr_];
-  SPDLOG_INFO("boostrap store with storeID: " + std::to_string(storeId));
+  SPDLOG_INFO("boostrap store with storeID: " + std::to_string(*storeId));
   if (!BootHelper::GetInstance()->DoBootstrapStore(
-          std::make_shared<Engines>(engs), this->clusterID_, storeID,
+          std::make_shared<DBEngines>(engs), this->clusterID_, storeID,
           this->store_->address())) {
     SPDLOG_ERROR("do bootstrap store error!");
     return false;
@@ -81,7 +83,7 @@ bool RaftNode::BootstrapStore(DBEngines &engs, uint64_t *storeId) {
   return true;
 }
 
-uint64_t RaftNode::AllocID() { return BootHepler::GetInstance()->AllocID(); }
+uint64_t RaftNode::AllocID() { return BootHelper::GetInstance()->AllocID(); }
 
 std::pair<std::shared_ptr<metapb::Region>, bool>
 RaftNode::CheckOrPrepareBoostrapCluster(std::shared_ptr<DBEngines> engines,
@@ -94,7 +96,7 @@ bool RaftNode::CheckClusterBoostrapped() { return true; }
 std::pair<std::shared_ptr<metapb::Region>, bool>
 RaftNode::PrepareBootstrapCluster(std::shared_ptr<DBEngines> engines,
                                   uint64_t storeId) {
-  return BootHepler::GetInstance()->PrepareBootstrap(engines, store_->address(),
+  return BootHelper::GetInstance()->PrepareBootstrap(engines, store_->address(),
                                                      raftCfg_->peerAddrMaps_);
 }
 

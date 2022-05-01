@@ -21,6 +21,9 @@ namespace raft_messagepb {
 
 namespace {
 
+const ::google::protobuf::Descriptor* RawPutRequest_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  RawPutRequest_reflection_ = NULL;
 const ::google::protobuf::Descriptor* RaftMessage_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   RaftMessage_reflection_ = NULL;
@@ -123,7 +126,26 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
     ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
       "raft_messagepb.proto");
   GOOGLE_CHECK(file != NULL);
-  RaftMessage_descriptor_ = file->message_type(0);
+  RawPutRequest_descriptor_ = file->message_type(0);
+  static const int RawPutRequest_offsets_[5] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, key_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, value_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, cf_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, type_),
+  };
+  RawPutRequest_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      RawPutRequest_descriptor_,
+      RawPutRequest::default_instance_,
+      RawPutRequest_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(RawPutRequest),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RawPutRequest, _is_default_instance_));
+  RaftMessage_descriptor_ = file->message_type(1);
   static const int RaftMessage_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftMessage, region_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftMessage, from_peer_),
@@ -147,7 +169,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftMessage),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftMessage, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftMessage, _is_default_instance_));
-  RaftLocalState_descriptor_ = file->message_type(1);
+  RaftLocalState_descriptor_ = file->message_type(2);
   static const int RaftLocalState_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftLocalState, hard_state_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftLocalState, last_index_),
@@ -164,7 +186,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftLocalState),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftLocalState, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftLocalState, _is_default_instance_));
-  RaftApplyState_descriptor_ = file->message_type(2);
+  RaftApplyState_descriptor_ = file->message_type(3);
   static const int RaftApplyState_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftApplyState, applied_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftApplyState, index_),
@@ -181,7 +203,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftApplyState),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftApplyState, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftApplyState, _is_default_instance_));
-  RaftTruncatedState_descriptor_ = file->message_type(3);
+  RaftTruncatedState_descriptor_ = file->message_type(4);
   static const int RaftTruncatedState_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftTruncatedState, index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftTruncatedState, term_),
@@ -197,7 +219,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftTruncatedState),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftTruncatedState, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftTruncatedState, _is_default_instance_));
-  RegionLocalState_descriptor_ = file->message_type(4);
+  RegionLocalState_descriptor_ = file->message_type(5);
   static const int RegionLocalState_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegionLocalState, state_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegionLocalState, region_),
@@ -213,7 +235,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RegionLocalState),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegionLocalState, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegionLocalState, _is_default_instance_));
-  StoreIdent_descriptor_ = file->message_type(5);
+  StoreIdent_descriptor_ = file->message_type(6);
   static const int StoreIdent_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StoreIdent, cluster_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StoreIdent, store_id_),
@@ -230,7 +252,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(StoreIdent),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StoreIdent, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StoreIdent, _is_default_instance_));
-  KeyValue_descriptor_ = file->message_type(6);
+  KeyValue_descriptor_ = file->message_type(7);
   static const int KeyValue_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeyValue, key_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeyValue, value_),
@@ -246,7 +268,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(KeyValue),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeyValue, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(KeyValue, _is_default_instance_));
-  GetRequest_descriptor_ = file->message_type(7);
+  GetRequest_descriptor_ = file->message_type(8);
   static const int GetRequest_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRequest, cf_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRequest, key_),
@@ -262,7 +284,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(GetRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRequest, _is_default_instance_));
-  GetResponse_descriptor_ = file->message_type(8);
+  GetResponse_descriptor_ = file->message_type(9);
   static const int GetResponse_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetResponse, value_),
   };
@@ -277,7 +299,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(GetResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetResponse, _is_default_instance_));
-  PutRequest_descriptor_ = file->message_type(9);
+  PutRequest_descriptor_ = file->message_type(10);
   static const int PutRequest_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PutRequest, cf_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PutRequest, key_),
@@ -294,7 +316,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(PutRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PutRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PutRequest, _is_default_instance_));
-  PutResponse_descriptor_ = file->message_type(10);
+  PutResponse_descriptor_ = file->message_type(11);
   static const int PutResponse_offsets_[1] = {
   };
   PutResponse_reflection_ =
@@ -308,7 +330,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(PutResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PutResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PutResponse, _is_default_instance_));
-  DeleteRequest_descriptor_ = file->message_type(11);
+  DeleteRequest_descriptor_ = file->message_type(12);
   static const int DeleteRequest_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteRequest, cf_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteRequest, key_),
@@ -324,7 +346,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(DeleteRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteRequest, _is_default_instance_));
-  DeleteResponse_descriptor_ = file->message_type(12);
+  DeleteResponse_descriptor_ = file->message_type(13);
   static const int DeleteResponse_offsets_[1] = {
   };
   DeleteResponse_reflection_ =
@@ -338,7 +360,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(DeleteResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DeleteResponse, _is_default_instance_));
-  Request_descriptor_ = file->message_type(13);
+  Request_descriptor_ = file->message_type(14);
   static const int Request_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, cmd_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, get_),
@@ -356,7 +378,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(Request),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Request, _is_default_instance_));
-  Response_descriptor_ = file->message_type(14);
+  Response_descriptor_ = file->message_type(15);
   static const int Response_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Response, cmd_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Response, get_),
@@ -374,7 +396,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(Response),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Response, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Response, _is_default_instance_));
-  ChangePeerRequest_descriptor_ = file->message_type(15);
+  ChangePeerRequest_descriptor_ = file->message_type(16);
   static const int ChangePeerRequest_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerRequest, change_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerRequest, peer_),
@@ -390,7 +412,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(ChangePeerRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerRequest, _is_default_instance_));
-  ChangePeerResponse_descriptor_ = file->message_type(16);
+  ChangePeerResponse_descriptor_ = file->message_type(17);
   static const int ChangePeerResponse_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerResponse, region_),
   };
@@ -405,7 +427,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(ChangePeerResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChangePeerResponse, _is_default_instance_));
-  SplitRequest_descriptor_ = file->message_type(17);
+  SplitRequest_descriptor_ = file->message_type(18);
   static const int SplitRequest_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitRequest, split_key_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitRequest, new_region_id_),
@@ -422,7 +444,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(SplitRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitRequest, _is_default_instance_));
-  SplitResponse_descriptor_ = file->message_type(18);
+  SplitResponse_descriptor_ = file->message_type(19);
   static const int SplitResponse_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitResponse, regions_),
   };
@@ -437,7 +459,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(SplitResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SplitResponse, _is_default_instance_));
-  CompactLogRequest_descriptor_ = file->message_type(19);
+  CompactLogRequest_descriptor_ = file->message_type(20);
   static const int CompactLogRequest_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CompactLogRequest, compact_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CompactLogRequest, compact_term_),
@@ -453,7 +475,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(CompactLogRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CompactLogRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CompactLogRequest, _is_default_instance_));
-  CompactLogResponse_descriptor_ = file->message_type(20);
+  CompactLogResponse_descriptor_ = file->message_type(21);
   static const int CompactLogResponse_offsets_[1] = {
   };
   CompactLogResponse_reflection_ =
@@ -467,7 +489,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(CompactLogResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CompactLogResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CompactLogResponse, _is_default_instance_));
-  TransferLeaderRequest_descriptor_ = file->message_type(21);
+  TransferLeaderRequest_descriptor_ = file->message_type(22);
   static const int TransferLeaderRequest_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransferLeaderRequest, peer_),
   };
@@ -482,7 +504,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(TransferLeaderRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransferLeaderRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransferLeaderRequest, _is_default_instance_));
-  TransferLeaderResponse_descriptor_ = file->message_type(22);
+  TransferLeaderResponse_descriptor_ = file->message_type(23);
   static const int TransferLeaderResponse_offsets_[1] = {
   };
   TransferLeaderResponse_reflection_ =
@@ -496,7 +518,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(TransferLeaderResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransferLeaderResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransferLeaderResponse, _is_default_instance_));
-  AdminRequest_descriptor_ = file->message_type(23);
+  AdminRequest_descriptor_ = file->message_type(24);
   static const int AdminRequest_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminRequest, cmd_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminRequest, change_peer_),
@@ -515,7 +537,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(AdminRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminRequest, _is_default_instance_));
-  AdminResponse_descriptor_ = file->message_type(24);
+  AdminResponse_descriptor_ = file->message_type(25);
   static const int AdminResponse_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminResponse, cmd_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminResponse, change_peer_),
@@ -534,7 +556,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(AdminResponse),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminResponse, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AdminResponse, _is_default_instance_));
-  RaftRequestHeader_descriptor_ = file->message_type(25);
+  RaftRequestHeader_descriptor_ = file->message_type(26);
   static const int RaftRequestHeader_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftRequestHeader, region_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftRequestHeader, peer_),
@@ -552,7 +574,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftRequestHeader),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftRequestHeader, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftRequestHeader, _is_default_instance_));
-  RaftResponseHeader_descriptor_ = file->message_type(26);
+  RaftResponseHeader_descriptor_ = file->message_type(27);
   static const int RaftResponseHeader_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftResponseHeader, uuid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftResponseHeader, current_term_),
@@ -568,7 +590,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftResponseHeader),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftResponseHeader, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftResponseHeader, _is_default_instance_));
-  RaftCmdRequest_descriptor_ = file->message_type(27);
+  RaftCmdRequest_descriptor_ = file->message_type(28);
   static const int RaftCmdRequest_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftCmdRequest, header_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftCmdRequest, requests_),
@@ -584,7 +606,7 @@ void protobuf_AssignDesc_raft_5fmessagepb_2eproto() {
       sizeof(RaftCmdRequest),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftCmdRequest, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftCmdRequest, _is_default_instance_));
-  RaftCmdResponse_descriptor_ = file->message_type(28);
+  RaftCmdResponse_descriptor_ = file->message_type(29);
   static const int RaftCmdResponse_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftCmdResponse, header_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RaftCmdResponse, responses_),
@@ -617,6 +639,8 @@ inline void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      RawPutRequest_descriptor_, &RawPutRequest::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       RaftMessage_descriptor_, &RaftMessage::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -680,6 +704,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_raft_5fmessagepb_2eproto() {
+  delete RawPutRequest::default_instance_;
+  delete RawPutRequest_reflection_;
   delete RaftMessage::default_instance_;
   delete RaftMessage_reflection_;
   delete RaftLocalState::default_instance_;
@@ -751,86 +777,89 @@ void protobuf_AddDesc_raft_5fmessagepb_2eproto() {
   ::metapb::protobuf_AddDesc_metapb_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\024raft_messagepb.proto\022\016raft_messagepb\032\r"
-    "eraftpb.proto\032\014metapb.proto\"\256\002\n\013RaftMess"
-    "age\022\021\n\tregion_id\030\001 \001(\004\022\037\n\tfrom_peer\030\002 \001("
-    "\0132\014.metapb.Peer\022\035\n\007to_peer\030\003 \001(\0132\014.metap"
-    "b.Peer\022!\n\007message\030\004 \001(\0132\020.eraftpb.Messag"
-    "e\022)\n\014region_epoch\030\005 \001(\0132\023.metapb.RegionE"
-    "poch\022\024\n\014is_tombstone\030\006 \001(\010\022\021\n\tstart_key\030"
-    "\007 \001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\014\0226\n\r"
-    "raft_msg_type\030\n \001(\0162\037.raft_messagepb.Raf"
-    "tMessageType\"_\n\016RaftLocalState\022&\n\nhard_s"
-    "tate\030\001 \001(\0132\022.eraftpb.HardState\022\022\n\nlast_i"
-    "ndex\030\002 \001(\004\022\021\n\tlast_term\030\003 \001(\004\"D\n\016RaftApp"
-    "lyState\022\025\n\rapplied_index\030\001 \001(\004\022\r\n\005index\030"
-    "\002 \001(\004\022\014\n\004term\030\003 \001(\004\"1\n\022RaftTruncatedStat"
-    "e\022\r\n\005index\030\001 \001(\004\022\014\n\004term\030\002 \001(\004\"\\\n\020Region"
-    "LocalState\022(\n\005state\030\001 \001(\0162\031.raft_message"
-    "pb.PeerState\022\036\n\006region\030\002 \001(\0132\016.metapb.Re"
-    "gion\"@\n\nStoreIdent\022\022\n\ncluster_id\030\001 \001(\004\022\020"
-    "\n\010store_id\030\002 \001(\004\022\014\n\004addr\030\003 \001(\t\"&\n\010KeyVal"
-    "ue\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\"%\n\nGetReq"
-    "uest\022\n\n\002cf\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\"\034\n\013GetResp"
-    "onse\022\r\n\005value\030\001 \001(\014\"4\n\nPutRequest\022\n\n\002cf\030"
-    "\001 \001(\t\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030\003 \001(\014\"\r\n\013Put"
-    "Response\"(\n\rDeleteRequest\022\n\n\002cf\030\001 \001(\t\022\013\n"
-    "\003key\030\002 \001(\014\"\020\n\016DeleteResponse\"\265\001\n\007Request"
-    "\022)\n\010cmd_type\030\001 \001(\0162\027.raft_messagepb.CmdT"
-    "ype\022\'\n\003get\030\002 \001(\0132\032.raft_messagepb.GetReq"
-    "uest\022\'\n\003put\030\004 \001(\0132\032.raft_messagepb.PutRe"
-    "quest\022-\n\006delete\030\005 \001(\0132\035.raft_messagepb.D"
-    "eleteRequest\"\271\001\n\010Response\022)\n\010cmd_type\030\001 "
-    "\001(\0162\027.raft_messagepb.CmdType\022(\n\003get\030\002 \001("
-    "\0132\033.raft_messagepb.GetResponse\022(\n\003put\030\004 "
-    "\001(\0132\033.raft_messagepb.PutResponse\022.\n\006dele"
-    "te\030\005 \001(\0132\036.raft_messagepb.DeleteResponse"
-    "\"]\n\021ChangePeerRequest\022,\n\013change_type\030\001 \001"
-    "(\0162\027.eraftpb.ConfChangeType\022\032\n\004peer\030\002 \001("
-    "\0132\014.metapb.Peer\"4\n\022ChangePeerResponse\022\036\n"
-    "\006region\030\001 \001(\0132\016.metapb.Region\"N\n\014SplitRe"
-    "quest\022\021\n\tsplit_key\030\001 \001(\014\022\025\n\rnew_region_i"
-    "d\030\002 \001(\004\022\024\n\014new_peer_ids\030\003 \003(\004\"0\n\rSplitRe"
-    "sponse\022\037\n\007regions\030\001 \003(\0132\016.metapb.Region\""
-    "@\n\021CompactLogRequest\022\025\n\rcompact_index\030\001 "
-    "\001(\004\022\024\n\014compact_term\030\002 \001(\004\"\024\n\022CompactLogR"
-    "esponse\"3\n\025TransferLeaderRequest\022\032\n\004peer"
-    "\030\001 \001(\0132\014.metapb.Peer\"\030\n\026TransferLeaderRe"
-    "sponse\"\233\002\n\014AdminRequest\022.\n\010cmd_type\030\001 \001("
-    "\0162\034.raft_messagepb.AdminCmdType\0226\n\013chang"
-    "e_peer\030\002 \001(\0132!.raft_messagepb.ChangePeer"
-    "Request\0226\n\013compact_log\030\004 \001(\0132!.raft_mess"
-    "agepb.CompactLogRequest\022>\n\017transfer_lead"
-    "er\030\005 \001(\0132%.raft_messagepb.TransferLeader"
-    "Request\022+\n\005split\030\n \001(\0132\034.raft_messagepb."
-    "SplitRequest\"\240\002\n\rAdminResponse\022.\n\010cmd_ty"
-    "pe\030\001 \001(\0162\034.raft_messagepb.AdminCmdType\0227"
-    "\n\013change_peer\030\002 \001(\0132\".raft_messagepb.Cha"
-    "ngePeerResponse\0227\n\013compact_log\030\004 \001(\0132\".r"
-    "aft_messagepb.CompactLogResponse\022\?\n\017tran"
-    "sfer_leader\030\005 \001(\0132&.raft_messagepb.Trans"
-    "ferLeaderResponse\022,\n\005split\030\n \001(\0132\035.raft_"
-    "messagepb.SplitResponse\"{\n\021RaftRequestHe"
-    "ader\022\021\n\tregion_id\030\001 \001(\004\022\032\n\004peer\030\002 \001(\0132\014."
-    "metapb.Peer\022)\n\014region_epoch\030\004 \001(\0132\023.meta"
-    "pb.RegionEpoch\022\014\n\004term\030\005 \001(\004\"8\n\022RaftResp"
-    "onseHeader\022\014\n\004uuid\030\002 \001(\014\022\024\n\014current_term"
-    "\030\003 \001(\004\"n\n\016RaftCmdRequest\0221\n\006header\030\001 \001(\013"
-    "2!.raft_messagepb.RaftRequestHeader\022)\n\010r"
-    "equests\030\002 \003(\0132\027.raft_messagepb.Request\"r"
-    "\n\017RaftCmdResponse\0222\n\006header\030\001 \001(\0132\".raft"
-    "_messagepb.RaftResponseHeader\022+\n\trespons"
-    "es\030\002 \003(\0132\030.raft_messagepb.Response*{\n\017Ra"
-    "ftMessageType\022\021\n\rRaftMsgNormal\020\000\022\024\n\020Raft"
-    "MsgClientCmd\020\001\022\026\n\022RaftTransferLeader\020\002\022\022"
-    "\n\016RaftConfChange\020\003\022\023\n\017RaftSplitRegion\020\004*"
-    "&\n\tPeerState\022\n\n\006Normal\020\000\022\r\n\tTombstone\020\002*"
-    ">\n\007CmdType\022\013\n\007Invalid\020\000\022\007\n\003Get\020\001\022\007\n\003Put\020"
-    "\003\022\n\n\006Delete\020\004\022\010\n\004Snap\020\005*_\n\014AdminCmdType\022"
-    "\020\n\014InvalidAdmin\020\000\022\016\n\nChangePeer\020\001\022\016\n\nCom"
-    "pactLog\020\003\022\022\n\016TransferLeader\020\004\022\t\n\005Split\020\n"
-    "b\006proto3", 3128);
+    "eraftpb.proto\032\014metapb.proto\"Q\n\rRawPutReq"
+    "uest\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\n\n\002cf\030\003"
+    " \001(\t\022\n\n\002id\030\004 \001(\004\022\014\n\004type\030\005 \001(\r\"\256\002\n\013RaftM"
+    "essage\022\021\n\tregion_id\030\001 \001(\004\022\037\n\tfrom_peer\030\002"
+    " \001(\0132\014.metapb.Peer\022\035\n\007to_peer\030\003 \001(\0132\014.me"
+    "tapb.Peer\022!\n\007message\030\004 \001(\0132\020.eraftpb.Mes"
+    "sage\022)\n\014region_epoch\030\005 \001(\0132\023.metapb.Regi"
+    "onEpoch\022\024\n\014is_tombstone\030\006 \001(\010\022\021\n\tstart_k"
+    "ey\030\007 \001(\014\022\017\n\007end_key\030\010 \001(\014\022\014\n\004data\030\t \001(\014\022"
+    "6\n\rraft_msg_type\030\n \001(\0162\037.raft_messagepb."
+    "RaftMessageType\"_\n\016RaftLocalState\022&\n\nhar"
+    "d_state\030\001 \001(\0132\022.eraftpb.HardState\022\022\n\nlas"
+    "t_index\030\002 \001(\004\022\021\n\tlast_term\030\003 \001(\004\"D\n\016Raft"
+    "ApplyState\022\025\n\rapplied_index\030\001 \001(\004\022\r\n\005ind"
+    "ex\030\002 \001(\004\022\014\n\004term\030\003 \001(\004\"1\n\022RaftTruncatedS"
+    "tate\022\r\n\005index\030\001 \001(\004\022\014\n\004term\030\002 \001(\004\"\\\n\020Reg"
+    "ionLocalState\022(\n\005state\030\001 \001(\0162\031.raft_mess"
+    "agepb.PeerState\022\036\n\006region\030\002 \001(\0132\016.metapb"
+    ".Region\"@\n\nStoreIdent\022\022\n\ncluster_id\030\001 \001("
+    "\004\022\020\n\010store_id\030\002 \001(\004\022\014\n\004addr\030\003 \001(\t\"&\n\010Key"
+    "Value\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\"%\n\nGet"
+    "Request\022\n\n\002cf\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\"\034\n\013GetR"
+    "esponse\022\r\n\005value\030\001 \001(\014\"4\n\nPutRequest\022\n\n\002"
+    "cf\030\001 \001(\t\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030\003 \001(\014\"\r\n\013"
+    "PutResponse\"(\n\rDeleteRequest\022\n\n\002cf\030\001 \001(\t"
+    "\022\013\n\003key\030\002 \001(\014\"\020\n\016DeleteResponse\"\265\001\n\007Requ"
+    "est\022)\n\010cmd_type\030\001 \001(\0162\027.raft_messagepb.C"
+    "mdType\022\'\n\003get\030\002 \001(\0132\032.raft_messagepb.Get"
+    "Request\022\'\n\003put\030\004 \001(\0132\032.raft_messagepb.Pu"
+    "tRequest\022-\n\006delete\030\005 \001(\0132\035.raft_messagep"
+    "b.DeleteRequest\"\271\001\n\010Response\022)\n\010cmd_type"
+    "\030\001 \001(\0162\027.raft_messagepb.CmdType\022(\n\003get\030\002"
+    " \001(\0132\033.raft_messagepb.GetResponse\022(\n\003put"
+    "\030\004 \001(\0132\033.raft_messagepb.PutResponse\022.\n\006d"
+    "elete\030\005 \001(\0132\036.raft_messagepb.DeleteRespo"
+    "nse\"]\n\021ChangePeerRequest\022,\n\013change_type\030"
+    "\001 \001(\0162\027.eraftpb.ConfChangeType\022\032\n\004peer\030\002"
+    " \001(\0132\014.metapb.Peer\"4\n\022ChangePeerResponse"
+    "\022\036\n\006region\030\001 \001(\0132\016.metapb.Region\"N\n\014Spli"
+    "tRequest\022\021\n\tsplit_key\030\001 \001(\014\022\025\n\rnew_regio"
+    "n_id\030\002 \001(\004\022\024\n\014new_peer_ids\030\003 \003(\004\"0\n\rSpli"
+    "tResponse\022\037\n\007regions\030\001 \003(\0132\016.metapb.Regi"
+    "on\"@\n\021CompactLogRequest\022\025\n\rcompact_index"
+    "\030\001 \001(\004\022\024\n\014compact_term\030\002 \001(\004\"\024\n\022CompactL"
+    "ogResponse\"3\n\025TransferLeaderRequest\022\032\n\004p"
+    "eer\030\001 \001(\0132\014.metapb.Peer\"\030\n\026TransferLeade"
+    "rResponse\"\233\002\n\014AdminRequest\022.\n\010cmd_type\030\001"
+    " \001(\0162\034.raft_messagepb.AdminCmdType\0226\n\013ch"
+    "ange_peer\030\002 \001(\0132!.raft_messagepb.ChangeP"
+    "eerRequest\0226\n\013compact_log\030\004 \001(\0132!.raft_m"
+    "essagepb.CompactLogRequest\022>\n\017transfer_l"
+    "eader\030\005 \001(\0132%.raft_messagepb.TransferLea"
+    "derRequest\022+\n\005split\030\n \001(\0132\034.raft_message"
+    "pb.SplitRequest\"\240\002\n\rAdminResponse\022.\n\010cmd"
+    "_type\030\001 \001(\0162\034.raft_messagepb.AdminCmdTyp"
+    "e\0227\n\013change_peer\030\002 \001(\0132\".raft_messagepb."
+    "ChangePeerResponse\0227\n\013compact_log\030\004 \001(\0132"
+    "\".raft_messagepb.CompactLogResponse\022\?\n\017t"
+    "ransfer_leader\030\005 \001(\0132&.raft_messagepb.Tr"
+    "ansferLeaderResponse\022,\n\005split\030\n \001(\0132\035.ra"
+    "ft_messagepb.SplitResponse\"{\n\021RaftReques"
+    "tHeader\022\021\n\tregion_id\030\001 \001(\004\022\032\n\004peer\030\002 \001(\013"
+    "2\014.metapb.Peer\022)\n\014region_epoch\030\004 \001(\0132\023.m"
+    "etapb.RegionEpoch\022\014\n\004term\030\005 \001(\004\"8\n\022RaftR"
+    "esponseHeader\022\014\n\004uuid\030\002 \001(\014\022\024\n\014current_t"
+    "erm\030\003 \001(\004\"n\n\016RaftCmdRequest\0221\n\006header\030\001 "
+    "\001(\0132!.raft_messagepb.RaftRequestHeader\022)"
+    "\n\010requests\030\002 \003(\0132\027.raft_messagepb.Reques"
+    "t\"r\n\017RaftCmdResponse\0222\n\006header\030\001 \001(\0132\".r"
+    "aft_messagepb.RaftResponseHeader\022+\n\tresp"
+    "onses\030\002 \003(\0132\030.raft_messagepb.Response*{\n"
+    "\017RaftMessageType\022\021\n\rRaftMsgNormal\020\000\022\024\n\020R"
+    "aftMsgClientCmd\020\001\022\026\n\022RaftTransferLeader\020"
+    "\002\022\022\n\016RaftConfChange\020\003\022\023\n\017RaftSplitRegion"
+    "\020\004*&\n\tPeerState\022\n\n\006Normal\020\000\022\r\n\tTombstone"
+    "\020\002*>\n\007CmdType\022\013\n\007Invalid\020\000\022\007\n\003Get\020\001\022\007\n\003P"
+    "ut\020\003\022\n\n\006Delete\020\004\022\010\n\004Snap\020\005*_\n\014AdminCmdTy"
+    "pe\022\020\n\014InvalidAdmin\020\000\022\016\n\nChangePeer\020\001\022\016\n\n"
+    "CompactLog\020\003\022\022\n\016TransferLeader\020\004\022\t\n\005Spli"
+    "t\020\nb\006proto3", 3211);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "raft_messagepb.proto", &protobuf_RegisterTypes);
+  RawPutRequest::default_instance_ = new RawPutRequest();
   RaftMessage::default_instance_ = new RaftMessage();
   RaftLocalState::default_instance_ = new RaftLocalState();
   RaftApplyState::default_instance_ = new RaftApplyState();
@@ -860,6 +889,7 @@ void protobuf_AddDesc_raft_5fmessagepb_2eproto() {
   RaftResponseHeader::default_instance_ = new RaftResponseHeader();
   RaftCmdRequest::default_instance_ = new RaftCmdRequest();
   RaftCmdResponse::default_instance_ = new RaftCmdResponse();
+  RawPutRequest::default_instance_->InitAsDefaultInstance();
   RaftMessage::default_instance_->InitAsDefaultInstance();
   RaftLocalState::default_instance_->InitAsDefaultInstance();
   RaftApplyState::default_instance_->InitAsDefaultInstance();
@@ -963,6 +993,587 @@ bool AdminCmdType_IsValid(int value) {
   }
 }
 
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int RawPutRequest::kKeyFieldNumber;
+const int RawPutRequest::kValueFieldNumber;
+const int RawPutRequest::kCfFieldNumber;
+const int RawPutRequest::kIdFieldNumber;
+const int RawPutRequest::kTypeFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+RawPutRequest::RawPutRequest()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:raft_messagepb.RawPutRequest)
+}
+
+void RawPutRequest::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+}
+
+RawPutRequest::RawPutRequest(const RawPutRequest& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:raft_messagepb.RawPutRequest)
+}
+
+void RawPutRequest::SharedCtor() {
+    _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  cf_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_ = GOOGLE_ULONGLONG(0);
+  type_ = 0u;
+}
+
+RawPutRequest::~RawPutRequest() {
+  // @@protoc_insertion_point(destructor:raft_messagepb.RawPutRequest)
+  SharedDtor();
+}
+
+void RawPutRequest::SharedDtor() {
+  key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  cf_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != default_instance_) {
+  }
+}
+
+void RawPutRequest::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* RawPutRequest::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return RawPutRequest_descriptor_;
+}
+
+const RawPutRequest& RawPutRequest::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_raft_5fmessagepb_2eproto();
+  return *default_instance_;
+}
+
+RawPutRequest* RawPutRequest::default_instance_ = NULL;
+
+RawPutRequest* RawPutRequest::New(::google::protobuf::Arena* arena) const {
+  RawPutRequest* n = new RawPutRequest;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void RawPutRequest::Clear() {
+// @@protoc_insertion_point(message_clear_start:raft_messagepb.RawPutRequest)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(RawPutRequest, f) \
+  _Pragma("clang diagnostic pop")
+#else
+#define ZR_HELPER_(f) reinterpret_cast<char*>(\
+  &reinterpret_cast<RawPutRequest*>(16)->f)
+#endif
+
+#define ZR_(first, last) do {\
+  ::memset(&first, 0,\
+           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
+} while (0)
+
+  ZR_(id_, type_);
+  key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  cf_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+
+#undef ZR_HELPER_
+#undef ZR_
+
+}
+
+bool RawPutRequest::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:raft_messagepb.RawPutRequest)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional bytes key = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_key()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_value;
+        break;
+      }
+
+      // optional bytes value = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_value:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_value()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_cf;
+        break;
+      }
+
+      // optional string cf = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_cf:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_cf()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->cf().data(), this->cf().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "raft_messagepb.RawPutRequest.cf"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(32)) goto parse_id;
+        break;
+      }
+
+      // optional uint64 id = 4;
+      case 4: {
+        if (tag == 32) {
+         parse_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &id_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(40)) goto parse_type;
+        break;
+      }
+
+      // optional uint32 type = 5;
+      case 5: {
+        if (tag == 40) {
+         parse_type:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &type_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:raft_messagepb.RawPutRequest)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:raft_messagepb.RawPutRequest)
+  return false;
+#undef DO_
+}
+
+void RawPutRequest::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:raft_messagepb.RawPutRequest)
+  // optional bytes key = 1;
+  if (this->key().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->key(), output);
+  }
+
+  // optional bytes value = 2;
+  if (this->value().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->value(), output);
+  }
+
+  // optional string cf = 3;
+  if (this->cf().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->cf().data(), this->cf().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "raft_messagepb.RawPutRequest.cf");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->cf(), output);
+  }
+
+  // optional uint64 id = 4;
+  if (this->id() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->id(), output);
+  }
+
+  // optional uint32 type = 5;
+  if (this->type() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->type(), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:raft_messagepb.RawPutRequest)
+}
+
+::google::protobuf::uint8* RawPutRequest::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:raft_messagepb.RawPutRequest)
+  // optional bytes key = 1;
+  if (this->key().size() > 0) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->key(), target);
+  }
+
+  // optional bytes value = 2;
+  if (this->value().size() > 0) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->value(), target);
+  }
+
+  // optional string cf = 3;
+  if (this->cf().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->cf().data(), this->cf().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "raft_messagepb.RawPutRequest.cf");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->cf(), target);
+  }
+
+  // optional uint64 id = 4;
+  if (this->id() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->id(), target);
+  }
+
+  // optional uint32 type = 5;
+  if (this->type() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->type(), target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:raft_messagepb.RawPutRequest)
+  return target;
+}
+
+int RawPutRequest::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:raft_messagepb.RawPutRequest)
+  int total_size = 0;
+
+  // optional bytes key = 1;
+  if (this->key().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->key());
+  }
+
+  // optional bytes value = 2;
+  if (this->value().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::BytesSize(
+        this->value());
+  }
+
+  // optional string cf = 3;
+  if (this->cf().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->cf());
+  }
+
+  // optional uint64 id = 4;
+  if (this->id() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->id());
+  }
+
+  // optional uint32 type = 5;
+  if (this->type() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->type());
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void RawPutRequest::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:raft_messagepb.RawPutRequest)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const RawPutRequest* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const RawPutRequest>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:raft_messagepb.RawPutRequest)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:raft_messagepb.RawPutRequest)
+    MergeFrom(*source);
+  }
+}
+
+void RawPutRequest::MergeFrom(const RawPutRequest& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:raft_messagepb.RawPutRequest)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  if (from.key().size() > 0) {
+
+    key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
+  }
+  if (from.value().size() > 0) {
+
+    value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_);
+  }
+  if (from.cf().size() > 0) {
+
+    cf_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.cf_);
+  }
+  if (from.id() != 0) {
+    set_id(from.id());
+  }
+  if (from.type() != 0) {
+    set_type(from.type());
+  }
+}
+
+void RawPutRequest::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:raft_messagepb.RawPutRequest)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void RawPutRequest::CopyFrom(const RawPutRequest& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:raft_messagepb.RawPutRequest)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool RawPutRequest::IsInitialized() const {
+
+  return true;
+}
+
+void RawPutRequest::Swap(RawPutRequest* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void RawPutRequest::InternalSwap(RawPutRequest* other) {
+  key_.Swap(&other->key_);
+  value_.Swap(&other->value_);
+  cf_.Swap(&other->cf_);
+  std::swap(id_, other->id_);
+  std::swap(type_, other->type_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata RawPutRequest::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = RawPutRequest_descriptor_;
+  metadata.reflection = RawPutRequest_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// RawPutRequest
+
+// optional bytes key = 1;
+void RawPutRequest::clear_key() {
+  key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& RawPutRequest::key() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.key)
+  return key_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RawPutRequest::set_key(const ::std::string& value) {
+  
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.key)
+}
+ void RawPutRequest::set_key(const char* value) {
+  
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_messagepb.RawPutRequest.key)
+}
+ void RawPutRequest::set_key(const void* value, size_t size) {
+  
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_messagepb.RawPutRequest.key)
+}
+ ::std::string* RawPutRequest::mutable_key() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_messagepb.RawPutRequest.key)
+  return key_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* RawPutRequest::release_key() {
+  // @@protoc_insertion_point(field_release:raft_messagepb.RawPutRequest.key)
+  
+  return key_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RawPutRequest::set_allocated_key(::std::string* key) {
+  if (key != NULL) {
+    
+  } else {
+    
+  }
+  key_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), key);
+  // @@protoc_insertion_point(field_set_allocated:raft_messagepb.RawPutRequest.key)
+}
+
+// optional bytes value = 2;
+void RawPutRequest::clear_value() {
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& RawPutRequest::value() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.value)
+  return value_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RawPutRequest::set_value(const ::std::string& value) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.value)
+}
+ void RawPutRequest::set_value(const char* value) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_messagepb.RawPutRequest.value)
+}
+ void RawPutRequest::set_value(const void* value, size_t size) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_messagepb.RawPutRequest.value)
+}
+ ::std::string* RawPutRequest::mutable_value() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_messagepb.RawPutRequest.value)
+  return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* RawPutRequest::release_value() {
+  // @@protoc_insertion_point(field_release:raft_messagepb.RawPutRequest.value)
+  
+  return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RawPutRequest::set_allocated_value(::std::string* value) {
+  if (value != NULL) {
+    
+  } else {
+    
+  }
+  value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:raft_messagepb.RawPutRequest.value)
+}
+
+// optional string cf = 3;
+void RawPutRequest::clear_cf() {
+  cf_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& RawPutRequest::cf() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.cf)
+  return cf_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RawPutRequest::set_cf(const ::std::string& value) {
+  
+  cf_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.cf)
+}
+ void RawPutRequest::set_cf(const char* value) {
+  
+  cf_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_messagepb.RawPutRequest.cf)
+}
+ void RawPutRequest::set_cf(const char* value, size_t size) {
+  
+  cf_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_messagepb.RawPutRequest.cf)
+}
+ ::std::string* RawPutRequest::mutable_cf() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_messagepb.RawPutRequest.cf)
+  return cf_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* RawPutRequest::release_cf() {
+  // @@protoc_insertion_point(field_release:raft_messagepb.RawPutRequest.cf)
+  
+  return cf_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void RawPutRequest::set_allocated_cf(::std::string* cf) {
+  if (cf != NULL) {
+    
+  } else {
+    
+  }
+  cf_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), cf);
+  // @@protoc_insertion_point(field_set_allocated:raft_messagepb.RawPutRequest.cf)
+}
+
+// optional uint64 id = 4;
+void RawPutRequest::clear_id() {
+  id_ = GOOGLE_ULONGLONG(0);
+}
+ ::google::protobuf::uint64 RawPutRequest::id() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.id)
+  return id_;
+}
+ void RawPutRequest::set_id(::google::protobuf::uint64 value) {
+  
+  id_ = value;
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.id)
+}
+
+// optional uint32 type = 5;
+void RawPutRequest::clear_type() {
+  type_ = 0u;
+}
+ ::google::protobuf::uint32 RawPutRequest::type() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.type)
+  return type_;
+}
+ void RawPutRequest::set_type(::google::protobuf::uint32 value) {
+  
+  type_ = value;
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.type)
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
 

@@ -24,7 +24,6 @@
 #define ERAFT_NETWORK_RAFT_WORKER_H_
 
 #include <network/concurrency_msg_queue.h>
-#include <network/raft_msg.h>
 #include <network/raft_router.h>
 #include <network/raft_store.h>
 
@@ -51,8 +50,8 @@ class RaftWorker {
       uint64_t regionId);
 
  private:
-  static std::shared_ptr<Router> router_ = nullptr;
-  static std::shared_ptr<GlobalContext> ctx_ = nullptr;
+  static std::shared_ptr<Router> router_;
+  static std::shared_ptr<GlobalContext> ctx_;
   bool loop_op_;
 };
 

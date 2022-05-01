@@ -36,7 +36,7 @@ namespace network {
 
 class RaftPeerMsgHandler {
  public:
-  RaftPeerMsgHandler(std::shared_ptr<Peer> peer,
+  RaftPeerMsgHandler(std::shared_ptr<RaftPeer> peer,
                      std::shared_ptr<GlobalContext> ctx);
   ~RaftPeerMsgHandler();
 
@@ -69,9 +69,13 @@ class RaftPeerMsgHandler {
 
   bool OnRaftMsg(raft_messagepb::RaftMessage *msg);
 
+  std::shared_ptr<std::string> GetRequestKey(raft_messagepb::Request *req);
+
   bool CheckMessage(raft_messagepb::RaftMessage *msg);
 
- private:
+  std::shared_ptr<RaftPeer> GetRaftPeer();
+
+  //  private:
   std::shared_ptr<RaftPeer> peer_;
 
   std::shared_ptr<GlobalContext> ctx_;

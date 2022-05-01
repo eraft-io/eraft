@@ -22,6 +22,7 @@
 
 #include <eraftio/raft_messagepb.pb.h>
 #include <network/raft_peer.h>
+#include <network/raft_server_transport.h>
 
 namespace network {
 
@@ -33,7 +34,7 @@ RaftPeer::RaftPeer(uint64_t storeId, std::shared_ptr<RaftConfig> cfg,
   std::shared_ptr<metapb::Peer> meta = std::make_shared<metapb::Peer>();
   // find peer
   for (auto peer : region->peers()) {
-    if (peer.store_id() == storeID) {
+    if (peer.store_id() == storeId) {
       meta->set_id(peer.id());
       meta->set_store_id(peer.store_id());
       meta->set_addr(peer.addr());
@@ -66,7 +67,7 @@ RaftPeer::RaftPeer(uint64_t storeId, std::shared_ptr<RaftConfig> cfg,
               " store id = " + std::to_string(this->meta_->store_id()) +
               " region id " + std::to_string(this->regionId_));
 
-  if (region->peers().size() == 1 && region->peers(0).store_id() == storeID) {
+  if (region->peers().size() == 1 && region->peers(0).store_id() == storeId) {
     this->raftGroup_->Campaign();
   }
 }
@@ -106,19 +107,27 @@ bool RaftPeer::IsLeader() {
   return this->raftGroup_->raft->state_ == eraft::NodeState::StateLeader;
 }
 
-void RaftPeer::Send(std::shared_ptr<RaftTransport> trans,
+void RaftPeer::Send(std::shared_ptr<RaftServerTransport> trans,
                     std::vector<eraftpb::Message> msgs) {
   for (auto msg : msgs) {
-    if (!this->SendRaftMessage(msg, trans)) {
-      SPDLOG_ERROR("send raft msg to trans error!");
-    }
+    SendRaftMessage(msg, trans);
   }
 }
 
 uint64_t RaftPeer::Term() { return this->raftGroup_->raft->term_; }
 
-bool RaftPeer::SendRaftMessage(eraftpb::Message msg,
-                               std::shared_ptr<RaftTransport> trans) {
+std::shared_ptr<eraft::RawNode> RaftPeer::GetRaftGroup() {
+  return this->raftGroup_;
+}
+
+uint64_t RaftPeer::GetRegionID() { return this->regionId_; }
+
+std::shared_ptr<metapb::Region> RaftPeer::Region() {
+  return this->peerStorage_->Region();
+}
+
+void RaftPeer::SendRaftMessage(eraftpb::Message msg,
+                               std::shared_ptr<RaftServerTransport> trans) {
   std::shared_ptr<raft_messagepb::RaftMessage> sendMsg =
       std::make_shared<raft_messagepb::RaftMessage>();
   sendMsg->set_region_id(this->regionId_);
@@ -129,9 +138,6 @@ bool RaftPeer::SendRaftMessage(eraftpb::Message msg,
 
   auto fromPeer = this->meta_;
   auto toPeer = this->GetPeerFromCache(msg.to());
-  if (toPeer == nullptr) {
-    return false;
-  }
   sendMsg->mutable_from_peer()->set_id(fromPeer->id());
   sendMsg->mutable_from_peer()->set_store_id(fromPeer->store_id());
   sendMsg->mutable_from_peer()->set_addr(fromPeer->addr());
@@ -146,7 +152,7 @@ bool RaftPeer::SendRaftMessage(eraftpb::Message msg,
   sendMsg->mutable_message()->set_log_term(msg.log_term());
   sendMsg->mutable_message()->set_reject(msg.reject());
   sendMsg->mutable_message()->set_msg_type(msg.msg_type());
-  sendMsg->set_raft_msg_type(raft_messagepb::RaftMsgNormal);
+  sendMsg->set_raft_msg_type(raft_messagepb::RaftMessageType::RaftMsgNormal);
 
   SPDLOG_INFO("on peer send msg" + std::to_string(msg.from()) + " to " +
               std::to_string(msg.to()) + " index " +
@@ -162,7 +168,7 @@ bool RaftPeer::SendRaftMessage(eraftpb::Message msg,
   }
 
   // rpc
-  return trans->Send(sendMsg);
+  trans->Send(sendMsg);
 }
 
 }  // namespace network

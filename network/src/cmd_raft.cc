@@ -24,10 +24,9 @@
 #include <eraftio/raft_messagepb.pb.h>
 #include <network/command.h>
 #include <network/common.h>
+#include <network/unbounded_buffer.h>
 
 #include <string>
-
-namespace network {
 
 Error pushraftmsg(const std::vector<std::string> &params,
                   UnboundedBuffer *reply) {
@@ -37,5 +36,3 @@ Error pushraftmsg(const std::vector<std::string> &params,
   PMemRedis::GetInstance()->GetRaftStack()->Raft(raftMessage.get());
   return Error_ok;
 }
-
-}  // namespace network

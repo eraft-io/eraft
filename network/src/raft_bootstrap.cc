@@ -30,15 +30,15 @@
 
 namespace network {
 
-BootHepler *BootHepler::instance_ = nullptr;
+BootHelper *BootHelper::instance_ = nullptr;
 
-uint64_t BootHepler::gCounter_ = 0;
+uint64_t BootHelper::gCounter_ = 0;
 
-BootHepler::BootHepler() {}
+BootHelper::BootHelper() {}
 
-BootHepler::~BootHepler() {}
+BootHelper::~BootHelper() {}
 
-bool BootHepler::IsRangeEmpty(
+bool BootHelper::IsRangeEmpty(
     std::shared_ptr<storage::StorageEngineInterface> db, std::string startKey,
     std::string endKey) {
   // TODO: checkout is range empty in db
@@ -57,7 +57,7 @@ bool BootHepler::IsRangeEmpty(
 // }
 //
 
-bool BootHepler::DoBootstrapStore(std::shared_ptr<DBEngines> engines,
+bool BootHelper::DoBootstrapStore(std::shared_ptr<DBEngines> engines,
                                   uint64_t clusterId, uint64_t storeId,
                                   std::string storeAddr) {
   std::shared_ptr<raft_messagepb::StoreIdent> storeIdent(
@@ -84,7 +84,7 @@ bool BootHepler::DoBootstrapStore(std::shared_ptr<DBEngines> engines,
   return false;
 }
 
-uint64_t BootHepler::AllocID() {
+uint64_t BootHelper::AllocID() {
   gCounter_++;
   return gCounter_;
 }
@@ -93,7 +93,7 @@ uint64_t BootHepler::AllocID() {
 // make region from peerAddrMaps
 // and call PrepareBoostrapCluster
 //
-std::pair<std::shared_ptr<metapb::Region>, bool> BootHepler::PrepareBootstrap(
+std::pair<std::shared_ptr<metapb::Region>, bool> BootHelper::PrepareBootstrap(
     std::shared_ptr<DBEngines> engines, std::string storeAddr,
     std::map<std::string, int> peerAddrMaps) {
   std::shared_ptr<metapb::Region> region = std::make_shared<metapb::Region>();
@@ -107,7 +107,7 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHepler::PrepareBootstrap(
       addPeer->set_addr(item.first);
       region->set_id(1);
       region->set_start_key("");
-      region->set_end_key();
+      region->set_end_key("");
       continue;
     }
     auto addNewPeer = region->add_peers();
@@ -126,7 +126,7 @@ std::pair<std::shared_ptr<metapb::Region>, bool> BootHepler::PrepareBootstrap(
 // write InitialApplyState,
 // write InitialRaftState to engine
 //
-bool BootHepler::PrepareBoostrapCluster(
+bool BootHelper::PrepareBoostrapCluster(
     std::shared_ptr<DBEngines> engines,
     std::shared_ptr<metapb::Region> region) {
   raft_messagepb::RegionLocalState *state =
@@ -152,7 +152,7 @@ bool BootHepler::PrepareBoostrapCluster(
 //
 //  applyState [index:5 applied_index:5 term: 5]
 //
-void BootHepler::WriteInitialApplyState(storage::WriteBatch &kvWB,
+void BootHelper::WriteInitialApplyState(storage::WriteBatch &kvWB,
                                         uint64_t regionId) {
   std::shared_ptr<raft_messagepb::RaftApplyState> applyState =
       std::make_shared<raft_messagepb::RaftApplyState>();
@@ -160,8 +160,8 @@ void BootHepler::WriteInitialApplyState(storage::WriteBatch &kvWB,
   applyState->set_applied_index(
       RaftEncodeAssistant::GetInstance()->kRaftInitLogIndex);
   applyState->set_term(RaftEncodeAssistant::GetInstance()->kRaftInitLogTerm);
-  std::strin val = *applyState.SerializeAsString();
-  kvWB->Put(RaftEncodeAssistant::GetInstance()->ApplyStateKey(regionId), val);
+  std::string val = applyState->SerializeAsString();
+  kvWB.Put(RaftEncodeAssistant::GetInstance()->ApplyStateKey(regionId), val);
 }
 
 //
@@ -169,19 +169,19 @@ void BootHepler::WriteInitialApplyState(storage::WriteBatch &kvWB,
 //
 // raftState: [last_index: 5]
 //
-void BootHepler::WriteInitialRaftState(storage::WriteBatch &raftWB,
+void BootHelper::WriteInitialRaftState(storage::WriteBatch &raftWB,
                                        uint64_t regionId) {
   std::shared_ptr<raft_messagepb::RaftLocalState> raftState =
       std::make_shared<raft_messagepb::RaftLocalState>();
   raftState->set_last_index(
       RaftEncodeAssistant::GetInstance()->kRaftInitLogIndex);
-  std::string val = *raftState.SerializeAsString();
-  raftWB->Put(RaftEncodeAssistant::GetInstance()->ApplyStateKey(regionId), val);
+  std::string val = raftState->SerializeAsString();
+  raftWB.Put(RaftEncodeAssistant::GetInstance()->ApplyStateKey(regionId), val);
 }
 
-BootHepler *BootHepler::GetInstance() {
+BootHelper *BootHelper::GetInstance() {
   if (instance_ == nullptr) {
-    instance_ = new BootHepler();
+    instance_ = new BootHelper();
   }
   return instance_;
 }

@@ -20,9 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <network/raft_peer_msg_handler.h>
 #include <network/raft_worker.h>
 
 namespace network {
+
+std::shared_ptr<Router> RaftWorker::router_ = nullptr;
+
+std::shared_ptr<GlobalContext> RaftWorker::ctx_ = nullptr;
 
 RaftWorker::RaftWorker(std::shared_ptr<GlobalContext> ctx,
                        std::shared_ptr<Router> router) {
@@ -35,9 +40,9 @@ RaftWorker::~RaftWorker() {}
 
 void RaftWorker::Run(moodycamel::ConcurrentQueue<Msg> &qu) {
   SPDLOG_INFO("raft worker start running!");
-  std::map<uint64_t, std::shared_ptr<PeerState_> > peerStMap;
+  std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStMap;
   // 1.loop true op
-  while (loop_op_) {
+  while (true) {
     Msg msg;
     // 2.pop msg from dequeue
     if (!qu.try_dequeue(msg)) {
@@ -45,18 +50,18 @@ void RaftWorker::Run(moodycamel::ConcurrentQueue<Msg> &qu) {
     }
     SPDLOG_INFO("pop new messsage with type: " + msg.MsgToString());
 
-    std::shared_ptr<PeerState_> peerState =
+    std::shared_ptr<RaftPeerState> peerState =
         RaftWorker::GetPeerState(peerStMap, msg.regionId_);
     if (peerState == nullptr) {
       continue;
     }
 
     // 3.handle msg
-    PeerMsgHandler pmHandler(peerState->peer_, RaftWorker::ctx_);
+    RaftPeerMsgHandler pmHandler(peerState->peer_, RaftWorker::ctx_);
     pmHandler.HandleMsg(msg);
 
     // 4.raft ready
-    PeerMsgHandler pmHandlerRaftRd(peerState->peer_, RaftWorker::ctx_);
+    RaftPeerMsgHandler pmHandlerRaftRd(peerState->peer_, RaftWorker::ctx_);
     pmHandlerRaftRd.HandleRaftReady();
   }
 }
@@ -68,16 +73,16 @@ void RaftWorker::BootThread() {
 }
 
 std::shared_ptr<RaftPeerState> RaftWorker::GetPeerState(
-    std::map<uint64_t, std::shared_ptr<RaftPeerState> > peerStateMap,
+    std::map<uint64_t, std::shared_ptr<RaftPeerState> > peersStateMap,
     uint64_t regionId) {
-  if (peersStateMap.find(regionID) == peersStateMap.end()) {
-    auto peer = RaftWorker::pr_->Get(regionID);
+  if (peersStateMap.find(regionId) == peersStateMap.end()) {
+    auto peer = RaftWorker::router_->Get(regionId);
     if (peer == nullptr) {
       return nullptr;
     }
-    peersStateMap[regionID] = peer;
+    peersStateMap[regionId] = peer;
   }
-  return peersStateMap[regionID];
+  return peersStateMap[regionId];
 }
 
 }  // namespace network

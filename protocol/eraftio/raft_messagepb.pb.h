@@ -60,6 +60,7 @@ class RaftMessage;
 class RaftRequestHeader;
 class RaftResponseHeader;
 class RaftTruncatedState;
+class RawPutRequest;
 class RegionLocalState;
 class Request;
 class Response;
@@ -163,6 +164,131 @@ inline bool AdminCmdType_Parse(
     AdminCmdType_descriptor(), name, value);
 }
 // ===================================================================
+
+class RawPutRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:raft_messagepb.RawPutRequest) */ {
+ public:
+  RawPutRequest();
+  virtual ~RawPutRequest();
+
+  RawPutRequest(const RawPutRequest& from);
+
+  inline RawPutRequest& operator=(const RawPutRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const RawPutRequest& default_instance();
+
+  void Swap(RawPutRequest* other);
+
+  // implements Message ----------------------------------------------
+
+  inline RawPutRequest* New() const { return New(NULL); }
+
+  RawPutRequest* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const RawPutRequest& from);
+  void MergeFrom(const RawPutRequest& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(RawPutRequest* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes key = 1;
+  void clear_key();
+  static const int kKeyFieldNumber = 1;
+  const ::std::string& key() const;
+  void set_key(const ::std::string& value);
+  void set_key(const char* value);
+  void set_key(const void* value, size_t size);
+  ::std::string* mutable_key();
+  ::std::string* release_key();
+  void set_allocated_key(::std::string* key);
+
+  // optional bytes value = 2;
+  void clear_value();
+  static const int kValueFieldNumber = 2;
+  const ::std::string& value() const;
+  void set_value(const ::std::string& value);
+  void set_value(const char* value);
+  void set_value(const void* value, size_t size);
+  ::std::string* mutable_value();
+  ::std::string* release_value();
+  void set_allocated_value(::std::string* value);
+
+  // optional string cf = 3;
+  void clear_cf();
+  static const int kCfFieldNumber = 3;
+  const ::std::string& cf() const;
+  void set_cf(const ::std::string& value);
+  void set_cf(const char* value);
+  void set_cf(const char* value, size_t size);
+  ::std::string* mutable_cf();
+  ::std::string* release_cf();
+  void set_allocated_cf(::std::string* cf);
+
+  // optional uint64 id = 4;
+  void clear_id();
+  static const int kIdFieldNumber = 4;
+  ::google::protobuf::uint64 id() const;
+  void set_id(::google::protobuf::uint64 value);
+
+  // optional uint32 type = 5;
+  void clear_type();
+  static const int kTypeFieldNumber = 5;
+  ::google::protobuf::uint32 type() const;
+  void set_type(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:raft_messagepb.RawPutRequest)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr key_;
+  ::google::protobuf::internal::ArenaStringPtr value_;
+  ::google::protobuf::internal::ArenaStringPtr cf_;
+  ::google::protobuf::uint64 id_;
+  ::google::protobuf::uint32 type_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_raft_5fmessagepb_2eproto();
+  friend void protobuf_AssignDesc_raft_5fmessagepb_2eproto();
+  friend void protobuf_ShutdownFile_raft_5fmessagepb_2eproto();
+
+  void InitAsDefaultInstance();
+  static RawPutRequest* default_instance_;
+};
+// -------------------------------------------------------------------
 
 class RaftMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:raft_messagepb.RaftMessage) */ {
  public:
@@ -3026,6 +3152,170 @@ class RaftCmdResponse : public ::google::protobuf::Message /* @@protoc_insertion
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+// RawPutRequest
+
+// optional bytes key = 1;
+inline void RawPutRequest::clear_key() {
+  key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& RawPutRequest::key() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.key)
+  return key_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RawPutRequest::set_key(const ::std::string& value) {
+  
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.key)
+}
+inline void RawPutRequest::set_key(const char* value) {
+  
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_messagepb.RawPutRequest.key)
+}
+inline void RawPutRequest::set_key(const void* value, size_t size) {
+  
+  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_messagepb.RawPutRequest.key)
+}
+inline ::std::string* RawPutRequest::mutable_key() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_messagepb.RawPutRequest.key)
+  return key_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* RawPutRequest::release_key() {
+  // @@protoc_insertion_point(field_release:raft_messagepb.RawPutRequest.key)
+  
+  return key_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RawPutRequest::set_allocated_key(::std::string* key) {
+  if (key != NULL) {
+    
+  } else {
+    
+  }
+  key_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), key);
+  // @@protoc_insertion_point(field_set_allocated:raft_messagepb.RawPutRequest.key)
+}
+
+// optional bytes value = 2;
+inline void RawPutRequest::clear_value() {
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& RawPutRequest::value() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.value)
+  return value_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RawPutRequest::set_value(const ::std::string& value) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.value)
+}
+inline void RawPutRequest::set_value(const char* value) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_messagepb.RawPutRequest.value)
+}
+inline void RawPutRequest::set_value(const void* value, size_t size) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_messagepb.RawPutRequest.value)
+}
+inline ::std::string* RawPutRequest::mutable_value() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_messagepb.RawPutRequest.value)
+  return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* RawPutRequest::release_value() {
+  // @@protoc_insertion_point(field_release:raft_messagepb.RawPutRequest.value)
+  
+  return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RawPutRequest::set_allocated_value(::std::string* value) {
+  if (value != NULL) {
+    
+  } else {
+    
+  }
+  value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:raft_messagepb.RawPutRequest.value)
+}
+
+// optional string cf = 3;
+inline void RawPutRequest::clear_cf() {
+  cf_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& RawPutRequest::cf() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.cf)
+  return cf_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RawPutRequest::set_cf(const ::std::string& value) {
+  
+  cf_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.cf)
+}
+inline void RawPutRequest::set_cf(const char* value) {
+  
+  cf_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:raft_messagepb.RawPutRequest.cf)
+}
+inline void RawPutRequest::set_cf(const char* value, size_t size) {
+  
+  cf_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:raft_messagepb.RawPutRequest.cf)
+}
+inline ::std::string* RawPutRequest::mutable_cf() {
+  
+  // @@protoc_insertion_point(field_mutable:raft_messagepb.RawPutRequest.cf)
+  return cf_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* RawPutRequest::release_cf() {
+  // @@protoc_insertion_point(field_release:raft_messagepb.RawPutRequest.cf)
+  
+  return cf_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void RawPutRequest::set_allocated_cf(::std::string* cf) {
+  if (cf != NULL) {
+    
+  } else {
+    
+  }
+  cf_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), cf);
+  // @@protoc_insertion_point(field_set_allocated:raft_messagepb.RawPutRequest.cf)
+}
+
+// optional uint64 id = 4;
+inline void RawPutRequest::clear_id() {
+  id_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 RawPutRequest::id() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.id)
+  return id_;
+}
+inline void RawPutRequest::set_id(::google::protobuf::uint64 value) {
+  
+  id_ = value;
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.id)
+}
+
+// optional uint32 type = 5;
+inline void RawPutRequest::clear_type() {
+  type_ = 0u;
+}
+inline ::google::protobuf::uint32 RawPutRequest::type() const {
+  // @@protoc_insertion_point(field_get:raft_messagepb.RawPutRequest.type)
+  return type_;
+}
+inline void RawPutRequest::set_type(::google::protobuf::uint32 value) {
+  
+  type_ = value;
+  // @@protoc_insertion_point(field_set:raft_messagepb.RawPutRequest.type)
+}
+
+// -------------------------------------------------------------------
+
 // RaftMessage
 
 // optional uint64 region_id = 1;
@@ -5327,6 +5617,8 @@ RaftCmdResponse::responses() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

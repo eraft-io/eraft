@@ -23,6 +23,7 @@
 #ifndef ERAFT_NETWORK_RAFT_TICKER_H_
 #define ERAFT_NETWORK_RAFT_TICKER_H_
 
+#include <network/concurrency_msg_queue.h>
 #include <network/raft_router.h>
 
 #include <chrono>
@@ -42,7 +43,8 @@ class Ticker {
   typedef std::chrono::duration<int64_t, std::nano> tick_interval_t;
   typedef std::function<void()> on_tick_t;
 
-  Ticker(on_tick_t onTick, tick_interval_t tickInterval);
+  Ticker(on_tick_t onTick, std::shared_ptr<Router> router,
+         tick_interval_t tickInterval);
   ~Ticker();
 
   static void Run();
@@ -55,9 +57,10 @@ class Ticker {
 
   void TimerLoop();
 
-  static Ticker *GetInstance(on_tick_t onTick, tick_interval_t tickInterval) {
+  static Ticker *GetInstance(on_tick_t onTick, std::shared_ptr<Router> router,
+                             tick_interval_t tickInterval) {
     if (instance_ == nullptr) {
-      instance_ = new Ticker(onTick, tickInterval);
+      instance_ = new Ticker(onTick, router, tickInterval);
     }
     return instance_;
   }

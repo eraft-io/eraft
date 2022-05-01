@@ -25,6 +25,8 @@
 
 #include <eraftio/metapb.pb.h>
 #include <eraftio/raft_messagepb.pb.h>
+#include <network/db_engines.h>
+#include <network/raft_peer.h>
 #include <raftcore/raw_node.h>
 #include <raftcore/storage.h>
 
@@ -47,7 +49,7 @@ class ApplySnapResult {
 
 class RaftPeerStorage : public eraft::StorageInterface {
  public:
-  RaftPeerStorage(std::shared_ptr<storage::StorageEngineInterface> engs,
+  RaftPeerStorage(std::shared_ptr<DBEngines> engs,
                   std::shared_ptr<metapb::Region> region, std::string tag);
 
   ~RaftPeerStorage();
@@ -111,7 +113,7 @@ class RaftPeerStorage : public eraft::StorageInterface {
 
   raft_messagepb::RaftApplyState *GetRaftApplyState();
 
- private:
+  //  private:
   std::string tag_;
 
   std::shared_ptr<metapb::Region> region_;
@@ -119,8 +121,7 @@ class RaftPeerStorage : public eraft::StorageInterface {
   raft_messagepb::RaftLocalState *raftState_;
 
   raft_messagepb::RaftApplyState *applyState_;
-
-  std::shared_ptr<storage::StorageEngineInterface> engines_;
+  std::shared_ptr<DBEngines> engines_;
 };
 
 }  // namespace network

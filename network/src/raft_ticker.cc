@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <network/raft_router.h>
 #include <network/raft_ticker.h>
 
 namespace network {
@@ -29,7 +30,8 @@ std::shared_ptr<Router> Ticker::router_ = nullptr;
 
 std::map<uint64_t, void *> Ticker::regions_ = {};
 
-Ticker::Ticker(on_tick_t onTick, tick_interval_t tickInterval)
+Ticker::Ticker(on_tick_t onTick, std::shared_ptr<Router> router,
+               tick_interval_t tickInterval)
     : onTick_(onTick), tickInterval_(tickInterval), running_(false) {}
 
 Ticker::~Ticker() { delete instance_; }

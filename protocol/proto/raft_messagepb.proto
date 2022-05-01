@@ -12,6 +12,14 @@ enum RaftMessageType {
     RaftSplitRegion = 4;
 }
 
+message RawPutRequest {
+    bytes key = 1;
+    bytes value = 2;
+    string cf = 3;
+    uint64 id = 4;
+    uint32 type = 5;
+}
+
 // The message sent between Raft peer, it wraps the raft meessage with some meta information.
 message RaftMessage {
     uint64 region_id = 1;
