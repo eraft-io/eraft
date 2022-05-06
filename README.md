@@ -38,7 +38,3 @@ See the (github wiki)[https://github.com/eraft-io/eraft/wiki] for more detail.
 #### Code Style
 https://google.github.io/styleguide/cppguide.html
 
-#### Join Us on GoogleGroup
-
-https://groups.google.com/g/eraftio
-
