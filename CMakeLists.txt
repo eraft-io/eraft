@@ -123,7 +123,9 @@ if(ParentDirectory STREQUAL "")
 
     add_subdirectory(protocol)
     add_subdirectory(raftcore)
+    add_subdirectory(network)
     add_subdirectory(kv)
+    add_subdirectory(cmd)
 
 endif(ParentDirectory STREQUAL "")
 

@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2021 Colin
+# Copyright (c) 2021 eraft dev group
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,56 +21,17 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.8)
-set(This kv)
+set(This storage)
 
 set(Headers 
-    include/kv/bench_tools.h
-    include/kv/bootstrap.h
-    include/kv/callback.h
-    include/kv/config.h
-    include/kv/engines.h
-    include/kv/file.h
-    include/kv/msg.h
-    include/kv/node.h
-    include/kv/peer_msg_handler.h
-    include/kv/peer_storage.h
-    include/kv/concurrentqueue.h
-    include/kv/concurrency_queue.h
-    include/kv/peer.h
-    include/kv/raft_client.h
-    include/kv/raft_server.h
-    include/kv/raft_store.h
-    include/kv/raft_worker.h
-    include/kv/rate_limiter.h
-    include/kv/router.h
-    include/kv/server.h
-    include/kv/server_transport.h
-    include/kv/storage.h
-    include/kv/store_worker.h
-    include/kv/transport.h
-    include/kv/utils.h
+    include/storage/engine_interface.h
+    include/storage/pmem_engine.h
+    include/storage/write_batch.h
 )
 
 set(Sources
-    src/bootstrap.cc
-    src/engines.cc
-    src/file.cc
-    src/node.cc
-    src/peer_msg_handler.cc
-    src/peer_storage.cc
-    src/concurrency_queue.cc
-    src/peer.cc
-    src/raft_client.cc
-    src/raft_server.cc
-    src/raft_store.cc
-    src/raft_worker.cc
-    src/rate_limiter.cc
-    src/router.cc
-    src/server.cc
-    src/store_worker.cc
-    src/server_transport.cc
-    src/ticker.cc
-    src/utils.cc
+    src/pmem_engine.cc
+    src/write_batch.cc
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})
@@ -81,10 +42,8 @@ set_target_properties(${This} PROPERTIES
 target_include_directories(${This} PUBLIC include)
 
 target_link_libraries(${This} PUBLIC
-    gtest
-    rocksdb
-    gRPC::grpc++
-    protocol
-    raftcore
-    ${GFLAGS_LIBRARIES}
+    gtest_main
+    pmemkv
 )
+
+add_subdirectory(test)

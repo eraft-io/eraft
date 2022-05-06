@@ -126,7 +126,6 @@ struct Config {
     if (this->raftElectionTimeoutTicks_ != 10) {
     }
     if (this->raftElectionTimeoutTicks_ <= this->raftHeartbeatTicks_) {
-      // election tick must be greater than heartbeat tick
       return false;
     }
   }

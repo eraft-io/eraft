@@ -6,9 +6,9 @@ image:
 	docker build -f Dockerfile -t $(BUILDER_IMAGE) .
 
 build-dev:
-	chmod +x build-test.sh
+	chmod +x build-dev.sh
 	# This images is pull from my(LiuJ) docker hub, you can build with the Dockerfile by youself.
-	docker run --rm -v $(realpath ..):/eraft eraft/eraft_dev:v0.2 /eraft/ci/build-test.sh;
+	docker run --rm -v $(realpath ..):/eraft hub.docker.com/eraftio/eraft:latest /eraft/ci/build-dev.sh;
 
 clean:
 	docker rm $(docker ps -aq)
