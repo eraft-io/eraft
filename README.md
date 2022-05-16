@@ -1,3 +1,8 @@
+[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
+
+中文 | [English](README_en.md)
+
 ### 概述
 
 eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系统，我们会用全网最简单，直白的语言介绍分布式系统的原理，并带着你设计和实现一个工业化的分布式存储系统。
