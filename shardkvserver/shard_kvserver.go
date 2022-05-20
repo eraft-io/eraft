@@ -57,7 +57,7 @@ type ShardKV struct {
 
 	stm map[int]*Bucket
 
-	dbEng *storage_eng.LevelDBKvStore
+	dbEng storage_eng.KvStore
 
 	notifyChans map[int]chan *pb.CommandResponse
 
@@ -81,19 +81,9 @@ func MakeShardKVServer(peerMaps map[int]string, nodeId int, gid int, configServe
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
-	logDbEng, err := storage_eng.MakeLevelDBKvStore("./log_data/shard_svr/group_" + strconv.Itoa(gid) + "/node_" + strconv.Itoa(nodeId))
-	if err != nil {
-		raftcore.PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
-
+	logDbEng := storage_eng.EngineFactory("leveldb", "./log_data/shard_svr/group_"+strconv.Itoa(gid)+"/node_"+strconv.Itoa(nodeId))
 	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 1000, 3000)
-
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./data/group_" + strconv.Itoa(gid) + "/node_" + strconv.Itoa(nodeId))
-	if err != nil {
-		raftcore.PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./data/group_"+strconv.Itoa(gid)+"/node_"+strconv.Itoa(nodeId))
 
 	shardKv := &ShardKV{
 		dead:        0,
@@ -357,7 +347,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 //
 // init the status machine
 //
-func (s *ShardKV) initStm(eng *storage_eng.LevelDBKvStore) {
+func (s *ShardKV) initStm(eng storage_eng.KvStore) {
 	for i := 0; i < common.NBuckets; i++ {
 		if _, ok := s.stm[i]; !ok {
 			s.stm[i] = NewBucket(eng, i)

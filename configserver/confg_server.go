@@ -61,17 +61,9 @@ func MakeConfigServer(peerMaps map[int]string, nodeId int) *ConfigServer {
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./conf_data/" + "/node_" + strconv.Itoa(nodeId))
-	if err != nil {
-		raftcore.PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./conf_data/"+"/node_"+strconv.Itoa(nodeId))
 
-	logDbEng, err := storage_eng.MakeLevelDBKvStore("./log_data/" + "/configserver/node_" + strconv.Itoa(nodeId))
-	if err != nil {
-		raftcore.PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	logDbEng := storage_eng.EngineFactory("leveldb", "./log_data/"+"/configserver/node_"+strconv.Itoa(nodeId))
 
 	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 1000, 3000)
 	configSvr := &ConfigServer{

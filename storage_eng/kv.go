@@ -39,3 +39,22 @@ type KvStore interface {
 	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
 	DelPrefixKeys(prefix string) error
 }
+
+func EngineFactory(name string, dbPath string) KvStore {
+	switch name {
+	case "leveldb":
+		levelDb, err := MakeLevelDBKvStore(dbPath)
+		if err != nil {
+			panic(err)
+		}
+		return levelDb
+	// case "pmem": // need special golang compiler support
+	// 	pmemDb, err := pmemengine.MakePMemKvStore(dbPath)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	return pmemDb
+	default:
+		panic("No such engine type support")
+	}
+}

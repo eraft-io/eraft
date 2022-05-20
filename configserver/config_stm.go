@@ -47,11 +47,11 @@ type ConfigStm interface {
 
 type MemConfigStm struct {
 	mu             sync.Mutex
-	dbEng          *storage_eng.LevelDBKvStore
+	dbEng          storage_eng.KvStore
 	curConfVersion int
 }
 
-func NewMemConfigStm(dbEng *storage_eng.LevelDBKvStore) *MemConfigStm {
+func NewMemConfigStm(dbEng storage_eng.KvStore) *MemConfigStm {
 	// check if has default conf
 	_, err := dbEng.Get(CF_PREFIX + strconv.Itoa(0))
 	confStm := &MemConfigStm{dbEng: dbEng, curConfVersion: 0}

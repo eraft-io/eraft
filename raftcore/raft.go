@@ -87,7 +87,7 @@ type Raft struct {
 	baseElecTimeout  uint64
 }
 
-func MakeRaft(peers []*RaftClientEnd, me int, newdbEng *storage_eng.LevelDBKvStore, applyCh chan *pb.ApplyMsg, heartbeatTimeOutMs uint64, baseElectionTimeOutMs uint64) *Raft {
+func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, applyCh chan *pb.ApplyMsg, heartbeatTimeOutMs uint64, baseElectionTimeOutMs uint64) *Raft {
 	rf := &Raft{
 		peers:            peers,
 		me_:              me,

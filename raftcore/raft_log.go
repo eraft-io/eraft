@@ -35,7 +35,7 @@ type RaftLog struct {
 	mu       sync.RWMutex
 	firstIdx uint64
 	nextIdx  uint64
-	dbEng    *storage_eng.LevelDBKvStore
+	dbEng    storage_eng.KvStore
 	items    []*pb.Entry
 }
 

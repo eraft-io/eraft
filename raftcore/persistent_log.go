@@ -47,7 +47,7 @@ type RaftPersistenState struct {
 //
 // newdbEng: a LevelDBKvStore storage engine
 //
-func MakePersistRaftLog(newdbEng *storage_eng.LevelDBKvStore) *RaftLog {
+func MakePersistRaftLog(newdbEng storage_eng.KvStore) *RaftLog {
 	empEnt := &pb.Entry{}
 	empEntEncode := EncodeEntry(empEnt)
 	newdbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), empEntEncode)

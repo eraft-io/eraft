@@ -43,11 +43,12 @@ func RemoveDir(in string) {
 }
 
 func TestTestPersisLogGetInit(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	// newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
+	// if err != nil {
+	// 	PrintDebugLog("boot storage engine err!")
+	// 	panic(err)
+	// }
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
@@ -58,11 +59,7 @@ func TestTestPersisLogGetInit(t *testing.T) {
 }
 
 func TestEraseBefore1(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
@@ -74,11 +71,7 @@ func TestEraseBefore1(t *testing.T) {
 }
 
 func TestPersisEraseAfter1(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
@@ -90,11 +83,7 @@ func TestPersisEraseAfter1(t *testing.T) {
 }
 
 func TestPersisEraseAfter0And1(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
@@ -113,11 +102,7 @@ func TestPersisEraseAfter0And1(t *testing.T) {
 }
 
 func TestPersisEraseBefore0And1(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
@@ -140,11 +125,7 @@ func TestPersisEraseBefore0And1(t *testing.T) {
 }
 
 func TestPersisEraseAfter0(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
@@ -156,11 +137,7 @@ func TestPersisEraseAfter0(t *testing.T) {
 }
 
 func TestTestPersisLogAppend(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	raftLog.Append(&pb.Entry{
 		Index: 1,
@@ -177,11 +154,7 @@ func TestTestPersisLogAppend(t *testing.T) {
 }
 
 func TestTestPersisLogErase(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	raftLog.Append(&pb.Entry{
 		Index: 1,
@@ -226,11 +199,7 @@ func TestSliceSplit(t *testing.T) {
 }
 
 func TestRaftStatePersis(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	curterm, votedFor := raftLog.ReadRaftState()
 	t.Logf("%d", curterm)
@@ -243,11 +212,7 @@ func TestRaftStatePersis(t *testing.T) {
 }
 
 func TestTestPersisLogGetRange(t *testing.T) {
-	newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	if err != nil {
-		PrintDebugLog("boot storage engine err!")
-		panic(err)
-	}
+	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	raftLog.Append(&pb.Entry{
 		Index: 1,

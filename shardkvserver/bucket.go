@@ -45,7 +45,7 @@ const SPLIT = "$^$"
 //
 type Bucket struct {
 	ID     int
-	KvDB   *storage_eng.LevelDBKvStore
+	KvDB   storage_eng.KvStore
 	Status buketStatus
 }
 
@@ -60,7 +60,7 @@ type BucketDatasVo struct {
 //
 // make a new bucket
 //
-func NewBucket(eng *storage_eng.LevelDBKvStore, id int) *Bucket {
+func NewBucket(eng storage_eng.KvStore, id int) *Bucket {
 	return &Bucket{id, eng, Runing}
 }
 
