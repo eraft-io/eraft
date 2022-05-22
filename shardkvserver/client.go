@@ -30,6 +30,7 @@ package shardkvserver
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"strings"
 	"time"
@@ -190,7 +191,8 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
 					kvCli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UN_UNSED_TID)
 					resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 					if err != nil {
-						panic(err)
+						fmt.Printf("err %s", err.Error())
+						// panic(err)
 					}
 					if resp.ErrCode == common.ErrCodeNoErr {
 						kvCli.commandId++

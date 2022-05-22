@@ -82,7 +82,7 @@ func MakeShardKVServer(peerMaps map[int]string, nodeId int, gid int, configServe
 	newApplyCh := make(chan *pb.ApplyMsg)
 
 	logDbEng := storage_eng.EngineFactory("leveldb", "./log_data/shard_svr/group_"+strconv.Itoa(gid)+"/node_"+strconv.Itoa(nodeId))
-	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 1000, 3000)
+	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 100, 500)
 	newdbEng := storage_eng.EngineFactory("leveldb", "./data/group_"+strconv.Itoa(gid)+"/node_"+strconv.Itoa(nodeId))
 
 	shardKv := &ShardKV{
