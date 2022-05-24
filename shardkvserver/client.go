@@ -192,7 +192,7 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
 					resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 					if err != nil {
 						fmt.Printf("err %s", err.Error())
-						// panic(err)
+						panic(err)
 					}
 					if resp.ErrCode == common.ErrCodeNoErr {
 						kvCli.commandId++

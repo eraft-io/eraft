@@ -30,12 +30,12 @@ func main() {
 
 	startTs := time.Now()
 	for i := 0; i < count; i++ {
-		kvCli.Put(common.RandStringRunes(256), common.RandStringRunes(256))
+		kvCli.Put(common.RandStringRunes(64), common.RandStringRunes(64))
 		time.Sleep(time.Millisecond * 100)
 	}
 
 	elapsed := time.Since(startTs).Seconds()
-	fmt.Printf("cost %f\n", elapsed)
+	fmt.Printf("total cost %f s\n", elapsed)
 
 	go func() {
 		sig := <-sigs

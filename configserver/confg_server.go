@@ -65,7 +65,7 @@ func MakeConfigServer(peerMaps map[int]string, nodeId int) *ConfigServer {
 
 	logDbEng := storage_eng.EngineFactory("leveldb", "./log_data/"+"/configserver/node_"+strconv.Itoa(nodeId))
 
-	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 1000, 3000)
+	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 500, 1500)
 	configSvr := &ConfigServer{
 		Rf:          newRf,
 		applyCh:     newApplyCh,
