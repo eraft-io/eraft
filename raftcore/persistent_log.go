@@ -101,11 +101,15 @@ func (rfLog *RaftLog) GetFirstLogId() uint64 {
 func (rfLog *RaftLog) GetLastLogId() uint64 {
 	rfLog.mu.RLock()
 	defer rfLog.mu.RUnlock()
-	kBytes, _, err := rfLog.dbEng.SeekPrefixLast(string(RAFTLOG_PREFIX))
+	// kBytes, _, err := rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	idMax, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
 	}
-	return DecodeRaftLogKey(kBytes)
+	return idMax
 }
 
 //
@@ -133,13 +137,12 @@ func (rfLog *RaftLog) GetFirst() *pb.Entry {
 func (rfLog *RaftLog) GetLast() *pb.Entry {
 	rfLog.mu.RLock()
 	defer rfLog.mu.RUnlock()
-	kBytes, vBytes, err := rfLog.dbEng.SeekPrefixLast(string(RAFTLOG_PREFIX))
+	lastLogId, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
 	}
-	logId := DecodeRaftLogKey(kBytes)
-	PrintDebugLog(fmt.Sprintf("get last log with id -> %d", logId))
-	return DecodeEntry(vBytes)
+	PrintDebugLog(fmt.Sprintf("get last log with id -> %d", lastLogId))
+	return rfLog.GetEntry(int64(lastLogId))
 }
 
 //
@@ -155,11 +158,14 @@ func (rfLog *RaftLog) LogItemCount() int {
 		panic(err)
 	}
 	logIdFirst := DecodeRaftLogKey(kBytes)
-	kBytes, _, err = rfLog.dbEng.SeekPrefixLast(string(RAFTLOG_PREFIX))
+	// kBytes, _, err = rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
 	}
-	logIdLast := DecodeRaftLogKey(kBytes)
 	return int(logIdLast) - int(logIdFirst) + 1
 }
 
@@ -171,13 +177,16 @@ func (rfLog *RaftLog) LogItemCount() int {
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
-	kBytes, _, err := rfLog.dbEng.SeekPrefixLast(string(RAFTLOG_PREFIX))
+	// kBytes, _, err := rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
 	}
-	logIdLast := DecodeRaftLogKey(kBytes)
 	newEntEncode := EncodeEntry(newEnt)
-	rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(int64(logIdLast)+1), newEntEncode)
+	rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(logIdLast)+1), newEntEncode)
 }
 
 //
@@ -203,7 +212,7 @@ func (rfLog *RaftLog) EraseAfter(idx int64, withDel bool) []*pb.Entry {
 	firstLogId := rfLog.GetFirstLogId()
 	if withDel {
 		for i := idx; i <= int64(rfLog.GetLastLogId()); i++ {
-			if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(i)); err != nil {
+			if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(uint64(i))); err != nil {
 				panic(err)
 			}
 		}
@@ -237,7 +246,7 @@ func (rfLog *RaftLog) GetRange(lo, hi int64) []*pb.Entry {
 func (rfLog *RaftLog) GetEntry(idx int64) *pb.Entry {
 	rfLog.mu.RLock()
 	defer rfLog.mu.RUnlock()
-	encodeValue, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(idx))
+	encodeValue, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(uint64(idx)))
 	if err != nil {
 		panic(err)
 	}
@@ -248,7 +257,7 @@ func (rfLog *RaftLog) GetEntry(idx int64) *pb.Entry {
 // EncodeRaftLogKey
 // encode raft log key with perfix -> RAFTLOG_PREFIX
 //
-func EncodeRaftLogKey(idx int64) []byte {
+func EncodeRaftLogKey(idx uint64) []byte {
 	var outBuf bytes.Buffer
 	outBuf.Write(RAFTLOG_PREFIX)
 	b := make([]byte, 8)

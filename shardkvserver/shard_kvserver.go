@@ -148,6 +148,9 @@ func (s *ShardKV) ConfigAction() {
 			s.mu.RUnlock()
 			if canPerformNextConf {
 				nextConfig := s.cvCli.Query(int64(curConfVersion) + 1)
+				if nextConfig == nil {
+					continue
+				}
 				nextCfBytes, _ := json.Marshal(nextConfig)
 				curCfBytes, _ := json.Marshal(s.curConfig)
 				raftcore.PrintDebugLog("next config -> " + string(nextCfBytes))

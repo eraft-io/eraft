@@ -172,3 +172,8 @@ Get started with eraft quickly and try distributed systems
 ./shardcli 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 put testkey testvalue
 ./shardcli 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 get testkey
 ```
+
+8.run benchmark
+```
+./bench_cli 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 100 put
+```

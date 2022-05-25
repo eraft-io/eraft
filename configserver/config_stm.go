@@ -81,8 +81,6 @@ func NewMemConfigStm(dbEng storage_eng.KvStore) *MemConfigStm {
 }
 
 func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
-	cfStm.mu.Lock()
-	defer cfStm.mu.Unlock()
 	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
@@ -113,8 +111,6 @@ func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
 }
 
 func (cfStm *MemConfigStm) Leave(gids []int) error {
-	cfStm.mu.Lock()
-	defer cfStm.mu.Unlock()
 	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
@@ -135,8 +131,6 @@ func (cfStm *MemConfigStm) Leave(gids []int) error {
 }
 
 func (cfStm *MemConfigStm) Move(bid, gid int) error {
-	cfStm.mu.Lock()
-	defer cfStm.mu.Unlock()
 	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
@@ -153,8 +147,6 @@ func (cfStm *MemConfigStm) Move(bid, gid int) error {
 }
 
 func (cfStm *MemConfigStm) Query(version int) (Config, error) {
-	cfStm.mu.Lock()
-	defer cfStm.mu.Unlock()
 	if version < 0 || version >= cfStm.curConfVersion {
 		lastConf := &Config{}
 		raftcore.PrintDebugLog("query cur version -> " + strconv.Itoa(cfStm.curConfVersion))

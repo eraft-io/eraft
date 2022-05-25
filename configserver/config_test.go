@@ -50,6 +50,8 @@ func TestAddGroups(t *testing.T) {
 		panic(err)
 	}
 	memConfStm := NewMemConfigStm(newdbEng)
-	conf, _ := memConfStm.Query(2)
-	t.Logf("%v", conf)
+	for i := 0; i < 1000; i++ {
+		conf, _ := memConfStm.Query(-1)
+		t.Logf("%v %d", conf, i)
+	}
 }

@@ -34,7 +34,7 @@ import (
 type RaftLog struct {
 	mu       sync.RWMutex
 	firstIdx uint64
-	nextIdx  uint64
+	lastIdx  uint64
 	dbEng    storage_eng.KvStore
 	items    []*pb.Entry
 }
@@ -65,7 +65,7 @@ func MakeMemRaftLog() *RaftLog {
 	empEnt := &pb.Entry{}
 	newItems := []*pb.Entry{}
 	newItems = append(newItems, empEnt)
-	return &RaftLog{items: newItems, firstIdx: INIT_LOG_INDEX, nextIdx: INIT_LOG_INDEX + 1}
+	return &RaftLog{items: newItems, firstIdx: INIT_LOG_INDEX, lastIdx: INIT_LOG_INDEX + 1}
 }
 
 func (rfLog *RaftLog) GetMemFirst() *pb.Entry {

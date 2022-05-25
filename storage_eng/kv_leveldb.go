@@ -23,6 +23,7 @@
 package storage_eng
 
 import (
+	"encoding/binary"
 	"errors"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -85,21 +86,42 @@ func (levelDB *LevelDBKvStore) DumpPrefixKey(prefix string) (map[string]string, 
 	return kvs, iter.Error()
 }
 
-func (levelDB *LevelDBKvStore) SeekPrefixLast(prefix string) ([]byte, []byte, error) {
-	iter := levelDB.db.NewIterator(util.BytesPrefix([]byte(prefix)), nil)
-	for iter.Next() {
-		continue
+func (levelDB *LevelDBKvStore) SeekPrefixLast(prefix []byte) ([]byte, []byte, error) {
+	iter := levelDB.db.NewIterator(util.BytesPrefix(prefix), nil)
+	defer iter.Release()
+	ok := iter.Last()
+	var keyBytes, valBytes []byte
+	if ok {
+		keyBytes = iter.Key()
+		valBytes = iter.Value()
 	}
-	iter.Prev()
-	return iter.Key(), iter.Value(), nil
+	return keyBytes, valBytes, nil
+}
+
+func (levelDB *LevelDBKvStore) SeekPrefixKeyIdMax(prefix []byte) (uint64, error) {
+	iter := levelDB.db.NewIterator(util.BytesPrefix(prefix), nil)
+	defer iter.Release()
+	var maxKeyId uint64
+	maxKeyId = 0
+	for iter.Next() {
+		if iter.Error() != nil {
+			return maxKeyId, iter.Error()
+		}
+		kBytes := iter.Key()
+		KeyId := binary.LittleEndian.Uint64(kBytes[len(prefix):])
+		if KeyId > maxKeyId {
+			maxKeyId = KeyId
+		}
+	}
+	return maxKeyId, nil
 }
 
 func (levelDB *LevelDBKvStore) SeekPrefixFirst(prefix string) ([]byte, []byte, error) {
 	iter := levelDB.db.NewIterator(util.BytesPrefix([]byte(prefix)), nil)
+	defer iter.Release()
 	if iter.Next() {
 		return iter.Key(), iter.Value(), nil
 	}
-	iter.Release()
 	return []byte{}, []byte{}, errors.New("seek not find key")
 }
 

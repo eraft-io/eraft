@@ -29,8 +29,10 @@ package configserver
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"strings"
+	"sync"
 
 	"github.com/eraft-io/mit6.824lab2product/common"
 	"github.com/eraft-io/mit6.824lab2product/raftcore"
@@ -38,6 +40,7 @@ import (
 )
 
 type CfgCli struct {
+	mu        sync.Mutex
 	endpoints []*raftcore.RaftClientEnd
 	leaderId  int64
 	clientId  int64
@@ -71,20 +74,24 @@ func (cfgCli *CfgCli) GetRpcClis() []*raftcore.RaftClientEnd {
 }
 
 func (cfgCli *CfgCli) Query(ver int64) *Config {
+	// cfgCli.mu.Lock()
+	// defer cfgCli.mu.Unlock()
 	confReq := &pb.ConfigRequest{
 		OpType:        pb.ConfigOpType_OpQuery,
 		ConfigVersion: ver,
 	}
 	resp := cfgCli.CallDoConfigRpc(confReq)
 	cf := &Config{}
-	cf.Version = int(resp.Config.ConfigVersion)
-	for i := 0; i < common.NBuckets; i++ {
-		cf.Buckets[i] = int(resp.Config.Buckets[i])
-	}
-	cf.Groups = make(map[int][]string)
-	for k, v := range resp.Config.Groups {
-		serverList := strings.Split(v, ",")
-		cf.Groups[int(k)] = serverList
+	if resp != nil {
+		cf.Version = int(resp.Config.ConfigVersion)
+		for i := 0; i < common.NBuckets; i++ {
+			cf.Buckets[i] = int(resp.Config.Buckets[i])
+		}
+		cf.Groups = make(map[int][]string)
+		for k, v := range resp.Config.Groups {
+			serverList := strings.Split(v, ",")
+			cf.Groups[int(k)] = serverList
+		}
 	}
 	return cf
 }
@@ -120,6 +127,7 @@ func (cfgCli *CfgCli) Leave(gids []int64) {
 func (cfgCli *CfgCli) CallDoConfigRpc(req *pb.ConfigRequest) *pb.ConfigResponse {
 	var err error
 	confResp := &pb.ConfigResponse{}
+	confResp.Config = &pb.ServerConfig{}
 	for _, end := range cfgCli.endpoints {
 		confResp, err = (*end.GetRaftServiceCli()).DoConfig(context.Background(), req)
 		if err != nil {
@@ -129,17 +137,20 @@ func (cfgCli *CfgCli) CallDoConfigRpc(req *pb.ConfigRequest) *pb.ConfigResponse 
 		switch confResp.ErrCode {
 		case common.ErrCodeNoErr:
 			cfgCli.commandId++
-			// raftcore.PrintDebugLog("ErrCodeNoErr")
 			return confResp
 		case common.ErrCodeWrongLeader:
+			raftcore.PrintDebugLog(fmt.Sprintf("find leader with id %d", confResp.LeaderId))
 			confResp, err := (*cfgCli.endpoints[confResp.LeaderId].GetRaftServiceCli()).DoConfig(context.Background(), req)
 			if err != nil {
 				raftcore.PrintDebugLog("a node in cluster is down : " + err.Error())
 				continue
 			}
-			raftcore.PrintDebugLog("error send to wrong leader, try next node")
 			if confResp.ErrCode == common.ErrCodeNoErr {
 				cfgCli.commandId++
+				return confResp
+			}
+			if confResp.ErrCode == common.ErrCodeExecTimeout {
+				raftcore.PrintDebugLog("exec timeout")
 				return confResp
 			}
 			return confResp

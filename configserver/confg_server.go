@@ -27,6 +27,7 @@ package configserver
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -95,42 +96,40 @@ func (s *ConfigServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb
 	raftcore.PrintDebugLog(fmt.Sprintf("DoConfig %s", req.String()))
 	cmdResp := &pb.ConfigResponse{}
 
-	if req != nil {
-
-		reqBytes, err := json.Marshal(req)
-		if err != nil {
-			cmdResp.ErrMsg = err.Error()
-			return cmdResp, err
-		}
-
-		index, _, isLeader := s.Rf.Propose(reqBytes)
-		if !isLeader {
-			cmdResp.ErrMsg = "is not leader"
-			cmdResp.ErrCode = common.ErrCodeWrongLeader
-			cmdResp.LeaderId = s.Rf.GetLeaderId()
-			return cmdResp, nil
-		}
-
-		s.mu.Lock()
-		ch := s.getNotifyChan(index)
-		s.mu.Unlock()
-
-		select {
-		case res := <-ch:
-			cmdResp.Config = res.Config
-			cmdResp.ErrMsg = res.ErrMsg
-			cmdResp.ErrCode = common.ErrCodeNoErr
-		case <-time.After(ExecTimeout):
-			cmdResp.ErrMsg = "server exec timeout"
-			cmdResp.ErrCode = common.ErrCodeExecTimeout
-		}
-
-		go func() {
-			s.mu.Lock()
-			delete(s.notifyChans, index)
-			s.mu.Unlock()
-		}()
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		cmdResp.ErrMsg = err.Error()
+		return cmdResp, err
 	}
+
+	index, _, isLeader := s.Rf.Propose(reqBytes)
+	if !isLeader {
+		cmdResp.ErrMsg = "is not leader"
+		cmdResp.ErrCode = common.ErrCodeWrongLeader
+		cmdResp.LeaderId = s.Rf.GetLeaderId()
+		return cmdResp, nil
+	}
+
+	s.mu.Lock()
+	ch := s.getNotifyChan(index)
+	s.mu.Unlock()
+
+	select {
+	case res := <-ch:
+		cmdResp.Config = res.Config
+		cmdResp.ErrMsg = res.ErrMsg
+		cmdResp.ErrCode = common.ErrCodeNoErr
+	case <-time.After(ExecTimeout):
+		cmdResp.ErrMsg = "server exec timeout"
+		cmdResp.ErrCode = common.ErrCodeExecTimeout
+		return cmdResp, errors.New("ExecTimeout")
+	}
+
+	go func() {
+		s.mu.Lock()
+		delete(s.notifyChans, index)
+		s.mu.Unlock()
+	}()
 
 	return cmdResp, nil
 }
@@ -189,7 +188,8 @@ func (s *ConfigServer) ApplingToStm(done <-chan interface{}) {
 				}
 				out, err := json.Marshal(conf)
 				if err != nil {
-					panic(err)
+					resp.ErrMsg = err.Error()
+					// panic(err)
 				}
 				raftcore.PrintDebugLog("query configs: " + string(out))
 				resp.Config = &pb.ServerConfig{}

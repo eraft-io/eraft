@@ -33,7 +33,6 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"time"
 
 	"github.com/eraft-io/mit6.824lab2product/common"
 	"github.com/eraft-io/mit6.824lab2product/configserver"
@@ -168,42 +167,43 @@ func (kvCli *KvClient) InsertBucketDatas(gid int, bucketIds []int64, datas []byt
 // do user normal command
 //
 func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
-	for {
-		bucket_id := common.Key2BucketID(req.Key)
-		gid := kvCli.config.Buckets[bucket_id]
-		if servers, ok := kvCli.config.Groups[gid]; ok {
-			for _, svrAddr := range servers {
-				kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
+	bucket_id := common.Key2BucketID(req.Key)
+	gid := kvCli.config.Buckets[bucket_id]
+	if gid == 0 {
+		return "there is no shard in charge of this bucket!"
+	}
+	if servers, ok := kvCli.config.Groups[gid]; ok {
+		for _, svrAddr := range servers {
+			kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
+			defer kvCli.rpcCli.CloseAllConn()
+			resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
+			if err != nil {
+				// node down
+				raftcore.PrintDebugLog("there is node down is cluster" + err.Error())
+				continue
+			}
+			switch resp.ErrCode {
+			case common.ErrCodeNoErr:
+				kvCli.commandId++
+				return resp.Value
+			case common.ErrCodeWrongGroup:
+				kvCli.config = kvCli.csCli.Query(-1)
+				return "WrongGroup"
+			case common.ErrCodeWrongLeader:
+				kvCli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UN_UNSED_TID)
 				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 				if err != nil {
-					// node down
-					raftcore.PrintDebugLog("there is node down is cluster" + err.Error())
-					continue
+					fmt.Printf("err %s", err.Error())
+					panic(err)
 				}
-				switch resp.ErrCode {
-				case common.ErrCodeNoErr:
+				if resp.ErrCode == common.ErrCodeNoErr {
 					kvCli.commandId++
 					return resp.Value
-				case common.ErrCodeWrongGroup:
-					kvCli.config = kvCli.csCli.Query(-1)
-					return "WrongGroup"
-				case common.ErrCodeWrongLeader:
-					kvCli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UN_UNSED_TID)
-					resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
-					if err != nil {
-						fmt.Printf("err %s", err.Error())
-						panic(err)
-					}
-					if resp.ErrCode == common.ErrCodeNoErr {
-						kvCli.commandId++
-						return resp.Value
-					}
 				}
 			}
 		}
-		time.Sleep(100 * time.Millisecond)
-		kvCli.config = kvCli.csCli.Query(-1)
 	}
+	return ""
 }
 
 //

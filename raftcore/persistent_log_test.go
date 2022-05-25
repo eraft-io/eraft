@@ -139,11 +139,13 @@ func TestPersisEraseAfter0(t *testing.T) {
 func TestTestPersisLogAppend(t *testing.T) {
 	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
-	raftLog.Append(&pb.Entry{
-		Index: 1,
-		Term:  1,
-		Data:  []byte{0x01, 0x02},
-	})
+	for i := 0; i < 1000; i++ {
+		raftLog.Append(&pb.Entry{
+			Index: int64(i),
+			Term:  1,
+			Data:  []byte{0x01, 0x02},
+		})
+	}
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
 	lastEnt := raftLog.GetLast()
@@ -235,7 +237,7 @@ func TestTestPersisLogGetRange(t *testing.T) {
 		Data:  []byte{0x01, 0x02},
 	})
 
-	ents := raftLog.GetRange(2, 4)
+	ents := raftLog.GetRange(2, 3)
 	for _, ent := range ents {
 		t.Logf("got ent %s", ent.String())
 	}

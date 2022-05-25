@@ -1,4 +1,3 @@
-//
 // MIT License
 
 // Copyright (c) 2022 eraft dev group
@@ -20,42 +19,51 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-//
 
 package storage_eng
 
-//
-// If you want to contribute a new engine implementation, you need to implement these interfaces
-//
-type KvStore interface {
-	Put(string, string) error
-	Get(string) (string, error)
-	Delete(string) error
-	DumpPrefixKey(string) (map[string]string, error)
-	PutBytesKv(k []byte, v []byte) error
-	DeleteBytesK(k []byte) error
-	GetBytesValue(k []byte) ([]byte, error)
-	SeekPrefixLast(prefix []byte) ([]byte, []byte, error)
-	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
-	DelPrefixKeys(prefix string) error
-	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
+import (
+	"bytes"
+	"encoding/binary"
+	"io/ioutil"
+	"os"
+	"path"
+	"testing"
+)
+
+func RemoveDir(in string) {
+	dir, _ := ioutil.ReadDir(in)
+	for _, d := range dir {
+		os.RemoveAll(path.Join([]string{in, d.Name()}...))
+	}
 }
 
-func EngineFactory(name string, dbPath string) KvStore {
-	switch name {
-	case "leveldb":
-		levelDb, err := MakeLevelDBKvStore(dbPath)
-		if err != nil {
-			panic(err)
-		}
-		return levelDb
-	// case "pmem": // need special golang compiler support
-	// 	pmemDb, err := pmemengine.MakePMemKvStore(dbPath)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	return pmemDb
-	default:
-		panic("No such engine type support")
+func TestPrefixRange(t *testing.T) {
+	ldb, err := MakeLevelDBKvStore("./test_data")
+	if err != nil {
+		t.Log(err)
+		return
 	}
+
+	prefixBytes := []byte{0x11, 0x11, 0x19, 0x96}
+	for i := 0; i < 300; i++ {
+		var outBuf bytes.Buffer
+		outBuf.Write(prefixBytes)
+		b := make([]byte, 8)
+		binary.LittleEndian.PutUint64(b, uint64(i))
+		outBuf.Write(b)
+		t.Logf("write %v", outBuf.Bytes())
+		ldb.PutBytesKv(outBuf.Bytes(), []byte{byte(i)})
+	}
+
+	idMax, err := ldb.SeekPrefixKeyIdMax(prefixBytes)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	t.Logf("idMax -> %d", idMax)
+
+	ldb.db.Close()
+	RemoveDir("./test_data")
 }
