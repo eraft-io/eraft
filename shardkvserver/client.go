@@ -34,10 +34,10 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/configserver"
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/configserver"
+	"github.com/eraft-io/eraft/raftcore"
+	pb "github.com/eraft-io/eraft/raftpb"
 )
 
 //
@@ -46,6 +46,8 @@ import (
 type KvClient struct {
 	// raft group rpc client
 	rpcCli *raftcore.RaftClientEnd
+
+	connectsCache map[string]*raftcore.RaftClientEnd
 
 	// config server group client
 	csCli *configserver.CfgCli
@@ -57,6 +59,21 @@ type KvClient struct {
 	clientId int64
 	// the command id, use to identify a command
 	commandId int64
+}
+
+func (cli *KvClient) AddConnToCache(svrAddr string, rpcCli *raftcore.RaftClientEnd) {
+	cli.connectsCache[svrAddr] = rpcCli
+}
+
+func (cli *KvClient) GetConnFromCache(svrAddr string) *raftcore.RaftClientEnd {
+	if conn, ok := cli.connectsCache[svrAddr]; ok {
+		return conn
+	}
+	return nil
+}
+
+func (cli *KvClient) CloseRpcCliConn() {
+	cli.rpcCli.CloseAllConn()
 }
 
 //
@@ -174,12 +191,16 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
 	}
 	if servers, ok := kvCli.config.Groups[gid]; ok {
 		for _, svrAddr := range servers {
-			kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
-			defer kvCli.rpcCli.CloseAllConn()
+			if kvCli.GetConnFromCache(svrAddr) == nil {
+				kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
+			} else {
+				kvCli.rpcCli = kvCli.GetConnFromCache(svrAddr)
+			}
+			// defer kvCli.rpcCli.CloseAllConn()
 			resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 			if err != nil {
 				// node down
-				raftcore.PrintDebugLog("there is node down is cluster" + err.Error())
+				raftcore.PrintDebugLog("there is a node down is cluster, but we can continue with outher node")
 				continue
 			}
 			switch resp.ErrCode {

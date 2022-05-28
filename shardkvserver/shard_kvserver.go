@@ -35,12 +35,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/configserver"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
-	"github.com/eraft-io/mit6.824lab2product/storage_eng"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/configserver"
+	pb "github.com/eraft-io/eraft/raftpb"
+	"github.com/eraft-io/eraft/storage_eng"
 
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
+	"github.com/eraft-io/eraft/raftcore"
 )
 
 type ShardKV struct {

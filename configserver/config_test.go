@@ -27,9 +27,9 @@ package configserver
 import (
 	"testing"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
-	"github.com/eraft-io/mit6.824lab2product/storage_eng"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/raftcore"
+	"github.com/eraft-io/eraft/storage_eng"
 )
 
 func TestRangeArr(t *testing.T) {

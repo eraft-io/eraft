@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/configserver"
-	"github.com/eraft-io/mit6.824lab2product/shardkvserver"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/configserver"
+	"github.com/eraft-io/eraft/shardkvserver"
 )
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 	case "put":
 		for i := 0; i < count; i++ {
 			kvCli.Put(common.RandStringRunes(64), common.RandStringRunes(64))
-			time.Sleep(time.Millisecond * 5)
+			// time.Sleep(time.Millisecond * 5)
 		}
 	case "query":
 		for i := 0; i < count; i++ {
@@ -49,6 +49,8 @@ func main() {
 
 	elapsed := time.Since(startTs).Seconds()
 	fmt.Printf("total cost %f s\n", elapsed)
+
+	kvCli.CloseRpcCliConn()
 
 	go func() {
 		sig := <-sigs

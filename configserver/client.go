@@ -34,9 +34,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/raftcore"
+	pb "github.com/eraft-io/eraft/raftpb"
 )
 
 type CfgCli struct {
@@ -74,8 +74,6 @@ func (cfgCli *CfgCli) GetRpcClis() []*raftcore.RaftClientEnd {
 }
 
 func (cfgCli *CfgCli) Query(ver int64) *Config {
-	// cfgCli.mu.Lock()
-	// defer cfgCli.mu.Unlock()
 	confReq := &pb.ConfigRequest{
 		OpType:        pb.ConfigOpType_OpQuery,
 		ConfigVersion: ver,

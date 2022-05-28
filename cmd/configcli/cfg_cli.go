@@ -32,9 +32,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/configserver"
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/configserver"
+	"github.com/eraft-io/eraft/raftcore"
 )
 
 func main() {

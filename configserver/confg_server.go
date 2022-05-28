@@ -35,11 +35,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
-	"github.com/eraft-io/mit6.824lab2product/storage_eng"
+	"github.com/eraft-io/eraft/common"
+	pb "github.com/eraft-io/eraft/raftpb"
+	"github.com/eraft-io/eraft/storage_eng"
 
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
+	"github.com/eraft-io/eraft/raftcore"
 )
 
 type ConfigServer struct {

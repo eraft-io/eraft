@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/eraft-io/mit6.824lab2product/shardkvserver"
+	"github.com/eraft-io/eraft/shardkvserver"
 )
 
 func main() {

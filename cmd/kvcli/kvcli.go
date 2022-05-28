@@ -32,9 +32,9 @@ import (
 	"os"
 	"os/signal"
 
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	pb "github.com/eraft-io/eraft/raftpb"
 
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
+	"github.com/eraft-io/eraft/raftcore"
 )
 
 type KvClient struct {

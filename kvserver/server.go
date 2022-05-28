@@ -36,10 +36,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
-	"github.com/eraft-io/mit6.824lab2product/storage_eng"
+	"github.com/eraft-io/eraft/common"
+	"github.com/eraft-io/eraft/raftcore"
+	pb "github.com/eraft-io/eraft/raftpb"
+	"github.com/eraft-io/eraft/storage_eng"
 )
 
 var PeersMap = map[int]string{0: ":8088", 1: ":8089", 2: ":8090"}

@@ -22,36 +22,27 @@
 // SOFTWARE.
 //
 //
-package pmemengine
+package storage_eng
 
-import (
-	"fmt"
-	"math/rand"
-	"testing"
-	"time"
+// func TestEngRun(t *testing.T) {
+// 	rand.Seed(time.Now().UTC().UnixNano())
+// 	firstInit := pmem.Init("./list_database")
+// 	var rptr *SkipList
+// 	if firstInit {
+// 		// Create a new named object called dbRoot and point it to rptr
+// 		rptr = (*SkipList)(pmem.New("dbRoot", rptr))
+// 		rptr.Init()
+// 		rptr.Insert([]byte{0x97, 0x98}, []byte("hello my engine1"))
+// 		rptr.Insert([]byte{0x97, 0x99}, []byte("hello my engine2"))
+// 		rptr.Insert([]byte{0x97, 0x97}, []byte("hello my engine3"))
+// 	} else {
+// 		// Retrieve the named object dbRoot
+// 		rptr = (*SkipList)(pmem.Get("dbRoot", rptr))
 
-	"github.com/vmware/go-pmem-transaction/pmem"
-)
-
-func TestEngRun(t *testing.T) {
-	rand.Seed(time.Now().UTC().UnixNano())
-	firstInit := pmem.Init("./list_database")
-	var rptr *SkipList
-	if firstInit {
-		// Create a new named object called dbRoot and point it to rptr
-		rptr = (*SkipList)(pmem.New("dbRoot", rptr))
-		rptr.Init()
-		rptr.Insert([]byte{0x97, 0x98}, []byte("hello my engine1"))
-		rptr.Insert([]byte{0x97, 0x99}, []byte("hello my engine2"))
-		rptr.Insert([]byte{0x97, 0x97}, []byte("hello my engine3"))
-	} else {
-		// Retrieve the named object dbRoot
-		rptr = (*SkipList)(pmem.Get("dbRoot", rptr))
-
-		rptr.Delete([]byte{0x97, 0x98})
-		for e := rptr.Front(); e != nil; e = e.Next() {
-			fmt.Printf("%x \n", e.Key)
-			fmt.Printf("%s \n", e.Value)
-		}
-	}
-}
+// 		rptr.Delete([]byte{0x97, 0x98})
+// 		for e := rptr.Front(); e != nil; e = e.Next() {
+// 			fmt.Printf("%x \n", e.Key)
+// 			fmt.Printf("%s \n", e.Value)
+// 		}
+// 	}
+// }

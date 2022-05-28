@@ -33,9 +33,9 @@ import (
 	"strings"
 	"syscall"
 
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	pb "github.com/eraft-io/eraft/raftpb"
 
-	"github.com/eraft-io/mit6.824lab2product/shardkvserver"
+	"github.com/eraft-io/eraft/shardkvserver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

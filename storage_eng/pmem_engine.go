@@ -1,7 +1,7 @@
-package pmemengine
+package storage_eng
 
 type PMemKvStore struct {
-	db     *SkipList
+	// db     *SkipList
 	dbPath string
 }
 

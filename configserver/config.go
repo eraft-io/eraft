@@ -27,7 +27,7 @@ package configserver
 import (
 	"time"
 
-	"github.com/eraft-io/mit6.824lab2product/common"
+	"github.com/eraft-io/eraft/common"
 )
 
 type Config struct {

@@ -32,8 +32,8 @@ import (
 	"strconv"
 	"syscall"
 
-	kvsvr "github.com/eraft-io/mit6.824lab2product/kvserver"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	kvsvr "github.com/eraft-io/eraft/kvserver"
+	pb "github.com/eraft-io/eraft/raftpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

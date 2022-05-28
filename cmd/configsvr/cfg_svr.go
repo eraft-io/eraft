@@ -33,10 +33,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/eraft-io/mit6.824lab2product/raftcore"
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	"github.com/eraft-io/eraft/raftcore"
+	pb "github.com/eraft-io/eraft/raftpb"
 
-	"github.com/eraft-io/mit6.824lab2product/configserver"
+	"github.com/eraft-io/eraft/configserver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

@@ -27,7 +27,7 @@ package raftcore
 import (
 	"testing"
 
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
+	pb "github.com/eraft-io/eraft/raftpb"
 )
 
 func TestEncodeLogKey(t *testing.T) {

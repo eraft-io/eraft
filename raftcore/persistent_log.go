@@ -33,8 +33,8 @@ import (
 	"encoding/gob"
 	"fmt"
 
-	pb "github.com/eraft-io/mit6.824lab2product/raftpb"
-	"github.com/eraft-io/mit6.824lab2product/storage_eng"
+	pb "github.com/eraft-io/eraft/raftpb"
+	"github.com/eraft-io/eraft/storage_eng"
 )
 
 type RaftPersistenState struct {
@@ -175,8 +175,8 @@ func (rfLog *RaftLog) LogItemCount() int {
 // append a new entry to raftlog, put it to storage engine
 //
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
-	rfLog.mu.Lock()
-	defer rfLog.mu.Unlock()
+	// rfLog.mu.Lock()
+	// defer rfLog.mu.Unlock()
 	// kBytes, _, err := rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
 	// if err != nil {
 	// 	panic(err)
