@@ -64,7 +64,7 @@ func NodeToString(role NodeRole) string {
 //
 type Raft struct {
 	mu             sync.RWMutex
-	peers          []*RaftClientEnd
+	peers          []*RaftClientEnd // rpc client end
 	me_            int
 	dead           int32
 	applyCh        chan *pb.ApplyMsg

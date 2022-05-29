@@ -43,8 +43,14 @@ shardcli:
 bench_cli:
 	go build -o output/bench_cli cmd/benchcli/bench_cli.go
 
+eng_pmem:
+	go build -o output/eng_bench cmd/eng_bench/eng_bench.go
+
 into_pmem:
-	docker run -it -v ${PWD}:/eraft ubuntu:go_v2 /bin/bash
+	docker run --rm -it -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /bin/bash
+
+build_pmem_bench:
+	chmod +x build.sh; docker run --rm -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /root/go/src/github.com/eraft-io/eraft/build.sh
 
 clean:
 	rm -rf output/*

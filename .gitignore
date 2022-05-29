@@ -2,3 +2,4 @@ output
 vendor
 .DS_Store
 .vscode
+deps
