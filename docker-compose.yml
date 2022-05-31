@@ -1,0 +1,41 @@
+version: '3'
+services:
+  eraft-1:
+    hostname: eraft-1
+    image: eraft/eraft_dev:v0.6
+    working_dir: /root/eraft
+    command: ./output/cfgserver 0 172.19.0.11:8088,172.19.0.12:8089,172.19.0.13:8090
+    networks:
+      eraft-network:
+        ipv4_address: 172.19.0.11
+    ports:
+      - "8088:8088"
+
+  eraft-2:
+    hostname: eraft-2
+    image: eraft/eraft_dev:v0.6
+    working_dir: /root/eraft
+    command: ./output/cfgserver 1 172.19.0.11:8088,172.19.0.12:8089,172.19.0.13:8090
+    networks:
+      eraft-network:
+        ipv4_address: 172.19.0.12
+    ports:
+      - "8089:8089"
+
+  eraft-3:
+    hostname: eraft-3
+    image: eraft/eraft_dev:v0.6
+    working_dir: /root/eraft
+    command: ./output/cfgserver 2 172.19.0.11:8088,172.19.0.12:8089,172.19.0.13:8090
+    networks:
+      eraft-network:
+        ipv4_address: 172.19.0.13
+    ports:
+      - "8090:8090"
+
+networks:
+  eraft-network:
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+          gateway: 172.19.0.1
