@@ -80,6 +80,7 @@ func MakeKvServer(nodeId int) *KvServer {
 	kvSvr.stopApplyCh = make(chan interface{})
 
 	go kvSvr.ApplingToStm(kvSvr.stopApplyCh)
+
 	return kvSvr
 }
 

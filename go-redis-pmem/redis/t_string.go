@@ -137,6 +137,7 @@ func getGeneric(c *client) bool {
 	if v != nil {
 		c.addReplyBulk(v)
 	}
+
 	return ok
 }
 

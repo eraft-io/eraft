@@ -32,6 +32,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/eraft-io/eraft/common"
 	pb "github.com/eraft-io/eraft/raftpb"
 
 	"github.com/eraft-io/eraft/raftcore"
@@ -42,6 +43,10 @@ type KvClient struct {
 	leaderId  int64
 	clientId  int64
 	commandId int64
+}
+
+func (kvCli *KvClient) Close() {
+	kvCli.rpcCli.CloseAllConn()
 }
 
 func nrand() int64 {
@@ -106,7 +111,9 @@ func main() {
 		os.Exit(-1)
 	}()
 
-	fmt.Println(kvCli.Put("testkey", "testvalue"))
+	for i := 0; i <= 10000; i++ {
+		fmt.Println(kvCli.Put(common.RandStringRunes(1024), common.RandStringRunes(256)))
+	}
 
-	fmt.Println("run test get value -> " + kvCli.Get("testkey"))
+	// fmt.Println("run test get value -> " + kvCli.Get("testkey"))
 }

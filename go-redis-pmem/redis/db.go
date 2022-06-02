@@ -7,7 +7,7 @@ package redis
 
 import (
 	"time"
-
+	// "fmt"
 	"github.com/vmware/go-pmem-transaction/transaction"
 )
 
@@ -194,6 +194,23 @@ func (db *redisDb) lookupKey(key []byte) interface{} {
 		return e.value
 	}
 	return nil
+}
+
+func (db *redisDb) readAllKeys() map[string]string {
+	iter := db.dict.getIterator()
+	nextEnt := iter.next()
+	kvs := make(map[string]string, 0)
+	for nextEnt != nil {
+		// fmt.Printf("%s \n", )
+		outBts := []byte{}
+		for _, by := range *nextEnt.value.(*[]uint8) {
+			outBts = append(outBts, byte(by))
+		}
+		// fmt.Printf("%s \n", string(outBts))
+		kvs[string(nextEnt.key)] = string(outBts)
+		nextEnt = iter.next()
+	}
+	return kvs
 }
 
 func (db *redisDb) randomKey() *entry {

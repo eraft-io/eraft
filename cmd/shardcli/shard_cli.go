@@ -54,9 +54,16 @@ func main() {
 
 	switch os.Args[2] {
 	case "put":
-		kvCli.Put(os.Args[3], os.Args[4])
+		if err := kvCli.Put(os.Args[3], os.Args[4]); err != nil {
+			fmt.Println("err: " + err.Error())
+			return
+		}
 	case "get":
-		v := kvCli.Get(os.Args[3])
+		err, v := kvCli.Get(os.Args[3])
+		if err != nil {
+			fmt.Println("err: " + err.Error())
+			return
+		}
 		fmt.Println("got value: " + v)
 	case "getbuckets":
 		gid, _ := strconv.Atoi(os.Args[3])

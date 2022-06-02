@@ -28,6 +28,10 @@ kvcli:
 kv_server:
 	go build -o output/kv_server cmd/kvraft/kvserver.go
 
+pmemserver:
+	go build -txn -o output/pmemserver cmd/pmemsvr/pmemsvr.go
+
+
 cfgcli:
 	go build -o output/cfgcli cmd/configcli/cfg_cli.go
 
@@ -47,10 +51,10 @@ eng_pmem:
 	go build -o output/eng_bench cmd/eng_bench/eng_bench.go
 
 into_pmem:
-	docker run --rm -it -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /bin/bash
+	docker run --rm -it -p 0.0.0.0:6379:6379 -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /bin/bash
 
 build_pmem_bench:
-	chmod +x build.sh; docker run --rm -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /root/go/src/github.com/eraft-io/eraft/build.sh
+	chmod +x build.sh; docker run --rm -p 6379:0.0.0.0:6379 -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /root/go/src/github.com/eraft-io/eraft/build.sh
 
 clean:
 	rm -rf output/*

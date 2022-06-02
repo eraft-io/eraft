@@ -30,6 +30,7 @@ package shardkvserver
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -118,7 +119,7 @@ func MakeKvClient(csAddrs string) *KvClient {
 //
 // get interface to client, use to get a key's data from the cluster
 //
-func (kvCli *KvClient) Get(key string) string {
+func (kvCli *KvClient) Get(key string) (error, string) {
 	return kvCli.Command(&pb.CommandRequest{
 		Key:    key,
 		OpType: pb.OpType_OpGet,
@@ -128,12 +129,13 @@ func (kvCli *KvClient) Get(key string) string {
 //
 // put interface to client, use to put key, value data to the cluster
 //
-func (kvCli *KvClient) Put(key, value string) {
-	kvCli.Command(&pb.CommandRequest{
+func (kvCli *KvClient) Put(key, value string) error {
+	err, _ := kvCli.Command(&pb.CommandRequest{
 		Key:    key,
 		Value:  value,
 		OpType: pb.OpType_OpPut,
 	})
+	return err
 }
 
 //
@@ -183,11 +185,11 @@ func (kvCli *KvClient) InsertBucketDatas(gid int, bucketIds []int64, datas []byt
 // Command
 // do user normal command
 //
-func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
+func (kvCli *KvClient) Command(req *pb.CommandRequest) (error, string) {
 	bucket_id := common.Key2BucketID(req.Key)
 	gid := kvCli.config.Buckets[bucket_id]
 	if gid == 0 {
-		return "there is no shard in charge of this bucket!"
+		return errors.New("there is no shard in charge of this bucket, please join the server group before"), ""
 	}
 	if servers, ok := kvCli.config.Groups[gid]; ok {
 		for _, svrAddr := range servers {
@@ -196,7 +198,6 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
 			} else {
 				kvCli.rpcCli = kvCli.GetConnFromCache(svrAddr)
 			}
-			// defer kvCli.rpcCli.CloseAllConn()
 			resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 			if err != nil {
 				// node down
@@ -206,10 +207,10 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
 			switch resp.ErrCode {
 			case common.ErrCodeNoErr:
 				kvCli.commandId++
-				return resp.Value
+				return nil, resp.Value
 			case common.ErrCodeWrongGroup:
 				kvCli.config = kvCli.csCli.Query(-1)
-				return "WrongGroup"
+				return errors.New("WrongGroup"), ""
 			case common.ErrCodeWrongLeader:
 				kvCli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UN_UNSED_TID)
 				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
@@ -219,12 +220,16 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) string {
 				}
 				if resp.ErrCode == common.ErrCodeNoErr {
 					kvCli.commandId++
-					return resp.Value
+					return nil, resp.Value
 				}
+			default:
+				return errors.New("unknow code"), ""
 			}
 		}
+	} else {
+		return errors.New("please join the server group first"), ""
 	}
-	return ""
+	return errors.New("unknow code"), ""
 }
 
 //

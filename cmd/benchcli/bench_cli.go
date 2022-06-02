@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/eraft-io/eraft/common"
@@ -36,10 +37,21 @@ func main() {
 
 	switch os.Args[3] {
 	case "put":
-		for i := 0; i < count; i++ {
-			kvCli.Put(common.RandStringRunes(64), common.RandStringRunes(64))
-			// time.Sleep(time.Millisecond * 5)
+
+		var wg sync.WaitGroup
+
+		for idx := 0; idx < 10; idx++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for i := 0; i < count; i++ {
+					kvCli.Put(common.RandStringRunes(64), common.RandStringRunes(64))
+				}
+			}()
 		}
+
+		wg.Wait()
+
 	case "query":
 		for i := 0; i < count; i++ {
 			cfgCli.Query(-1)

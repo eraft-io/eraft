@@ -7,12 +7,13 @@ package redis
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
 	"strings"
-
+	"time"
 	"github.com/vmware/go-pmem-transaction/pmem"
 	"github.com/vmware/go-pmem-transaction/transaction"
 )
@@ -63,7 +64,7 @@ type (
 )
 
 const (
-	DATABASE string = "./database"
+	DATABASE string = "./database1"
 	PORT     string = ":6379"
 	MAGIC    int    = 0x3F4F357F7C9824B3
 
@@ -176,6 +177,46 @@ var (
 func RunServer() {
 	s := new(server)
 	s.Start()
+}
+
+func RunAndReturnServer() *server {
+	s := new(server)
+	s.StartWithoutSvr()
+	return s
+}
+
+func (s *server) SetKV(k string, v string) error {
+	s.db.lockKeyWrite([]byte(k))
+	isOk := s.db.setKey(shadowCopyToPmem([]byte(k)), shadowCopyToPmemI([]byte(v)))
+	if isOk {
+		return nil
+	}
+	return errors.New("put kv error")
+}
+
+func (s *server) GetV(k string) (error, string) {
+	s.db.lockKeyRead([]byte(k))
+	i := s.db.lookupKeyRead([]byte(k))
+	bytes, isOK := getString(i)
+	if !isOK {
+		return errors.New("decode val err"), ""
+	}
+	return nil, string(bytes)
+}
+
+func (s *server) DeleteK(k string) (error) {
+	s.db.lockKeyWrite([]byte(k))
+	isOK := s.db.delete([]byte(k))
+	if isOk {
+		return nil
+	}
+	return errors.New("del k error")
+}
+
+func (s *server) StartWithoutSvr() {
+	// Initialize database
+	s.init(DATABASE)
+	go s.db.dict.Cron(10 * time.Millisecond)
 }
 
 func (s *server) Start() {
