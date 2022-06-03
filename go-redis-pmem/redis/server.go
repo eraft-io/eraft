@@ -207,7 +207,7 @@ func (s *server) GetV(k string) (error, string) {
 func (s *server) DeleteK(k string) (error) {
 	s.db.lockKeyWrite([]byte(k))
 	isOK := s.db.delete([]byte(k))
-	if isOk {
+	if isOK {
 		return nil
 	}
 	return errors.New("del k error")

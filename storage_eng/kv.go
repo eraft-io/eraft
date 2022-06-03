@@ -49,12 +49,12 @@ func EngineFactory(name string, dbPath string) KvStore {
 			panic(err)
 		}
 		return levelDb
-	// case "pmem": // need special golang compiler support
-	// 	pmemDb, err := pmemengine.MakePMemKvStore(dbPath)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	return pmemDb
+	case "pmem": // need special golang compiler support
+		pmemDb, err := MakePMemKvStore(dbPath)
+		if err != nil {
+			panic(err)
+		}
+		return pmemDb
 	default:
 		panic("No such engine type support")
 	}

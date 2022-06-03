@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-default: cfgcli cfgserver shardserver shardcli bench_cli
+default: cfgcli cfgserver shardserver shardcli bench_cli eng_bench
 
 kvcli:
 	go build -o output/kvcli cmd/kvcli/kvcli.go
@@ -30,7 +30,6 @@ kv_server:
 
 pmemserver:
 	go build -txn -o output/pmemserver cmd/pmemsvr/pmemsvr.go
-
 
 cfgcli:
 	go build -o output/cfgcli cmd/configcli/cfg_cli.go
@@ -46,6 +45,9 @@ shardcli:
 
 bench_cli:
 	go build -o output/bench_cli cmd/benchcli/bench_cli.go
+
+eng_bench:
+	go build -o output/eng_bench cmd/eng_bench/eng_bench.go
 
 eng_pmem:
 	go build -o output/eng_bench cmd/eng_bench/eng_bench.go

@@ -27,6 +27,7 @@ import (
 	"errors"
 
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
@@ -36,7 +37,7 @@ type LevelDBKvStore struct {
 }
 
 func MakeLevelDBKvStore(path string) (*LevelDBKvStore, error) {
-	newDB, err := leveldb.OpenFile(path, nil)
+	newDB, err := leveldb.OpenFile(path, &opt.Options{})
 	if err != nil {
 		return nil, err
 	}
