@@ -155,6 +155,7 @@ func (rf *Raft) SwitchRaftNodeRole(role NodeRole) {
 		for i := 0; i < len(rf.peers); i++ {
 			rf.matchIdx[i], rf.nextIdx[i] = 0, int(lastLog.Index+1)
 		}
+		// become leader, stop electionTimer timer
 		rf.electionTimer.Stop()
 		rf.heartbeatTimer.Reset(time.Duration(rf.heartBeatTimeout) * time.Millisecond)
 	}
@@ -232,6 +233,7 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 
 	rf.SwitchRaftNodeRole(NodeRoleFollower)
 	rf.leaderId = req.LeaderId
+	// reset electionTimer
 	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
 
 	if req.PrevLogIndex < int64(rf.logs.GetFirst().Index) {

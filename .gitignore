@@ -3,3 +3,4 @@ vendor
 .DS_Store
 .vscode
 deps
+pmem-redis.tar.gz
