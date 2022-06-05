@@ -34,3 +34,7 @@ func TestKeyToBid(t *testing.T) {
 		t.Log(Key2BucketID(strconv.Itoa(i)))
 	}
 }
+
+func TestRandon(t *testing.T) {
+	t.Log(RandStringRunes(1024))
+}

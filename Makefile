@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-default: cfgcli cfgserver shardserver shardcli bench_cli eng_bench
+default: cfgcli cfgserver shardserver shardcli bench_cli eng_bench kv_server kvcli
 
 kvcli:
 	go build -o output/kvcli cmd/kvcli/kvcli.go
@@ -52,8 +52,14 @@ eng_bench:
 eng_pmem:
 	go build -o output/eng_bench cmd/eng_bench/eng_bench.go
 
-into_pmem:
-	docker run --rm -it -p 0.0.0.0:6379:6379 -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /bin/bash
+into_pmem0:
+	docker run --rm -it -p 0.0.0.0:6379:6379 -v ${PWD}:/eraft eraft/eraft_pmem_redis:v1 /bin/bash
+
+into_pmem1:
+	docker run --rm -it -p 0.0.0.0:6380:6380 -v ${PWD}:/eraft eraft/eraft_pmem_redis:v1 /bin/bash
+
+into_pmem2:
+	docker run --rm -it -p 0.0.0.0:6381:6381 -v ${PWD}:/eraft eraft/eraft_pmem_redis:v1 /bin/bash
 
 build_pmem_bench:
 	chmod +x build.sh; docker run --rm -p 6379:0.0.0.0:6379 -v ${PWD}:/root/go/src/github.com/eraft-io/eraft eraft/go_pmem_dev:v2 /root/go/src/github.com/eraft-io/eraft/build.sh

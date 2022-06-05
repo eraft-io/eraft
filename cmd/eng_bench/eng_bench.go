@@ -63,6 +63,7 @@ func main() {
 			go func() {
 				defer wg.Done()
 				for i := 0; i < count; i++ {
+					fmt.Println(keys[i])
 					pmemDBEng.Put(keys[i], vals[i])
 				}
 			}()

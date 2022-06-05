@@ -43,11 +43,6 @@ func RemoveDir(in string) {
 }
 
 func TestTestPersisLogGetInit(t *testing.T) {
-	// newdbEng, err := storage_eng.MakeLevelDBKvStore("./log_data_test")
-	// if err != nil {
-	// 	PrintDebugLog("boot storage engine err!")
-	// 	panic(err)
-	// }
 	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	fristEnt := raftLog.GetFirst()
@@ -56,6 +51,16 @@ func TestTestPersisLogGetInit(t *testing.T) {
 	t.Logf("last log %s", lastEnt.String())
 	t.Logf("log items count %d", raftLog.LogItemCount())
 	RemoveDir("./log_data_test")
+}
+
+func TestTestPersisLogGetInitPMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	t.Logf("log items count %d", raftLog.LogItemCount())
 }
 
 func TestEraseBefore1(t *testing.T) {
@@ -70,6 +75,18 @@ func TestEraseBefore1(t *testing.T) {
 	RemoveDir("./log_data_test")
 }
 
+func TestEraseBefore1PMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	ents := raftLog.EraseBefore(1)
+	t.Logf("%v", ents)
+	newdbEng.FlushDB()
+}
+
 func TestPersisEraseAfter1(t *testing.T) {
 	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
@@ -80,6 +97,18 @@ func TestPersisEraseAfter1(t *testing.T) {
 	ents := raftLog.EraseAfter(1, false)
 	t.Logf("%v", ents)
 	RemoveDir("./log_data_test")
+}
+
+func TestPersisEraseAfter1PMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	ents := raftLog.EraseAfter(1, false)
+	t.Logf("%v", ents)
+	newdbEng.FlushDB()
 }
 
 func TestPersisEraseAfter0And1(t *testing.T) {
@@ -99,6 +128,25 @@ func TestPersisEraseAfter0And1(t *testing.T) {
 	t.Logf("%v", ents)
 	t.Logf("%d", raftLog.LogItemCount())
 	RemoveDir("./log_data_test")
+}
+
+func TestPersisEraseAfter0And1PMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	ents := raftLog.EraseAfter(0, false)
+	t.Logf("%v", ents)
+	raftLog.Append(&pb.Entry{
+		Index: 1,
+		Term:  1,
+	})
+	ents = raftLog.EraseAfter(1, false)
+	t.Logf("%v", ents)
+	t.Logf("%d", raftLog.LogItemCount())
+	newdbEng.FlushDB()
 }
 
 func TestPersisEraseBefore0And1(t *testing.T) {
@@ -124,6 +172,29 @@ func TestPersisEraseBefore0And1(t *testing.T) {
 	RemoveDir("./log_data_test")
 }
 
+func TestPersisEraseBefore0And1PMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	ents := raftLog.EraseBefore(0)
+	t.Logf("%v", ents)
+	raftLog.Append(&pb.Entry{
+		Index: 1,
+		Term:  1,
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 2,
+		Term:  1,
+	})
+	ents = raftLog.EraseBefore(1)
+	t.Logf("%v", ents)
+	t.Logf("%d", raftLog.LogItemCount())
+	newdbEng.FlushDB()
+}
+
 func TestPersisEraseAfter0(t *testing.T) {
 	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
@@ -136,10 +207,22 @@ func TestPersisEraseAfter0(t *testing.T) {
 	RemoveDir("./log_data_test")
 }
 
+func TestPersisEraseAfter0PMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	ents := raftLog.EraseAfter(0, false)
+	t.Logf("%v", ents)
+	newdbEng.FlushDB()
+}
+
 func TestTestPersisLogAppend(t *testing.T) {
 	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		raftLog.Append(&pb.Entry{
 			Index: int64(i),
 			Term:  1,
@@ -153,6 +236,25 @@ func TestTestPersisLogAppend(t *testing.T) {
 	t.Logf("log items count %d", raftLog.LogItemCount())
 	t.Logf("get log item with id 1 -> %s", raftLog.GetEntry(1).String())
 	RemoveDir("./log_data_test")
+}
+
+func TestTestPersisLogAppendPMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	for i := 0; i < 100; i++ {
+		raftLog.Append(&pb.Entry{
+			Index: int64(i),
+			Term:  1,
+			Data:  []byte{0x01, 0x02},
+		})
+	}
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	t.Logf("log items count %d", raftLog.LogItemCount())
+	t.Logf("get log item with id 1 -> %s", raftLog.GetEntry(1).String())
+	newdbEng.FlushDB()
 }
 
 func TestTestPersisLogErase(t *testing.T) {
@@ -194,6 +296,45 @@ func TestTestPersisLogErase(t *testing.T) {
 	RemoveDir("./log_data_test")
 }
 
+func TestTestPersisLogErasePMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	raftLog.Append(&pb.Entry{
+		Index: 1,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 2,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 3,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 4,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.EraseBefore(0)
+	fristEnt := raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt := raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	t.Logf("log items count %d", raftLog.LogItemCount())
+	t.Logf("get log item with id 2 -> %s", raftLog.GetEntry(2).String())
+	raftLog.EraseAfter(3, false)
+	fristEnt = raftLog.GetFirst()
+	t.Logf("first log %s", fristEnt.String())
+	lastEnt = raftLog.GetLast()
+	t.Logf("last log %s", lastEnt.String())
+	t.Logf("get log item with id 3 -> %s", raftLog.GetEntry(3).String())
+	newdbEng.FlushDB()
+}
+
 func TestSliceSplit(t *testing.T) {
 	seq := []int{0, 1, 2}
 	t.Logf("%+v", seq[1:])
@@ -201,6 +342,19 @@ func TestSliceSplit(t *testing.T) {
 }
 
 func TestRaftStatePersis(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	curterm, votedFor := raftLog.ReadRaftState()
+	t.Logf("%d", curterm)
+	t.Logf("%d", votedFor)
+	raftLog.PersistRaftState(5, 5)
+	curterm, votedFor = raftLog.ReadRaftState()
+	t.Logf("%d", curterm)
+	t.Logf("%d", votedFor)
+	newdbEng.FlushDB()
+}
+
+func TestRaftStatePersisPMem(t *testing.T) {
 	newdbEng := storage_eng.EngineFactory("leveldb", "./log_data_test")
 	raftLog := MakePersistRaftLog(newdbEng)
 	curterm, votedFor := raftLog.ReadRaftState()
@@ -242,4 +396,35 @@ func TestTestPersisLogGetRange(t *testing.T) {
 		t.Logf("got ent %s", ent.String())
 	}
 	RemoveDir("./log_data_test")
+}
+
+func TestTestPersisLogGetRangePMem(t *testing.T) {
+	newdbEng := storage_eng.EngineFactory("pmem", "127.0.0.1:6379")
+	raftLog := MakePersistRaftLog(newdbEng)
+	raftLog.Append(&pb.Entry{
+		Index: 1,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 2,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 3,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+	raftLog.Append(&pb.Entry{
+		Index: 4,
+		Term:  1,
+		Data:  []byte{0x01, 0x02},
+	})
+
+	ents := raftLog.GetRange(2, 3)
+	for _, ent := range ents {
+		t.Logf("got ent %s", ent.String())
+	}
+	newdbEng.FlushDB()
 }

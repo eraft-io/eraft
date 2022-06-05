@@ -39,6 +39,7 @@ type KvStore interface {
 	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
 	DelPrefixKeys(prefix string) error
 	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
+	FlushDB()
 }
 
 func EngineFactory(name string, dbPath string) KvStore {

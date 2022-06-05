@@ -101,10 +101,6 @@ func (rfLog *RaftLog) GetFirstLogId() uint64 {
 func (rfLog *RaftLog) GetLastLogId() uint64 {
 	rfLog.mu.RLock()
 	defer rfLog.mu.RUnlock()
-	// kBytes, _, err := rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	idMax, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
@@ -158,10 +154,6 @@ func (rfLog *RaftLog) LogItemCount() int {
 		panic(err)
 	}
 	logIdFirst := DecodeRaftLogKey(kBytes)
-	// kBytes, _, err = rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
@@ -175,12 +167,6 @@ func (rfLog *RaftLog) LogItemCount() int {
 // append a new entry to raftlog, put it to storage engine
 //
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
-	// rfLog.mu.Lock()
-	// defer rfLog.mu.Unlock()
-	// kBytes, _, err := rfLog.dbEng.SeekPrefixLast(RAFTLOG_PREFIX)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)

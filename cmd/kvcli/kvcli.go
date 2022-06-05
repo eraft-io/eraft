@@ -31,6 +31,8 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
+	"strconv"
+	"time"
 
 	"github.com/eraft-io/eraft/common"
 	pb "github.com/eraft-io/eraft/raftpb"
@@ -94,12 +96,17 @@ func (kvCli *KvClient) Put(key, value string) string {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: kvcli [serveraddr]")
+		fmt.Println("usage: kvcli [serveraddr] [count]")
 		return
 	}
 	sigs := make(chan os.Signal, 1)
 
 	kvCli := MakeKvClient(99, os.Args[1])
+
+	count, err := strconv.Atoi(os.Args[2])
+	if err != nil {
+		panic(err)
+	}
 
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan)
@@ -111,9 +118,22 @@ func main() {
 		os.Exit(-1)
 	}()
 
-	for i := 0; i <= 10000; i++ {
-		fmt.Println(kvCli.Put(common.RandStringRunes(1024), common.RandStringRunes(256)))
+	keys := make([]string, count)
+	vals := make([]string, count)
+
+	for i := 0; i < count; i++ {
+		rndK := common.RandStringRunes(10240)
+		rndV := common.RandStringRunes(10240)
+		keys[i] = rndK
+		vals[i] = rndV
 	}
+
+	startTs := time.Now()
+	for i := 0; i < count; i++ {
+		kvCli.Put(keys[i], vals[i])
+	}
+	elapsed := time.Since(startTs).Seconds()
+	fmt.Printf("total cost %f s\n", elapsed)
 
 	// fmt.Println("run test get value -> " + kvCli.Get("testkey"))
 }

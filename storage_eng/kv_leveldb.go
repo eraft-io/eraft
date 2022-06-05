@@ -87,6 +87,10 @@ func (levelDB *LevelDBKvStore) DumpPrefixKey(prefix string) (map[string]string, 
 	return kvs, iter.Error()
 }
 
+func (levelDB *LevelDBKvStore) FlushDB() {
+
+}
+
 func (levelDB *LevelDBKvStore) SeekPrefixLast(prefix []byte) ([]byte, []byte, error) {
 	iter := levelDB.db.NewIterator(util.BytesPrefix(prefix), nil)
 	defer iter.Release()
