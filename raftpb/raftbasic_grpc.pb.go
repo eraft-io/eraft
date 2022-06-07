@@ -27,6 +27,7 @@ type RaftServiceClient interface {
 	DoCommand(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (*CommandResponse, error)
 	DoConfig(ctx context.Context, in *ConfigRequest, opts ...grpc.CallOption) (*ConfigResponse, error)
 	DoBucketsOperation(ctx context.Context, in *BucketOperationRequest, opts ...grpc.CallOption) (*BucketOperationResponse, error)
+	Snapshot(ctx context.Context, in *InstallSnapshotRequest, opts ...grpc.CallOption) (*InstallSnapshotResponse, error)
 }
 
 type raftServiceClient struct {
@@ -82,6 +83,15 @@ func (c *raftServiceClient) DoBucketsOperation(ctx context.Context, in *BucketOp
 	return out, nil
 }
 
+func (c *raftServiceClient) Snapshot(ctx context.Context, in *InstallSnapshotRequest, opts ...grpc.CallOption) (*InstallSnapshotResponse, error) {
+	out := new(InstallSnapshotResponse)
+	err := c.cc.Invoke(ctx, "/pbs.RaftService/Snapshot", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RaftServiceServer is the server API for RaftService service.
 // All implementations must embed UnimplementedRaftServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type RaftServiceServer interface {
 	DoCommand(context.Context, *CommandRequest) (*CommandResponse, error)
 	DoConfig(context.Context, *ConfigRequest) (*ConfigResponse, error)
 	DoBucketsOperation(context.Context, *BucketOperationRequest) (*BucketOperationResponse, error)
+	Snapshot(context.Context, *InstallSnapshotRequest) (*InstallSnapshotResponse, error)
 	mustEmbedUnimplementedRaftServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedRaftServiceServer) DoConfig(context.Context, *ConfigRequest) 
 }
 func (UnimplementedRaftServiceServer) DoBucketsOperation(context.Context, *BucketOperationRequest) (*BucketOperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DoBucketsOperation not implemented")
+}
+func (UnimplementedRaftServiceServer) Snapshot(context.Context, *InstallSnapshotRequest) (*InstallSnapshotResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Snapshot not implemented")
 }
 func (UnimplementedRaftServiceServer) mustEmbedUnimplementedRaftServiceServer() {}
 
@@ -216,6 +230,24 @@ func _RaftService_DoBucketsOperation_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RaftService_Snapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstallSnapshotRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RaftServiceServer).Snapshot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbs.RaftService/Snapshot",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RaftServiceServer).Snapshot(ctx, req.(*InstallSnapshotRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RaftService_ServiceDesc is the grpc.ServiceDesc for RaftService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var RaftService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DoBucketsOperation",
 			Handler:    _RaftService_DoBucketsOperation_Handler,
+		},
+		{
+			MethodName: "Snapshot",
+			Handler:    _RaftService_Snapshot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

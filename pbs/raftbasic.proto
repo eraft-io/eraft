@@ -174,10 +174,23 @@ message BucketOperationResponse {
     string err_msg = 3;
 }
 
+message InstallSnapshotRequest {
+    int64 term =                1;
+    int64 leader_id =           2;
+    int64 last_included_index = 3;
+    int64 last_included_term  = 4;
+    bytes data                = 5;
+}
+
+message InstallSnapshotResponse {
+    int64 term = 1; 
+}
+
 service RaftService {
     rpc RequestVote (RequestVoteRequest) returns (RequestVoteResponse) {}
     rpc AppendEntries (AppendEntriesRequest) returns (AppendEntriesResponse) {}
     rpc DoCommand (CommandRequest) returns (CommandResponse) {}
     rpc DoConfig (ConfigRequest) returns (ConfigResponse) {}
     rpc DoBucketsOperation (BucketOperationRequest) returns (BucketOperationResponse) {}
+        rpc Snapshot (InstallSnapshotRequest) returns (InstallSnapshotResponse) {}
 }

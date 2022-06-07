@@ -75,6 +75,7 @@ type Raft struct {
 	votedFor       int64
 	grantedVotes   int
 	logs           *RaftLog
+	persister      *RaftLog
 	commitIdx      int64
 	lastApplied    int64
 	nextIdx        []int
@@ -99,6 +100,7 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, appl
 		votedFor:         VOTE_FOR_NO_ONE,
 		grantedVotes:     0,
 		logs:             MakePersistRaftLog(newdbEng),
+		persister:        MakePersistRaftLog(newdbEng),
 		nextIdx:          make([]int, len(peers)),
 		matchIdx:         make([]int, len(peers)),
 		heartbeatTimer:   time.NewTimer(time.Millisecond * time.Duration(heartbeatTimeOutMs)),
@@ -106,7 +108,7 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, appl
 		baseElecTimeout:  baseElectionTimeOutMs,
 		heartBeatTimeout: heartbeatTimeOutMs,
 	}
-	rf.curTerm, rf.votedFor = rf.logs.ReadRaftState()
+	rf.curTerm, rf.votedFor = rf.persister.ReadRaftState()
 	rf.applyCond = sync.NewCond(&rf.mu)
 	lastLog := rf.logs.GetLast()
 	for _, peer := range peers {
@@ -126,7 +128,7 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, appl
 }
 
 func (rf *Raft) PersistRaftState() {
-	rf.logs.PersistRaftState(rf.curTerm, rf.votedFor)
+	rf.persister.PersistRaftState(rf.curTerm, rf.votedFor)
 }
 
 func (rf *Raft) Kill() {
@@ -135,6 +137,10 @@ func (rf *Raft) Kill() {
 
 func (rf *Raft) IsKilled() bool {
 	return atomic.LoadInt32(&rf.dead) == 1
+}
+
+func (rf *Raft) GetFirstLogEnt() *pb.Entry {
+	return rf.logs.GetFirst()
 }
 
 func (rf *Raft) SwitchRaftNodeRole(role NodeRole) {
@@ -155,7 +161,6 @@ func (rf *Raft) SwitchRaftNodeRole(role NodeRole) {
 		for i := 0; i < len(rf.peers); i++ {
 			rf.matchIdx[i], rf.nextIdx[i] = 0, int(lastLog.Index+1)
 		}
-		// become leader, stop electionTimer timer
 		rf.electionTimer.Stop()
 		rf.heartbeatTimer.Reset(time.Duration(rf.heartBeatTimeout) * time.Millisecond)
 	}
@@ -233,7 +238,6 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 
 	rf.SwitchRaftNodeRole(NodeRoleFollower)
 	rf.leaderId = req.LeaderId
-	// reset electionTimer
 	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
 
 	if req.PrevLogIndex < int64(rf.logs.GetFirst().Index) {
@@ -248,8 +252,9 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 		resp.Success = false
 		lastIndex := rf.logs.GetLast().Index
 		if lastIndex < req.PrevLogIndex {
+			PrintDebugLog(fmt.Sprintf("log confict with term %d, index %d", -1, lastIndex+1))
 			resp.ConflictTerm = -1
-			resp.Success = false
+			resp.ConflictIndex = lastIndex + 1
 		} else {
 			firstIndex := rf.logs.GetFirst().Index
 			resp.ConflictTerm = int64(rf.logs.GetEntry(req.PrevLogIndex - int64(firstIndex)).Term)
@@ -276,6 +281,91 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 	rf.advanceCommitIndexForFollower(int(req.LeaderCommit))
 	resp.Term = rf.curTerm
 	resp.Success = true
+}
+
+func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
+	if lastIncludedIndex <= int(rf.commitIdx) {
+		return false
+	}
+
+	if lastIncludedIndex > int(rf.logs.GetLast().Index) {
+		PrintDebugLog("lastIncludedIndex > last log id")
+		rf.logs.ReInitLogs()
+	} else {
+		PrintDebugLog("install snapshot del old log")
+		rf.logs.EraseBeforeWithDel(int64(lastIncludedIndex) - rf.logs.GetFirst().Index)
+		rf.logs.SetEntFirstData([]byte{})
+	}
+	// update dummy entry with lastIncludedTerm and lastIncludedIndex
+	rf.logs.SetEntFirstTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
+
+	rf.lastApplied = int64(lastIncludedIndex)
+	rf.commitIdx = int64(lastIncludedIndex)
+
+	// rf.logs.PersisSnapshot(snapshot)
+	return true
+}
+
+//
+// take a snapshot
+//
+func (rf *Raft) Snapshot(index int, snapshot []byte) {
+	rf.mu.Lock()
+	snapshotIndex := rf.logs.GetFirst().Index
+	if index <= int(snapshotIndex) {
+		PrintDebugLog("reject snapshot, current snapshotIndex is larger in cur term")
+		return
+	}
+	rf.logs.EraseBeforeWithDel(int64(index) - snapshotIndex)
+	rf.logs.SetEntFirstData([]byte{}) // 第一个操作日志号设为空
+	PrintDebugLog(fmt.Sprintf("del log entry before idx %d", index))
+
+	//rf.logs.PersisSnapshot(snapshot)
+	rf.mu.Unlock()
+}
+
+//
+// install snapshot from leader
+//
+func (rf *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, response *pb.InstallSnapshotResponse) {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
+	response.Term = rf.curTerm
+
+	if request.Term < rf.curTerm {
+		return
+	}
+
+	if request.Term > rf.curTerm {
+		rf.curTerm = request.Term
+		rf.votedFor = -1
+		rf.PersistRaftState()
+	}
+
+	rf.SwitchRaftNodeRole(NodeRoleFollower)
+	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
+
+	if request.LastIncludedIndex <= rf.commitIdx {
+		return
+	}
+
+	go func() {
+		rf.applyCh <- &pb.ApplyMsg{
+			SnapshotValid: true,
+			Snapshot:      request.Data,
+			SnapshotTerm:  request.LastIncludedTerm,
+			SnapshotIndex: request.LastIncludedIndex,
+		}
+	}()
+
+}
+
+func (rf *Raft) GetLogCount() int {
+	return rf.logs.LogItemCount()
 }
 
 func (rf *Raft) advanceCommitIndexForLeader() {
@@ -472,50 +562,95 @@ func (rf *Raft) Replicator(peer *RaftClientEnd) {
 // replicateOneRound duplicate log entries to other nodes in the cluster
 //
 func (rf *Raft) replicateOneRound(peer *RaftClientEnd) {
+	rf.mu.RLock()
 	if rf.role != NodeRoleLeader {
+		rf.mu.RUnlock()
 		return
 	}
 	prevLogIndex := uint64(rf.nextIdx[peer.id] - 1)
-	// TODO: snapshot recover
+	PrintDebugLog(fmt.Sprintf("leader prevLogIndex %d", prevLogIndex))
+	if prevLogIndex < uint64(rf.logs.GetFirst().Index) {
+		snapshotData := make([]byte, 0)
+		// TODO: we need to pack the snapshot data which we call taskSnapshot to store
+		firstLog := rf.logs.GetFirst()
+		snapShotReq := &pb.InstallSnapshotRequest{
+			Term:              rf.curTerm,
+			LeaderId:          int64(rf.me_),
+			LastIncludedIndex: firstLog.Index,
+			LastIncludedTerm:  int64(firstLog.Term),
+			Data:              snapshotData, // just for test
+		}
 
-	firstIndex := rf.logs.GetFirst().Index
-	entries := make([]*pb.Entry, len(rf.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex)))
-	copy(entries, rf.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex))
-	appendEntReq := &pb.AppendEntriesRequest{
-		Term:         rf.curTerm,
-		LeaderId:     int64(rf.me_),
-		PrevLogIndex: int64(prevLogIndex),
-		PrevLogTerm:  int64(rf.logs.GetEntry(int64(prevLogIndex) - firstIndex).Term),
-		Entries:      entries,
-		LeaderCommit: rf.commitIdx,
-	}
-	// send empty ae to peers
-	resp, err := (*peer.raftServiceCli).AppendEntries(context.Background(), appendEntReq)
-	if err != nil {
-		PrintDebugLog(fmt.Sprintf("send append entries to %s failed %v\n", peer.addr, err.Error()))
-	}
-	if rf.role == NodeRoleLeader && rf.curTerm == appendEntReq.Term {
-		if resp != nil {
-			// deal with appendRnt resp
-			if resp.Success {
-				PrintDebugLog(fmt.Sprintf("send heart beat to %s success", peer.addr))
-				rf.matchIdx[peer.id] = int(appendEntReq.PrevLogIndex) + len(appendEntReq.Entries)
-				rf.nextIdx[peer.id] = rf.matchIdx[peer.id] + 1
-				rf.advanceCommitIndexForLeader()
-			} else {
-				// there is a new leader in group
-				if resp.Term > rf.curTerm {
+		rf.mu.RUnlock()
+
+		PrintDebugLog(fmt.Sprintf("send snapshot to %s with %s\n", peer.addr, snapShotReq.String()))
+
+		snapShotResp, err := (*peer.raftServiceCli).Snapshot(context.Background(), snapShotReq)
+		if err != nil {
+			PrintDebugLog(fmt.Sprintf("send snapshot to %s failed %v\n", peer.addr, err.Error()))
+		}
+
+		rf.mu.Lock()
+		PrintDebugLog(fmt.Sprintf("send snapshot to %s with resp %s\n", peer.addr, snapShotResp.String()))
+
+		if snapShotResp != nil {
+			if rf.role == NodeRoleLeader && rf.curTerm == snapShotReq.Term {
+				if snapShotResp.Term > rf.curTerm {
 					rf.SwitchRaftNodeRole(NodeRoleFollower)
-					rf.curTerm = resp.Term
-					rf.votedFor = VOTE_FOR_NO_ONE
+					rf.curTerm = snapShotResp.Term
+					rf.votedFor = -1
 					rf.PersistRaftState()
-				} else if resp.Term == rf.curTerm {
-					rf.nextIdx[peer.id] = int(resp.ConflictIndex)
-					if resp.ConflictTerm != -1 {
-						for i := appendEntReq.PrevLogIndex; i >= int64(firstIndex); i-- {
-							if rf.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.ConflictTerm) {
-								rf.nextIdx[peer.id] = int(i + 1)
-								break
+				} else {
+					PrintDebugLog(fmt.Sprintf("set peer %d matchIdx %d\n", peer.id, snapShotReq.LastIncludedIndex))
+					rf.matchIdx[peer.id] = int(snapShotReq.LastIncludedIndex)
+					rf.nextIdx[peer.id] = int(snapShotReq.LastIncludedIndex) + 1
+				}
+			}
+		}
+		rf.mu.Unlock()
+	} else {
+		firstIndex := rf.logs.GetFirst().Index
+		PrintDebugLog(fmt.Sprintf("first log index %d", firstIndex))
+		entries := make([]*pb.Entry, len(rf.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex)))
+		copy(entries, rf.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex))
+		appendEntReq := &pb.AppendEntriesRequest{
+			Term:         rf.curTerm,
+			LeaderId:     int64(rf.me_),
+			PrevLogIndex: int64(prevLogIndex),
+			PrevLogTerm:  int64(rf.logs.GetEntry(int64(prevLogIndex) - firstIndex).Term),
+			Entries:      entries,
+			LeaderCommit: rf.commitIdx,
+		}
+		rf.mu.RUnlock()
+
+		// send empty ae to peers
+		resp, err := (*peer.raftServiceCli).AppendEntries(context.Background(), appendEntReq)
+		if err != nil {
+			PrintDebugLog(fmt.Sprintf("send append entries to %s failed %v\n", peer.addr, err.Error()))
+		}
+		if rf.role == NodeRoleLeader && rf.curTerm == appendEntReq.Term {
+			if resp != nil {
+				// deal with appendRnt resp
+				if resp.Success {
+					PrintDebugLog(fmt.Sprintf("send heart beat to %s success", peer.addr))
+					rf.matchIdx[peer.id] = int(appendEntReq.PrevLogIndex) + len(appendEntReq.Entries)
+					rf.nextIdx[peer.id] = rf.matchIdx[peer.id] + 1
+					rf.advanceCommitIndexForLeader()
+				} else {
+					// there is a new leader in group
+					if resp.Term > rf.curTerm {
+						rf.SwitchRaftNodeRole(NodeRoleFollower)
+						rf.curTerm = resp.Term
+						rf.votedFor = VOTE_FOR_NO_ONE
+						rf.PersistRaftState()
+					} else if resp.Term == rf.curTerm {
+						rf.nextIdx[peer.id] = int(resp.ConflictIndex)
+						if resp.ConflictTerm != -1 {
+							for i := appendEntReq.PrevLogIndex; i >= int64(firstIndex); i-- {
+								if rf.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.ConflictTerm) {
+									rf.nextIdx[peer.id] = int(i + 1)
+									break
+								}
 							}
 						}
 					}

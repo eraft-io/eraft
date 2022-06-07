@@ -28,8 +28,11 @@
 package kvserver
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -43,17 +46,12 @@ import (
 
 var PeersMap = map[int]string{0: ":8088", 1: ":8089", 2: ":8090"}
 
-//
-// ./redis-server --nvm-maxcapacity 1 --nvm-dir /root --nvm-threshold 64 --pointer-based-aof yes --appendonly yes --appendfsync always --protected-mode no --port 6379
-//
-// ./redis-server --nvm-maxcapacity 1 --nvm-dir /root --nvm-threshold 64 --pointer-based-aof yes --appendonly yes --appendfsync always --protected-mode no --port 6380
-//
-// ./redis-server --nvm-maxcapacity 1 --nvm-dir /root --nvm-threshold 64 --pointer-based-aof yes --appendonly yes --appendfsync always --protected-mode no --port 6381
-//
-
-var PMemStorageMap = map[int]string{0: "127.0.0.1:6379", 1: "127.0.0.1:6380", 2: "127.0.0.1:6381"}
-
 const ExecCmdTimeout = 1 * time.Second
+
+type OperationContext struct {
+	MaxAppliedCommandId int64
+	LastResponse        *pb.CommandResponse
+}
 
 type KvServer struct {
 	mu      sync.RWMutex
@@ -63,14 +61,16 @@ type KvServer struct {
 
 	lastApplied int
 
-	stm         StateMachine
+	stm            StateMachine
+	lastOperations map[int64]OperationContext
+
 	notifyChans map[int]chan *pb.CommandResponse
 	stopApplyCh chan interface{}
 
 	pb.UnimplementedRaftServiceServer
 }
 
-func MakeKvServer(nodeId int, engType string) *KvServer {
+func MakeKvServer(nodeId int) *KvServer {
 	clientEnds := []*raftcore.RaftClientEnd{}
 	for id, addr := range PeersMap {
 		newEnd := raftcore.MakeRaftClientEnd(addr, uint64(id))
@@ -78,16 +78,13 @@ func MakeKvServer(nodeId int, engType string) *KvServer {
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
-	var logDbEng storage_eng.KvStore
-
-	switch engType {
-	case "pmem":
-		logDbEng = storage_eng.EngineFactory("pmem", PMemStorageMap[nodeId])
-	case "leveldb":
-		logDbEng = storage_eng.EngineFactory("leveldb", "./data/kv_server"+"/node_"+strconv.Itoa(nodeId))
+	logDbEng, err := storage_eng.MakeLevelDBKvStore("./data/kv_server" + "/node_" + strconv.Itoa(nodeId))
+	if err != nil {
+		raftcore.PrintDebugLog("boot storage engine err!")
+		panic(err)
 	}
 
-	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 300, 900)
+	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 1000, 3000)
 	kvSvr := &KvServer{Rf: newRf, applyCh: newApplyCh, dead: 0, lastApplied: 0, stm: NewMemKV(), notifyChans: make(map[int]chan *pb.CommandResponse)}
 	kvSvr.stopApplyCh = make(chan interface{})
 
@@ -96,19 +93,36 @@ func MakeKvServer(nodeId int, engType string) *KvServer {
 	return kvSvr
 }
 
+func (s *KvServer) takeSnapshot(index int) {
+	var bytesState bytes.Buffer
+	enc := gob.NewEncoder(&bytesState)
+	enc.Encode(s.stm)
+	enc.Encode(s.lastOperations)
+	// snapshot
+	s.Rf.Snapshot(index, bytesState.Bytes())
+}
+
 func (s *KvServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb.RequestVoteResponse, error) {
 	resp := &pb.RequestVoteResponse{}
-	// raftcore.PrintDebugLog("HandleRequestVote -> " + req.String())
+	raftcore.PrintDebugLog("HandleRequestVote -> " + req.String())
 	s.Rf.HandleRequestVote(req, resp)
-	// raftcore.PrintDebugLog("SendRequestVoteResp -> " + resp.String())
+	raftcore.PrintDebugLog("SendRequestVoteResp -> " + resp.String())
 	return resp, nil
 }
 
 func (s *KvServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	// raftcore.PrintDebugLog("HandleAppendEntries -> " + req.String())
+	raftcore.PrintDebugLog("HandleAppendEntries -> " + req.String())
 	s.Rf.HandleAppendEntries(req, resp)
-	// raftcore.PrintDebugLog("AppendEntriesResp -> " + resp.String())
+	raftcore.PrintDebugLog("AppendEntriesResp -> " + resp.String())
+	return resp, nil
+}
+
+func (s *KvServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
+	resp := &pb.InstallSnapshotResponse{}
+	raftcore.PrintDebugLog("HandleSnapshot -> " + req.String())
+	s.Rf.HandleInstallSnapshot(req, resp)
+	raftcore.PrintDebugLog("HandleSnapshotResp -> " + resp.String())
 	return resp, nil
 }
 
@@ -129,33 +143,58 @@ func (s *KvServer) ApplingToStm(done <-chan interface{}) {
 		case <-done:
 			return
 		case appliedMsg := <-s.applyCh:
-			req := &pb.CommandRequest{}
-			if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
-				raftcore.PrintDebugLog("Unmarshal CommandRequest err")
-				continue
-			}
-			s.lastApplied = int(appliedMsg.CommandIndex)
+			if appliedMsg.CommandValid {
+				s.mu.Lock()
+				req := &pb.CommandRequest{}
+				if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
+					raftcore.PrintDebugLog("Unmarshal CommandRequest err")
+					s.mu.Unlock()
+					continue
+				}
+				// outdate checked
+				if appliedMsg.CommandIndex <= int64(s.lastApplied) {
+					s.mu.Unlock()
+					continue
+				}
 
-			var value string
-			switch req.OpType {
-			case pb.OpType_OpPut:
-				s.stm.Put(req.Key, req.Value)
-			case pb.OpType_OpAppend:
-				s.stm.Append(req.Key, req.Value)
-			case pb.OpType_OpGet:
-				value, _ = s.stm.Get(req.Key)
-			}
+				s.lastApplied = int(appliedMsg.CommandIndex)
 
-			cmdResp := &pb.CommandResponse{}
-			cmdResp.Value = value
-			ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
-			ch <- cmdResp
+				var value string
+				switch req.OpType {
+				case pb.OpType_OpPut:
+					s.stm.Put(req.Key, req.Value)
+				case pb.OpType_OpAppend:
+					s.stm.Append(req.Key, req.Value)
+				case pb.OpType_OpGet:
+					value, _ = s.stm.Get(req.Key)
+				}
+
+				cmdResp := &pb.CommandResponse{}
+				cmdResp.Value = value
+				ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
+				ch <- cmdResp
+
+				if s.Rf.GetLogCount() > 5 {
+					s.takeSnapshot(int(appliedMsg.CommandIndex))
+				}
+
+				s.mu.Unlock()
+
+			} else if appliedMsg.SnapshotValid {
+				raftcore.PrintDebugLog("apply snapshot now")
+				s.mu.Lock()
+				if s.Rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
+					// TODO: we need recover old state from appliedMsg.Snapshot data
+					s.lastApplied = int(appliedMsg.SnapshotIndex)
+				}
+				s.mu.Unlock()
+			}
 		}
 	}
 }
 
 func (s *KvServer) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.CommandResponse, error) {
-	// raftcore.PrintDebugLog(fmt.Sprintf("do cmd %s", req.String()))
+	raftcore.PrintDebugLog(fmt.Sprintf("do cmd %s", req.String()))
 
 	cmdResp := &pb.CommandResponse{}
 

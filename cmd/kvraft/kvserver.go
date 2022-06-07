@@ -40,7 +40,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: server [nodeId] [eng_type]")
+		fmt.Println("usage: server [nodeId]")
 		return
 	}
 	sigs := make(chan os.Signal, 1)
@@ -53,8 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	engType := os.Args[2]
-	kvServer := kvsvr.MakeKvServer(nodeId, engType)
+	kvServer := kvsvr.MakeKvServer(nodeId)
 	lis, err := net.Listen("tcp", kvsvr.PeersMap[nodeId])
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)
