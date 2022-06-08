@@ -59,7 +59,7 @@ func main() {
 			return
 		}
 	case "get":
-		err, v := kvCli.Get(os.Args[3])
+		v, err := kvCli.Get(os.Args[3])
 		if err != nil {
 			fmt.Println("err: " + err.Error())
 			return

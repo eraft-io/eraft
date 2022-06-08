@@ -80,6 +80,7 @@ type Raft struct {
 	lastApplied    int64
 	nextIdx        []int
 	matchIdx       []int
+	isSnapshoting  bool
 
 	leaderId         int64
 	electionTimer    *time.Timer
@@ -99,6 +100,7 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, appl
 		curTerm:          0,
 		votedFor:         VOTE_FOR_NO_ONE,
 		grantedVotes:     0,
+		isSnapshoting:    false,
 		logs:             MakePersistRaftLog(newdbEng),
 		persister:        MakePersistRaftLog(newdbEng),
 		nextIdx:          make([]int, len(peers)),
@@ -109,6 +111,7 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, appl
 		heartBeatTimeout: heartbeatTimeOutMs,
 	}
 	rf.curTerm, rf.votedFor = rf.persister.ReadRaftState()
+	rf.ReInitLog()
 	rf.applyCond = sync.NewCond(&rf.mu)
 	lastLog := rf.logs.GetLast()
 	for _, peer := range peers {
@@ -178,6 +181,10 @@ func (rf *Raft) GetState() (int, bool) {
 
 func (rf *Raft) IncrGrantedVotes() {
 	rf.grantedVotes += 1
+}
+
+func (rf *Raft) ReInitLog() {
+	rf.logs.ReInitLogs()
 }
 
 //
@@ -314,17 +321,28 @@ func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, 
 //
 func (rf *Raft) Snapshot(index int, snapshot []byte) {
 	rf.mu.Lock()
-	snapshotIndex := rf.logs.GetFirst().Index
+	defer rf.mu.Unlock()
+	rf.isSnapshoting = true
+	snapshotIndex := rf.logs.GetFirstLogId()
 	if index <= int(snapshotIndex) {
+		rf.isSnapshoting = false
 		PrintDebugLog("reject snapshot, current snapshotIndex is larger in cur term")
 		return
 	}
-	rf.logs.EraseBeforeWithDel(int64(index) - snapshotIndex)
+	rf.logs.EraseBeforeWithDel(int64(index) - int64(snapshotIndex))
 	rf.logs.SetEntFirstData([]byte{}) // 第一个操作日志号设为空
 	PrintDebugLog(fmt.Sprintf("del log entry before idx %d", index))
+	rf.isSnapshoting = false
+	rf.logs.PersisSnapshot(snapshot)
+}
 
-	//rf.logs.PersisSnapshot(snapshot)
-	rf.mu.Unlock()
+func (rf *Raft) ReadSnapshot() []byte {
+	b, err := rf.logs.ReadSnapshot()
+	if err != nil {
+		// panic(err)
+		fmt.Println(err.Error())
+	}
+	return b
 }
 
 //
@@ -365,6 +383,8 @@ func (rf *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, respon
 }
 
 func (rf *Raft) GetLogCount() int {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
 	return rf.logs.LogItemCount()
 }
 
@@ -511,6 +531,9 @@ func (rf *Raft) Propose(payload []byte) (int, int, bool) {
 	if rf.role != NodeRoleLeader {
 		return -1, -1, false
 	}
+	if rf.isSnapshoting {
+		return -1, -1, false
+	}
 	newLog := rf.Append(payload)
 	rf.BroadcastAppend()
 	return int(newLog.Index), int(newLog.Term), true
@@ -570,15 +593,13 @@ func (rf *Raft) replicateOneRound(peer *RaftClientEnd) {
 	prevLogIndex := uint64(rf.nextIdx[peer.id] - 1)
 	PrintDebugLog(fmt.Sprintf("leader prevLogIndex %d", prevLogIndex))
 	if prevLogIndex < uint64(rf.logs.GetFirst().Index) {
-		snapshotData := make([]byte, 0)
-		// TODO: we need to pack the snapshot data which we call taskSnapshot to store
 		firstLog := rf.logs.GetFirst()
 		snapShotReq := &pb.InstallSnapshotRequest{
 			Term:              rf.curTerm,
 			LeaderId:          int64(rf.me_),
 			LastIncludedIndex: firstLog.Index,
 			LastIncludedTerm:  int64(firstLog.Term),
-			Data:              snapshotData, // just for test
+			Data:              rf.ReadSnapshot(),
 		}
 
 		rf.mu.RUnlock()
@@ -671,13 +692,13 @@ func (rf *Raft) Applier() {
 			PrintDebugLog("applier ...")
 			rf.applyCond.Wait()
 		}
+
 		firstIndex, commitIndex, lastApplied := rf.logs.GetFirst().Index, rf.commitIdx, rf.lastApplied
 		entries := make([]*pb.Entry, commitIndex-lastApplied)
 		copy(entries, rf.logs.GetRange(lastApplied+1-int64(firstIndex), commitIndex+1-int64(firstIndex)))
-		rf.mu.Unlock()
-
 		PrintDebugLog(fmt.Sprintf("%d, applies entries %d-%d in term %d", rf.me_, rf.lastApplied, commitIndex, rf.curTerm))
 
+		rf.mu.Unlock()
 		for _, entry := range entries {
 			rf.applyCh <- &pb.ApplyMsg{
 				CommandValid: true,

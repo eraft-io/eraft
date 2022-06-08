@@ -302,7 +302,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 						if s.curConfig.Buckets[i] != s.gid_ && nextConfig.Buckets[i] == s.gid_ {
 							gid := s.curConfig.Buckets[i]
 							if gid != 0 {
-								s.stm[i].Status = Stopped
+								s.stm[i].Status = Runing
 							}
 						}
 						if s.curConfig.Buckets[i] == s.gid_ && nextConfig.Buckets[i] != s.gid_ {

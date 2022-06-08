@@ -122,8 +122,8 @@ func main() {
 	vals := make([]string, count)
 
 	for i := 0; i < count; i++ {
-		rndK := common.RandStringRunes(10240)
-		rndV := common.RandStringRunes(10240)
+		rndK := common.RandStringRunes(8)
+		rndV := common.RandStringRunes(8)
 		keys[i] = rndK
 		vals[i] = rndV
 	}

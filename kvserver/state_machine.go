@@ -48,7 +48,7 @@ func (memKv *MemKV) Get(key string) (string, error) {
 }
 
 func (memKv *MemKV) Put(key, value string) error {
-	// memKv.KV[key] = value
+	memKv.KV[key] = value
 	return nil
 }
 

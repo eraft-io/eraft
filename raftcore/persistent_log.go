@@ -195,15 +195,17 @@ func (rfLog *RaftLog) GetFirst() *pb.Entry {
 	return DecodeEntry(vBytes)
 }
 
-func (rfLog *RaftLog) SetFirstLog(index int64, term int64) error {
-	empEnt := &pb.Entry{
-		Index: index,
-		Term:  uint64(term),
-		Data:  make([]byte, 0),
-	}
-	empEntEncode := EncodeEntry(empEnt)
-	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(index)), empEntEncode)
-}
+// func (rfLog *RaftLog) SetFirstLog(index int64, term int64) error {
+// 	rfLog.mu.Lock()
+// 	defer rfLog.mu.Unlock()
+// 	empEnt := &pb.Entry{
+// 		Index: index,
+// 		Term:  uint64(term),
+// 		Data:  make([]byte, 0),
+// 	}
+// 	empEntEncode := EncodeEntry(empEnt)
+// 	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(index)), empEntEncode)
+// }
 
 //
 // GetLast
@@ -219,7 +221,7 @@ func (rfLog *RaftLog) GetLast() *pb.Entry {
 	}
 	firstIdx := rfLog.GetFirstLogId()
 	PrintDebugLog(fmt.Sprintf("get last log with id -> %d", lastLogId))
-	return rfLog.GetEntry(int64(lastLogId) - int64(firstIdx))
+	return rfLog.GetEnt(int64(lastLogId) - int64(firstIdx))
 }
 
 //
@@ -264,11 +266,13 @@ func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
 // this operation don't modity log in storage engine
 //
 func (rfLog *RaftLog) EraseBefore(idx int64) []*pb.Entry {
+	rfLog.mu.Lock()
+	defer rfLog.mu.Unlock()
 	ents := []*pb.Entry{}
 	lastLogId := rfLog.GetLastLogId()
 	firstLogId := rfLog.GetFirstLogId()
 	for i := int64(firstLogId) + idx; i <= int64(lastLogId); i++ {
-		ents = append(ents, rfLog.GetEntry(i-int64(firstLogId)))
+		ents = append(ents, rfLog.GetEnt(i-int64(firstLogId)))
 	}
 	return ents
 }
@@ -292,6 +296,8 @@ func (rfLog *RaftLog) EraseBeforeWithDel(idx int64) error {
 // in storage engine
 //
 func (rfLog *RaftLog) EraseAfter(idx int64, withDel bool) []*pb.Entry {
+	rfLog.mu.Lock()
+	defer rfLog.mu.Unlock()
 	firstLogId := rfLog.GetFirstLogId()
 	if withDel {
 		for i := int64(firstLogId) + idx; i <= int64(rfLog.GetLastLogId()); i++ {
@@ -302,7 +308,7 @@ func (rfLog *RaftLog) EraseAfter(idx int64, withDel bool) []*pb.Entry {
 	}
 	ents := []*pb.Entry{}
 	for i := firstLogId; i < firstLogId+uint64(idx); i++ {
-		ents = append(ents, rfLog.GetEntry(int64(i)-int64(firstLogId)))
+		ents = append(ents, rfLog.GetEnt(int64(i)-int64(firstLogId)))
 	}
 	return ents
 }
@@ -317,7 +323,7 @@ func (rfLog *RaftLog) GetRange(lo, hi int64) []*pb.Entry {
 	defer rfLog.mu.RUnlock()
 	ents := []*pb.Entry{}
 	for i := lo; i < hi; i++ {
-		ents = append(ents, rfLog.GetEntry(i))
+		ents = append(ents, rfLog.GetEnt(i))
 	}
 	return ents
 }
@@ -329,10 +335,14 @@ func (rfLog *RaftLog) GetRange(lo, hi int64) []*pb.Entry {
 func (rfLog *RaftLog) GetEntry(idx int64) *pb.Entry {
 	rfLog.mu.RLock()
 	defer rfLog.mu.RUnlock()
+	return rfLog.GetEnt(idx)
+}
+
+func (rfLog *RaftLog) GetEnt(offset int64) *pb.Entry {
 	firstLogId := rfLog.GetFirstLogId()
-	encodeValue, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(firstLogId + uint64(idx)))
+	encodeValue, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(firstLogId + uint64(offset)))
 	if err != nil {
-		PrintDebugLog(fmt.Sprintf("get log entry with id %d error!", idx+int64(firstLogId)))
+		PrintDebugLog(fmt.Sprintf("get log entry with id %d error!", offset+int64(firstLogId)))
 		panic(err)
 	}
 	return DecodeEntry(encodeValue)

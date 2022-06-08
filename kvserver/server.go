@@ -84,20 +84,35 @@ func MakeKvServer(nodeId int) *KvServer {
 		panic(err)
 	}
 
-	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 1000, 3000)
+	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 2000, 6000)
 	kvSvr := &KvServer{Rf: newRf, applyCh: newApplyCh, dead: 0, lastApplied: 0, stm: NewMemKV(), notifyChans: make(map[int]chan *pb.CommandResponse)}
 	kvSvr.stopApplyCh = make(chan interface{})
+	kvSvr.restoreSnapshot(newRf.ReadSnapshot())
 
 	go kvSvr.ApplingToStm(kvSvr.stopApplyCh)
 
 	return kvSvr
 }
 
+func (s *KvServer) restoreSnapshot(snapData []byte) {
+	if snapData == nil {
+		return
+	}
+	buf := bytes.NewBuffer(snapData)
+	data := gob.NewDecoder(buf)
+	var stm MemKV
+	if data.Decode(&stm) != nil {
+		raftcore.PrintDebugLog("decode stm data error")
+	}
+	stmBytes, _ := json.Marshal(stm)
+	raftcore.PrintDebugLog("recover stm -> " + string(stmBytes))
+	s.stm = &stm
+}
+
 func (s *KvServer) takeSnapshot(index int) {
 	var bytesState bytes.Buffer
 	enc := gob.NewEncoder(&bytesState)
 	enc.Encode(s.stm)
-	enc.Encode(s.lastOperations)
 	// snapshot
 	s.Rf.Snapshot(index, bytesState.Bytes())
 }
@@ -112,17 +127,17 @@ func (s *KvServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) 
 
 func (s *KvServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	raftcore.PrintDebugLog("HandleAppendEntries -> " + req.String())
+	// raftcore.PrintDebugLog("HandleAppendEntries -> " + req.String())
 	s.Rf.HandleAppendEntries(req, resp)
-	raftcore.PrintDebugLog("AppendEntriesResp -> " + resp.String())
+	// raftcore.PrintDebugLog("AppendEntriesResp -> " + resp.String())
 	return resp, nil
 }
 
 func (s *KvServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
 	resp := &pb.InstallSnapshotResponse{}
-	raftcore.PrintDebugLog("HandleSnapshot -> " + req.String())
+	// raftcore.PrintDebugLog("HandleSnapshot -> " + req.String())
 	s.Rf.HandleInstallSnapshot(req, resp)
-	raftcore.PrintDebugLog("HandleSnapshotResp -> " + resp.String())
+	// raftcore.PrintDebugLog("HandleSnapshotResp -> " + resp.String())
 	return resp, nil
 }
 
@@ -184,7 +199,7 @@ func (s *KvServer) ApplingToStm(done <-chan interface{}) {
 				raftcore.PrintDebugLog("apply snapshot now")
 				s.mu.Lock()
 				if s.Rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
-					// TODO: we need recover old state from appliedMsg.Snapshot data
+					s.restoreSnapshot(appliedMsg.Snapshot)
 					s.lastApplied = int(appliedMsg.SnapshotIndex)
 				}
 				s.mu.Unlock()
