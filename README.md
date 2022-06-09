@@ -74,19 +74,6 @@ eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系
 
 再看 [大论文](https://github.com/ongardie/dissertation) 
 
-#### 1.[分布式系统中脑裂的问题](docs/brain_spilt.md)
-
-#### 2.[多数派投票机制](docs/majority_vote.md)
-
-#### 3.[Raft 算法概览](docs/raft_basic.md)
-
-#### 4.[eraft 中实现的 raft 接口](docs/eraft_interface.md)
-
-#### 5.[领导选举](docs/eraft_leader_election.md)
-
-#### 6.[日志复制](docs/eraft_log_replication.md)
-
-#### 7.[Raft如何保证系统崩溃时候的安全性](docs/eraft_safety.md)
 
 ### 数据分片
 
@@ -97,7 +84,6 @@ eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系
 
 eraft 中使用了 hash 分片的方法，我们将数据通过哈希算法映射到一个个桶 (bucket) 里面，然后不同的 raft 组负责一部分桶，一个 raft 组可以负责多少个桶，是可以调整的。
 
-#### [分片详细设计](docs/eraft_shard.md)
 
 ### 集群架构
 
@@ -125,9 +111,145 @@ eraft 中使用了 hash 分片的方法，我们将数据通过哈希算法映�
 
 它主要负责集群数据存储，一般有三台机器组成一个 raft 组，对外提供高可用的服务。
 
-### 编译代码
+### 在 k8s 中体验 eraft_kv
 
-** 依赖 **
+#### 1.安装 minikube
+
+```
+minikube start --image-mirror-country='cn'
+```
+
+输出一下说明成功启动：
+
+```
+colin@colindeMacBook-Pro ~ % minikube start --image-mirror-country='cn'
+😄  Darwin 11.6 上的 minikube v1.25.2
+✨  自动选择 docker 驱动
+✅  正在使用镜像存储库 registry.cn-hangzhou.aliyuncs.com/google_containers
+👍  Starting control plane node minikube in cluster minikube
+🚜  Pulling base image ...
+    > registry.cn-hangzhou.aliyun...: 379.06 MiB / 379.06 MiB  100.00% 5.77 MiB
+🔥  Creating docker container (CPUs=2, Memory=1986MB) ...
+🐳  正在 Docker 20.10.12 中准备 Kubernetes v1.23.3…
+    ▪ kubelet.housekeeping-interval=5m
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+🔎  Verifying Kubernetes components...
+    ▪ Using image registry.cn-hangzhou.aliyuncs.com/google_containers/storage-provisioner:v5
+🌟  Enabled addons: storage-provisioner, default-storageclass
+🏄  Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+```
+
+#### 2.部署 eraft services
+
+```
+kubectl apply -f k8s/eraft-services.yaml
+```
+
+#### 3.部署 StorageClass 动态存储卷
+
+```
+kubectl apply -f k8s/eraft-storage-class.yaml
+```
+
+#### 4.部署 kv_server 分组服务的 StatefulSet
+
+```
+kubectl apply -f k8s/eraft-statefulset.yaml
+```
+
+成功启动之后 kubectl get pods 可以看到集群的状态
+
+```
+colin@colindeMacBook-Pro eraft % kubectl get pods
+NAME               READY   STATUS    RESTARTS   AGE
+eraft-kvserver-0   1/1     Running   0          85s
+eraft-kvserver-1   1/1     Running   0          82s
+eraft-kvserver-2   1/1     Running   0          79s
+```
+
+#### 5.验证启动状态
+
+还可以通过 kubectl logs eraft-kvserver-0  1  2  来查看 Raft 节点运行的日志信息
+
+```
+kubectl logs eraft-kvserver-2 | less
+```
+
+在我的机器上 2 号节点被成功的选为了 Leader
+```
+2022-06-09 16:44:41 get last log with id -> 0 
+2022-06-09 16:44:41 send request vote to eraft-kvserver-1.eraft-kvserver:8089 term:4 candidate_id:2
+ 
+2022-06-09 16:44:41 send request vote to eraft-kvserver-0.eraft-kvserver:8088 term:4 candidate_id:2
+ 
+2022-06-09 16:44:41 send request vote to eraft-kvserver-0.eraft-kvserver:8088 recive -> term:4 vote_granted:true, curterm 4, req term 4 
+2022-06-09 16:44:41 I grant vote 
+2022-06-09 16:44:41 node 2 get majority votes int term 4  
+note change state to -> Leader 
+2022-06-09 16:44:41 get last log with id -> 0 
+2022-06-09 16:44:41 send heart beat to eraft-kvserver-0.eraft-kvserver:8088 
+2022-06-09 16:44:41 send heart beat to eraft-kvserver-1.eraft-kvserver:8089 
+2022-06-09 16:44:41 leader prevLogIndex 0 
+2022-06-09 16:44:41 get first log with id -> 0 
+2022-06-09 16:44:41 get first log with id -> 0 
+2022-06-09 16:44:41 first log index 0 
+2022-06-09 16:44:41 leader prevLogIndex 0 
+2022-06-09 16:44:41 get first log with id -> 0 
+2022-06-09 16:44:41 get first log with id -> 0 
+```
+
+#### 6.使用 kvcli 测试写入
+
+```
+kubectl run eraft-client --image=eraft/eraft_stale_v1:v3 -i -t --rm --restart=Never -- kvcli eraft-kvserver-2.eraft-kvserver:8090 10
+```
+
+kubectl logs eraft-kvserver-2
+
+可以看到我们操作成功写入，日志同步也正常
+
+```
+22-06-09 16:55:26 leader prevLogIndex 9
+2022-06-09 16:55:26 get first log with id -> 5
+2022-06-09 16:55:26 get first log with id -> 5
+2022-06-09 16:55:26 first log index 5
+2022-06-09 16:55:26 send heart beat to eraft-kvserver-1.eraft-kvserver:8089 success
+2022-06-09 16:55:26 get last log with id -> 10
+2022-06-09 16:55:26 get first log with id -> 5
+2022-06-09 16:55:26 peer 2 advance commit index 9 at term 4
+2022-06-09 16:55:26 peer id wait for replicating...
+2022-06-09 16:55:26 get last log with id -> 10
+2022-06-09 16:55:26 get first log with id -> 5
+2022-06-09 16:55:26 send heart beat to eraft-kvserver-0.eraft-kvserver:8088 success
+2022-06-09 16:55:26 peer id wait for replicating...
+2022-06-09 16:55:26 get last log with id -> 10
+2022-06-09 16:55:26 2, applies entries 9-10 in term 4
+2022-06-09 16:55:26 applier ...
+2022-06-09 16:55:26 del log with id 5 success
+2022-06-09 16:55:26 del log with id 6 success
+2022-06-09 16:55:26 del log with id 7 success
+2022-06-09 16:55:26 del log with id 8 success
+2022-06-09 16:55:26 del log with id 9 success
+2022-06-09 16:55:26 del log entry before idx 10
+2022-06-09 16:55:27 send heart beat to eraft-kvserver-0.eraft-kvserver:8088
+2022-06-09 16:55:27 send heart beat to eraft-kvserver-1.eraft-kvserver:8089
+2022-06-09 16:55:27 leader prevLogIndex 10
+2022-06-09 16:55:27 leader prevLogIndex 10
+2022-06-09 16:55:27 get first log with id -> 10
+2022-06-09 16:55:27 get first log with id -> 10
+2022-06-09 16:55:27 first log index 10
+2022-06-09 16:55:27 get first log with id -> 10
+2022-06-09 16:55:27 get first log with id -> 10
+2022-06-09 16:55:27 first log index 10
+2022-06-09 16:55:27 send heart beat to eraft-kvserver-1.eraft-kvserver:8089 success
+2022-06-09 16:55:27 send heart beat to eraft-kvserver-0.eraft-kvserver:8088 success
+```
+
+### 从源码编译
+
+准备工作
 
 - go version >= go1.17.6
 - 开启 go mod 包管理模式
@@ -166,6 +288,7 @@ make
 
 ./cfgcli 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 join 1 127.0.0.1:6088,127.0.0.1:6089,127.0.0.1:6090
 ./cfgcli 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 join 2 127.0.0.1:7088,127.0.0.1:7089,127.0.0.1:7090
+
 ```
 
 3.启动集群分组
@@ -215,13 +338,7 @@ make
 ./bench_cli 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 100 put
 ```
 
-我们团队致力于解读国外优秀的分布式存储相关开源课程，下面是课程体系图
-
-![课程体系](https://eraft.oss-cn-beijing.aliyuncs.com/arch.png)
-
-我们始终坚信优秀的本科教学不应该是照本宣科以及应付考试，一门优秀的课程，应该具备让学生学会思考、动手实践、找到问题、反复试错、并解决问题的能力，同时应该尽量用最直白，最简单的语言传达关键的知识点。作为计算机工业界的工作者，我相信做课程和做技术一样，并不是越复杂越好，应该尽量的让设计出来的东西简单化。
-
-好了，虾BB 的话就说这么多，关注我们的最新动态，欢迎关注 
+我们团队致力于解读国外优秀的分布式存储相关开源课程，我们始终坚信优秀的本科教学不应该是照本宣科以及应付考试，一门优秀的课程，应该具备让学生学会思考、动手实践、找到问题、反复试错、并解决问题的能力，同时应该尽量用最直白，最简单的语言传达关键的知识点。作为计算机工业界的工作者，我相信做课程和做技术一样，并不是越复杂越好，应该尽量的让设计出来的东西简单化。
 
 https://www.zhihu.com/people/liu-jie-84-52
 

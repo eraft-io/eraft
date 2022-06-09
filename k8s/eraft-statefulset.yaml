@@ -47,8 +47,8 @@ spec:
           mountPath: /mnt/data
         resources:
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 100m
+            memory: 200Mi
   volumeClaimTemplates:
   - metadata:
       name: eraft-data
@@ -56,4 +56,4 @@ spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 1Gi
+          storage: 200Mi
