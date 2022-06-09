@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eraft-kvserver
+spec:
+  selector:
+    matchLabels:
+      app: eraft-kvserver
+  serviceName: eraft-kvserver
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: eraft-kvserver
+    spec:
+      initContainers:
+      - name: init-eraftkv
+        image: eraft/eraft_stale_v1:v3
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+          ordinal=${BASH_REMATCH[1]}
+          echo ${ordinal} > /mnt/data/server_id
+        volumeMounts:
+        - name: eraft-data
+          mountPath: /mnt/data
+      containers:
+      - name: eraft-kvserver
+        image: eraft/eraft_stale_v1:v3
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          /usr/bin/kv_server "$(< /mnt/data/server_id)"
+        env:
+        - name: ERAFT_KV_VERSION
+          value: "1.0"
+        ports:
+        - name: mysql
+          containerPort: 3306
+        volumeMounts:
+        - name: eraft-data
+          mountPath: /mnt/data
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: eraft-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi

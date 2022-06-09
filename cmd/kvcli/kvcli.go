@@ -96,7 +96,7 @@ func (kvCli *KvClient) Put(key, value string) string {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: kvcli [serveraddr] [count]")
+		fmt.Println("usage: kvcli [serveraddr] [count] [op] [options]")
 		return
 	}
 	sigs := make(chan os.Signal, 1)
@@ -107,6 +107,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	op := os.Args[3]
 
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan)
@@ -134,6 +136,13 @@ func main() {
 	}
 	elapsed := time.Since(startTs).Seconds()
 	fmt.Printf("total cost %f s\n", elapsed)
+
+	switch op {
+	case "get":
+		fmt.Println(kvCli.Get(os.Args[4]))
+	case "put":
+		fmt.Println(kvCli.Put(os.Args[4], os.Args[5]))
+	}
 
 	// fmt.Println("run test get value -> " + kvCli.Get("testkey"))
 }

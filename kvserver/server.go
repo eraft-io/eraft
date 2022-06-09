@@ -44,6 +44,7 @@ import (
 	"github.com/eraft-io/eraft/storage_eng"
 )
 
+var DnsMap = map[int]string{0: "eraft-kvserver-0.eraft-kvserver:8088", 1: "eraft-kvserver-1.eraft-kvserver:8089", 2: "eraft-kvserver-2.eraft-kvserver:8090"}
 var PeersMap = map[int]string{0: ":8088", 1: ":8089", 2: ":8090"}
 
 const ExecCmdTimeout = 1 * time.Second
@@ -72,7 +73,7 @@ type KvServer struct {
 
 func MakeKvServer(nodeId int) *KvServer {
 	clientEnds := []*raftcore.RaftClientEnd{}
-	for id, addr := range PeersMap {
+	for id, addr := range DnsMap {
 		newEnd := raftcore.MakeRaftClientEnd(addr, uint64(id))
 		clientEnds = append(clientEnds, newEnd)
 	}
@@ -127,17 +128,17 @@ func (s *KvServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) 
 
 func (s *KvServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	// raftcore.PrintDebugLog("HandleAppendEntries -> " + req.String())
+	raftcore.PrintDebugLog("HandleAppendEntries -> " + req.String())
 	s.Rf.HandleAppendEntries(req, resp)
-	// raftcore.PrintDebugLog("AppendEntriesResp -> " + resp.String())
+	raftcore.PrintDebugLog("AppendEntriesResp -> " + resp.String())
 	return resp, nil
 }
 
 func (s *KvServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
 	resp := &pb.InstallSnapshotResponse{}
-	// raftcore.PrintDebugLog("HandleSnapshot -> " + req.String())
+	raftcore.PrintDebugLog("HandleSnapshot -> " + req.String())
 	s.Rf.HandleInstallSnapshot(req, resp)
-	// raftcore.PrintDebugLog("HandleSnapshotResp -> " + resp.String())
+	raftcore.PrintDebugLog("HandleSnapshotResp -> " + resp.String())
 	return resp, nil
 }
 
