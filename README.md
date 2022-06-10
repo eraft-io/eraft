@@ -87,7 +87,7 @@ eraft 中使用了 hash 分片的方法，我们将数据通过哈希算法映�
 
 ### 集群架构
 
-![集群架构](https://eraft.oss-cn-beijing.aliyuncs.com/eraftdb_arch.png)
+![集群架构](docs/imgs/eraftdb_arch.png)
 
 首先我们先介绍下架构介绍
 
