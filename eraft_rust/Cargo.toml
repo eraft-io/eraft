@@ -1,0 +1,21 @@
+[package]
+name = "eraft_rust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lazy_static = "1.4.0"
+tonic = "0.7.1"
+tokio = { version = "1.18.0", features = ["macros", "rt-multi-thread"] }
+prost = "0.10.1"
+futures = "0.3.5"
+async-std = "1.5.0"
+async-executor = "0.1.2"
+rand = "0.8.5"
+log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
+simplelog = { version = "^0.11.0", features = ["paris"] }
+
+[build-dependencies]
+tonic-build = "0.7.2"
