@@ -192,5 +192,5 @@ service RaftService {
     rpc DoCommand (CommandRequest) returns (CommandResponse) {}
     rpc DoConfig (ConfigRequest) returns (ConfigResponse) {}
     rpc DoBucketsOperation (BucketOperationRequest) returns (BucketOperationResponse) {}
-        rpc Snapshot (InstallSnapshotRequest) returns (InstallSnapshotResponse) {}
+    rpc Snapshot (InstallSnapshotRequest) returns (InstallSnapshotResponse) {}
 }

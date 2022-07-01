@@ -231,16 +231,17 @@ sds sdsdupnvm(const sds s);
 #endif
 
 sds sdsnewlen(const void *init, size_t initlen);
-sds sdsnew(const char *init);
-sds sdsempty(void);
-sds sdsdup(const sds s);
+sds sdsnew(const char *init); // 根据给定的 C 字符串创建 SDS
+
+sds sdsempty(void); // 创建空字符串
+sds sdsdup(const sds s); // 复制给定的 SDS
 void sdsfree(sds s);
-sds sdsgrowzero(sds s, size_t len);
+sds sdsgrowzero(sds s, size_t len); // 把 sds 扩容到指定长度，用 0 填充新的内容
 sds sdscatlen(sds s, const void *t, size_t len);
 sds sdscatlen_total(sds s, const void *t, size_t len,size_t *total);
 sds sdscat(sds s, const char *t);
 sds sdscatsds(sds s, const sds t);
-sds sdscpylen(sds s, const char *t, size_t len);
+sds sdscpylen(sds s, const char *t, size_t len); // 将 C 字符串复制到给定的 SDS 中
 sds sdscpy(sds s, const char *t);
 
 sds sdscatvprintf(sds s, const char *fmt, va_list ap);
@@ -252,12 +253,12 @@ sds sdscatprintf(sds s, const char *fmt, ...);
 #endif
 
 sds sdscatfmt(sds s, char const *fmt, ...);
-sds sdstrim(sds s, const char *cset);
+sds sdstrim(sds s, const char *cset); // 从 SDS 两端清除所给定的字符
 void sdsrange(sds s, int start, int end);
-void sdsupdatelen(sds s);
+void sdsupdatelen(sds s);  // 手动刷新 sds 的相关统计值
 void sdsclear(sds s);
-int sdscmp(const sds s1, const sds s2);
-sds *sdssplitlen(const char *s, int len, const char *sep, int seplen, int *count);
+int sdscmp(const sds s1, const sds s2);  // 比较两个 SDS 的大小
+sds *sdssplitlen(const char *s, int len, const char *sep, int seplen, int *count); // 按指定分隔符对 SDS 进行切分
 void sdsfreesplitres(sds *tokens, int count);
 void sdstolower(sds s);
 void sdstoupper(sds s);
@@ -271,8 +272,8 @@ sds sdsjoinsds(sds *argv, int argc, const char *sep, size_t seplen);
 /* Low level functions exposed to the user API */
 sds sdsMakeRoomFor(sds s, size_t addlen);
 void sdsIncrLen(sds s, int incr);
-sds sdsRemoveFreeSpace(sds s);
-size_t sdsAllocSize(sds s);
+sds sdsRemoveFreeSpace(sds s);  // 对空闲过多的 SDS 做缩容
+size_t sdsAllocSize(sds s);  // 返回给定 SDS 当前占用内存的大小
 void *sdsAllocPtr(sds s);
 
 /* Export the allocator used by SDS to the program using SDS.

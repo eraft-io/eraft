@@ -1,7 +1,6 @@
 use eraft_rust::server;
-use std::{env, f32::consts::E};
+use std::{env};
 
-#[macro_use] extern crate log;
 extern crate simplelog;
 
 use simplelog::*;
@@ -25,6 +24,5 @@ fn main() {
             0
         }
     };
-
-    server::run_server(server_id, args[2].as_str());
+    let _ = server::run_server(server_id, args[2].as_str());
 }

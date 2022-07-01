@@ -4,8 +4,9 @@ use rand::Rng;
 use simplelog::*;
 use tonic::{transport::{Server, Channel}, Request, Response, Status};
 use eraft_proto::raft_service_client::{RaftServiceClient};
+use std::cmp;
 
-use crate::{raft_log::RaftLog, eraft_proto::{self, RequestVoteRequest, RequestVoteResponse, AppendEntriesRequest, AppendEntriesResponse, Entry, EntryType}};
+use crate::{raft_log::RaftLog, eraft_proto::{self, RequestVoteRequest, RequestVoteResponse, AppendEntriesRequest, AppendEntriesResponse, Entry, EntryType, ApplyMsg}};
 
 // raft node role
 #[derive(PartialEq)]
@@ -42,6 +43,12 @@ pub trait Raft {
 
     fn tick_run(&mut self);
 
+    fn applier(&mut self);
+
+    fn advance_commit_index_for_leader(&mut self);
+
+    fn advance_commit_index_for_follower(&mut self, leader_commit_id: i64);
+
     fn propose(&mut self, payload: String) -> (i64, i64, bool);
 
     fn handle_request_vote(&mut self, req: RequestVoteRequest) -> RequestVoteResponse;
@@ -50,9 +57,11 @@ pub trait Raft {
 
     fn broadcast_heartbeat(&mut self);
 
-    fn apply_ch(&self) -> &SyncSender<String>;
+    fn apply_ch(&self) -> &SyncSender<ApplyMsg>;
 
-    fn set_apply_ch(&mut self, apply_ch: SyncSender<String>);
+    fn match_log(&self, term: i64, index: i64) -> bool;
+
+    fn set_apply_ch(&mut self, apply_ch: SyncSender<ApplyMsg>);
 
 }
 
@@ -60,7 +69,7 @@ pub trait Raft {
 pub struct RaftStack {
     me_id: u16,
     dead: bool,
-    apply_ch: SyncSender<String>,
+    apply_ch: SyncSender<ApplyMsg>,
     role: NodeRole,
     cur_term: i64,
     voted_for: i16,
@@ -84,7 +93,7 @@ pub struct RaftStack {
 }
 
 impl RaftStack {
-    pub fn new(me: u16, peers: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<String>) -> RaftStack {
+    pub fn new(me: u16, peers: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>) -> RaftStack {
         build_raftstack(me, peers, heart_base, elec_base, app_apply_ch)
     }
 }
@@ -93,6 +102,59 @@ impl Raft for RaftStack {
 
     fn get_leader_id(&self) -> u16 {
         self.leader_id
+    }
+
+    fn match_log(&self, term: i64, index: i64) -> bool {
+        return index <= self.logs.get_last().index && self.logs.get_entry(index - self.logs.get_first().index).term as i64 == term;
+    }
+
+    fn applier(&mut self) {
+        if self.last_applied >= self.commit_idx {
+            return;
+        }
+        let first_index = self.logs.get_first().index;
+        let commit_index = self.commit_idx;
+        let last_applied = self.last_applied;
+        let ents = self.logs.get_range((last_applied + 1 - first_index) as usize, (commit_index + 1 - first_index) as usize);
+
+        simplelog::info!("{:?}, applies entries {:?}-{:?} in term {:?}", self.me_id, self.last_applied, self.commit_idx, self.cur_term);
+
+        for ent in ents {
+            let apply_msg = ApplyMsg{
+                command_valid: true,
+                command: ent.data,
+                command_term: ent.term as i64,
+                command_index: ent.index,
+                snapshot_valid: false,
+                snapshot: Vec::new(),
+                snapshot_term: 0,
+                snapshot_index: 0,
+            };
+            let _ = self.apply_ch.send(apply_msg);
+        }
+        self.last_applied = cmp::max(self.last_applied, self.commit_idx);
+    }
+
+    fn advance_commit_index_for_follower(&mut self, leader_commit_id: i64) {
+        let new_commit_index = cmp::min(leader_commit_id, self.logs.get_last().index);
+        if new_commit_index > self.commit_idx {
+            simplelog::info!("follower id {:?} advance commit index {:?} at term {:?}", self.me_id, self.commit_idx, self.cur_term);
+            self.commit_idx = new_commit_index;
+            // TODO: signal notidy apply ch
+        }
+    }
+
+    fn advance_commit_index_for_leader(&mut self) {
+        self.match_idx.sort();
+        let n = self.match_idx.len();
+        let new_commit_index = self.match_idx[n-(n/2+1)];
+        if new_commit_index > self.commit_idx {
+            if self.match_log(self.cur_term, new_commit_index) {
+                simplelog::info!("leader id {:?} advance commit index {:?} at term {:?}", self.me_id, self.commit_idx, self.cur_term);
+                self.commit_idx = new_commit_index;
+                // TODO: signal notidy apply ch
+            }
+        }
     }
 
     fn propose(&mut self, payload: String) -> (i64, i64, bool) {
@@ -115,7 +177,6 @@ impl Raft for RaftStack {
         self.logs.append(new_log_ent);
         self.match_idx[self.me_id as usize] = new_log_ent_index;
         self.next_idx[self.me_id as usize] = new_log_ent_index + 1;
-        self.broadcast_heartbeat();
         (new_log_ent_index, new_log_ent_term as i64, true)
     }
 
@@ -169,7 +230,7 @@ impl Raft for RaftStack {
                                         simplelog::info!("send heatbeat to {} success", peer.addr);
                                         self.match_idx[peer.id as usize] = prev_log_idx + append_size as i64;
                                         self.next_idx[peer.id as usize] = self.match_idx[peer.id as usize] + 1;
-
+                                        self.advance_commit_index_for_leader();
                                     } else {
                                         if response.get_ref().term > self.cur_term {
                                             self.change_role(NodeRole::Follower);
@@ -277,6 +338,7 @@ impl Raft for RaftStack {
             index += 1;
         }
 
+        self.advance_commit_index_for_follower(req.leader_commit);
         resp.term = self.cur_term;
         resp.success = true;
         resp
@@ -403,27 +465,23 @@ impl Raft for RaftStack {
                 self.tick_elec = 0;
             }
         }
-        if self.tick_count % 20 == 0 {
-            // send a test propose
-            self.propose(String::from("hello eraft in rust"));
-        }
+
         simplelog::info!("tick count {:?}", self.tick_count);
         if self.election_running {
             simplelog::info!("elec count {:?}", self.tick_elec);
         }
     }
 
-
-    fn apply_ch(&self) -> &SyncSender<String> {
+    fn apply_ch(&self) -> &SyncSender<ApplyMsg> {
         &self.apply_ch
     }
 
-    fn set_apply_ch(&mut self, apply_ch: SyncSender<String>) {
+    fn set_apply_ch(&mut self, apply_ch: SyncSender<ApplyMsg>) {
         self.apply_ch = apply_ch;
     }
 }
 
-fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<String>) -> RaftStack {
+fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>) -> RaftStack {
     let mut rng = rand::thread_rng();
     let random_election_timeout = rng.gen_range(elec_base..2*elec_base);
     let peer_size = prs.len();

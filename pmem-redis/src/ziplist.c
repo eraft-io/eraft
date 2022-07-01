@@ -119,6 +119,7 @@
  *        |             |          |       |       |     |
  *     zlbytes        zltail    entries   "2"     "5"   end
  *
+ * 压缩列表存储结构
  * The first 4 bytes represent the number 15, that is the number of bytes
  * the whole ziplist is composed of. The second 4 bytes are the offset
  * at which the last ziplist entry is found, that is 12, in fact the
@@ -179,6 +180,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+
+//
+// 压缩列表
+//
 
 #include <stdio.h>
 #include <stdlib.h>

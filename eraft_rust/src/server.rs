@@ -63,7 +63,7 @@ impl RaftService for RaftServiceImpl {
                  &self,
                    request: Request<CommandRequest>,
     ) -> Result<Response<CommandResponse>, Status> {
-        simplelog::info!("do command req from {:?} with {:?}", request.remote_addr(), request);
+        // simplelog::info!("do command req from {:?} with {:?}", request.remote_addr(), request);
         let mut raft_stack = self.f.lock().unwrap();
 
         let resp = CommandResponse{
@@ -71,14 +71,20 @@ impl RaftService for RaftServiceImpl {
             leader_id: raft_stack.get_leader_id() as i64,
             err_code: 0
         };
+    
+        let (idx, _, is_leader) = raft_stack.propose(request.into_inner().key);
 
-        let (idx, _, is_leader) = raft_stack.propose(String::from("hello eraft rust"));
         simplelog::info!("send log entry with idx {} to raft", idx);
+
 
         Ok(Response::new(resp))
     }
 
 }
+
+// ./target/debug/eraft_rust 0 '[::1]:8088'
+// ./target/debug/eraft_rust 1 '[::1]:8089'
+// ./target/debug/eraft_rust 2 '[::1]:8090'
 
 #[tokio::main]
 pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -96,20 +102,36 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
             addr: String::from("http://[::1]:8090")
         }           
     ];
-    let (tx, rx) = mpsc::sync_channel(2);
+    let (tx, rx) = mpsc::sync_channel(100);
 
     let raft_stack = RaftStack::new(sid, peers, 1, 5, tx);
     let addr = svr_addr.parse().unwrap();
 
     let raft_service = RaftServiceImpl::new(raft_stack);
     let raft_service_clone = raft_service.clone();
+    let raft_service_for_apply = raft_service.clone();
 
+    // tick
     thread::spawn(move || {
         loop {
             thread::sleep(Duration::from_millis(1000 as u64));
             let mut raft = raft_service_clone.f.lock().unwrap();
             raft.tick_run();
         }
+    });
+
+    // applier
+    thread::spawn(move || {
+        loop {
+            thread::sleep(Duration::from_millis(200 as u64));
+            let mut raft = raft_service_for_apply.f.lock().unwrap();
+            raft.applier();
+        }
+    });
+
+    thread::spawn(move || {
+        let received = rx.recv().unwrap();
+        println!("Got apply idx: {}", received.command_index);
     });
 
     simplelog::info!("RaftService server listening on {}", addr);
