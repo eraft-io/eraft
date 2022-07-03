@@ -23,11 +23,14 @@ func getRandstring(length int) string {
 	}
 	return rchar
 }
-func TestSlot(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		var testString = getRandstring(i)
-		t.Log(testString)
-		t.Log(cm.StrToSlot(testString))
-	}
 
+func TestSlot(t *testing.T) {
+	var sum_all uint64
+	for i := 1; i < 5000; i++ {
+		var testString = getRandstring(i)
+		//t.Log(testString)
+		var xhh3res = cm.StrToSlot(testString)
+		sum_all += xhh3res
+	}
+	t.Log(sum_all / 5000)
 }
