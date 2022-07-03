@@ -24,7 +24,6 @@ func CalFileCheckSumMD5(path string) [16]byte {
 		fmt.Println("Read file fail", err_read)
 		return md5_check_sum
 	}
-	//var md5_check_sum = md5.Sum(content)
 	md5_check_sum = md5.Sum(content)
 	return md5_check_sum
 }
