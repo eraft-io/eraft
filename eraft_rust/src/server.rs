@@ -130,8 +130,11 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
     });
 
     thread::spawn(move || {
-        let received = rx.recv().unwrap();
-        println!("Got apply idx: {}", received.command_index);
+        loop {
+            let received = rx.recv().unwrap();
+            println!("Got apply idx: {}", received.command_index);
+            println!("Got apply key: {:?}", received.command);
+        }
     });
 
     simplelog::info!("RaftService server listening on {}", addr);
