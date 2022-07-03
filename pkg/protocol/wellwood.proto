@@ -91,3 +91,29 @@ service MetaService {
     // for file block meta config manage
     rpc FileBlockMeta (FileBlockMetaConfigRequest) returns (FileBlockMetaConfigResponse);
 }
+
+message WriteFileBlockRequest {
+    string file_name = 1;
+    FileBlockMeta file_blocks_meta = 2;
+    bytes block_content = 3;
+}
+
+message WriteFileBlockResponse {
+    ErrCode err_code = 1;
+    int64 leader_id = 2;
+}
+
+message ReadFileBlockRequest {
+    string file_name = 1;
+    FileBlockMeta file_blocks_meta = 2;
+}
+
+message ReadFileBlockResponse {
+    bytes block_content = 1;
+}
+
+// for block server deal with file block read write
+service FileBlockService {
+    rpc WriteFileBlock (WriteFileBlockRequest) returns (WriteFileBlockResponse) {}
+    rpc ReadFileBlock (ReadFileBlockRequest) returns (ReadFileBlockResponse) {}
+}

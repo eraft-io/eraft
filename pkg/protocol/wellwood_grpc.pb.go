@@ -265,3 +265,125 @@ var MetaService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "wellwood.proto",
 }
+
+// FileBlockServiceClient is the client API for FileBlockService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type FileBlockServiceClient interface {
+	WriteFileBlock(ctx context.Context, in *WriteFileBlockRequest, opts ...grpc.CallOption) (*WriteFileBlockResponse, error)
+	ReadFileBlock(ctx context.Context, in *ReadFileBlockRequest, opts ...grpc.CallOption) (*ReadFileBlockResponse, error)
+}
+
+type fileBlockServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewFileBlockServiceClient(cc grpc.ClientConnInterface) FileBlockServiceClient {
+	return &fileBlockServiceClient{cc}
+}
+
+func (c *fileBlockServiceClient) WriteFileBlock(ctx context.Context, in *WriteFileBlockRequest, opts ...grpc.CallOption) (*WriteFileBlockResponse, error) {
+	out := new(WriteFileBlockResponse)
+	err := c.cc.Invoke(ctx, "/protocol.FileBlockService/WriteFileBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fileBlockServiceClient) ReadFileBlock(ctx context.Context, in *ReadFileBlockRequest, opts ...grpc.CallOption) (*ReadFileBlockResponse, error) {
+	out := new(ReadFileBlockResponse)
+	err := c.cc.Invoke(ctx, "/protocol.FileBlockService/ReadFileBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// FileBlockServiceServer is the server API for FileBlockService service.
+// All implementations must embed UnimplementedFileBlockServiceServer
+// for forward compatibility
+type FileBlockServiceServer interface {
+	WriteFileBlock(context.Context, *WriteFileBlockRequest) (*WriteFileBlockResponse, error)
+	ReadFileBlock(context.Context, *ReadFileBlockRequest) (*ReadFileBlockResponse, error)
+	mustEmbedUnimplementedFileBlockServiceServer()
+}
+
+// UnimplementedFileBlockServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedFileBlockServiceServer struct {
+}
+
+func (UnimplementedFileBlockServiceServer) WriteFileBlock(context.Context, *WriteFileBlockRequest) (*WriteFileBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WriteFileBlock not implemented")
+}
+func (UnimplementedFileBlockServiceServer) ReadFileBlock(context.Context, *ReadFileBlockRequest) (*ReadFileBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadFileBlock not implemented")
+}
+func (UnimplementedFileBlockServiceServer) mustEmbedUnimplementedFileBlockServiceServer() {}
+
+// UnsafeFileBlockServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to FileBlockServiceServer will
+// result in compilation errors.
+type UnsafeFileBlockServiceServer interface {
+	mustEmbedUnimplementedFileBlockServiceServer()
+}
+
+func RegisterFileBlockServiceServer(s grpc.ServiceRegistrar, srv FileBlockServiceServer) {
+	s.RegisterService(&FileBlockService_ServiceDesc, srv)
+}
+
+func _FileBlockService_WriteFileBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WriteFileBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileBlockServiceServer).WriteFileBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protocol.FileBlockService/WriteFileBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileBlockServiceServer).WriteFileBlock(ctx, req.(*WriteFileBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FileBlockService_ReadFileBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadFileBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileBlockServiceServer).ReadFileBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protocol.FileBlockService/ReadFileBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileBlockServiceServer).ReadFileBlock(ctx, req.(*ReadFileBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// FileBlockService_ServiceDesc is the grpc.ServiceDesc for FileBlockService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var FileBlockService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "protocol.FileBlockService",
+	HandlerType: (*FileBlockServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "WriteFileBlock",
+			Handler:    _FileBlockService_WriteFileBlock_Handler,
+		},
+		{
+			MethodName: "ReadFileBlock",
+			Handler:    _FileBlockService_ReadFileBlock_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "wellwood.proto",
+}
