@@ -1,16 +1,92 @@
 package clientsdk
 
+import (
+	"bufio"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+
+	block_server "github.com/eraft-io/eraft/pkg/blockserver"
+	common "github.com/eraft-io/eraft/pkg/common"
+	meta_server "github.com/eraft-io/eraft/pkg/metaserver"
+
+	pb "github.com/eraft-io/eraft/pkg/protocol"
+)
+
 type ClientSdk struct {
+	metaSvrCli  *meta_server.MetaServerClientEnd
+	blockSvcCli *block_server.BlockServerClientEnd
 }
 
 func (c *ClientSdk) UploadFile(localPath string) error {
-	// 1.split file to blocks
-
-	// 2.call ServerGroupMeta query with servers
-
-	// 3.call WriteFileBlock write to block server
-
-	// 4.call FileBlockMeta write file meta data to metaserver
+	f, err := os.Open(localPath)
+	if err != nil {
+		return err
+	}
+	fileReader := bufio.NewReader(f)
+	blockBuf := make([]byte, 1024*1024*1)
+	fileBlockMetas := []*pb.FileBlockMeta{}
+	index := 0
+	for {
+		n, err := fileReader.Read(blockBuf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+		// read last file block
+		if n == 0 {
+			break
+		}
+		fmt.Println(len(blockBuf[:n]))
+		// query server group meta
+		serverGroupMetaReq := pb.ServerGroupMetaConfigRequest{
+			OpType: pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY,
+		}
+		serverGroupMetaResp, err := c.metaSvrCli.GetMetaSvrCli().ServerGroupMeta(context.Background(), &serverGroupMetaReq)
+		if err != nil {
+			return err
+		}
+		blockStr := ""
+		if n < 64 {
+			blockStr = string(blockBuf[:n])
+		} else {
+			blockStr = string(blockBuf[:64])
+		}
+		slot := common.StrToSlot(blockStr)
+		blockMeta := &pb.FileBlockMeta{
+			BlockId:     int64(index),
+			BlockSlotId: int64(slot),
+		}
+		slotsToGroupArr := serverGroupMetaResp.ServerGroupMetas.Slots
+		serverGroupAddrs := serverGroupMetaResp.ServerGroupMetas.ServerGroups[slotsToGroupArr[slot]]
+		c.blockSvcCli = block_server.MakeBlockServerClient(serverGroupAddrs)
+		fileBlockRequest := pb.WriteFileBlockRequest{
+			FileName:       localPath,
+			FileBlocksMeta: blockMeta,
+			BlockContent:   blockBuf[:n],
+		}
+		writeBlockResp, err := c.blockSvcCli.GetBlockSvrCli().WriteFileBlock(context.Background(), &fileBlockRequest)
+		if err != nil {
+			return err
+		}
+		if writeBlockResp.ErrCode != pb.ErrCode_NO_ERR {
+			return errors.New("")
+		}
+		fileBlockMetas = append(fileBlockMetas, blockMeta)
+		index += 1
+	}
+	fileBlockMetaConfigRequest := &pb.FileBlockMetaConfigRequest{
+		OpType:         pb.FileBlockMetaConfigOpType_OP_ADD_FILE_BLOCK_META,
+		FileBlocksMeta: fileBlockMetas,
+	}
+	fileBlockMetasWriteResp, err := c.metaSvrCli.GetMetaSvrCli().FileBlockMeta(context.Background(), fileBlockMetaConfigRequest)
+	if err != nil {
+		return err
+	}
+	if fileBlockMetasWriteResp.ErrCode != pb.ErrCode_NO_ERR {
+		return errors.New("")
+	}
 	return nil
 }
 
