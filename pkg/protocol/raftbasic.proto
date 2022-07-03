@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "../protocol";
+
+//
+// raft basic request vote  definition
+//
+message RequestVoteRequest {
+    int64 term = 1;
+    int64 candidate_id = 2;
+    int64 last_log_index = 3;
+    int64 last_log_term = 4;
+}
+
+//
+// raft basic request vote response
+//
+message RequestVoteResponse {
+    int64 term = 1;
+    bool  vote_granted = 2;
+}
+
+//
+// the log entry type
+// 1.normal -> like put, get key
+// 2.conf change -> cluster config change
+//
+enum EntryType {
+    EntryNormal = 0;
+    EntryConfChange = 1;
+}
+
+//
+// raft basic log entry definition
+//
+message Entry {
+    EntryType entry_type = 1;
+    uint64    term = 2;
+    int64     index = 3;
+    bytes     data = 4;
+}
+
+// 
+// raft basic append entries request definition
+//
+message AppendEntriesRequest {
+    int64    term = 1;
+    int64    leader_id = 2;
+    int64    prev_log_index = 3;
+    int64    prev_log_term = 4;
+    int64    leader_commit = 5;
+    repeated Entry entries = 6;
+}
+
+//
+// raft basic append entries response definition
+//
+message AppendEntriesResponse {
+    int64  term = 1;
+    bool  success = 2;
+    int64 conflict_index = 3;
+    int64 conflict_term = 4;
+}
+
+//
+// apply message definition
+//
+message ApplyMsg {
+    bool   CommandValid  = 1;
+    bytes  Command  = 2;
+    int64  CommandTerm = 3;
+    int64  CommandIndex = 4;
+    bool   SnapshotValid = 5;
+    bytes  Snapshot = 6;
+    int64  SnapshotTerm = 7;
+    int64  SnapshotIndex = 8;
+}
+
+message InstallSnapshotRequest {
+    int64 term =                1;
+    int64 leader_id =           2;
+    int64 last_included_index = 3;
+    int64 last_included_term  = 4;
+    bytes data                = 5;
+}
+
+message InstallSnapshotResponse {
+    int64 term = 1; 
+}
+
+
+// 数据服务是高可用的，raft 相关服务
+service RaftService {
+    rpc RequestVote (RequestVoteRequest) returns (RequestVoteResponse) {}
+    rpc AppendEntries (AppendEntriesRequest) returns (AppendEntriesResponse) {}
+    rpc Snapshot (InstallSnapshotRequest) returns (InstallSnapshotResponse) {}
+}

@@ -1,3 +1,0 @@
-[submodule "deps/pmdk"]
-	path = deps/pmdk
-	url = https://github.com/pmem/pmdk

@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "../protocol";
+
+enum ErrCode {
+    NO_ERR = 0;
+    META_SERVER_DOWN_ERR = 1;
+    FILE_EXISTS_ERR = 2;
+    FILE_DOWNLOAD_ERR = 3;
+}
+
+message FileUploadRequest {
+  int64 file_length = 1;
+  bytes file_content = 2;
+  bool  override_write = 3;   
+  string file_name = 4;
+}
+
+message FileUploadResponse {
+  ErrCode err_code = 1;
+}
+
+message FileDownloadRequest {
+  string file_name = 1;
+}
+
+message FileDownloadResponse {
+  ErrCode err_code = 1;
+  bytes file_content = 2;
+}
+
+// for sdk upload and download file
+service FileService {
+  rpc Upload(FileUploadRequest) returns (FileUploadResponse);
+  rpc Download(FileDownloadRequest) returns (FileDownloadResponse);
+}
+
+enum ConfigServerGroupMetaOpType {
+   OP_SERVER_GROUP_JOIN = 0;
+   OP_SERVER_GROUP_LEAVE = 1;
+   OP_SERVER_GROUP_QUERY = 2;
+}
+
+message ServerGroupMetaConfigRequest {
+   map<int64, string> server_groups = 1; 
+   repeated int64 gids = 2;
+   int64 config_version = 3;
+   ConfigServerGroupMetaOpType op_type = 4;
+}
+
+message ServerGroupMetas {
+    int64 config_version = 1;
+    repeated int64 slots = 2;
+    map<int64, string> server_groups = 3;
+}
+
+message ServerGroupMetaConfigResponse {
+    ErrCode err_code = 1;
+    ServerGroupMetas server_group_metas = 2;
+    int64 leader_id = 3;
+}
+
+message FileBlockMeta {
+    int64 block_id = 1;
+    int64 block_slot_id = 2;
+}
+
+enum FileBlockMetaConfigOpType {
+    OP_ADD_FILE_BLOCK_META = 0;  
+    OP_QUERY_FILE_BLOCK_META = 1;  
+}
+
+message FileBlockMetaConfigRequest {
+    string file_name = 1;
+    repeated FileBlockMeta file_blocks_meta = 2;
+    FileBlockMetaConfigOpType op_type = 3;
+}
+
+message FileBlockMetaConfigResponse {
+    ErrCode err_code = 1;
+    repeated FileBlockMeta file_blocks_meta = 2;
+    int64 leader_id = 3;
+}
+
+// for meta service
+service MetaService {
+    // for multi-raft server group config manage
+    rpc ServerGroupMeta (ServerGroupMetaConfigRequest) returns (ServerGroupMetaConfigResponse);
+    // for file block meta config manage
+    rpc FileBlockMeta (FileBlockMetaConfigRequest) returns (FileBlockMetaConfigResponse);
+}
