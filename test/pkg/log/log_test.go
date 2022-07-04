@@ -12,38 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package raft
+package test
 
 import (
-	"fmt"
-	"math/rand"
-	"time"
+	"testing"
+
+	log "github.com/eraft-io/eraft/pkg/log"
 )
 
-func RandIntRange(min int, max int) int {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	return r1.Intn(max-min) + int(min)
+func TestLogInfo(t *testing.T) {
+	Log := log.MainLogger
+	Log.Info().Msg("This is Info!")
 }
 
-func MakeAnRandomElectionTimeout(base int) int {
-	return RandIntRange(base, 2*base)
-}
-
-func PrintDebugLog(msg string) {
-	fmt.Printf("%s %s \n", time.Now().Format("2006-01-02 15:04:05"), msg)
-}
-
-func Min(x, y int) int {
-	if x > y {
-		return y
-	}
-	return x
-}
-
-func Max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
+func TestLogInit(t *testing.T) {
+	Log := log.MainLogger
+	Log.Debug().Msg("This is debug msg!")
 }

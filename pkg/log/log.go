@@ -12,38 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package raft
+package log
 
 import (
-	"fmt"
-	"math/rand"
-	"time"
+	"os"
+	"path/filepath"
+
+	log "github.com/phuslu/log"
 )
 
-func RandIntRange(min int, max int) int {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	return r1.Intn(max-min) + int(min)
-}
+var MainLogger *log.Logger
 
-func MakeAnRandomElectionTimeout(base int) int {
-	return RandIntRange(base, 2*base)
-}
-
-func PrintDebugLog(msg string) {
-	fmt.Printf("%s %s \n", time.Now().Format("2006-01-02 15:04:05"), msg)
-}
-
-func Min(x, y int) int {
-	if x > y {
-		return y
+func init() {
+	MainLogger = &log.Logger{
+		Level: log.ParseLevel("debug"),
+		Writer: &log.FileWriter{
+			Filename: "./main.log",
+			MaxSize:  500 * 1024 * 1024,
+			Cleaner: func(filename string, maxBackups int, matches []os.FileInfo) {
+				var dir = filepath.Dir(filename)
+				var total int64
+				for i := len(matches) - 1; i >= 0; i-- {
+					total += matches[i].Size()
+					if total > 5*1024*1024*1024 {
+						os.Remove(filepath.Join(dir, matches[i].Name()))
+					}
+				}
+			},
+		},
 	}
-	return x
-}
-
-func Max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
 }
