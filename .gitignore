@@ -5,3 +5,4 @@ vendor
 deps
 pmem-redis.tar.gz
 eraft_rust/target
+.idea

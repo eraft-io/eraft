@@ -7,7 +7,6 @@ const SLOT_NUM = 1024
 // @param payload random
 // @return uint16  slot value (0~1023)
 //
-func StrToSlot(payload string) uint16 {
-
-	return 0
+func StrToSlot(payload string) uint64 {
+	return XXH3_64bits([]byte(payload)) % 1024
 }
