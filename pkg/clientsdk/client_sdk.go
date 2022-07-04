@@ -18,12 +18,13 @@ import (
 	"bufio"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	block_server "github.com/eraft-io/eraft/pkg/blockserver"
 	common "github.com/eraft-io/eraft/pkg/common"
+	"github.com/eraft-io/eraft/pkg/consts"
 	meta_server "github.com/eraft-io/eraft/pkg/metaserver"
 
 	pb "github.com/eraft-io/eraft/pkg/protocol"
@@ -40,7 +41,7 @@ func (c *ClientSdk) UploadFile(localPath string) error {
 		return err
 	}
 	fileReader := bufio.NewReader(f)
-	blockBuf := make([]byte, 1024*1024*1)
+	blockBuf := make([]byte, consts.FILE_BLOCK_SIZE)
 	fileBlockMetas := []*pb.FileBlockMeta{}
 	index := 0
 	for {
@@ -52,7 +53,6 @@ func (c *ClientSdk) UploadFile(localPath string) error {
 		if n == 0 {
 			break
 		}
-		fmt.Println(len(blockBuf[:n]))
 		// query server group meta
 		serverGroupMetaReq := pb.ServerGroupMetaConfigRequest{
 			OpType: pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY,
@@ -74,7 +74,8 @@ func (c *ClientSdk) UploadFile(localPath string) error {
 		}
 		slotsToGroupArr := serverGroupMetaResp.ServerGroupMetas.Slots
 		serverGroupAddrs := serverGroupMetaResp.ServerGroupMetas.ServerGroups[slotsToGroupArr[slot]]
-		c.blockSvcCli = block_server.MakeBlockServerClient(serverGroupAddrs)
+		serverAddrArr := strings.Split(serverGroupAddrs, ",")
+		c.blockSvcCli = block_server.MakeBlockServerClient(serverAddrArr[0])
 		fileBlockRequest := pb.WriteFileBlockRequest{
 			FileName:       localPath,
 			FileBlocksMeta: blockMeta,
@@ -86,6 +87,21 @@ func (c *ClientSdk) UploadFile(localPath string) error {
 		}
 		if writeBlockResp.ErrCode != pb.ErrCode_NO_ERR {
 			return errors.New("")
+		}
+		if writeBlockResp.ErrCode == pb.ErrCode_WRONG_LEADER_ERR {
+			c.blockSvcCli = block_server.MakeBlockServerClient(serverAddrArr[writeBlockResp.LeaderId])
+			fileBlockRequest := pb.WriteFileBlockRequest{
+				FileName:       localPath,
+				FileBlocksMeta: blockMeta,
+				BlockContent:   blockBuf[:n],
+			}
+			writeBlockResp, err := c.blockSvcCli.GetBlockSvrCli().WriteFileBlock(context.Background(), &fileBlockRequest)
+			if err != nil {
+				return err
+			}
+			if writeBlockResp.ErrCode != pb.ErrCode_NO_ERR {
+				return errors.New("")
+			}
 		}
 		fileBlockMetas = append(fileBlockMetas, blockMeta)
 		index += 1

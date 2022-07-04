@@ -15,3 +15,5 @@
 package consts
 
 const SLOT_NUM = 1024
+
+const FILE_BLOCK_SIZE = 1024 * 1024 * 1
