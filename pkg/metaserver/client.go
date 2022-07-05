@@ -12,8 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package metaserver
 
-const SLOT_NUM = 1024
+import (
+	pb "github.com/eraft-io/eraft/pkg/protocol"
+)
 
-const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+type MetaServerClientEnd struct {
+	metaServiceCli *pb.MetaServiceClient
+}
+
+func (m *MetaServerClientEnd) InitRpcCli() {
+	// TODO: find meta server leader and make a rpc conn
+}
+
+func (m *MetaServerClientEnd) GetMetaSvrCli() pb.MetaServiceClient {
+	return *m.metaServiceCli
+}

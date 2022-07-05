@@ -12,8 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package common
 
-const SLOT_NUM = 1024
+import (
+	"testing"
 
-const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+	cm "github.com/eraft-io/eraft/pkg/common"
+)
+
+func TestCheckSUm(t *testing.T) {
+	t.Log(cm.CalFileCheckSumMD5("/Users/luooo/Desktop/CheckSumTest/a.txt"))
+}
+
+//[162 143 11 146 76 170 68 124 156 86 132 161 245 48 68 236]

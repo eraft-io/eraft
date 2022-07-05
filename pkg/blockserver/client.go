@@ -12,8 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package blockserver
 
-const SLOT_NUM = 1024
+import (
+	"fmt"
 
-const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+	pb "github.com/eraft-io/eraft/pkg/protocol"
+	"google.golang.org/grpc"
+)
+
+type BlockServerClientEnd struct {
+	blockServiceCli *pb.FileBlockServiceClient
+}
+
+func MakeBlockServerClient(addr string) *BlockServerClientEnd {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		// TODO: err log
+		fmt.Errorf(err.Error())
+	}
+	blockSvrCli := pb.NewFileBlockServiceClient(conn)
+	return &BlockServerClientEnd{
+		blockServiceCli: &blockSvrCli,
+	}
+}
+
+func (b *BlockServerClientEnd) GetBlockSvrCli() pb.FileBlockServiceClient {
+	return *b.blockServiceCli
+}

@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package common
 
-const SLOT_NUM = 1024
+import "github.com/eraft-io/eraft/pkg/consts"
 
-const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+//
+// calculate payload hash slot
+// @param payload random
+// @return uint16  slot value (0~1023)
+//
+func StrToSlot(payload string) uint64 {
+	return XXH3_64bits([]byte(payload)) % consts.SLOT_NUM
+}

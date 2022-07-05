@@ -1,3 +1,5 @@
+package clientsdk
+
 // Copyright [2022] [WellWood] [wellwood-x@googlegroups.com]
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+import (
+	"testing"
 
-const SLOT_NUM = 1024
+	client "github.com/eraft-io/eraft/pkg/clientsdk"
+)
 
-const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+func TestUpload(t *testing.T) {
+	clientSdk := client.ClientSdk{}
+	clientSdk.UploadFile("/Users/colin/Desktop/full_course_reader.pdf")
+}

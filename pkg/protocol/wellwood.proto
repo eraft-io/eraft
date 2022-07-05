@@ -9,6 +9,7 @@ enum ErrCode {
     META_SERVER_DOWN_ERR = 1;
     FILE_EXISTS_ERR = 2;
     FILE_DOWNLOAD_ERR = 3;
+    WRONG_LEADER_ERR = 4;
 }
 
 message FileUploadRequest {
