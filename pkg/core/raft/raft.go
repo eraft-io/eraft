@@ -141,15 +141,8 @@ func (raft *Raft) Ticker() {
 	}
 }
 
-// change raft node's role to new role
-func (raft *Raft) ChangeRole(newrole RAFTROLE) {
-	if raft.role == newrole {
-		return
-	}
-	raft.role = newrole
-	fmt.Printf("node's role change to -> %s\n", RoleToString(newrole))
-}
-
+// Applier() Write the commited message to the applyCh channel
+// and update lastApplied
 func (raft *Raft) Applier() {
 
 }
@@ -198,6 +191,122 @@ func (raft *Raft) ReplicatorOneRound(peer *RaftClientEnd) {
 	}
 }
 
-func (rf *Raft) IsKilled() bool {
-	return atomic.LoadInt32(&rf.dead) == 1
+// HandleRequestVote  handle request vote from other node
+func (raft *Raft) HandleRequestVote(req *pb.RequestVoteRequest, resp *pb.RequestVoteResponse) {
+
+}
+
+// HandleRequestVote  handle append entries from other node
+func (raft *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.AppendEntriesResponse) {
+}
+
+// Append append a new command to it's logs
+func (raft *Raft) Append(command []byte) *pb.Entry {
+	return nil
+}
+
+// Propose the interface to the appplication propose a operation
+func (raft *Raft) Propose(payload []byte) (int, int, bool) {
+	return 1, 1, true
+}
+
+// Election  make a new election
+//
+func (raft *Raft) StartNewElection() {
+}
+
+// install snapshot from leader
+func (raft *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, response *pb.InstallSnapshotResponse) {
+
+}
+
+func (raft *Raft) IsKilled() bool {
+	return atomic.LoadInt32(&raft.dead) == 1
+}
+
+func (raft *Raft) GetFirstLogEnt() *pb.Entry {
+	return nil
+}
+
+func (raft *Raft) SwitchRaftNodeRole(role RAFTROLE) {
+	return
+}
+
+func (raft *Raft) IncrCurrentTerm() {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	raft.curTerm += 1
+}
+
+func (raft *Raft) GetState() (int, bool) {
+	raft.mu.RLock()
+	defer raft.mu.RUnlock()
+	return int(raft.curTerm), raft.role == LEADER
+}
+
+func (raft *Raft) IncrGrantedVotes() {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	raft.grantedVotes += 1
+}
+
+func (raft *Raft) ReInitLog() {
+
+}
+
+func (raft *Raft) GetLeaderId() int64 {
+	raft.mu.RLock()
+	defer raft.mu.RUnlock()
+	return raft.leaderId
+}
+
+func (raft *Raft) GetLogCount() int {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	return raft.logs.MemLogItemCount()
+}
+
+// MatchLog is log matched
+//
+func (raft *Raft) MatchLog(term, index int64) bool {
+	return true
+}
+
+// change raft node's role to new role
+func (raft *Raft) ChangeRole(newrole RAFTROLE) {
+	if raft.role == newrole {
+		return
+	}
+	raft.role = newrole
+	fmt.Printf("node's role change to -> %s\n", RoleToString(newrole))
+}
+
+func (raft *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
+	return true
+}
+
+// take a snapshot
+func (raft *Raft) Snapshot(index int, snapshot []byte) {
+}
+
+func (raft *Raft) ReadSnapshot() []byte {
+	return nil
+}
+
+func (raft *Raft) advanceCommitIndexForLeader() {
+}
+
+func (raft *Raft) advanceCommitIndexForFollower(leaderCommit int) {
+}
+
+// BroadcastAppend broadcast append to peers
+func (raft *Raft) BroadcastAppend() {
+}
+
+// BroadcastHeartbeat broadcast heartbeat to peers
+func (raft *Raft) BroadcastHeartbeat() {
+}
+
+// CloseEndsConn close rpc client connect
+func (raft *Raft) CloseEndsConn() {
 }
