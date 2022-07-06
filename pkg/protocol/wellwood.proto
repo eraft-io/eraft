@@ -10,6 +10,8 @@ enum ErrCode {
     FILE_EXISTS_ERR = 2;
     FILE_DOWNLOAD_ERR = 3;
     WRONG_LEADER_ERR = 4;
+    MARSHAL_SERVER_GROUP_META_REQ_ERR = 5;
+    RPC_CALL_TIMEOUT_ERR = 6;
 }
 
 message FileUploadRequest {
