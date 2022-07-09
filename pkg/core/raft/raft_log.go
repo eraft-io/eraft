@@ -23,7 +23,8 @@ type RaftLog struct {
 	firstIdx uint64
 	lastIdx  uint64
 	// appliedIdx int64
-	items []*pb.Entry ``
+	items    []*pb.Entry
+	snapShot []byte
 }
 
 type LogOp interface {
@@ -64,11 +65,21 @@ func (raftlog *RaftLog) MemLogItemCount() int {
 }
 
 func (raftlog *RaftLog) EraseMemBefore(idx int64) []*pb.Entry {
-	return raftlog.items[idx:]
+	raftlog.items = raftlog.items[idx:]
+	return raftlog.items
 }
 
 func (raftlog *RaftLog) EraseMemAfter(idx int64) []*pb.Entry {
-	return raftlog.items[:idx]
+	raftlog.items = raftlog.items[:idx+1]
+	return raftlog.items
+}
+
+func (raftlog *RaftLog) GetMemBefore(idx int64) []*pb.Entry {
+	return raftlog.items[:idx+1]
+}
+
+func (raftlog *RaftLog) GetMemAfter(idx int64) []*pb.Entry {
+	return raftlog.items[idx:]
 }
 
 func (raftlog *RaftLog) GetMemRange(lo, hi int64) []*pb.Entry {
