@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package test
+package engine
 
-import (
-	"testing"
+import "github.com/eraft-io/eraft/pkg/log"
 
-	log "github.com/eraft-io/eraft/pkg/log"
-)
-
-func TestLogInfo(t *testing.T) {
-	Log := log.MainLogger
-	Log.Info().Msg("This is Info!")
+type KvStore interface {
+	Put(key []byte, val []byte) error
+	Get(key []byte) ([]byte, error)
+	Del(key []byte) error
+	GetPrefixRangeKvs(prefix []byte) ([][]byte, [][]byte, error)
 }
 
-func TestLogInit(t *testing.T) {
-	Log := log.MainLogger
-	Log.Debug().Msg("This is debug msg!")
+func KvStoreFactory(engineName string, path string) KvStore {
+	switch engineName {
+	case "leveldb":
+		ldb, err := MakeLevelDBKvStore(path)
+		if err != nil {
+			log.MainLogger.Error().Msgf("make leveldb kv store err: %s", err.Error())
+			panic(err)
+		}
+		return ldb
+	}
+	return nil
 }
