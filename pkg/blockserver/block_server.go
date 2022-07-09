@@ -16,25 +16,51 @@ package blockserver
 
 import (
 	"context"
+	"sync"
 
+	eng "github.com/eraft-io/eraft/pkg/engine"
+	"github.com/eraft-io/eraft/pkg/log"
+
+	"github.com/eraft-io/eraft/pkg/core/raft"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 )
 
 type BlockServer struct {
+	mu          sync.RWMutex
+	rf          *raft.Raft
+	applyCh     chan *pb.ApplyMsg
+	logEng      eng.KvStore
+	stopApplyCh chan interface{}
 	pb.UnimplementedRaftServiceServer
 	pb.UnimplementedFileBlockServiceServer
 }
 
 func (s *BlockServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb.RequestVoteResponse, error) {
-	return nil, nil
+	resp := &pb.RequestVoteResponse{}
+	log.MainLogger.Debug().Msgf("handle request vote req: %s", req.String())
+	s.rf.HandleRequestVote(req, resp)
+	log.MainLogger.Debug().Msgf("send request vote resp: %s", resp.String())
+	return resp, nil
 }
 
 func (s *BlockServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
-	return nil, nil
+	resp := &pb.AppendEntriesResponse{}
+	log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
+	s.rf.HandleAppendEntries(req, resp)
+	log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
+	return resp, nil
 }
 
 func (s *BlockServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
-	return nil, nil
+	resp := &pb.InstallSnapshotResponse{}
+	log.MainLogger.Debug().Msgf("handle snapshot: %s", req.String())
+	s.rf.HandleInstallSnapshot(req, resp)
+	log.MainLogger.Debug().Msgf("handle snapshot resp: %s", resp.String())
+	return resp, nil
+}
+
+func (s *BlockServer) StopAppling() {
+	close(s.applyCh)
 }
 
 func (s *BlockServer) WriteFileBlock(ctx context.Context, req *pb.WriteFileBlockRequest) (*pb.WriteFileBlockResponse, error) {

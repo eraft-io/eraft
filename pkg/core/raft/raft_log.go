@@ -70,7 +70,7 @@ func (raftlog *RaftLog) EraseMemBefore(idx int64) []*pb.Entry {
 }
 
 func (raftlog *RaftLog) EraseMemAfter(idx int64) []*pb.Entry {
-	raftlog.items = raftlog.items[:idx+1]
+	raftlog.items = raftlog.items[:idx]
 	return raftlog.items
 }
 

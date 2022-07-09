@@ -30,12 +30,32 @@ import (
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 )
 
-type ClientSdk struct {
+type Client struct {
 	metaSvrCli  *meta_server.MetaServerClientEnd
 	blockSvcCli *block_server.BlockServerClientEnd
 }
 
-func (c *ClientSdk) UploadFile(localPath string) error {
+func (c *Client) New(metaSvrAddrs string, accessKey string, accessSecret string) {
+
+}
+
+func (c *Client) ListBuckets() ([]*pb.Bucket, error) {
+	return nil, nil
+}
+
+func (c *Client) CreateBucket(name string) error {
+	return nil
+}
+
+func (c *Client) DeleteBucket() error {
+	return nil
+}
+
+func (c *Client) Bucket(name string) (*pb.Bucket, error) {
+	return nil, nil
+}
+
+func (c *Client) uploadFile(localPath string) error {
 	f, err := os.Open(localPath)
 	if err != nil {
 		return err
@@ -120,11 +140,11 @@ func (c *ClientSdk) UploadFile(localPath string) error {
 	return nil
 }
 
-func (c *ClientSdk) DownloadFile(path string) ([]byte, error) {
+func (c *Client) downloadFile(remotePath string, localFilePath string) error {
 	//1.FileBlockMeta find file block meta
 
 	//2.call ServerGroupMeta query with servers
 
 	//3.call ReadFileBlock to read all file blocks
-	return nil, nil
+	return nil
 }

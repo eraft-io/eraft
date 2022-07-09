@@ -15,8 +15,7 @@
 package blockserver
 
 import (
-	"fmt"
-
+	"github.com/eraft-io/eraft/pkg/log"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 	"google.golang.org/grpc"
 )
@@ -28,8 +27,7 @@ type BlockServerClientEnd struct {
 func MakeBlockServerClient(addr string) *BlockServerClientEnd {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		// TODO: err log
-		fmt.Errorf(err.Error())
+		log.MainLogger.Error().Msgf("make connect block server %s err %s", addr, err.Error())
 	}
 	blockSvrCli := pb.NewFileBlockServiceClient(conn)
 	return &BlockServerClientEnd{

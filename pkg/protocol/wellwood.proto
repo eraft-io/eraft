@@ -12,6 +12,8 @@ enum ErrCode {
     WRONG_LEADER_ERR = 4;
     MARSHAL_SERVER_GROUP_META_REQ_ERR = 5;
     RPC_CALL_TIMEOUT_ERR = 6;
+    PUT_BUCKET_TO_ENG_ERR = 7;
+    DEL_BUCKET_FROM_ENG_ERR = 8;
 }
 
 message FileUploadRequest {
@@ -34,10 +36,38 @@ message FileDownloadResponse {
   bytes file_content = 2;
 }
 
+message AddBucketRequest {
+  string bucket_name = 1;
+}
+
+message ListBucketRequest {
+  bytes context = 1;
+}
+
+message DelBucketRequest {
+  string bucket_id = 1;
+}
+
+message BucketOpResponse {
+  ErrCode err_code = 1;
+}
+
+message ListBucketsResponse {
+  repeated Bucket buckets = 1;
+}
+
+message Bucket {
+  string bucket_id = 1;
+  string bucket_name = 2;
+}
+
 // for sdk upload and download file
 service FileService {
   rpc Upload(FileUploadRequest) returns (FileUploadResponse);
   rpc Download(FileDownloadRequest) returns (FileDownloadResponse);
+  rpc AddBucket(AddBucketRequest) returns (BucketOpResponse);
+  rpc DelBucket(DelBucketRequest) returns (BucketOpResponse);
+  rpc ListBuckets(ListBucketRequest) returns (ListBucketsResponse);
 }
 
 enum ConfigServerGroupMetaOpType {

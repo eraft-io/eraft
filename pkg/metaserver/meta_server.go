@@ -18,8 +18,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
+
+	common "github.com/eraft-io/eraft/pkg/common"
+	eng "github.com/eraft-io/eraft/pkg/engine"
 
 	"github.com/eraft-io/eraft/pkg/core/raft"
 	"github.com/eraft-io/eraft/pkg/log"
@@ -27,27 +31,29 @@ import (
 )
 
 type MetaServer struct {
-	mu          sync.RWMutex
+	mu          sync.Mutex
 	rf          *raft.Raft
 	applyCh     chan *pb.ApplyMsg
 	notifyChans map[int64]chan *pb.ServerGroupMetaConfigResponse
+	metaEng     eng.KvStore
 	stopApplyCh chan interface{}
 	pb.UnimplementedRaftServiceServer
 	pb.UnimplementedMetaServiceServer
 }
 
-func MakeMetaServer(nodes map[int]string, nodeId int) *MetaServer {
+func MakeMetaServer(nodes map[int]string, nodeId int, dataPath string) *MetaServer {
 	clientEnds := []*raft.RaftClientEnd{}
 	for nodeId, nodeAddr := range nodes {
 		newEnd := raft.MakeRaftClientEnd(nodeAddr, uint64(nodeId))
 		clientEnds = append(clientEnds, newEnd)
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
-
 	newRf := raft.MakeRaft(clientEnds, nodeId, newApplyCh, 500, 1500)
+	metaStorage := eng.KvStoreFactory("leveldb", fmt.Sprintf("%s/%d", dataPath, nodeId))
 	metaServer := &MetaServer{
 		rf:          newRf,
 		applyCh:     newApplyCh,
+		metaEng:     metaStorage,
 		notifyChans: make(map[int64]chan *pb.ServerGroupMetaConfigResponse),
 	}
 	metaServer.stopApplyCh = make(chan interface{})
@@ -91,6 +97,46 @@ func (s *MetaServer) getRespNotifyChan(logIndex int64) chan *pb.ServerGroupMetaC
 	return s.notifyChans[logIndex]
 }
 
+func (s *MetaServer) AddBucket(ctx context.Context, req *pb.AddBucketRequest) (*pb.BucketOpResponse, error) {
+	resp := pb.BucketOpResponse{}
+	bucketId := common.GenGoogleUUID()
+	bucket := &pb.Bucket{
+		BucketId:   bucketId,
+		BucketName: req.BucketName,
+	}
+	bucketEncodeKey := EncodeBucketKey(bucketId)
+	bucketEncodeVal := EncodeBucket(bucket)
+	if err := s.metaEng.Put(bucketEncodeKey, bucketEncodeVal); err != nil {
+		resp.ErrCode = pb.ErrCode_PUT_BUCKET_TO_ENG_ERR
+	}
+	resp.ErrCode = pb.ErrCode_NO_ERR
+	return &resp, nil
+}
+
+func (s *MetaServer) DelBucket(ctx context.Context, req *pb.DelBucketRequest) (*pb.BucketOpResponse, error) {
+	resp := pb.BucketOpResponse{}
+	bucketEncodeKey := EncodeBucketKey(req.BucketId)
+	if err := s.metaEng.Del(bucketEncodeKey); err != nil {
+		resp.ErrCode = pb.ErrCode_DEL_BUCKET_FROM_ENG_ERR
+	}
+	resp.ErrCode = pb.ErrCode_NO_ERR
+	return &resp, nil
+}
+
+func (s *MetaServer) ListBuckets(ctx context.Context, in *pb.ListBucketRequest) (*pb.ListBucketsResponse, error) {
+	resp := pb.ListBucketsResponse{}
+	_, vals, err := s.metaEng.GetPrefixRangeKvs(BUCKET_META_PREFIX)
+	if err != nil {
+		panic(err.Error())
+	}
+	resp.Buckets = make([]*pb.Bucket, len(vals))
+	for i := 0; i < len(vals); i++ {
+		bucket := DecodeBucket(vals[i])
+		resp.Buckets = append(resp.Buckets, bucket)
+	}
+	return &resp, nil
+}
+
 func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMetaConfigRequest) (*pb.ServerGroupMetaConfigResponse, error) {
 	log.MainLogger.Debug().Msgf("handle server group meta req: %s", req.String())
 	resp := &pb.ServerGroupMetaConfigResponse{}
@@ -111,7 +157,6 @@ func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMet
 	s.mu.Lock()
 	ch := s.getRespNotifyChan(logIndexInt64)
 	s.mu.Unlock()
-
 	select {
 	case res := <-ch:
 		resp.ServerGroupMetas = res.ServerGroupMetas
@@ -121,13 +166,11 @@ func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMet
 		resp.ErrCode = pb.ErrCode_RPC_CALL_TIMEOUT_ERR
 		return resp, errors.New("exec time out")
 	}
-
 	go func() {
 		s.mu.Lock()
 		delete(s.notifyChans, logIndexInt64)
 		s.mu.Unlock()
 	}()
-
 	return resp, nil
 }
 
@@ -144,6 +187,7 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 			}
 			resp := &pb.ServerGroupMetaConfigResponse{}
 			// TODO: apply msg to stm
+			log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
 			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
 			ch <- resp
 		}

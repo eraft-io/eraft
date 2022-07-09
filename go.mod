@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/google/uuid v1.1.2
 	github.com/phuslu/log v1.0.80
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.0

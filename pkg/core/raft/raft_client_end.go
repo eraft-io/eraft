@@ -15,7 +15,7 @@
 package raft
 
 import (
-	"fmt"
+	log "github.com/eraft-io/eraft/pkg/log"
 
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 	"google.golang.org/grpc"
@@ -39,7 +39,7 @@ func (raftcli *RaftClientEnd) GetRaftServiceCli() *pb.RaftServiceClient {
 func MakeRaftClientEnd(addr string, id uint64) *RaftClientEnd {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		fmt.Printf("faild to connect: %v", err)
+		log.MainLogger.Error().Msgf("faild to connect: %v", err)
 	}
 	conns := []*grpc.ClientConn{}
 	conns = append(conns, conn)

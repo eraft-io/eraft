@@ -6,3 +6,6 @@ deps
 pmem-redis.tar.gz
 eraft_rust/target
 .idea
+data
+main.log
+logs
