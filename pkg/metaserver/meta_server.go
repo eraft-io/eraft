@@ -16,13 +16,14 @@ package metaserver
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
-	common "github.com/eraft-io/eraft/pkg/common"
+	"github.com/eraft-io/eraft/pkg/common"
+	"github.com/eraft-io/eraft/pkg/consts"
 	eng "github.com/eraft-io/eraft/pkg/engine"
 
 	"github.com/eraft-io/eraft/pkg/core/raft"
@@ -36,6 +37,7 @@ type MetaServer struct {
 	applyCh     chan *pb.ApplyMsg
 	notifyChans map[int64]chan *pb.ServerGroupMetaConfigResponse
 	metaEng     eng.KvStore
+	stm         TopoConfigSTM
 	stopApplyCh chan interface{}
 	pb.UnimplementedRaftServiceServer
 	pb.UnimplementedMetaServiceServer
@@ -54,6 +56,7 @@ func MakeMetaServer(nodes map[int]string, nodeId int, dataPath string) *MetaServ
 		rf:          newRf,
 		applyCh:     newApplyCh,
 		metaEng:     metaStorage,
+		stm:         NewTopoConfigSTM(metaStorage),
 		notifyChans: make(map[int64]chan *pb.ServerGroupMetaConfigResponse),
 	}
 	metaServer.stopApplyCh = make(chan interface{})
@@ -97,61 +100,16 @@ func (s *MetaServer) getRespNotifyChan(logIndex int64) chan *pb.ServerGroupMetaC
 	return s.notifyChans[logIndex]
 }
 
-func (s *MetaServer) AddBucket(ctx context.Context, req *pb.AddBucketRequest) (*pb.BucketOpResponse, error) {
-	resp := pb.BucketOpResponse{}
-	bucketId := common.GenGoogleUUID()
-	bucket := &pb.Bucket{
-		BucketId:   bucketId,
-		BucketName: req.BucketName,
-	}
-	bucketEncodeKey := EncodeBucketKey(bucketId)
-	bucketEncodeVal := EncodeBucket(bucket)
-	if err := s.metaEng.Put(bucketEncodeKey, bucketEncodeVal); err != nil {
-		resp.ErrCode = pb.ErrCode_PUT_BUCKET_TO_ENG_ERR
-	}
-	resp.ErrCode = pb.ErrCode_NO_ERR
-	return &resp, nil
-}
-
-func (s *MetaServer) DelBucket(ctx context.Context, req *pb.DelBucketRequest) (*pb.BucketOpResponse, error) {
-	resp := pb.BucketOpResponse{}
-	bucketEncodeKey := EncodeBucketKey(req.BucketId)
-	if err := s.metaEng.Del(bucketEncodeKey); err != nil {
-		resp.ErrCode = pb.ErrCode_DEL_BUCKET_FROM_ENG_ERR
-	}
-	resp.ErrCode = pb.ErrCode_NO_ERR
-	return &resp, nil
-}
-
-func (s *MetaServer) ListBuckets(ctx context.Context, in *pb.ListBucketRequest) (*pb.ListBucketsResponse, error) {
-	resp := pb.ListBucketsResponse{}
-	_, vals, err := s.metaEng.GetPrefixRangeKvs(BUCKET_META_PREFIX)
-	if err != nil {
-		panic(err.Error())
-	}
-	resp.Buckets = make([]*pb.Bucket, len(vals))
-	for i := 0; i < len(vals); i++ {
-		bucket := DecodeBucket(vals[i])
-		resp.Buckets = append(resp.Buckets, bucket)
-	}
-	return &resp, nil
-}
-
 func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMetaConfigRequest) (*pb.ServerGroupMetaConfigResponse, error) {
 	log.MainLogger.Debug().Msgf("handle server group meta req: %s", req.String())
 	resp := &pb.ServerGroupMetaConfigResponse{}
-	reqByteSeq, err := json.Marshal(req)
-	if err != nil {
-		resp.ErrCode = pb.ErrCode_MARSHAL_SERVER_GROUP_META_REQ_ERR
-		return resp, err
-	}
+	reqByteSeq := EncodeServerGroupMetaRequest(req)
 	logIndex, _, isLeader := s.rf.Propose(reqByteSeq)
 	if !isLeader {
 		resp.ErrCode = pb.ErrCode_WRONG_LEADER_ERR
 		resp.LeaderId = s.rf.GetLeaderId()
 		return resp, nil
 	}
-
 	logIndexInt64 := int64(logIndex)
 	// make a response chan for sync return result to client
 	s.mu.Lock()
@@ -160,6 +118,7 @@ func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMet
 	select {
 	case res := <-ch:
 		resp.ServerGroupMetas = res.ServerGroupMetas
+		resp.BucketOpRes = res.BucketOpRes
 		resp.ErrCode = pb.ErrCode_NO_ERR
 	case <-time.After(time.Second * 10):
 		delete(s.notifyChans, logIndexInt64)
@@ -180,13 +139,83 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 		case <-done:
 			return
 		case appliedMsg := <-s.applyCh:
-			req := &pb.ServerGroupMetaConfigRequest{}
-			if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
-				log.MainLogger.Error().Msgf("unmarshal server group meta config err %s", err.Error())
-				continue
-			}
+			req := DecodeServerGroupMetaRequest(appliedMsg.Command)
 			resp := &pb.ServerGroupMetaConfigResponse{}
-			// TODO: apply msg to stm
+			switch req.OpType {
+			case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_JOIN:
+				{
+					serverGroups := map[int][]string{}
+					for gid, addrs := range req.ServerGroups {
+						serverGroups[int(gid)] = strings.Split(addrs, ",")
+					}
+					err := s.stm.Join(serverGroups)
+					if err != nil {
+						resp.ErrCode = pb.ErrCode_APPLY_JOIN_TODO_TO_STM_ERR
+					}
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_LEAVE:
+				{
+					gids := []int{}
+					for _, gid := range req.Gids {
+						gids = append(gids, int(gid))
+					}
+					if err := s.stm.Leave(gids); err != nil {
+						resp.ErrCode = pb.ErrCode_APPLY_LEAVE_TODO_TO_STM_ERR
+					}
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY:
+				{
+					topoConf, err := s.stm.Query(int(req.ConfigVersion))
+					if err != nil {
+						resp.ErrCode = pb.ErrCode_APPLY_QUERY_TOPO_CONF_ERR
+					}
+					resp.ServerGroupMetas = &pb.ServerGroupMetas{}
+					resp.ServerGroupMetas.ConfigVersion = int64(topoConf.Version)
+					resp.ServerGroupMetas.ServerGroups = make(map[int64]string)
+					for gid, servers := range topoConf.ServerGroups {
+						resp.ServerGroupMetas.ServerGroups[int64(gid)] = strings.Join(servers, ",")
+					}
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_ADD:
+				{
+					bucketId := common.GenGoogleUUID()
+					bucket := &pb.Bucket{
+						BucketId:   bucketId,
+						BucketName: req.BucketOpReq.BucketName,
+					}
+					log.MainLogger.Debug().Msgf("add bucket %s with id %s", bucket.BucketName, bucket.BucketId)
+					bucketEncodeKey := EncodeBucketKey(bucketId)
+					bucketEncodeVal := EncodeBucket(bucket)
+					if err := s.metaEng.Put(bucketEncodeKey, bucketEncodeVal); err != nil {
+						resp.ErrCode = pb.ErrCode_PUT_BUCKET_TO_ENG_ERR
+					}
+					resp.ErrCode = pb.ErrCode_NO_ERR
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_DEL:
+				{
+					bucketEncodeKey := EncodeBucketKey(req.BucketOpReq.BucketId)
+					if err := s.metaEng.Del(bucketEncodeKey); err != nil {
+						resp.ErrCode = pb.ErrCode_DEL_BUCKET_FROM_ENG_ERR
+					}
+					resp.ErrCode = pb.ErrCode_NO_ERR
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_LIST:
+				{
+					_, vals, err := s.metaEng.GetPrefixRangeKvs(consts.BUCKET_META_PREFIX)
+					if err != nil {
+						panic(err.Error())
+					}
+					resp.BucketOpRes = &pb.BucketOpResponse{}
+					resp.BucketOpRes.Buckets = make([]*pb.Bucket, 0)
+					log.MainLogger.Debug().Msgf("get vals count %d", len(vals))
+					for _, v := range vals {
+						bucket := DecodeBucket([]byte(v))
+						log.MainLogger.Debug().Msgf("decode bucket %v", []byte(v))
+						resp.BucketOpRes.Buckets = append(resp.BucketOpRes.Buckets, bucket)
+					}
+					resp.ErrCode = pb.ErrCode_NO_ERR
+				}
+			}
 			log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
 			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
 			ch <- resp

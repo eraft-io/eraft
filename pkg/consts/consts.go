@@ -14,6 +14,12 @@
 
 package consts
 
-const SLOT_NUM = 1024
+const SLOT_NUM = 10
 
 const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+
+var BUCKET_META_PREFIX = []byte{0x01, 0x09, 0x09, 0x08}
+
+var TOPO_CONF_PREFIX = []byte{0x01, 0x09, 0x09, 0x07}
+
+var CUR_TOPO_CONF_VERSION_KEY = []byte{0x01, 0x09, 0x09, 0x06}

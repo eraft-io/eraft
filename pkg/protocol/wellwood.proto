@@ -14,6 +14,9 @@ enum ErrCode {
     RPC_CALL_TIMEOUT_ERR = 6;
     PUT_BUCKET_TO_ENG_ERR = 7;
     DEL_BUCKET_FROM_ENG_ERR = 8;
+    APPLY_JOIN_TODO_TO_STM_ERR = 9;
+    APPLY_QUERY_TOPO_CONF_ERR = 10;
+    APPLY_LEAVE_TODO_TO_STM_ERR = 11;
 }
 
 message FileUploadRequest {
@@ -36,23 +39,12 @@ message FileDownloadResponse {
   bytes file_content = 2;
 }
 
-message AddBucketRequest {
+message BucketOpRequest {
   string bucket_name = 1;
-}
-
-message ListBucketRequest {
-  bytes context = 1;
-}
-
-message DelBucketRequest {
-  string bucket_id = 1;
+  string bucket_id = 2;
 }
 
 message BucketOpResponse {
-  ErrCode err_code = 1;
-}
-
-message ListBucketsResponse {
   repeated Bucket buckets = 1;
 }
 
@@ -65,15 +57,15 @@ message Bucket {
 service FileService {
   rpc Upload(FileUploadRequest) returns (FileUploadResponse);
   rpc Download(FileDownloadRequest) returns (FileDownloadResponse);
-  rpc AddBucket(AddBucketRequest) returns (BucketOpResponse);
-  rpc DelBucket(DelBucketRequest) returns (BucketOpResponse);
-  rpc ListBuckets(ListBucketRequest) returns (ListBucketsResponse);
 }
 
 enum ConfigServerGroupMetaOpType {
    OP_SERVER_GROUP_JOIN = 0;
    OP_SERVER_GROUP_LEAVE = 1;
    OP_SERVER_GROUP_QUERY = 2;
+   OP_OSS_BUCKET_ADD = 3;
+   OP_OSS_BUCKET_DEL = 4;
+   OP_OSS_BUCKET_LIST = 5;
 }
 
 message ServerGroupMetaConfigRequest {
@@ -81,6 +73,7 @@ message ServerGroupMetaConfigRequest {
    repeated int64 gids = 2;
    int64 config_version = 3;
    ConfigServerGroupMetaOpType op_type = 4;
+   BucketOpRequest bucket_op_req = 5;
 }
 
 message ServerGroupMetas {
@@ -93,6 +86,7 @@ message ServerGroupMetaConfigResponse {
     ErrCode err_code = 1;
     ServerGroupMetas server_group_metas = 2;
     int64 leader_id = 3;
+    BucketOpResponse bucket_op_res = 4;
 }
 
 message FileBlockMeta {

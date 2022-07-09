@@ -18,10 +18,30 @@ import (
 	"bytes"
 	"encoding/gob"
 
+	"github.com/eraft-io/eraft/pkg/consts"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 )
 
-var BUCKET_META_PREFIX = []byte{0x01, 0x09, 0x09, 0x08}
+const (
+	SERVER_GROUP_CONFIG_REQ = iota
+	ADD_BUCKET_REQ
+	DEL_BUCKET_REQ
+	LIST_BUCKETS_REQ
+)
+
+func EncodeServerGroupMetaRequest(in *pb.ServerGroupMetaConfigRequest) []byte {
+	var encodeBuf bytes.Buffer
+	enc := gob.NewEncoder(&encodeBuf)
+	enc.Encode(in)
+	return encodeBuf.Bytes()
+}
+
+func DecodeServerGroupMetaRequest(in []byte) *pb.ServerGroupMetaConfigRequest {
+	dec := gob.NewDecoder(bytes.NewBuffer(in))
+	req := pb.ServerGroupMetaConfigRequest{}
+	dec.Decode(&req)
+	return &req
+}
 
 //
 // EncodeBucketKey
@@ -29,14 +49,14 @@ var BUCKET_META_PREFIX = []byte{0x01, 0x09, 0x09, 0x08}
 // BUCKET_META_PREFIX + bucketId
 func EncodeBucketKey(bucketId string) []byte {
 	var encodedBuf bytes.Buffer
-	encodedBuf.Write(BUCKET_META_PREFIX)
+	encodedBuf.Write(consts.BUCKET_META_PREFIX)
 	encodedBuf.Write([]byte(bucketId))
 	return encodedBuf.Bytes()
 }
 
 // EncodeBucketKey decode bucket id and return
 func DecodeBucketKey(bkey []byte) string {
-	return string(bkey[:len(BUCKET_META_PREFIX)])
+	return string(bkey[:len(consts.BUCKET_META_PREFIX)])
 }
 
 //
@@ -44,7 +64,7 @@ func DecodeBucketKey(bkey []byte) string {
 func EncodeBucket(bucket *pb.Bucket) []byte {
 	var bucketByteSeq bytes.Buffer
 	enc := gob.NewEncoder(&bucketByteSeq)
-	enc.Encode(bucketByteSeq)
+	enc.Encode(bucket)
 	return bucketByteSeq.Bytes()
 }
 

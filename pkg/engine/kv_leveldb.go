@@ -15,6 +15,7 @@
 package engine
 
 import (
+	"github.com/eraft-io/eraft/pkg/log"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
@@ -48,13 +49,14 @@ func (ldb *KvStoreLevelDB) Del(k []byte) error {
 	return ldb.db.Delete(k, nil)
 }
 
-func (ldb *KvStoreLevelDB) GetPrefixRangeKvs(prefix []byte) ([][]byte, [][]byte, error) {
-	keys := make([][]byte, 0)
-	vals := make([][]byte, 0)
+func (ldb *KvStoreLevelDB) GetPrefixRangeKvs(prefix []byte) ([]string, []string, error) {
+	keys := make([]string, 0)
+	vals := make([]string, 0)
 	iter := ldb.db.NewIterator(util.BytesPrefix([]byte(prefix)), nil)
 	for iter.Next() {
-		keys = append(keys, iter.Key())
-		vals = append(vals, iter.Value())
+		log.MainLogger.Debug().Msgf("leveldb iter key -> %v, val -> %v", iter.Key(), iter.Value())
+		keys = append(keys, string(iter.Key()))
+		vals = append(vals, string(iter.Value()))
 	}
 	iter.Release()
 	return keys, vals, nil

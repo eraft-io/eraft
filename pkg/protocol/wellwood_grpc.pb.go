@@ -24,9 +24,6 @@ const _ = grpc.SupportPackageIsVersion7
 type FileServiceClient interface {
 	Upload(ctx context.Context, in *FileUploadRequest, opts ...grpc.CallOption) (*FileUploadResponse, error)
 	Download(ctx context.Context, in *FileDownloadRequest, opts ...grpc.CallOption) (*FileDownloadResponse, error)
-	AddBucket(ctx context.Context, in *AddBucketRequest, opts ...grpc.CallOption) (*BucketOpResponse, error)
-	DelBucket(ctx context.Context, in *DelBucketRequest, opts ...grpc.CallOption) (*BucketOpResponse, error)
-	ListBuckets(ctx context.Context, in *ListBucketRequest, opts ...grpc.CallOption) (*ListBucketsResponse, error)
 }
 
 type fileServiceClient struct {
@@ -55,42 +52,12 @@ func (c *fileServiceClient) Download(ctx context.Context, in *FileDownloadReques
 	return out, nil
 }
 
-func (c *fileServiceClient) AddBucket(ctx context.Context, in *AddBucketRequest, opts ...grpc.CallOption) (*BucketOpResponse, error) {
-	out := new(BucketOpResponse)
-	err := c.cc.Invoke(ctx, "/protocol.FileService/AddBucket", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *fileServiceClient) DelBucket(ctx context.Context, in *DelBucketRequest, opts ...grpc.CallOption) (*BucketOpResponse, error) {
-	out := new(BucketOpResponse)
-	err := c.cc.Invoke(ctx, "/protocol.FileService/DelBucket", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *fileServiceClient) ListBuckets(ctx context.Context, in *ListBucketRequest, opts ...grpc.CallOption) (*ListBucketsResponse, error) {
-	out := new(ListBucketsResponse)
-	err := c.cc.Invoke(ctx, "/protocol.FileService/ListBuckets", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // FileServiceServer is the server API for FileService service.
 // All implementations must embed UnimplementedFileServiceServer
 // for forward compatibility
 type FileServiceServer interface {
 	Upload(context.Context, *FileUploadRequest) (*FileUploadResponse, error)
 	Download(context.Context, *FileDownloadRequest) (*FileDownloadResponse, error)
-	AddBucket(context.Context, *AddBucketRequest) (*BucketOpResponse, error)
-	DelBucket(context.Context, *DelBucketRequest) (*BucketOpResponse, error)
-	ListBuckets(context.Context, *ListBucketRequest) (*ListBucketsResponse, error)
 	mustEmbedUnimplementedFileServiceServer()
 }
 
@@ -103,15 +70,6 @@ func (UnimplementedFileServiceServer) Upload(context.Context, *FileUploadRequest
 }
 func (UnimplementedFileServiceServer) Download(context.Context, *FileDownloadRequest) (*FileDownloadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Download not implemented")
-}
-func (UnimplementedFileServiceServer) AddBucket(context.Context, *AddBucketRequest) (*BucketOpResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddBucket not implemented")
-}
-func (UnimplementedFileServiceServer) DelBucket(context.Context, *DelBucketRequest) (*BucketOpResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelBucket not implemented")
-}
-func (UnimplementedFileServiceServer) ListBuckets(context.Context, *ListBucketRequest) (*ListBucketsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListBuckets not implemented")
 }
 func (UnimplementedFileServiceServer) mustEmbedUnimplementedFileServiceServer() {}
 
@@ -162,60 +120,6 @@ func _FileService_Download_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _FileService_AddBucket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddBucketRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FileServiceServer).AddBucket(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protocol.FileService/AddBucket",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).AddBucket(ctx, req.(*AddBucketRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _FileService_DelBucket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DelBucketRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FileServiceServer).DelBucket(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protocol.FileService/DelBucket",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).DelBucket(ctx, req.(*DelBucketRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _FileService_ListBuckets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListBucketRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FileServiceServer).ListBuckets(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protocol.FileService/ListBuckets",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).ListBuckets(ctx, req.(*ListBucketRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // FileService_ServiceDesc is the grpc.ServiceDesc for FileService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -230,18 +134,6 @@ var FileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Download",
 			Handler:    _FileService_Download_Handler,
-		},
-		{
-			MethodName: "AddBucket",
-			Handler:    _FileService_AddBucket_Handler,
-		},
-		{
-			MethodName: "DelBucket",
-			Handler:    _FileService_DelBucket_Handler,
-		},
-		{
-			MethodName: "ListBuckets",
-			Handler:    _FileService_ListBuckets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
