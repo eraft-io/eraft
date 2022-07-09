@@ -20,7 +20,7 @@ type KvStore interface {
 	Put(key []byte, val []byte) error
 	Get(key []byte) ([]byte, error)
 	Del(key []byte) error
-	GetPrefixRangeKvs(prefix []byte) ([][]byte, [][]byte, error)
+	GetPrefixRangeKvs(prefix []byte) ([]string, []string, error)
 }
 
 func KvStoreFactory(engineName string, path string) KvStore {

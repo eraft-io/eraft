@@ -107,7 +107,7 @@ func MakeRaft(peers []*RaftClientEnd, me int, applych chan *pb.ApplyMsg, heartti
 	newraft.applyCond = sync.NewCond(&newraft.mu)
 	lastLog := newraft.logs.GetMemLast()
 	for _, peer := range peers {
-		fmt.Printf("peer addr:%s   id:%d ", peer.addr, peer.id)
+		log.MainLogger.Debug().Msgf("peer addr:%s   id:%d ", peer.addr, peer.id)
 		newraft.matchIdx[peer.id], newraft.nextIdx[peer.id] = 0, int(lastLog.Index+1)
 		if int(peer.id) != me {
 			newraft.replicatorCond[peer.id] = sync.NewCond(&sync.Mutex{})
@@ -179,7 +179,7 @@ func (raft *Raft) Replicator(peer *RaftClientEnd) {
 	raft.replicatorCond[peer.id].L.Lock()
 	defer raft.replicatorCond[peer.id].L.Unlock()
 	for !raft.IsKilled() {
-		PrintDebugLog(fmt.Sprintf("peer id:%d wait for replicating...", peer.id))
+		log.MainLogger.Debug().Msgf("peer id:%d wait for replicating...", peer.id)
 		for !(raft.role == LEADER && raft.matchIdx[peer.id] < int(raft.logs.GetMemLast().Index)) {
 			raft.replicatorCond[peer.id].Wait()
 		}
@@ -195,7 +195,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 		return
 	}
 	prevLogIndex := uint64(raft.nextIdx[peer.id] - 1)
-	PrintDebugLog(fmt.Sprintf("leader prevLogIndex %d", prevLogIndex))
+	log.MainLogger.Debug().Msgf("leader prevLogIndex %d", prevLogIndex)
 	// snapshot
 	if prevLogIndex < uint64(raft.logs.GetMemFirst().GetIndex()) {
 		firstLog := raft.logs.GetMemFirst()
@@ -242,7 +242,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 			Entries:      entries,
 			LeaderCommit: raft.commitIdx,
 		}
-		raft.mu.Unlock()
+		raft.mu.RUnlock()
 
 		resp, err := (*peer.raftServiceCli).AppendEntries(context.Background(), appendEntReq)
 		if err != nil {
@@ -326,7 +326,7 @@ func (raft *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.App
 
 	firstIndex := raft.logs.GetMemFirst().Index
 	for index, entry := range req.Entries {
-		if int(entry.Index-firstIndex) > raft.logs.MemLogItemCount() || raft.logs.GetMemEntry(entry.Index-firstIndex).Term != entry.Term {
+		if int(entry.Index-firstIndex) >= raft.logs.MemLogItemCount() || raft.logs.GetMemEntry(entry.Index-firstIndex).Term != entry.Term {
 			raft.logs.EraseMemAfter(entry.Index - firstIndex)
 			for _, newEnt := range req.Entries[index:] {
 				raft.logs.MemAppend(newEnt)
@@ -396,8 +396,6 @@ func (raft *Raft) Propose(payload []byte) (int, int, bool) {
 //
 func (raft *Raft) StartNewElection() {
 	log.MainLogger.Debug().Msgf("%d start a new election \n", raft.me)
-	raft.mu.Lock()
-	defer raft.mu.Unlock()
 	raft.grantedVotes = 1
 	raft.votedFor = int64(raft.me)
 	voteReq := &pb.RequestVoteRequest{
@@ -517,10 +515,7 @@ func (raft *Raft) GetState() (int, bool) {
 }
 
 func (raft *Raft) IncrGrantedVotes() {
-	raft.mu.Lock()
-	defer raft.mu.Unlock()
 	raft.grantedVotes += 1
-	// atomic.AddInt32(&raft.grantedVotes, 1)
 }
 
 func (raft *Raft) ReInitLog() {
@@ -552,7 +547,7 @@ func (raft *Raft) ChangeRole(newrole RAFTROLE) {
 		return
 	}
 	raft.role = newrole
-	fmt.Printf("node's role change to -> %s\n", RoleToString(newrole))
+	log.MainLogger.Debug().Msgf("node's role change to -> %s\n", RoleToString(newrole))
 	switch newrole {
 	case FOLLOWER:
 		raft.heartBeatTimer.Stop()

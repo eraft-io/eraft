@@ -15,8 +15,9 @@
 package log
 
 import (
-	"os"
-	"path/filepath"
+	"fmt"
+	"io"
+	"strings"
 
 	log "github.com/phuslu/log"
 )
@@ -26,18 +27,24 @@ var MainLogger *log.Logger
 func init() {
 	MainLogger = &log.Logger{
 		Level: log.ParseLevel("debug"),
-		Writer: &log.FileWriter{
-			Filename: "./main.log",
-			MaxSize:  500 * 1024 * 1024,
-			Cleaner: func(filename string, maxBackups int, matches []os.FileInfo) {
-				var dir = filepath.Dir(filename)
-				var total int64
-				for i := len(matches) - 1; i >= 0; i-- {
-					total += matches[i].Size()
-					if total > 5*1024*1024*1024 {
-						os.Remove(filepath.Join(dir, matches[i].Name()))
-					}
-				}
+		// Writer: &log.FileWriter{
+		// 	Filename: "./logs/main.log",
+		// 	MaxSize:  500 * 1024 * 1024,
+		// 	Cleaner: func(filename string, maxBackups int, matches []os.FileInfo) {
+		// 		var dir = filepath.Dir(filename)
+		// 		var total int64
+		// 		for i := len(matches) - 1; i >= 0; i-- {
+		// 			total += matches[i].Size()
+		// 			if total > 5*1024*1024*1024 {
+		// 				os.Remove(filepath.Join(dir, matches[i].Name()))
+		// 			}
+		// 		}
+		// 	},
+		// },
+		Writer: &log.ConsoleWriter{
+			Formatter: func(w io.Writer, a *log.FormatterArgs) (int, error) {
+				return fmt.Fprintf(w, "%c%s %s %s] %s\n%s", strings.ToUpper(a.Level)[0],
+					a.Time, a.Goid, a.Caller, a.Message, a.Stack)
 			},
 		},
 	}
