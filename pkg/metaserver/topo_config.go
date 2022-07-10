@@ -116,6 +116,15 @@ func (topoConfStm *PersisTopoConfigSTM) Join(serverGroups map[int][]string) erro
 			newTopoConfig.ServerGroups[gid] = newSvrs
 		}
 	}
+	var gidList []int
+	for gid, _ := range newTopoConfig.ServerGroups {
+		gidList = append(gidList, gid)
+	}
+	// set slot
+	step := consts.SLOT_NUM / len(gidList)
+	for i := 0; i < consts.SLOT_NUM; i++ {
+		newTopoConfig.Slots[i] = gidList[i/step]
+	}
 	newTopoConfigByteSeq, _ := json.Marshal(newTopoConfig)
 	if err := topoConfStm.metaEng.Put(consts.CUR_TOPO_CONF_VERSION_KEY, []byte(strconv.Itoa(topoConfStm.curConfigVersion+1))); err != nil {
 		return err

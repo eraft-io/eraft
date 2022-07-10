@@ -146,8 +146,6 @@ var FileService_ServiceDesc = grpc.ServiceDesc{
 type MetaServiceClient interface {
 	// for multi-raft server group config manage
 	ServerGroupMeta(ctx context.Context, in *ServerGroupMetaConfigRequest, opts ...grpc.CallOption) (*ServerGroupMetaConfigResponse, error)
-	// for file block meta config manage
-	FileBlockMeta(ctx context.Context, in *FileBlockMetaConfigRequest, opts ...grpc.CallOption) (*FileBlockMetaConfigResponse, error)
 }
 
 type metaServiceClient struct {
@@ -167,23 +165,12 @@ func (c *metaServiceClient) ServerGroupMeta(ctx context.Context, in *ServerGroup
 	return out, nil
 }
 
-func (c *metaServiceClient) FileBlockMeta(ctx context.Context, in *FileBlockMetaConfigRequest, opts ...grpc.CallOption) (*FileBlockMetaConfigResponse, error) {
-	out := new(FileBlockMetaConfigResponse)
-	err := c.cc.Invoke(ctx, "/protocol.MetaService/FileBlockMeta", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MetaServiceServer is the server API for MetaService service.
 // All implementations must embed UnimplementedMetaServiceServer
 // for forward compatibility
 type MetaServiceServer interface {
 	// for multi-raft server group config manage
 	ServerGroupMeta(context.Context, *ServerGroupMetaConfigRequest) (*ServerGroupMetaConfigResponse, error)
-	// for file block meta config manage
-	FileBlockMeta(context.Context, *FileBlockMetaConfigRequest) (*FileBlockMetaConfigResponse, error)
 	mustEmbedUnimplementedMetaServiceServer()
 }
 
@@ -193,9 +180,6 @@ type UnimplementedMetaServiceServer struct {
 
 func (UnimplementedMetaServiceServer) ServerGroupMeta(context.Context, *ServerGroupMetaConfigRequest) (*ServerGroupMetaConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ServerGroupMeta not implemented")
-}
-func (UnimplementedMetaServiceServer) FileBlockMeta(context.Context, *FileBlockMetaConfigRequest) (*FileBlockMetaConfigResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FileBlockMeta not implemented")
 }
 func (UnimplementedMetaServiceServer) mustEmbedUnimplementedMetaServiceServer() {}
 
@@ -228,24 +212,6 @@ func _MetaService_ServerGroupMeta_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MetaService_FileBlockMeta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FileBlockMetaConfigRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MetaServiceServer).FileBlockMeta(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protocol.MetaService/FileBlockMeta",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MetaServiceServer).FileBlockMeta(ctx, req.(*FileBlockMetaConfigRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // MetaService_ServiceDesc is the grpc.ServiceDesc for MetaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -256,10 +222,6 @@ var MetaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ServerGroupMeta",
 			Handler:    _MetaService_ServerGroupMeta_Handler,
-		},
-		{
-			MethodName: "FileBlockMeta",
-			Handler:    _MetaService_FileBlockMeta_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

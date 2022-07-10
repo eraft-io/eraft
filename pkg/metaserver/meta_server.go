@@ -175,6 +175,9 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 					for gid, servers := range topoConf.ServerGroups {
 						resp.ServerGroupMetas.ServerGroups[int64(gid)] = strings.Join(servers, ",")
 					}
+					for _, slot := range topoConf.Slots {
+						resp.ServerGroupMetas.Slots = append(resp.ServerGroupMetas.Slots, int64(slot))
+					}
 				}
 			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_ADD:
 				{
@@ -215,14 +218,49 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 					}
 					resp.ErrCode = pb.ErrCode_NO_ERR
 				}
+			case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_PUT:
+				{
+					objectId := common.GenGoogleUUID()
+					object := &pb.Object{
+						ObjectId:         objectId,
+						ObjectName:       req.BucketOpReq.Object.ObjectName,
+						FromBucketId:     req.BucketOpReq.BucketId,
+						ObjectBlocksMeta: req.BucketOpReq.Object.ObjectBlocksMeta,
+					}
+					log.MainLogger.Debug().Msgf("add object %s with id %s", object.ObjectName, object.ObjectId)
+					objEncodeKey := EncodeObjectKey(objectId)
+					objEncodeVal := EncodeObject(object)
+					if err := s.metaEng.Put(objEncodeKey, objEncodeVal); err != nil {
+						resp.ErrCode = pb.ErrCode_PUT_OBJECT_META_TO_ENG_ERR
+					}
+					resp.ErrCode = pb.ErrCode_NO_ERR
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_GET:
+				{
+
+				}
+			case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_LIST:
+				{
+					_, vals, err := s.metaEng.GetPrefixRangeKvs(consts.OBJECT_META_PREFIX)
+					if err != nil {
+						panic(err.Error())
+					}
+					resp.BucketOpRes = &pb.BucketOpResponse{}
+					resp.BucketOpRes.Objects = make([]*pb.Object, 0)
+					log.MainLogger.Debug().Msgf("get objects count %d", len(vals))
+					for _, v := range vals {
+						obj := DecodeObject([]byte(v))
+						log.MainLogger.Debug().Msgf("decode obj %v", []byte(v))
+						if obj.FromBucketId == req.BucketOpReq.BucketId {
+							resp.BucketOpRes.Objects = append(resp.BucketOpRes.Objects, obj)
+						}
+					}
+					resp.ErrCode = pb.ErrCode_NO_ERR
+				}
 			}
 			log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
 			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
 			ch <- resp
 		}
 	}
-}
-
-func (s *MetaServer) FileBlockMeta(ctx context.Context, req *pb.FileBlockMetaConfigRequest) (*pb.FileBlockMetaConfigResponse, error) {
-	return nil, nil
 }
