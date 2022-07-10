@@ -17,6 +17,8 @@ enum ErrCode {
     APPLY_JOIN_TODO_TO_STM_ERR = 9;
     APPLY_QUERY_TOPO_CONF_ERR = 10;
     APPLY_LEAVE_TODO_TO_STM_ERR = 11;
+    PUT_OBJECT_META_TO_ENG_ERR = 12;
+    GET_OBJECT_META_FROM_ENG_ERR = 13;
 }
 
 message FileUploadRequest {
@@ -42,15 +44,24 @@ message FileDownloadResponse {
 message BucketOpRequest {
   string bucket_name = 1;
   string bucket_id = 2;
+  Object object = 3;
 }
 
 message BucketOpResponse {
   repeated Bucket buckets = 1;
+  repeated Object objects = 2;
 }
 
 message Bucket {
   string bucket_id = 1;
   string bucket_name = 2;
+}
+
+message Object {
+  string object_id = 1;
+  string object_name = 2;
+  string from_bucket_id = 3;
+  repeated FileBlockMeta object_blocks_meta = 4;
 }
 
 // for sdk upload and download file
@@ -66,6 +77,9 @@ enum ConfigServerGroupMetaOpType {
    OP_OSS_BUCKET_ADD = 3;
    OP_OSS_BUCKET_DEL = 4;
    OP_OSS_BUCKET_LIST = 5;
+   OP_OSS_OBJECT_PUT = 6;
+   OP_OSS_OBJECT_GET = 7;
+   OP_OSS_OBJECT_LIST = 8;
 }
 
 message ServerGroupMetaConfigRequest {
@@ -94,29 +108,10 @@ message FileBlockMeta {
     int64 block_slot_id = 2;
 }
 
-enum FileBlockMetaConfigOpType {
-    OP_ADD_FILE_BLOCK_META = 0;  
-    OP_QUERY_FILE_BLOCK_META = 1;  
-}
-
-message FileBlockMetaConfigRequest {
-    string file_name = 1;
-    repeated FileBlockMeta file_blocks_meta = 2;
-    FileBlockMetaConfigOpType op_type = 3;
-}
-
-message FileBlockMetaConfigResponse {
-    ErrCode err_code = 1;
-    repeated FileBlockMeta file_blocks_meta = 2;
-    int64 leader_id = 3;
-}
-
 // for meta service
 service MetaService {
     // for multi-raft server group config manage
     rpc ServerGroupMeta (ServerGroupMetaConfigRequest) returns (ServerGroupMetaConfigResponse);
-    // for file block meta config manage
-    rpc FileBlockMeta (FileBlockMetaConfigRequest) returns (FileBlockMetaConfigResponse);
 }
 
 message WriteFileBlockRequest {

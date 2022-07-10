@@ -45,7 +45,6 @@ func DecodeServerGroupMetaRequest(in []byte) *pb.ServerGroupMetaConfigRequest {
 
 //
 // EncodeBucketKey
-// encode bucket meta, store it to leveldb
 // BUCKET_META_PREFIX + bucketId
 func EncodeBucketKey(bucketId string) []byte {
 	var encodedBuf bytes.Buffer
@@ -75,4 +74,34 @@ func DecodeBucket(seqIn []byte) *pb.Bucket {
 	bucket := pb.Bucket{}
 	dec.Decode(&bucket)
 	return &bucket
+}
+
+// EncodeObjectKey
+// OBJECT_META_PREFIX + objId
+func EncodeObjectKey(objId string) []byte {
+	var encodedBuf bytes.Buffer
+	encodedBuf.Write(consts.OBJECT_META_PREFIX)
+	encodedBuf.Write([]byte(objId))
+	return encodedBuf.Bytes()
+}
+
+// DecodeObjectKey deocde object id and return
+func DecodeObjectKey(okey []byte) string {
+	return string(okey[:len(consts.OBJECT_META_PREFIX)])
+}
+
+// EncodeObject encode object to bytes sequence
+func EncodeObject(obj *pb.Object) []byte {
+	var objectByteSeq bytes.Buffer
+	enc := gob.NewEncoder(&objectByteSeq)
+	enc.Encode(obj)
+	return objectByteSeq.Bytes()
+}
+
+// DecodeObject decode object byte seq to object
+func DecodeObject(seqIn []byte) *pb.Object {
+	dec := gob.NewDecoder(bytes.NewBuffer(seqIn))
+	obj := pb.Object{}
+	dec.Decode(&obj)
+	return &obj
 }

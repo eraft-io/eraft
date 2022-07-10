@@ -126,17 +126,7 @@ func (c *Client) uploadFile(localPath string) error {
 		fileBlockMetas = append(fileBlockMetas, blockMeta)
 		index += 1
 	}
-	fileBlockMetaConfigRequest := &pb.FileBlockMetaConfigRequest{
-		OpType:         pb.FileBlockMetaConfigOpType_OP_ADD_FILE_BLOCK_META,
-		FileBlocksMeta: fileBlockMetas,
-	}
-	fileBlockMetasWriteResp, err := c.metaSvrCli.GetMetaSvrCli().FileBlockMeta(context.Background(), fileBlockMetaConfigRequest)
-	if err != nil {
-		return err
-	}
-	if fileBlockMetasWriteResp.ErrCode != pb.ErrCode_NO_ERR {
-		return errors.New("")
-	}
+	// wirte obj meta to meta server
 	return nil
 }
 
