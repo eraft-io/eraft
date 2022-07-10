@@ -16,9 +16,12 @@ package blockserver
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
 	"sync"
+	"time"
 
-	eng "github.com/eraft-io/eraft/pkg/engine"
 	"github.com/eraft-io/eraft/pkg/log"
 
 	"github.com/eraft-io/eraft/pkg/core/raft"
@@ -26,13 +29,37 @@ import (
 )
 
 type BlockServer struct {
-	mu          sync.RWMutex
+	mu          sync.Mutex
 	rf          *raft.Raft
+	id          int
+	gid         int
 	applyCh     chan *pb.ApplyMsg
-	logEng      eng.KvStore
+	notifyChans map[int64]chan *pb.FileBlockOpResponse
 	stopApplyCh chan interface{}
+	dataPath    string
 	pb.UnimplementedRaftServiceServer
 	pb.UnimplementedFileBlockServiceServer
+}
+
+func MakeBlockServer(nodes map[int]string, nodeId int, groudId int, localDataPath string, metaServerAddrs []string) *BlockServer {
+	clientEnds := []*raft.RaftClientEnd{}
+	for nodeId, nodeAddr := range nodes {
+		newEnd := raft.MakeRaftClientEnd(nodeAddr, uint64(nodeId))
+		clientEnds = append(clientEnds, newEnd)
+	}
+	newApplyCh := make(chan *pb.ApplyMsg)
+	newRf := raft.MakeRaft(clientEnds, nodeId, newApplyCh, 500, 1500)
+	blockServer := &BlockServer{
+		rf:          newRf,
+		applyCh:     newApplyCh,
+		dataPath:    localDataPath,
+		id:          nodeId,
+		gid:         groudId,
+		notifyChans: make(map[int64]chan *pb.FileBlockOpResponse),
+	}
+	blockServer.stopApplyCh = make(chan interface{})
+	go blockServer.ApplyingToSTM(blockServer.stopApplyCh)
+	return blockServer
 }
 
 func (s *BlockServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb.RequestVoteResponse, error) {
@@ -63,10 +90,75 @@ func (s *BlockServer) StopAppling() {
 	close(s.applyCh)
 }
 
-func (s *BlockServer) WriteFileBlock(ctx context.Context, req *pb.WriteFileBlockRequest) (*pb.WriteFileBlockResponse, error) {
-	return nil, nil
+func (s *BlockServer) getRespNotifyChan(logIndex int64) chan *pb.FileBlockOpResponse {
+	if _, ok := s.notifyChans[logIndex]; !ok {
+		s.notifyChans[logIndex] = make(chan *pb.FileBlockOpResponse, 1)
+	}
+	return s.notifyChans[logIndex]
 }
 
-func (s *BlockServer) ReadFileBlock(ctx context.Context, req *pb.ReadFileBlockRequest) (*pb.ReadFileBlockResponse, error) {
-	return nil, nil
+func (s *BlockServer) FileBlockOp(ctx context.Context, req *pb.FileBlockOpRequest) (*pb.FileBlockOpResponse, error) {
+	log.MainLogger.Debug().Msgf("handle file block op req: %s", req.String())
+	resp := &pb.FileBlockOpResponse{}
+	reqByteSeq := EncodeBlockServerRequest(req)
+	logIndex, _, isLeader := s.rf.Propose(reqByteSeq)
+	if !isLeader {
+		resp.ErrCode = pb.ErrCode_WRONG_LEADER_ERR
+		resp.LeaderId = s.rf.GetLeaderId()
+		return resp, nil
+	}
+	logIndexInt64 := int64(logIndex)
+	s.mu.Lock()
+	ch := s.getRespNotifyChan(logIndexInt64)
+	s.mu.Unlock()
+
+	select {
+	case res := <-ch:
+		resp.BlockContent = res.BlockContent
+		resp.ErrCode = res.ErrCode
+		resp.LeaderId = res.LeaderId
+	case <-time.After(time.Second * 10):
+		delete(s.notifyChans, logIndexInt64)
+		resp.ErrCode = pb.ErrCode_RPC_CALL_TIMEOUT_ERR
+		return resp, errors.New("exec time out")
+	}
+
+	go func() {
+		s.mu.Lock()
+		delete(s.notifyChans, logIndexInt64)
+		s.mu.Unlock()
+	}()
+
+	return resp, nil
+}
+
+func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
+	for {
+		select {
+		case <-done:
+			return
+		case appliedMsg := <-s.applyCh:
+			req := DecodeBlockServerRequest(appliedMsg.Command)
+			resp := &pb.FileBlockOpResponse{}
+			switch req.OpType {
+			case pb.FileBlockOpType_OP_BLOCK_READ:
+				{
+					fileBytesSeq, err := os.ReadFile(fmt.Sprintf("%s_%d_%d/%s/%d", s.dataPath, s.gid, s.id, req.FileName, req.FileBlocksMeta.BlockId))
+					if err != nil {
+						resp.ErrCode = pb.ErrCode_READ_FILE_BLOCK_ERR
+					}
+					resp.BlockContent = fileBytesSeq
+				}
+			case pb.FileBlockOpType_OP_BLOCK_WRITE:
+				{
+					// TODO: check if can serve slot
+					if err := os.WriteFile(fmt.Sprintf("%s/%s/%d", s.dataPath, req.FileName, req.FileBlocksMeta.BlockId), req.BlockContent, 0644); err != nil {
+						resp.ErrCode = pb.ErrCode_WRITE_FILE_BLOCK_ERR
+					}
+				}
+			}
+			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
+			ch <- resp
+		}
+	}
 }

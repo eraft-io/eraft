@@ -12,4 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package metaserver
+package blockserver
+
+import (
+	"bytes"
+	"encoding/gob"
+
+	pb "github.com/eraft-io/eraft/pkg/protocol"
+)
+
+func EncodeBlockServerRequest(in *pb.FileBlockOpRequest) []byte {
+	var encodeBuf bytes.Buffer
+	enc := gob.NewEncoder(&encodeBuf)
+	enc.Encode(in)
+	return encodeBuf.Bytes()
+}
+
+func DecodeBlockServerRequest(in []byte) *pb.FileBlockOpRequest {
+	dec := gob.NewDecoder(bytes.NewBuffer(in))
+	req := pb.FileBlockOpRequest{}
+	dec.Decode(&req)
+	return &req
+}

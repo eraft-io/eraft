@@ -28,7 +28,7 @@ import (
 
 type RAFTROLE uint8
 
-const None int64 = 0
+const None int64 = -1
 
 //
 // raft node stateim
