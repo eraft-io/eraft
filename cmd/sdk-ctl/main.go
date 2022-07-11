@@ -13,6 +13,8 @@ limitations under the License.
 
 package main
 
-func main() {
+import "github.com/eraft-io/eraft/cmd/sdk-ctl/commands"
 
+func main() {
+	commands.Execute()
 }

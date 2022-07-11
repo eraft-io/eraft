@@ -117,7 +117,7 @@ func (topoConfStm *PersisTopoConfigSTM) Join(serverGroups map[int][]string) erro
 		}
 	}
 	var gidList []int
-	for gid, _ := range newTopoConfig.ServerGroups {
+	for gid := range newTopoConfig.ServerGroups {
 		gidList = append(gidList, gid)
 	}
 	// set slot
