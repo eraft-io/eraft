@@ -121,9 +121,13 @@ func (topoConfStm *PersisTopoConfigSTM) Join(serverGroups map[int][]string) erro
 		gidList = append(gidList, gid)
 	}
 	// set slot
-	step := consts.SLOT_NUM / len(gidList)
+	step := 0
 	for i := 0; i < consts.SLOT_NUM; i++ {
-		newTopoConfig.Slots[i] = gidList[i/step]
+		newTopoConfig.Slots[i] = gidList[step]
+		step += 1
+		if step >= len(gidList) {
+			step = 0
+		}
 	}
 	newTopoConfigByteSeq, _ := json.Marshal(newTopoConfig)
 	if err := topoConfStm.metaEng.Put(consts.CUR_TOPO_CONF_VERSION_KEY, []byte(strconv.Itoa(topoConfStm.curConfigVersion+1))); err != nil {
@@ -177,6 +181,19 @@ func (topoConfStm *PersisTopoConfigSTM) Leave(groupIds []int) error {
 	newTopoConf := TopoConfig{topoConfStm.curConfigVersion + 1, lastTopoConf.Slots, deepCopy(lastTopoConf.ServerGroups)}
 	for _, gid := range groupIds {
 		delete(newTopoConf.ServerGroups, gid)
+	}
+	var gidList []int
+	for gid := range newTopoConf.ServerGroups {
+		gidList = append(gidList, gid)
+	}
+	// set slot
+	step := 0
+	for i := 0; i < consts.SLOT_NUM; i++ {
+		newTopoConf.Slots[i] = gidList[step]
+		step += 1
+		if step >= len(gidList) {
+			step = 0
+		}
 	}
 	newTopoConfByteSeq, _ := json.Marshal(newTopoConf)
 	if err := topoConfStm.metaEng.Put(consts.CUR_TOPO_CONF_VERSION_KEY, []byte(strconv.Itoa(topoConfStm.curConfigVersion+1))); err != nil {

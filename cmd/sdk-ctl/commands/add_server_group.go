@@ -17,25 +17,27 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
-	meta_svr "github.com/eraft-io/eraft/pkg/metaserver"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
-	"github.com/tidwall/pretty"
 
+	meta_svr "github.com/eraft-io/eraft/pkg/metaserver"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/pretty"
 )
 
-var getClusterTopoCmd = &cobra.Command{
-	Use:   "get_cluster_topo [meta server addrs]",
-	Short: "get cluster topology for wellwood cluster",
+var addServerGroupCmd = &cobra.Command{
+	Use:   "add_server_group [metaserver addrs] [gid] [blockserver addrs]",
+	Short: "add block server group to cluster",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		metaServerAddrArr := strings.Split(args[0], ",")
 		metaCli := meta_svr.MakeMetaServerClient(metaServerAddrArr)
+		gid, _ := strconv.Atoi(args[1])
 		req := &pb.ServerGroupMetaConfigRequest{
-			ConfigVersion: -1,
-			OpType:        pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY,
+			ServerGroups: map[int64]string{int64(gid): args[2]},
+			OpType:       pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_JOIN,
 		}
 		resp := metaCli.CallServerGroupMeta(req)
 		data, _ := json.Marshal(resp)
@@ -45,5 +47,5 @@ var getClusterTopoCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(getClusterTopoCmd)
+	rootCmd.AddCommand(addServerGroupCmd)
 }

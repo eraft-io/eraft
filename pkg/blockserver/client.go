@@ -15,26 +15,48 @@
 package blockserver
 
 import (
+	"context"
+
 	"github.com/eraft-io/eraft/pkg/log"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
-	"google.golang.org/grpc"
 )
 
-type BlockServerClientEnd struct {
-	blockServiceCli *pb.FileBlockServiceClient
+type BlockSvrCli struct {
+	endpoints []*FileBlockServiceClientEnd
 }
 
-func MakeBlockServerClient(addr string) *BlockServerClientEnd {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		log.MainLogger.Error().Msgf("make connect block server %s err %s", addr, err.Error())
+func MakeBlockServerClient(blockServerAddrs []string) *BlockSvrCli {
+	blockSvrCli := &BlockSvrCli{}
+	for i, addr := range blockServerAddrs {
+		endpoint := MakeBlockServerClientEnd(addr, uint64(i))
+		blockSvrCli.endpoints = append(blockSvrCli.endpoints, endpoint)
 	}
-	blockSvrCli := pb.NewFileBlockServiceClient(conn)
-	return &BlockServerClientEnd{
-		blockServiceCli: &blockSvrCli,
-	}
+	return blockSvrCli
 }
 
-func (b *BlockServerClientEnd) GetBlockSvrCli() pb.FileBlockServiceClient {
-	return *b.blockServiceCli
+func (cli *BlockSvrCli) CallFileBlockOp(req *pb.FileBlockOpRequest) *pb.FileBlockOpResponse {
+	resp := pb.FileBlockOpResponse{}
+	for _, end := range cli.endpoints {
+		resp, err := (*end.GetFileBlockServiceCli()).FileBlockOp(context.Background(), req)
+		if err != nil {
+			log.MainLogger.Warn().Msgf("a node in cluster is down, try next")
+			continue
+		}
+		switch resp.ErrCode {
+		case pb.ErrCode_NO_ERR:
+			return resp
+		case pb.ErrCode_WRONG_LEADER_ERR:
+			log.MainLogger.Debug().Msgf("find leader with id %d", resp.LeaderId)
+			resp, err := (*cli.endpoints[resp.LeaderId].GetFileBlockServiceCli()).FileBlockOp(context.Background(), req)
+			if err != nil {
+				log.MainLogger.Error().Msgf("a node in cluster is down : " + err.Error())
+				continue
+			}
+			if resp.ErrCode == pb.ErrCode_RPC_CALL_TIMEOUT_ERR {
+				log.MainLogger.Error().Msgf("exec timeout")
+			}
+			return resp
+		}
+	}
+	return &resp
 }

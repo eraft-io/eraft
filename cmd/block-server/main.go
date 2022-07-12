@@ -32,7 +32,7 @@ import (
 
 var nodeId = flag.Int("id", 0, "input this block server node id")
 var nodeAddrs = flag.String("addrs", "127.0.0.1:7088,127.0.0.1:7089,127.0.0.1:7090", "input block server node addrs")
-var dataDir = flag.String("data_path", "./data/block_data", "input block server data path")
+var dataDir = flag.String("data_path", "./data", "input block server data path")
 var groupId = flag.Int("gid", 0, "input this block server node id")
 var metaNodeAddrs = flag.String("meta_addrs", "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", "input block server node addrs")
 
