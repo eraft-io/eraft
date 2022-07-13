@@ -68,6 +68,7 @@ type Raft struct {
 	votedFor     int64
 	grantedVotes int
 	logs         *RaftLog
+	persister    *RaftLog
 
 	commitIdx     int64
 	lastApplied   int64
@@ -223,6 +224,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 					raft.curTerm = snapShotReq.Term
 					raft.votedFor = -1
 					// TO DO PERSIST
+					raft.PersistRaftState()
 				} else {
 					log.MainLogger.Debug().Msgf("set peer %d matchIdx %d\n", peer.id, snapShotReq.LastIncludedIndex)
 					// raft.matchIdx[peer.id] = snapShotResp.Lad
@@ -261,6 +263,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 						raft.curTerm = resp.Term
 						raft.votedFor = None
 						// TO DO persist
+						raft.PersistRaftState()
 					} else if resp.Term == raft.curTerm {
 						raft.nextIdx[peer.id] = int(resp.ConflictIndex)
 						if resp.ConflictTerm != -1 {
@@ -283,6 +286,7 @@ func (raft *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.App
 	raft.mu.Lock()
 	defer raft.mu.Unlock()
 	//TO DO PERSIST
+	defer raft.PersistRaftState()
 
 	if req.Term < raft.curTerm {
 		resp.Term = raft.curTerm
@@ -344,7 +348,7 @@ func (raft *Raft) HandleRequestVote(req *pb.RequestVoteRequest, resp *pb.Request
 	raft.mu.Lock()
 	defer raft.mu.Unlock()
 	// TO DO persistraft
-
+	defer raft.PersistRaftState()
 	log.MainLogger.Debug().Msgf("Handle vote request: %s", req.String())
 
 	canVote := raft.votedFor == req.CandidateId ||
@@ -374,6 +378,7 @@ func (raft *Raft) Append(command []byte) *pb.Entry {
 	raft.matchIdx[raft.me] = int(newLog.Index)
 	raft.nextIdx[raft.me] = raft.matchIdx[raft.me] + 1
 	// TO DO persist
+	raft.PersistRaftState()
 	return newLog
 }
 
@@ -405,6 +410,8 @@ func (raft *Raft) StartNewElection() {
 		LastLogTerm:  int64(raft.logs.GetMemLast().Term),
 	}
 	// TO DO PERSIST RAFT STATE
+	raft.PersistRaftState()
+
 	for _, peer := range raft.peers {
 		if peer.id == uint64(raft.me) || raft.role == LEADER {
 			continue
@@ -436,6 +443,7 @@ func (raft *Raft) StartNewElection() {
 						raft.ChangeRole(FOLLOWER)
 						raft.curTerm, raft.votedFor = requestVoteResp.Term, None
 						// TO DO PERSISTRAFTESTATE
+						raft.PersistRaftState()
 					}
 				}
 			}
@@ -590,4 +598,8 @@ func (raft *Raft) CloseEndsConn() {
 	for _, peer := range raft.peers {
 		peer.CloseAllConn()
 	}
+}
+
+func (raft *Raft) PersistRaftState() {
+	raft.persister.PersistRaftState(raft.curTerm, raft.votedFor)
 }

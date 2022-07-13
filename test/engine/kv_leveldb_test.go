@@ -35,3 +35,18 @@ func TestPutGetLeveldb(t *testing.T) {
 	assert.Equal(t, valBytes, gotBytes)
 	RemoveDir("./test_data")
 }
+
+func TestSeekLeveldb(t *testing.T) {
+	ldb := eng.KvStoreFactory("leveldb", "./test_data")
+	keyBytes := []byte{0x11, 0x11, 0x19, 0x96}
+	valBytes := []byte{0x11, 0x11, 0x19, 0x97}
+	if err := ldb.Put(keyBytes, valBytes); err != nil {
+		panic(err.Error())
+	}
+	gotBytes, err := ldb.Get(keyBytes)
+	if err != nil {
+		panic(err)
+	}
+	assert.Equal(t, valBytes, gotBytes)
+	RemoveDir("./test_data")
+}

@@ -15,16 +15,19 @@
 package raft
 
 import (
+	"sync"
+
+	"github.com/eraft-io/eraft/pkg/engine"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 )
 
 type RaftLog struct {
-	// mu         sync.RWMutex
-	firstIdx uint64
-	lastIdx  uint64
-	// appliedIdx int64
-	items    []*pb.Entry
-	snapShot []byte
+	mu         sync.RWMutex
+	firstIdx   uint64
+	lastIdx    uint64
+	appliedIdx int64
+	items      []*pb.Entry
+	dbEng      engine.KvStore
 }
 
 type LogOp interface {

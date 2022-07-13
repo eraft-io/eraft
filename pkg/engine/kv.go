@@ -21,6 +21,11 @@ type KvStore interface {
 	Get(key []byte) ([]byte, error)
 	Del(key []byte) error
 	GetPrefixRangeKvs(prefix []byte) ([]string, []string, error)
+	SeekPrefixLast(prefix []byte) ([]byte, []byte, error)
+	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
+	DelPrefixKeys(prefix string) error
+	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
+	DumpPrefixKey(string) (map[string]string, error)
 }
 
 func KvStoreFactory(engineName string, path string) KvStore {
