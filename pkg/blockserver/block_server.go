@@ -143,7 +143,8 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 			switch req.OpType {
 			case pb.FileBlockOpType_OP_BLOCK_READ:
 				{
-					fileBytesSeq, err := os.ReadFile(fmt.Sprintf("%s_%d_%d/%s/%d", s.dataPath, s.gid, s.id, req.FileName, req.FileBlocksMeta.BlockId))
+					fromPath := fmt.Sprintf("%s/%s_%d.wwd", s.dataPath, req.FileName, req.FileBlocksMeta.BlockId)
+					fileBytesSeq, err := os.ReadFile(fromPath)
 					if err != nil {
 						resp.ErrCode = pb.ErrCode_READ_FILE_BLOCK_ERR
 					}
