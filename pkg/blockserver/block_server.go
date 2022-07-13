@@ -72,17 +72,17 @@ func (s *BlockServer) RequestVote(ctx context.Context, req *pb.RequestVoteReques
 
 func (s *BlockServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
+	// log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
 	s.rf.HandleAppendEntries(req, resp)
-	log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
+	// log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
 	return resp, nil
 }
 
 func (s *BlockServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
 	resp := &pb.InstallSnapshotResponse{}
-	log.MainLogger.Debug().Msgf("handle snapshot: %s", req.String())
+	// log.MainLogger.Debug().Msgf("handle snapshot: %s", req.String())
 	s.rf.HandleInstallSnapshot(req, resp)
-	log.MainLogger.Debug().Msgf("handle snapshot resp: %s", resp.String())
+	// log.MainLogger.Debug().Msgf("handle snapshot resp: %s", resp.String())
 	return resp, nil
 }
 
@@ -98,7 +98,7 @@ func (s *BlockServer) getRespNotifyChan(logIndex int64) chan *pb.FileBlockOpResp
 }
 
 func (s *BlockServer) FileBlockOp(ctx context.Context, req *pb.FileBlockOpRequest) (*pb.FileBlockOpResponse, error) {
-	log.MainLogger.Debug().Msgf("handle file block op req: %s", req.String())
+	// log.MainLogger.Debug().Msgf("handle file block op req: %s", req.String())
 	resp := &pb.FileBlockOpResponse{}
 	reqByteSeq := EncodeBlockServerRequest(req)
 	logIndex, _, isLeader := s.rf.Propose(reqByteSeq)
@@ -117,7 +117,7 @@ func (s *BlockServer) FileBlockOp(ctx context.Context, req *pb.FileBlockOpReques
 		resp.BlockContent = res.BlockContent
 		resp.ErrCode = res.ErrCode
 		resp.LeaderId = res.LeaderId
-	case <-time.After(time.Second * 10):
+	case <-time.After(time.Second * 3600):
 		delete(s.notifyChans, logIndexInt64)
 		resp.ErrCode = pb.ErrCode_RPC_CALL_TIMEOUT_ERR
 		return resp, errors.New("exec time out")
@@ -151,10 +151,17 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 				}
 			case pb.FileBlockOpType_OP_BLOCK_WRITE:
 				{
+					toPath := fmt.Sprintf("%s/%s_%d.wwd", s.dataPath, req.FileName, req.FileBlocksMeta.BlockId)
+					log.MainLogger.Debug().Msgf("write file path %s", toPath)
 					// TODO: check if can serve slot
-					if err := os.WriteFile(fmt.Sprintf("%s/%s/%d", s.dataPath, req.FileName, req.FileBlocksMeta.BlockId), req.BlockContent, 0644); err != nil {
+					file, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE, 0766)
+					if err != nil {
+						log.MainLogger.Debug().Msgf("write file err %s", err.Error())
+					}
+					if _, err := file.Write([]byte(req.BlockContent)); err != nil {
 						resp.ErrCode = pb.ErrCode_WRITE_FILE_BLOCK_ERR
 					}
+					file.Close()
 				}
 			}
 			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)

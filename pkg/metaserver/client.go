@@ -13,3 +13,51 @@
 // limitations under the License.
 
 package metaserver
+
+import (
+	"context"
+
+	"github.com/eraft-io/eraft/pkg/log"
+	pb "github.com/eraft-io/eraft/pkg/protocol"
+)
+
+type MetaSvrCli struct {
+	endpoints []*MetaServiceClientEnd
+}
+
+func MakeMetaServerClient(metaServerAddrs []string) *MetaSvrCli {
+	metaSvrCli := &MetaSvrCli{}
+	for i, addr := range metaServerAddrs {
+		endpoint := MakeMetaServiceClientEnd(addr, uint64(i))
+		metaSvrCli.endpoints = append(metaSvrCli.endpoints, endpoint)
+	}
+	return metaSvrCli
+}
+
+func (cli *MetaSvrCli) CallServerGroupMeta(req *pb.ServerGroupMetaConfigRequest) *pb.ServerGroupMetaConfigResponse {
+	resp := pb.ServerGroupMetaConfigResponse{}
+	resp.ServerGroupMetas = &pb.ServerGroupMetas{}
+	for _, end := range cli.endpoints {
+		resp, err := (*end.GetMetaServiceCli()).ServerGroupMeta(context.Background(), req)
+		if err != nil {
+			log.MainLogger.Warn().Msgf("a node in cluster is down, try next")
+			continue
+		}
+		switch resp.ErrCode {
+		case pb.ErrCode_NO_ERR:
+			return resp
+		case pb.ErrCode_WRONG_LEADER_ERR:
+			log.MainLogger.Debug().Msgf("find leader with id %d", resp.LeaderId)
+			resp, err := (*cli.endpoints[resp.LeaderId].GetMetaServiceCli()).ServerGroupMeta(context.Background(), req)
+			if err != nil {
+				log.MainLogger.Error().Msgf("a node in cluster is down : " + err.Error())
+				continue
+			}
+			if resp.ErrCode == pb.ErrCode_RPC_CALL_TIMEOUT_ERR {
+				log.MainLogger.Error().Msgf("exec timeout")
+			}
+			return resp
+		}
+	}
+	return &resp
+}
