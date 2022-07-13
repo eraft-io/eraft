@@ -57,10 +57,10 @@ func (c *Client) Bucket(name string) (*pb.Bucket, error) {
 	return nil, nil
 }
 
-func (c *Client) UploadFile(localPath string, bucketId string) error {
+func (c *Client) UploadFile(localPath string, bucketId string) (string, error) {
 	f, err := os.Open(localPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 	fileReader := bufio.NewReader(f)
 	blockBuf := make([]byte, consts.FILE_BLOCK_SIZE)
@@ -70,7 +70,7 @@ func (c *Client) UploadFile(localPath string, bucketId string) error {
 	for {
 		n, err := fileReader.Read(blockBuf)
 		if err != nil && err != io.EOF {
-			return err
+			return "", err
 		}
 		// read last file block
 		if n == 0 {
@@ -83,7 +83,7 @@ func (c *Client) UploadFile(localPath string, bucketId string) error {
 		}
 		serverGroupMetaResp := c.metaSvrCli.CallServerGroupMeta(&req)
 		if err != nil {
-			return err
+			return "", err
 		}
 		blockStr := ""
 		if n < 64 {
@@ -108,10 +108,10 @@ func (c *Client) UploadFile(localPath string, bucketId string) error {
 		}
 		writeBlockResp := c.blockSvrCli.CallFileBlockOp(fileBlockRequest)
 		if err != nil {
-			return err
+			return "", err
 		}
 		if writeBlockResp.ErrCode != pb.ErrCode_NO_ERR {
-			return errors.New("write error")
+			return "", errors.New("write error")
 		}
 		fileBlockMetas = append(fileBlockMetas, blockMeta)
 		index += 1
@@ -130,19 +130,59 @@ func (c *Client) UploadFile(localPath string, bucketId string) error {
 	}
 	serverGroupMetaResp := c.metaSvrCli.CallServerGroupMeta(&req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if serverGroupMetaResp.ErrCode != pb.ErrCode_NO_ERR {
-		return errors.New("write meta error")
+		return "", errors.New("write meta error")
+	}
+	return objRandId, nil
+}
+
+func (c *Client) DownloadFile(bucketId string, objName string, localFilePath string) error {
+	//1.FileBlockMeta find file block meta
+	// query object list
+	req := pb.ServerGroupMetaConfigRequest{
+		ConfigVersion: -1,
+		OpType:        pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_LIST,
+		BucketOpReq: &pb.BucketOpRequest{
+			BucketId: bucketId,
+		},
+	}
+	objListMetaResp := c.metaSvrCli.CallServerGroupMeta(&req)
+	if objListMetaResp.ErrCode != pb.ErrCode_NO_ERR {
+		return errors.New("query object list err")
+	}
+	file, err := os.OpenFile(localFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	for _, obj := range objListMetaResp.BucketOpRes.Objects {
+		if obj.ObjectName == objName {
+			// find block meta
+			// query server group meta
+			req := pb.ServerGroupMetaConfigRequest{
+				ConfigVersion: -1,
+				OpType:        pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY,
+			}
+			serverGroupMetaResp := c.metaSvrCli.CallServerGroupMeta(&req)
+			slotsToGroupArr := serverGroupMetaResp.ServerGroupMetas.Slots
+			for _, blockMeta := range obj.ObjectBlocksMeta {
+				serverGroupAddrs := serverGroupMetaResp.ServerGroupMetas.ServerGroups[slotsToGroupArr[blockMeta.BlockSlotId]]
+				// find block server
+				serverAddrArr := strings.Split(serverGroupAddrs, ",")
+				c.blockSvrCli = blockserver.MakeBlockServerClient(serverAddrArr)
+				fileBlockRequest := &pb.FileBlockOpRequest{
+					FileName:       objName,
+					FileBlocksMeta: blockMeta,
+					OpType:         pb.FileBlockOpType_OP_BLOCK_READ,
+				}
+				readBlockResp := c.blockSvrCli.CallFileBlockOp(fileBlockRequest)
+				writer.Write(readBlockResp.BlockContent)
+				writer.Flush()
+			}
+		}
 	}
 	return nil
 }
-
-// func (c *Client) downloadFile(remotePath string, localFilePath string) error {
-//1.FileBlockMeta find file block meta
-
-//2.call ServerGroupMeta query with servers
-
-//3.call ReadFileBlock to read all file blocks
-// 	return nil
-// }

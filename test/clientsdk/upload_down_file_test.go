@@ -22,5 +22,15 @@ import (
 
 func TestUpload(t *testing.T) {
 	wellWoodCli := clientsdk.NewClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", "", "")
-	wellWoodCli.UploadFile("/Users/colin/Documents/test_flex.pdf", "3f8602ef-9488-419f-a485-4df0cbd73c3")
+	objName, err := wellWoodCli.UploadFile("/Users/colin/Downloads/visualstudioformacpreviewinstaller-17.0.0.223.dmg", "3f8602ef-9488-419f-a485-4df0cbd73c3")
+	if err != nil {
+		t.Log(err.Error())
+	}
+	t.Logf("put object return object name: %s", objName)
+	// fde6fd7d-b064-47cc-872c-15376f8206c3
+}
+
+func TestDownload(t *testing.T) {
+	wellWoodCli := clientsdk.NewClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", "", "")
+	wellWoodCli.DownloadFile("3f8602ef-9488-419f-a485-4df0cbd73c3", "fde6fd7d-b064-47cc-872c-15376f8206c3", "/Users/colin/Documents/visualstudio.dmg")
 }
