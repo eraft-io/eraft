@@ -222,7 +222,7 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 				{
 					objectId := common.GenGoogleUUID()
 					object := &pb.Object{
-						ObjectId:         objectId,
+						ObjectId:         req.BucketOpReq.Object.ObjectId,
 						ObjectName:       req.BucketOpReq.Object.ObjectName,
 						FromBucketId:     req.BucketOpReq.BucketId,
 						ObjectBlocksMeta: req.BucketOpReq.Object.ObjectBlocksMeta,

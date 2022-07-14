@@ -121,6 +121,7 @@ func (c *Client) UploadFile(localPath string, bucketId string) (string, error) {
 		OpType: pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_PUT,
 		BucketOpReq: &pb.BucketOpRequest{
 			Object: &pb.Object{
+				ObjectId:         localPath,
 				ObjectName:       objRandId,
 				FromBucketId:     bucketId,
 				ObjectBlocksMeta: fileBlockMetas,
