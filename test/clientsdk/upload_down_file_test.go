@@ -1,5 +1,3 @@
-package clientsdk
-
 // Copyright [2022] [WellWood] [wellwood-x@googlegroups.com]
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +12,8 @@ package clientsdk
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package clientsdk
+
 import (
 	"testing"
 
@@ -27,7 +27,6 @@ func TestUpload(t *testing.T) {
 		t.Log(err.Error())
 	}
 	t.Logf("put object return object name: %s", objName)
-	// fde6fd7d-b064-47cc-872c-15376f8206c3
 }
 
 func TestDownload(t *testing.T) {
