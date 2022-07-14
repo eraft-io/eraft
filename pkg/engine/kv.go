@@ -26,6 +26,7 @@ type KvStore interface {
 	DelPrefixKeys(prefix string) error
 	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
 	DumpPrefixKey(string) (map[string]string, error)
+	
 }
 
 func KvStoreFactory(engineName string, path string) KvStore {
