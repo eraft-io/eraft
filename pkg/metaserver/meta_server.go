@@ -50,8 +50,8 @@ func MakeMetaServer(nodes map[int]string, nodeId int, dataPath string) *MetaServ
 		clientEnds = append(clientEnds, newEnd)
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
-	// logDbEng := eng.KvStoreFactory("leveldb", fmt.Sprintf("%s/%d", nodeId))
-	newRf := raft.MakeRaft(clientEnds, nodeId, newApplyCh, 500, 1500)
+	logDbEng := eng.KvStoreFactory("leveldb", fmt.Sprintf("%s/log_%d", dataPath,nodeId))
+	newRf := raft.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 500, 1500)
 	metaStorage := eng.KvStoreFactory("leveldb", fmt.Sprintf("%s/%d", dataPath, nodeId))
 	metaServer := &MetaServer{
 		rf:          newRf,
