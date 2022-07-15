@@ -24,7 +24,7 @@ import (
 )
 
 var getObjectCmd = &cobra.Command{
-	Use:   "get_object [meta server addrs] [bucket id] [object id] [local path]",
+	Use:   "get_object [meta server addrs] [bucket id] [object name] [local path]",
 	Short: "get object from wellwood cluster to local",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
