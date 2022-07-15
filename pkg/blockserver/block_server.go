@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	eng "github.com/eraft-io/eraft/pkg/engine"
 	"github.com/eraft-io/eraft/pkg/log"
 
 	"github.com/eraft-io/eraft/pkg/core/raft"
@@ -48,7 +49,8 @@ func MakeBlockServer(nodes map[int]string, nodeId int, groudId int, localDataPat
 		clientEnds = append(clientEnds, newEnd)
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
-	newRf := raft.MakeRaft(clientEnds, nodeId, newApplyCh, 500, 1500)
+	logDbEng := eng.KvStoreFactory("leveldb", fmt.Sprintf("%s/data_log_%d_%d", localDataPath, groudId, nodeId))
+	newRf := raft.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 500, 1500)
 	blockServer := &BlockServer{
 		rf:          newRf,
 		applyCh:     newApplyCh,
