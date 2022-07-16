@@ -15,7 +15,10 @@
 package blockserver
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -38,6 +41,8 @@ type BlockServer struct {
 	notifyChans map[int64]chan *pb.FileBlockOpResponse
 	stopApplyCh chan interface{}
 	dataPath    string
+	lastApplied int
+	stm         map[string]string
 	pb.UnimplementedRaftServiceServer
 	pb.UnimplementedFileBlockServiceServer
 }
@@ -60,6 +65,7 @@ func MakeBlockServer(nodes map[int]string, nodeId int, groudId int, localDataPat
 		notifyChans: make(map[int64]chan *pb.FileBlockOpResponse),
 	}
 	blockServer.stopApplyCh = make(chan interface{})
+	blockServer.restoreSnapshot(newRf.ReadSnapshot())
 	go blockServer.ApplyingToSTM(blockServer.stopApplyCh)
 	return blockServer
 }
@@ -80,14 +86,35 @@ func (s *BlockServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRe
 
 func (s *BlockServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
 	resp := &pb.InstallSnapshotResponse{}
-	// log.MainLogger.Debug().Msgf("handle snapshot: %s", req.String())
 	s.rf.HandleInstallSnapshot(req, resp)
-	// log.MainLogger.Debug().Msgf("handle snapshot resp: %s", resp.String())
 	return resp, nil
 }
 
 func (s *BlockServer) StopAppling() {
 	close(s.applyCh)
+}
+
+func (s *BlockServer) restoreSnapshot(snapData []byte) {
+	if snapData == nil {
+		return
+	}
+	buf := bytes.NewBuffer(snapData)
+	data := gob.NewDecoder(buf)
+	var stm map[string]string
+	if data.Decode(&stm) != nil {
+		log.MainLogger.Debug().Msgf("decode stm data error")
+	}
+	stmBytes, _ := json.Marshal(stm)
+	log.MainLogger.Debug().Msgf("recover stm -> " + string(stmBytes))
+	s.stm = stm
+}
+
+func (s *BlockServer) taskSnapshot(index int) {
+	var bytesState bytes.Buffer
+	enc := gob.NewEncoder(&bytesState)
+	enc.Encode(s.stm)
+	// snapshot
+	s.rf.Snapshot(index, bytesState.Bytes())
 }
 
 func (s *BlockServer) getRespNotifyChan(logIndex int64) chan *pb.FileBlockOpResponse {
@@ -117,7 +144,7 @@ func (s *BlockServer) FileBlockOp(ctx context.Context, req *pb.FileBlockOpReques
 		resp.BlockContent = res.BlockContent
 		resp.ErrCode = res.ErrCode
 		resp.LeaderId = res.LeaderId
-	case <-time.After(time.Second * 3600):
+	case <-time.After(time.Second * 10):
 		delete(s.notifyChans, logIndexInt64)
 		resp.ErrCode = pb.ErrCode_RPC_CALL_TIMEOUT_ERR
 		return resp, errors.New("exec time out")
@@ -138,35 +165,48 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 		case <-done:
 			return
 		case appliedMsg := <-s.applyCh:
-			req := DecodeBlockServerRequest(appliedMsg.Command)
-			resp := &pb.FileBlockOpResponse{}
-			switch req.OpType {
-			case pb.FileBlockOpType_OP_BLOCK_READ:
-				{
-					fromPath := fmt.Sprintf("%s/%d_%d_%s_%d.wwd", s.dataPath, s.id, s.gid, req.FileName, req.FileBlocksMeta.BlockId)
-					fileBytesSeq, err := os.ReadFile(fromPath)
-					if err != nil {
-						resp.ErrCode = pb.ErrCode_READ_FILE_BLOCK_ERR
+			if appliedMsg.CommandValid {
+				req := DecodeBlockServerRequest(appliedMsg.Command)
+				resp := &pb.FileBlockOpResponse{}
+				switch req.OpType {
+				case pb.FileBlockOpType_OP_BLOCK_READ:
+					{
+						fromPath := fmt.Sprintf("%s/%d_%d_%s_%d.wwd", s.dataPath, s.id, s.gid, req.FileName, req.FileBlocksMeta.BlockId)
+						fileBytesSeq, err := os.ReadFile(fromPath)
+						if err != nil {
+							resp.ErrCode = pb.ErrCode_READ_FILE_BLOCK_ERR
+						}
+						resp.BlockContent = fileBytesSeq
 					}
-					resp.BlockContent = fileBytesSeq
+				case pb.FileBlockOpType_OP_BLOCK_WRITE:
+					{
+						toPath := fmt.Sprintf("%s/%d_%d_%s_%d.wwd", s.dataPath, s.id, s.gid, req.FileName, req.FileBlocksMeta.BlockId)
+						log.MainLogger.Debug().Msgf("write file path %s", toPath)
+						// TODO: check if can serve slot
+						file, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE, 0766)
+						if err != nil {
+							log.MainLogger.Debug().Msgf("write file err %s", err.Error())
+						}
+						if _, err := file.Write([]byte(req.BlockContent)); err != nil {
+							resp.ErrCode = pb.ErrCode_WRITE_FILE_BLOCK_ERR
+						}
+						file.Close()
+					}
 				}
-			case pb.FileBlockOpType_OP_BLOCK_WRITE:
-				{
-					toPath := fmt.Sprintf("%s/%d_%d_%s_%d.wwd", s.dataPath, s.id, s.gid, req.FileName, req.FileBlocksMeta.BlockId)
-					log.MainLogger.Debug().Msgf("write file path %s", toPath)
-					// TODO: check if can serve slot
-					file, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE, 0766)
-					if err != nil {
-						log.MainLogger.Debug().Msgf("write file err %s", err.Error())
-					}
-					if _, err := file.Write([]byte(req.BlockContent)); err != nil {
-						resp.ErrCode = pb.ErrCode_WRITE_FILE_BLOCK_ERR
-					}
-					file.Close()
+				s.lastApplied = int(appliedMsg.CommandIndex)
+				if s.rf.GetLogCount() > 10 {
+					s.taskSnapshot(int(appliedMsg.CommandIndex))
 				}
+				ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
+				ch <- resp
+			} else if appliedMsg.SnapshotValid {
+				s.mu.Lock()
+				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
+					s.restoreSnapshot(appliedMsg.Snapshot)
+					s.lastApplied = int(appliedMsg.SnapshotIndex)
+				}
+				s.mu.Unlock()
 			}
-			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
-			ch <- resp
 		}
 	}
 }
