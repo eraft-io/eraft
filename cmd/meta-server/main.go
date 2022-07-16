@@ -18,6 +18,8 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
@@ -34,6 +36,7 @@ import (
 var nodeId = flag.Int("id", 0, "input this meta server node id")
 var nodeAddrs = flag.String("addrs", "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", "input meta server node addrs")
 var dataDir = flag.String("data_path", "./data", "input meta server data path")
+var monitorAddrs = flag.String("monitor_addrs", ":18088,:18089,:18090", "input block server monitor addrs")
 
 func main() {
 	flag.Parse()
@@ -45,6 +48,10 @@ func main() {
 	nodeAddrsArr := strings.Split(*nodeAddrs, ",")
 	for i, addr := range nodeAddrsArr {
 		metaSvrPeersMap[i] = addr
+	}
+	monitorSvrPeersMap := make(map[int]string)
+	for i, addr := range strings.Split(*monitorAddrs, ",") {
+		monitorSvrPeersMap[i] = addr
 	}
 	metaServer := meta_svr.MakeMetaServer(metaSvrPeersMap, *nodeId, *dataDir)
 	svr := grpc.NewServer()
@@ -64,6 +71,12 @@ func main() {
 		log.MainLogger.Error().Msgf("meta server failed to listen: %v", err)
 		return
 	}
+	go func() {
+		if err := http.ListenAndServe(monitorSvrPeersMap[*nodeId], nil); err != nil {
+			log.MainLogger.Error().Msgf("block server monitor failed to: %v", err)
+		}
+		os.Exit(0)
+	}()
 	log.MainLogger.Info().Msgf("meta server success listen on: %s", metaSvrPeersMap[*nodeId])
 	if err := svr.Serve(lis); err != nil {
 		log.MainLogger.Error().Msgf("meta server failed to serve: %v", err)

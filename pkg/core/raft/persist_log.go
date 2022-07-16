@@ -156,8 +156,8 @@ func (rfLog *RaftLog) EraseBeforeWithDel(idx int64) error {
 // Append
 // append a new entry to raftlog, put it to storage engine
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
-	// rfLog.mu.Lock()
-	// defer rfLog.mu.Unlock()
+	rfLog.mu.Lock()
+	defer rfLog.mu.Unlock()
 	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(consts.RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)

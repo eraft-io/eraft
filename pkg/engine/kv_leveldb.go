@@ -82,26 +82,16 @@ func (levelDB *KvStoreLevelDB) SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
 	defer iter.Release()
 	var maxKeyId uint64
 	maxKeyId = 0
-	if iter.Last() {
+	for iter.Next() {
+		if iter.Error() != nil {
+			return maxKeyId, iter.Error()
+		}
 		kBytes := iter.Key()
 		KeyId := binary.LittleEndian.Uint64(kBytes[len(prefix):])
 		if KeyId > maxKeyId {
 			maxKeyId = KeyId
 		}
-	} else {
-		return maxKeyId, iter.Error()
 	}
-	// lastEnt := iter.Last()
-	// for iter.Next() {
-	// 	if iter.Error() != nil {
-	// 		return maxKeyId, iter.Error()
-	// 	}
-	// 	kBytes := iter.Key()
-	// 	KeyId := binary.LittleEndian.Uint64(kBytes[len(prefix):])
-	// 	if KeyId > maxKeyId {
-	// 		maxKeyId = KeyId
-	// 	}
-	// }
 	return maxKeyId, nil
 }
 
