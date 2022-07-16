@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -145,9 +144,7 @@ func (s *BlockServer) FileBlockOp(ctx context.Context, req *pb.FileBlockOpReques
 		resp.ErrCode = res.ErrCode
 		resp.LeaderId = res.LeaderId
 	case <-time.After(time.Second * 10):
-		delete(s.notifyChans, logIndexInt64)
 		resp.ErrCode = pb.ErrCode_RPC_CALL_TIMEOUT_ERR
-		return resp, errors.New("exec time out")
 	}
 
 	go func() {
@@ -197,7 +194,9 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 				if s.rf.GetLogCount() > 10 {
 					s.taskSnapshot(int(appliedMsg.CommandIndex))
 				}
+				s.mu.Lock()
 				ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
+				s.mu.Unlock()
 				ch <- resp
 			} else if appliedMsg.SnapshotValid {
 				s.mu.Lock()

@@ -22,12 +22,11 @@ import (
 )
 
 type RaftLog struct {
-	mu         sync.RWMutex
-	firstIdx   uint64
-	lastIdx    uint64
-	appliedIdx int64
-	items      []*pb.Entry
-	dbEng      engine.KvStore
+	mu       sync.RWMutex
+	firstIdx uint64
+	lastIdx  uint64
+	items    []*pb.Entry
+	dbEng    engine.KvStore
 }
 
 type LogOp interface {
