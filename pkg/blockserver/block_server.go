@@ -143,7 +143,7 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 			switch req.OpType {
 			case pb.FileBlockOpType_OP_BLOCK_READ:
 				{
-					fromPath := fmt.Sprintf("%s/%s_%d.wwd", s.dataPath, req.FileName, req.FileBlocksMeta.BlockId)
+					fromPath := fmt.Sprintf("%s/%d_%d_%s_%d.wwd", s.dataPath, s.id, s.gid, req.FileName, req.FileBlocksMeta.BlockId)
 					fileBytesSeq, err := os.ReadFile(fromPath)
 					if err != nil {
 						resp.ErrCode = pb.ErrCode_READ_FILE_BLOCK_ERR
@@ -152,7 +152,7 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 				}
 			case pb.FileBlockOpType_OP_BLOCK_WRITE:
 				{
-					toPath := fmt.Sprintf("%s/%s_%d.wwd", s.dataPath, req.FileName, req.FileBlocksMeta.BlockId)
+					toPath := fmt.Sprintf("%s/%d_%d_%s_%d.wwd", s.dataPath, s.id, s.gid, req.FileName, req.FileBlocksMeta.BlockId)
 					log.MainLogger.Debug().Msgf("write file path %s", toPath)
 					// TODO: check if can serve slot
 					file, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE, 0766)
