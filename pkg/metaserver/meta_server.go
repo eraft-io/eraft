@@ -15,7 +15,10 @@
 package metaserver
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -38,7 +41,9 @@ type MetaServer struct {
 	notifyChans map[int64]chan *pb.ServerGroupMetaConfigResponse
 	metaEng     eng.KvStore
 	stm         TopoConfigSTM
+	confStm     map[string]string
 	stopApplyCh chan interface{}
+	lastApplied int
 	pb.UnimplementedRaftServiceServer
 	pb.UnimplementedMetaServiceServer
 }
@@ -61,6 +66,7 @@ func MakeMetaServer(nodes map[int]string, nodeId int, dataPath string) *MetaServ
 		notifyChans: make(map[int64]chan *pb.ServerGroupMetaConfigResponse),
 	}
 	metaServer.stopApplyCh = make(chan interface{})
+	metaServer.restoreSnapshot(newRf.ReadSnapshot())
 	go metaServer.ApplingToSTM(metaServer.stopApplyCh)
 	return metaServer
 }
@@ -99,6 +105,29 @@ func (s *MetaServer) getRespNotifyChan(logIndex int64) chan *pb.ServerGroupMetaC
 		s.notifyChans[logIndex] = make(chan *pb.ServerGroupMetaConfigResponse, 1)
 	}
 	return s.notifyChans[logIndex]
+}
+
+func (s *MetaServer) restoreSnapshot(snapData []byte) {
+	if snapData == nil {
+		return
+	}
+	buf := bytes.NewBuffer(snapData)
+	data := gob.NewDecoder(buf)
+	var stm map[string]string
+	if data.Decode(&stm) != nil {
+		log.MainLogger.Debug().Msgf("decode stm data error")
+	}
+	stmBytes, _ := json.Marshal(stm)
+	log.MainLogger.Debug().Msgf("recover stm -> " + string(stmBytes))
+	s.confStm = stm
+}
+
+func (s *MetaServer) taskSnapshot(index int) {
+	var bytesState bytes.Buffer
+	enc := gob.NewEncoder(&bytesState)
+	enc.Encode(s.confStm)
+	// snapshot
+	s.rf.Snapshot(index, bytesState.Bytes())
 }
 
 func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMetaConfigRequest) (*pb.ServerGroupMetaConfigResponse, error) {
@@ -140,128 +169,141 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 		case <-done:
 			return
 		case appliedMsg := <-s.applyCh:
-			req := DecodeServerGroupMetaRequest(appliedMsg.Command)
-			resp := &pb.ServerGroupMetaConfigResponse{}
-			switch req.OpType {
-			case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_JOIN:
-				{
-					serverGroups := map[int][]string{}
-					for gid, addrs := range req.ServerGroups {
-						serverGroups[int(gid)] = strings.Split(addrs, ",")
-					}
-					err := s.stm.Join(serverGroups)
-					if err != nil {
-						resp.ErrCode = pb.ErrCode_APPLY_JOIN_TODO_TO_STM_ERR
-					}
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_LEAVE:
-				{
-					gids := []int{}
-					for _, gid := range req.Gids {
-						gids = append(gids, int(gid))
-					}
-					if err := s.stm.Leave(gids); err != nil {
-						resp.ErrCode = pb.ErrCode_APPLY_LEAVE_TODO_TO_STM_ERR
-					}
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY:
-				{
-					topoConf, err := s.stm.Query(int(req.ConfigVersion))
-					if err != nil {
-						resp.ErrCode = pb.ErrCode_APPLY_QUERY_TOPO_CONF_ERR
-					}
-					resp.ServerGroupMetas = &pb.ServerGroupMetas{}
-					resp.ServerGroupMetas.ConfigVersion = int64(topoConf.Version)
-					resp.ServerGroupMetas.ServerGroups = make(map[int64]string)
-					for gid, servers := range topoConf.ServerGroups {
-						resp.ServerGroupMetas.ServerGroups[int64(gid)] = strings.Join(servers, ",")
-					}
-					for _, slot := range topoConf.Slots {
-						resp.ServerGroupMetas.Slots = append(resp.ServerGroupMetas.Slots, int64(slot))
-					}
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_ADD:
-				{
-					bucketId := common.GenGoogleUUID()
-					bucket := &pb.Bucket{
-						BucketId:   bucketId,
-						BucketName: req.BucketOpReq.BucketName,
-					}
-					log.MainLogger.Debug().Msgf("add bucket %s with id %s", bucket.BucketName, bucket.BucketId)
-					bucketEncodeKey := EncodeBucketKey(bucketId)
-					bucketEncodeVal := EncodeBucket(bucket)
-					if err := s.metaEng.Put(bucketEncodeKey, bucketEncodeVal); err != nil {
-						resp.ErrCode = pb.ErrCode_PUT_BUCKET_TO_ENG_ERR
-					}
-					resp.ErrCode = pb.ErrCode_NO_ERR
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_DEL:
-				{
-					bucketEncodeKey := EncodeBucketKey(req.BucketOpReq.BucketId)
-					if err := s.metaEng.Del(bucketEncodeKey); err != nil {
-						resp.ErrCode = pb.ErrCode_DEL_BUCKET_FROM_ENG_ERR
-					}
-					resp.ErrCode = pb.ErrCode_NO_ERR
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_LIST:
-				{
-					_, vals, err := s.metaEng.GetPrefixRangeKvs(consts.BUCKET_META_PREFIX)
-					if err != nil {
-						panic(err.Error())
-					}
-					resp.BucketOpRes = &pb.BucketOpResponse{}
-					resp.BucketOpRes.Buckets = make([]*pb.Bucket, 0)
-					log.MainLogger.Debug().Msgf("get vals count %d", len(vals))
-					for _, v := range vals {
-						bucket := DecodeBucket([]byte(v))
-						log.MainLogger.Debug().Msgf("decode bucket %v", []byte(v))
-						resp.BucketOpRes.Buckets = append(resp.BucketOpRes.Buckets, bucket)
-					}
-					resp.ErrCode = pb.ErrCode_NO_ERR
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_PUT:
-				{
-					objectId := common.GenGoogleUUID()
-					object := &pb.Object{
-						ObjectId:         req.BucketOpReq.Object.ObjectId,
-						ObjectName:       req.BucketOpReq.Object.ObjectName,
-						FromBucketId:     req.BucketOpReq.BucketId,
-						ObjectBlocksMeta: req.BucketOpReq.Object.ObjectBlocksMeta,
-					}
-					log.MainLogger.Debug().Msgf("add object %s with id %s", object.ObjectName, object.ObjectId)
-					objEncodeKey := EncodeObjectKey(objectId)
-					objEncodeVal := EncodeObject(object)
-					if err := s.metaEng.Put(objEncodeKey, objEncodeVal); err != nil {
-						resp.ErrCode = pb.ErrCode_PUT_OBJECT_META_TO_ENG_ERR
-					}
-					resp.ErrCode = pb.ErrCode_NO_ERR
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_GET:
-				{
-
-				}
-			case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_LIST:
-				{
-					_, vals, err := s.metaEng.GetPrefixRangeKvs(consts.OBJECT_META_PREFIX)
-					if err != nil {
-						panic(err.Error())
-					}
-					resp.BucketOpRes = &pb.BucketOpResponse{}
-					resp.BucketOpRes.Objects = make([]*pb.Object, 0)
-					log.MainLogger.Debug().Msgf("get objects count %d", len(vals))
-					for _, v := range vals {
-						obj := DecodeObject([]byte(v))
-						log.MainLogger.Debug().Msgf("decode obj %v", []byte(v))
-						if obj.FromBucketId == req.BucketOpReq.BucketId {
-							resp.BucketOpRes.Objects = append(resp.BucketOpRes.Objects, obj)
+			if appliedMsg.CommandValid {
+				req := DecodeServerGroupMetaRequest(appliedMsg.Command)
+				resp := &pb.ServerGroupMetaConfigResponse{}
+				switch req.OpType {
+				case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_JOIN:
+					{
+						serverGroups := map[int][]string{}
+						for gid, addrs := range req.ServerGroups {
+							serverGroups[int(gid)] = strings.Split(addrs, ",")
+						}
+						err := s.stm.Join(serverGroups)
+						if err != nil {
+							resp.ErrCode = pb.ErrCode_APPLY_JOIN_TODO_TO_STM_ERR
 						}
 					}
-					resp.ErrCode = pb.ErrCode_NO_ERR
+				case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_LEAVE:
+					{
+						gids := []int{}
+						for _, gid := range req.Gids {
+							gids = append(gids, int(gid))
+						}
+						if err := s.stm.Leave(gids); err != nil {
+							resp.ErrCode = pb.ErrCode_APPLY_LEAVE_TODO_TO_STM_ERR
+						}
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY:
+					{
+						topoConf, err := s.stm.Query(int(req.ConfigVersion))
+						if err != nil {
+							resp.ErrCode = pb.ErrCode_APPLY_QUERY_TOPO_CONF_ERR
+						}
+						resp.ServerGroupMetas = &pb.ServerGroupMetas{}
+						resp.ServerGroupMetas.ConfigVersion = int64(topoConf.Version)
+						resp.ServerGroupMetas.ServerGroups = make(map[int64]string)
+						for gid, servers := range topoConf.ServerGroups {
+							resp.ServerGroupMetas.ServerGroups[int64(gid)] = strings.Join(servers, ",")
+						}
+						for _, slot := range topoConf.Slots {
+							resp.ServerGroupMetas.Slots = append(resp.ServerGroupMetas.Slots, int64(slot))
+						}
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_ADD:
+					{
+						bucketId := common.GenGoogleUUID()
+						bucket := &pb.Bucket{
+							BucketId:   bucketId,
+							BucketName: req.BucketOpReq.BucketName,
+						}
+						log.MainLogger.Debug().Msgf("add bucket %s with id %s", bucket.BucketName, bucket.BucketId)
+						bucketEncodeKey := EncodeBucketKey(bucketId)
+						bucketEncodeVal := EncodeBucket(bucket)
+						if err := s.metaEng.Put(bucketEncodeKey, bucketEncodeVal); err != nil {
+							resp.ErrCode = pb.ErrCode_PUT_BUCKET_TO_ENG_ERR
+						}
+						resp.ErrCode = pb.ErrCode_NO_ERR
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_DEL:
+					{
+						bucketEncodeKey := EncodeBucketKey(req.BucketOpReq.BucketId)
+						if err := s.metaEng.Del(bucketEncodeKey); err != nil {
+							resp.ErrCode = pb.ErrCode_DEL_BUCKET_FROM_ENG_ERR
+						}
+						resp.ErrCode = pb.ErrCode_NO_ERR
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_OSS_BUCKET_LIST:
+					{
+						_, vals, err := s.metaEng.GetPrefixRangeKvs(consts.BUCKET_META_PREFIX)
+						if err != nil {
+							panic(err.Error())
+						}
+						resp.BucketOpRes = &pb.BucketOpResponse{}
+						resp.BucketOpRes.Buckets = make([]*pb.Bucket, 0)
+						log.MainLogger.Debug().Msgf("get vals count %d", len(vals))
+						for _, v := range vals {
+							bucket := DecodeBucket([]byte(v))
+							log.MainLogger.Debug().Msgf("decode bucket %v", []byte(v))
+							resp.BucketOpRes.Buckets = append(resp.BucketOpRes.Buckets, bucket)
+						}
+						resp.ErrCode = pb.ErrCode_NO_ERR
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_PUT:
+					{
+						objectId := common.GenGoogleUUID()
+						object := &pb.Object{
+							ObjectId:         req.BucketOpReq.Object.ObjectId,
+							ObjectName:       req.BucketOpReq.Object.ObjectName,
+							FromBucketId:     req.BucketOpReq.BucketId,
+							ObjectBlocksMeta: req.BucketOpReq.Object.ObjectBlocksMeta,
+						}
+						log.MainLogger.Debug().Msgf("add object %s with id %s", object.ObjectName, object.ObjectId)
+						objEncodeKey := EncodeObjectKey(objectId)
+						objEncodeVal := EncodeObject(object)
+						if err := s.metaEng.Put(objEncodeKey, objEncodeVal); err != nil {
+							resp.ErrCode = pb.ErrCode_PUT_OBJECT_META_TO_ENG_ERR
+						}
+						resp.ErrCode = pb.ErrCode_NO_ERR
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_GET:
+					{
+
+					}
+				case pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_LIST:
+					{
+						_, vals, err := s.metaEng.GetPrefixRangeKvs(consts.OBJECT_META_PREFIX)
+						if err != nil {
+							panic(err.Error())
+						}
+						resp.BucketOpRes = &pb.BucketOpResponse{}
+						resp.BucketOpRes.Objects = make([]*pb.Object, 0)
+						log.MainLogger.Debug().Msgf("get objects count %d", len(vals))
+						for _, v := range vals {
+							obj := DecodeObject([]byte(v))
+							log.MainLogger.Debug().Msgf("decode obj %v", []byte(v))
+							if obj.FromBucketId == req.BucketOpReq.BucketId {
+								resp.BucketOpRes.Objects = append(resp.BucketOpRes.Objects, obj)
+							}
+						}
+						resp.ErrCode = pb.ErrCode_NO_ERR
+					}
 				}
+				s.lastApplied = int(appliedMsg.CommandIndex)
+				if s.rf.GetLogCount() > 10 {
+					s.taskSnapshot(int(appliedMsg.CommandIndex))
+				}
+				log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
+				ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
+				ch <- resp
+			} else if appliedMsg.SnapshotValid {
+				s.mu.Lock()
+				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
+					s.restoreSnapshot(appliedMsg.Snapshot)
+					s.lastApplied = int(appliedMsg.SnapshotIndex)
+				}
+				s.mu.Unlock()
 			}
-			log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
-			ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
-			ch <- resp
 		}
 	}
 }
