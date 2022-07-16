@@ -41,3 +41,18 @@ func CalFileCheckSumMD5(path string) [16]byte {
 	md5_check_sum = md5.Sum(content)
 	return md5_check_sum
 }
+
+// ReadFilesMetaInDir ...
+func ReadFileMetaInDir(path string) ([]string, int64, error) {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return []string{}, 0, err
+	}
+	fileNames := []string{}
+	var totalSize int64
+	for _, file := range files {
+		fileNames = append(fileNames, file.Name())
+		totalSize += file.Size()
+	}
+	return fileNames, totalSize, nil
+}

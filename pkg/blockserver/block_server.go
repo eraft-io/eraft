@@ -74,9 +74,7 @@ func (s *BlockServer) RequestVote(ctx context.Context, req *pb.RequestVoteReques
 
 func (s *BlockServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	// log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
 	s.rf.HandleAppendEntries(req, resp)
-	// log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
 	return resp, nil
 }
 
