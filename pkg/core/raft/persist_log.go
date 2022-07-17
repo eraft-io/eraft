@@ -156,8 +156,8 @@ func (rfLog *RaftLog) EraseBeforeWithDel(idx int64) error {
 // Append
 // append a new entry to raftlog, put it to storage engine
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
-	// rfLog.mu.Lock()
-	// defer rfLog.mu.Unlock()
+	rfLog.mu.Lock()
+	defer rfLog.mu.Unlock()
 	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(consts.RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
@@ -300,7 +300,7 @@ func EncodeRaftLogKey(idx uint64) []byte {
 	var outBuf bytes.Buffer
 	outBuf.Write(consts.RAFTLOG_PREFIX)
 	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(idx))
+	binary.BigEndian.PutUint64(b, uint64(idx))
 	outBuf.Write(b)
 	return outBuf.Bytes()
 }
@@ -308,7 +308,7 @@ func EncodeRaftLogKey(idx uint64) []byte {
 // DecodeRaftLogKey
 // deocde raft log key, return log id
 func DecodeRaftLogKey(bts []byte) uint64 {
-	return binary.LittleEndian.Uint64(bts[4:])
+	return binary.BigEndian.Uint64(bts[4:])
 }
 
 // EncodeEntry

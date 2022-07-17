@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -150,10 +149,8 @@ func (s *MetaServer) ServerGroupMeta(ctx context.Context, req *pb.ServerGroupMet
 		resp.ServerGroupMetas = res.ServerGroupMetas
 		resp.BucketOpRes = res.BucketOpRes
 		resp.ErrCode = pb.ErrCode_NO_ERR
-	case <-time.After(time.Second * 10):
-		delete(s.notifyChans, logIndexInt64)
+	case <-time.After(time.Second * 3):
 		resp.ErrCode = pb.ErrCode_RPC_CALL_TIMEOUT_ERR
-		return resp, errors.New("exec time out")
 	}
 	go func() {
 		s.mu.Lock()
@@ -294,7 +291,9 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 					s.taskSnapshot(int(appliedMsg.CommandIndex))
 				}
 				log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
+				s.mu.Lock()
 				ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
+				s.mu.Unlock()
 				ch <- resp
 			} else if appliedMsg.SnapshotValid {
 				s.mu.Lock()
