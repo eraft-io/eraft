@@ -83,7 +83,7 @@ func (rfLog *RaftLog) GetEntry(idx int64) *pb.Entry {
 func (rfLog *RaftLog) GetEnt(index int64) *pb.Entry {
 	encodeValue, err := rfLog.dbEng.Get(EncodeRaftLogKey(uint64(index)))
 	if err != nil {
-		log.MainLogger.Debug().Msgf("get log entry with id %d error! fristlod index is %d\n", int64(index), rfLog.firstIdx)
+		log.MainLogger.Debug().Msgf("get log entry with id %d error! fristlog index is %d, lastlog index is %d\n", int64(index), rfLog.firstIdx, rfLog.lastIdx)
 		panic(err)
 	}
 	return DecodeEntry(encodeValue)

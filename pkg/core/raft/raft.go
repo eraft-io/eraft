@@ -377,7 +377,7 @@ func (raft *Raft) HandleRequestVote(req *pb.RequestVoteRequest, resp *pb.Request
 		resp.Term, resp.VoteGranted = raft.curTerm, false
 		return
 	}
-
+	log.MainLogger.Debug().Msgf("peer %d vote %d", raft.me, req.CandidateId)
 	raft.votedFor = req.CandidateId
 	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
 }
