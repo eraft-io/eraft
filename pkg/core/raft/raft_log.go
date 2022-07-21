@@ -68,11 +68,13 @@ func (raftlog *RaftLog) MemLogItemCount() int {
 
 func (raftlog *RaftLog) EraseMemBefore(idx int64) []*pb.Entry {
 	raftlog.items = raftlog.items[idx:]
+	raftlog.firstIdx = uint64(idx)
 	return raftlog.items
 }
 
 func (raftlog *RaftLog) EraseMemAfter(idx int64) []*pb.Entry {
 	raftlog.items = raftlog.items[:idx]
+	raftlog.lastIdx = uint64(idx)
 	return raftlog.items
 }
 
@@ -90,6 +92,7 @@ func (raftlog *RaftLog) GetMemRange(lo, hi int64) []*pb.Entry {
 
 func (raftlog *RaftLog) MemAppend(newEnt *pb.Entry) {
 	raftlog.items = append(raftlog.items, newEnt)
+	raftlog.lastIdx = uint64(newEnt.Index)
 }
 
 func (raftlog *RaftLog) GetMemEntry(idx int64) *pb.Entry {
@@ -97,5 +100,5 @@ func (raftlog *RaftLog) GetMemEntry(idx int64) *pb.Entry {
 }
 
 func (raftlog *RaftLog) GetMemLast() *pb.Entry {
-	return raftlog.items[len(raftlog.items)-1]
+	return raftlog.items[raftlog.lastIdx]
 }

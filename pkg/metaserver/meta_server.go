@@ -287,9 +287,9 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 					}
 				}
 				s.lastApplied = int(appliedMsg.CommandIndex)
-				if s.rf.GetLogCount() > 10 {
-					s.taskSnapshot(int(appliedMsg.CommandIndex))
-				}
+				// if s.rf.GetLogCount() > 10 {
+				// 	s.taskSnapshot(int(appliedMsg.CommandIndex))
+				// }
 				log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
 				s.mu.Lock()
 				ch := s.getRespNotifyChan(appliedMsg.CommandIndex)
