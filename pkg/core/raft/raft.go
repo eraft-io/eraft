@@ -206,7 +206,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 	}
 	prevLogIndex := uint64(raft.nextIdx[peer.id] - 1)
 	log.MainLogger.Debug().Msgf("leader lastlogidx %d", raft.logs.GetLastLogId())
-	log.MainLogger.Debug().Msgf("leader prevLogIndex %d", prevLogIndex)
+	log.MainLogger.Debug().Msgf("leader prevLogIndex %d\n", prevLogIndex)
 	// snapshot
 	// if prevLogIndex < uint64(raft.logs.GetFirst().GetIndex()) {
 	// 	firstLog := raft.logs.GetFirst()
@@ -246,7 +246,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 		raft.mu.Unlock()
 	} else {
 		firstIndex := raft.logs.firstIdx
-		log.MainLogger.Debug().Msgf("first log index %d", firstIndex)
+		// log.MainLogger.Debug().Msgf("first log index %d", firstIndex)
 		// entries := make([]*pb.Entry, len(raft.logs.EraseBefore(int64(prevLogIndex)-firstIndex+1)))
 		// copy(entries, raft.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex))
 		entries := make([]*pb.Entry, raft.logs.lastIdx-prevLogIndex)
@@ -274,17 +274,19 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 					raft.nextIdx[peer.id] = raft.matchIdx[peer.id] + 1
 					raft.advanceCommitIndexForLeader()
 				} else {
-					if resp.Term > raft.curTerm {
+					if resp.Term > appendEntReq.Term {
 						raft.ChangeRole(FOLLOWER)
 						raft.curTerm = resp.Term
 						raft.votedFor = None
 						// TO DO persist
 						raft.PersistRaftState()
-					} else if resp.Term == raft.curTerm {
+					// } else if resp.Term == raft.curTerm {
+					}else {
 						raft.nextIdx[peer.id] = int(resp.ConflictIndex)
 						if resp.ConflictTerm != -1 {
 							for i := appendEntReq.PrevLogIndex; i >= int64(firstIndex); i-- {
-								if raft.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.GetConflictTerm()) {
+								// if raft.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.GetConflictTerm()) {
+								if raft.logs.GetEntry(i).Term == uint64(resp.GetConflictTerm()) {
 									raft.nextIdx[peer.id] = int(i + 1)
 									break
 								}
@@ -303,60 +305,59 @@ func (raft *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.App
 	defer raft.mu.Unlock()
 	//TO DO PERSIST
 	defer raft.PersistRaftState()
+	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
 
 	if req.Term < raft.curTerm {
 		resp.Term = raft.curTerm
 		resp.Success = false
 		return
 	}
-
 	if req.Term > raft.curTerm {
 		raft.curTerm = req.Term
 		raft.votedFor = None
 	}
-
 	raft.ChangeRole(FOLLOWER)
 	raft.leaderId = req.LeaderId
-	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
-
-	if req.PrevLogIndex < int64(raft.logs.firstIdx) {
-		resp.Term = 0
-		resp.Success = false
-		log.MainLogger.Debug().Msgf("peer %d reject append entires request from %d", raft.me, req.LeaderId)
-		return
-	}
+	
+	// if req.PrevLogIndex < int64(raft.logs.firstIdx) {
+	// 	resp.Term = 0
+	// 	resp.Success = false
+	// 	log.MainLogger.Debug().Msgf("peer %d reject append entires request from %d", raft.me, req.LeaderId)
+	// 	return
+	// }
 
 	if !raft.MatchLog(req.PrevLogTerm, req.PrevLogIndex) {
 		resp.Term, resp.Success = raft.curTerm, false
 		lastIndex := int64(raft.logs.lastIdx)
-		if lastIndex < req.PrevLogIndex {
+		if lastIndex < req.PrevLogIndex+1 {
 			log.MainLogger.Debug().Msgf("log confict with term %d, index %d", -1, lastIndex+1)
 			resp.ConflictIndex, resp.ConflictTerm = lastIndex+1, -1
 		} else {
 			firstIndex := int64(raft.logs.firstIdx)
-			resp.ConflictTerm = int64(raft.logs.GetEntry(req.PrevLogIndex - firstIndex).Term)
-			index := req.PrevLogIndex - 1
-			for index >= firstIndex && raft.logs.GetEntry(index-firstIndex).Term == uint64(resp.ConflictIndex) {
+			// resp.ConflictTerm = int64(raft.logs.GetEntry(req.PrevLogIndex - firstIndex).Term)
+			resp.ConflictTerm = int64(raft.logs.GetEntry(req.PrevLogIndex).Term)
+			index := req.PrevLogIndex
+			for index >= firstIndex && raft.logs.GetEntry(index).Term == uint64(resp.ConflictIndex) {
 				index--
 			}
 			resp.ConflictIndex = index
 		}
 		return
-	}
-
-	firstIndex := int64(raft.logs.firstIdx)
-	for index, entry := range req.Entries {
-		if int(entry.Index-firstIndex) >= raft.logs.LogItemCount() || raft.logs.GetEntry(entry.Index-firstIndex).Term != entry.Term {
-			raft.logs.EraseAfter(entry.Index-firstIndex, true)
-			for _, newEnt := range req.Entries[index:] {
-				raft.logs.Append(newEnt)
+	}else {
+		firstIndex := int64(raft.logs.firstIdx)
+		for index, entry := range req.Entries {
+			// if int(entry.Index-firstIndex) >= raft.logs.LogItemCount() || raft.logs.GetEntry(entry.Index-firstIndex).Term != entry.Term {
+			if int(entry.Index-firstIndex) >= raft.logs.LogItemCount() || raft.logs.GetEntry(entry.Index).Term != entry.Term {
+				raft.logs.EraseAfter(entry.Index, true)
+				for _, newEnt := range req.Entries[index:] {
+					raft.logs.Append(newEnt)
+				}
+				break
 			}
-			break
 		}
+		raft.advanceCommitIndexForFollower(int(req.LeaderCommit))
+		resp.Term, resp.Success = raft.curTerm, true	
 	}
-
-	raft.advanceCommitIndexForFollower(int(req.LeaderCommit))
-	resp.Term, resp.Success = raft.curTerm, true
 }
 
 // HandleRequestVote  handle request vote from other node
@@ -469,6 +470,64 @@ func (raft *Raft) StartNewElection() {
 	}
 }
 
+func (raft *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	log.MainLogger.Debug().Msgf("follower start install snapshot\n")
+	if lastIncludedIndex <= int(raft.commitIdx) {
+		return false
+	}
+
+	if lastIncludedIndex > int(raft.logs.lastIdx) {
+		log.MainLogger.Debug().Msgf("lastIncludedIndex > last log id")
+		raft.logs.ReInitLogs()
+	} else {
+		log.MainLogger.Debug().Msgf("install snapshot del old log")
+		// raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex) - int64(raft.logs.firstIdx))
+		raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex))
+		// raft.logs.SetEntFirstData([]byte{})
+	}
+
+	raft.logs.SetEntFirstTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
+
+	raft.lastApplied = int64(lastIncludedIndex)
+	raft.commitIdx = int64(lastIncludedIndex)
+
+	return true
+}
+
+func (raft *Raft) isUpToDate(lastIdx, term int64) bool {
+	return term > int64(raft.logs.GetLast().Term) || (term == int64(raft.logs.GetLast().Term) && lastIdx >= int64(raft.logs.lastIdx))
+}
+
+// take a snapshot
+func (raft *Raft) Snapshot(index int, snapshot []byte) {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	raft.isSnapshoting = true
+
+	firstIndex := raft.logs.GetFirstLogId()
+	if index <= int(firstIndex) {
+		raft.isSnapshoting = false
+		log.MainLogger.Debug().Msgf("reject snapshot, current snapshotIndex is larger in cur term")
+		return
+	}
+	log.MainLogger.Debug().Msgf("take a snapshot, index:%d", index)
+	raft.logs.EraseBeforeWithDel(int64(index))
+	// raft.logs.SetEntFirstData([]byte{})
+	// log.MainLogger.Debug().Msgf("del log entry before idx %d", index)
+	raft.isSnapshoting = false
+	raft.logs.PersisSnapshot(snapshot)
+}
+
+func (raft *Raft) ReadSnapshot() []byte {
+	b, err := raft.logs.ReadSnapshot()
+	if err != nil {
+		log.MainLogger.Debug().Msgf(err.Error())
+	}
+	return b
+}
+
 // install snapshot from leader
 func (raft *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, response *pb.InstallSnapshotResponse) {
 	raft.mu.Lock()
@@ -488,10 +547,10 @@ func (raft *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, resp
 
 	raft.ChangeRole(FOLLOWER)
 	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
-
-	if request.LastIncludedIndex <= raft.commitIdx {
-		return
-	}
+	//
+	// if request.LastIncludedIndex <= raft.commitIdx {
+	// 	return
+	// }
 
 	go func() {
 		raft.applyCh <- &pb.ApplyMsg{
@@ -590,7 +649,7 @@ func (raft *Raft) GetLogCount() int {
 // MatchLog is log matched
 //
 func (raft *Raft) MatchLog(term, index int64) bool {
-	return index <= int64(raft.logs.lastIdx) &&
+	return index <= int64(raft.logs.lastIdx) && index >= int64(raft.logs.firstIdx) &&
 		raft.logs.GetEntry(index).Term == uint64(term)
 }
 
@@ -616,64 +675,6 @@ func (raft *Raft) ChangeRole(newrole RAFTROLE) {
 		raft.electionTimer.Stop()
 		raft.heartBeatTimer.Reset(time.Duration(raft.heartBeatTimeout) * time.Millisecond)
 	}
-}
-
-func (raft *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
-	raft.mu.Lock()
-	defer raft.mu.Unlock()
-
-	if lastIncludedIndex <= int(raft.commitIdx) {
-		return false
-	}
-
-	if lastIncludedIndex > int(raft.logs.lastIdx) {
-		log.MainLogger.Debug().Msgf("lastIncludedIndex > last log id")
-		raft.logs.ReInitLogs()
-	} else {
-		log.MainLogger.Debug().Msgf("install snapshot del old log")
-		// raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex) - int64(raft.logs.firstIdx))
-		raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex))
-		// raft.logs.SetEntFirstData([]byte{})
-	}
-
-	raft.logs.SetEntFirstTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
-
-	raft.lastApplied = int64(lastIncludedIndex)
-	raft.commitIdx = int64(lastIncludedIndex)
-
-	return true
-}
-
-func (raft *Raft) isUpToDate(lastIdx, term int64) bool {
-	return term > int64(raft.logs.GetLast().Term) || (term == int64(raft.logs.GetLast().Term) && lastIdx >= int64(raft.logs.lastIdx))
-}
-
-// take a snapshot
-func (raft *Raft) Snapshot(index int, snapshot []byte) {
-	raft.mu.Lock()
-	defer raft.mu.Unlock()
-	raft.isSnapshoting = true
-
-	firstIndex := raft.logs.GetFirstLogId()
-	if index <= int(firstIndex) {
-		raft.isSnapshoting = false
-		log.MainLogger.Debug().Msgf("reject snapshot, current snapshotIndex is larger in cur term")
-		return
-	}
-	log.MainLogger.Debug().Msgf("take a snapshot, index:%d", index)
-	raft.logs.EraseBeforeWithDel(int64(index))
-	// raft.logs.SetEntFirstData([]byte{})
-	log.MainLogger.Debug().Msgf("del log entry before idx %d", index)
-	raft.isSnapshoting = false
-	raft.logs.PersisSnapshot(snapshot)
-}
-
-func (raft *Raft) ReadSnapshot() []byte {
-	b, err := raft.logs.ReadSnapshot()
-	if err != nil {
-		log.MainLogger.Debug().Msgf(err.Error())
-	}
-	return b
 }
 
 // CloseEndsConn close rpc client connect

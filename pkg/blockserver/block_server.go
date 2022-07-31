@@ -191,7 +191,7 @@ func (s *BlockServer) ApplyingToSTM(done <-chan interface{}) {
 					}
 				}
 				s.lastApplied = int(appliedMsg.CommandIndex)
-				if s.rf.GetLogCount() > 10 {
+				if s.rf.GetLogCount() > 20 {
 					s.taskSnapshot(int(appliedMsg.CommandIndex))
 				}
 				s.mu.Lock()

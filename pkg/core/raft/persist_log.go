@@ -62,6 +62,7 @@ func (rfLog *RaftLog) ReadRaftState() (curTerm int64, votedFor int64) {
 
 func (rfLog *RaftLog) PersisSnapshot(snapContext []byte) {
 	rfLog.dbEng.Put(consts.SNAPSHOT_STATE_KEY, snapContext)
+	// rfLog.dbEng.GetPrefixRangeKvs(consts.RAFTLOG_PREFIX)
 }
 
 func (rfLog *RaftLog) ReadSnapshot() ([]byte, error) {
@@ -84,6 +85,7 @@ func (rfLog *RaftLog) GetEnt(index int64) *pb.Entry {
 	encodeValue, err := rfLog.dbEng.Get(EncodeRaftLogKey(uint64(index)))
 	if err != nil {
 		log.MainLogger.Debug().Msgf("get log entry with id %d error! fristlog index is %d, lastlog index is %d\n", int64(index), rfLog.firstIdx, rfLog.lastIdx)
+		rfLog.dbEng.GetPrefixRangeKvs(consts.RAFTLOG_PREFIX)
 		panic(err)
 	}
 	return DecodeEntry(encodeValue)
@@ -109,6 +111,7 @@ func (rfLog *RaftLog) EraseAfter(idx int64, withDel bool) []*pb.Entry {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
 	firstLogId := rfLog.GetFirstLogId()
+	log.MainLogger.Debug().Msgf("start erase after %d\n", idx)
 	if withDel {
 		// for i := int64(firstLogId) + idx; i <= int64(rfLog.GetLastLogId()); i++ {
 		// 	if err := rfLog.dbEng.Del(EncodeRaftLogKey(uint64(i))); err != nil {
@@ -158,10 +161,12 @@ func (rfLog *RaftLog) EraseBeforeWithDel(idx int64) error {
 	firstLogId := rfLog.GetFirstLogId()
 	for i := firstLogId; i < uint64(idx); i++ {
 		if err := rfLog.dbEng.Del(EncodeRaftLogKey(i)); err != nil {
+			log.MainLogger.Debug().Msgf("Erase before error\n")
 			return err
 		}
 		log.MainLogger.Debug().Msgf("del log with id %d success", i)
 	}
+	// rfLog.dbEng.GetPrefixRangeKvs(consts.RAFTLOG_PREFIX)
 	rfLog.firstIdx = uint64(idx)
 	log.MainLogger.Debug().Msgf("After erase log, firstIdx: %d, lastIdx: %d\n", rfLog.firstIdx, rfLog.lastIdx)
 	return nil
@@ -252,6 +257,7 @@ func (rfLog *RaftLog) SetEntFirstTermAndIndex(term, index int64) error {
 		panic(err)
 	}
 	// del olf first ent
+	log.MainLogger.Debug().Msgf("del log index:%d\n", firstIdx)
 	if err := rfLog.dbEng.Del(EncodeRaftLogKey(firstIdx)); err != nil {
 		return err
 	}
@@ -260,6 +266,7 @@ func (rfLog *RaftLog) SetEntFirstTermAndIndex(term, index int64) error {
 	ent.Index = index
 	log.MainLogger.Debug().Msgf("change first ent to -> " + ent.String())
 	newEntEncode := EncodeEntry(ent)
+	rfLog.firstIdx, rfLog.lastIdx = uint64(index), uint64(index)
 	return rfLog.dbEng.Put(EncodeRaftLogKey(uint64(index)), newEntEncode)
 }
 
@@ -268,6 +275,7 @@ func (rfLog *RaftLog) SetEntFirstTermAndIndex(term, index int64) error {
 func (rfLog *RaftLog) ReInitLogs() error {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
+	log.MainLogger.Debug().Msgf("start reinitlogs\n")
 	// delete all log
 	if err := rfLog.dbEng.DelPrefixKeys(string(consts.RAFTLOG_PREFIX)); err != nil {
 		return err

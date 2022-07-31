@@ -41,7 +41,11 @@ func MakeLevelDBKvStore(dbPath string) (*KvStoreLevelDB, error) {
 }
 
 func (ldb *KvStoreLevelDB) Put(k []byte, v []byte) error {
+	log.MainLogger.Debug().Msgf("engine put key:%v to levedb\n", k)
 	return ldb.db.Put(k, v, nil)
+	// ldb.db.Put(k, v, nil)
+	// ldb.GetPrefixRangeKvs([]byte{0x11, 0x11, 0x19, 0x96})
+	// return ldb.db.Put(k, v, nil)
 }
 
 func (ldb *KvStoreLevelDB) Get(k []byte) ([]byte, error) {
@@ -50,6 +54,11 @@ func (ldb *KvStoreLevelDB) Get(k []byte) ([]byte, error) {
 
 func (ldb *KvStoreLevelDB) Del(k []byte) error {
 	return ldb.db.Delete(k, nil)
+	// log.MainLogger.Debug().Msgf("start del %v \n", k)
+	// ldb.db.Delete(k, nil)
+	// ldb.GetPrefixRangeKvs([]byte{0x11, 0x11, 0x19, 0x96})
+	// log.MainLogger.Debug().Msgf("end del\n")
+	// return ldb.db.Delete(k, nil)
 }
 
 func (ldb *KvStoreLevelDB) GetPrefixRangeKvs(prefix []byte) ([]string, []string, error) {
@@ -57,7 +66,8 @@ func (ldb *KvStoreLevelDB) GetPrefixRangeKvs(prefix []byte) ([]string, []string,
 	vals := make([]string, 0)
 	iter := ldb.db.NewIterator(util.BytesPrefix([]byte(prefix)), nil)
 	for iter.Next() {
-		log.MainLogger.Debug().Msgf("leveldb iter key -> %v, val -> %v", iter.Key(), iter.Value())
+		// log.MainLogger.Debug().Msgf("leveldb iter key -> %v, val -> %v", iter.Key(), iter.Value())
+		log.MainLogger.Debug().Msgf("leveldb iter key -> %v", iter.Key())
 		keys = append(keys, string(iter.Key()))
 		vals = append(vals, string(iter.Value()))
 	}
