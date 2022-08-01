@@ -110,10 +110,11 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng engine.KvStore, applych c
 	newraft.curTerm, newraft.votedFor = newraft.persister.ReadRaftState()
 	newraft.ReInitLog()
 	newraft.applyCond = sync.NewCond(&newraft.mu)
-	lastLog := newraft.logs.GetLast()
+	// lastLog := newraft.logs.GetLast()
+	LastLogIndex := newraft.logs.lastIdx
 	for _, peer := range peers {
 		log.MainLogger.Debug().Msgf("peer addr:%s   id:%d ", peer.addr, peer.id)
-		newraft.matchIdx[peer.id], newraft.nextIdx[peer.id] = 0, int(lastLog.Index+1)
+		newraft.matchIdx[peer.id], newraft.nextIdx[peer.id] = 0, int(LastLogIndex)+1
 		if int(peer.id) != me {
 			newraft.replicatorCond[peer.id] = sync.NewCond(&sync.Mutex{})
 			go newraft.Replicator(peer)
@@ -160,10 +161,13 @@ func (raft *Raft) Applier() {
 			log.MainLogger.Debug().Msgf("applier ... ")
 			raft.applyCond.Wait()
 		}
-		firstIndex, commitIndex, lastApplied := raft.logs.GetFirst().Index, raft.commitIdx, raft.lastApplied
+		// firstIndex, commitIndex, lastApplied := raft.logs.GetFirst().Index, raft.commitIdx, raft.lastApplied
+		// entries := make([]*pb.Entry, commitIndex-lastApplied)
+		// copy(entries, raft.logs.GetRange(lastApplied+1-int64(firstIndex), commitIndex+1-int64(firstIndex)))
+		commitIndex, lastApplied := raft.commitIdx, raft.lastApplied
 		entries := make([]*pb.Entry, commitIndex-lastApplied)
-		copy(entries, raft.logs.GetRange(lastApplied+1-int64(firstIndex), commitIndex+1-int64(firstIndex)))
-		log.MainLogger.Debug().Msgf("%d, applies entries %d-%d in term %d", raft.me, raft.lastApplied, commitIndex, raft.curTerm)
+		log.MainLogger.Debug().Msgf("%d, applies entries %d-%d in term %d", raft.me, raft.lastApplied+1, commitIndex, raft.curTerm)
+		copy(entries, raft.logs.GetRange(lastApplied+1, commitIndex+1))
 		raft.mu.Unlock()
 		for _, entry := range entries {
 			raft.applyCh <- &pb.ApplyMsg{
@@ -185,7 +189,8 @@ func (raft *Raft) Replicator(peer *RaftClientEnd) {
 	defer raft.replicatorCond[peer.id].L.Unlock()
 	for !raft.IsKilled() {
 		log.MainLogger.Debug().Msgf("peer id:%d wait for replicating...", peer.id)
-		for !(raft.role == LEADER && raft.matchIdx[peer.id] < int(raft.logs.GetLast().Index)) {
+		// for !(raft.role == LEADER && raft.matchIdx[peer.id] < int(raft.logs.GetLast().Index)) {
+		for !(raft.role == LEADER && raft.matchIdx[peer.id] < int(raft.logs.lastIdx)) {
 			raft.replicatorCond[peer.id].Wait()
 		}
 		raft.replicatorOneRound(peer)
@@ -200,9 +205,12 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 		return
 	}
 	prevLogIndex := uint64(raft.nextIdx[peer.id] - 1)
-	log.MainLogger.Debug().Msgf("leader prevLogIndex %d", prevLogIndex)
+	log.MainLogger.Debug().Msgf("leader lastlogidx %d", raft.logs.GetLastLogId())
+	log.MainLogger.Debug().Msgf("leader prevLogIndex %d\n", prevLogIndex)
 	// snapshot
-	if prevLogIndex < uint64(raft.logs.GetFirst().GetIndex()) {
+	// if prevLogIndex < uint64(raft.logs.GetFirst().GetIndex()) {
+	// 	firstLog := raft.logs.GetFirst()
+	if prevLogIndex < raft.logs.firstIdx {
 		firstLog := raft.logs.GetFirst()
 		snapShotReq := &pb.InstallSnapshotRequest{
 			Term:              raft.curTerm,
@@ -237,15 +245,18 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 		}
 		raft.mu.Unlock()
 	} else {
-		firstIndex := raft.logs.GetFirst().Index
-		log.MainLogger.Debug().Msgf("first log index %d", firstIndex)
-		entries := make([]*pb.Entry, len(raft.logs.EraseBefore(int64(prevLogIndex)-firstIndex+1)))
-		copy(entries, raft.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex))
+		firstIndex := raft.logs.firstIdx
+		// log.MainLogger.Debug().Msgf("first log index %d", firstIndex)
+		// entries := make([]*pb.Entry, len(raft.logs.EraseBefore(int64(prevLogIndex)-firstIndex+1)))
+		// copy(entries, raft.logs.EraseBefore(int64(prevLogIndex)+1-firstIndex))
+		entries := make([]*pb.Entry, raft.logs.lastIdx-prevLogIndex)
+		log.MainLogger.Debug().Msgf("Leader need copy %d entries to peer %d\n", (raft.logs.lastIdx - prevLogIndex), peer.id)
+		copy(entries, raft.logs.EraseBefore(int64(prevLogIndex)+1))
 		appendEntReq := &pb.AppendEntriesRequest{
 			Term:         raft.curTerm,
 			LeaderId:     int64(raft.me),
 			PrevLogIndex: int64(prevLogIndex),
-			PrevLogTerm:  int64(raft.logs.GetEntry(int64(prevLogIndex) - firstIndex).Term),
+			PrevLogTerm:  int64(raft.logs.GetEntry(int64(prevLogIndex)).Term),
 			Entries:      entries,
 			LeaderCommit: raft.commitIdx,
 		}
@@ -263,17 +274,19 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 					raft.nextIdx[peer.id] = raft.matchIdx[peer.id] + 1
 					raft.advanceCommitIndexForLeader()
 				} else {
-					if resp.Term > raft.curTerm {
+					if resp.Term > appendEntReq.Term {
 						raft.ChangeRole(FOLLOWER)
 						raft.curTerm = resp.Term
 						raft.votedFor = None
 						// TO DO persist
 						raft.PersistRaftState()
-					} else if resp.Term == raft.curTerm {
+					// } else if resp.Term == raft.curTerm {
+					}else {
 						raft.nextIdx[peer.id] = int(resp.ConflictIndex)
 						if resp.ConflictTerm != -1 {
-							for i := appendEntReq.PrevLogIndex; i >= firstIndex; i-- {
-								if raft.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.GetConflictTerm()) {
+							for i := appendEntReq.PrevLogIndex; i >= int64(firstIndex); i-- {
+								// if raft.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.GetConflictTerm()) {
+								if raft.logs.GetEntry(i).Term == uint64(resp.GetConflictTerm()) {
 									raft.nextIdx[peer.id] = int(i + 1)
 									break
 								}
@@ -292,60 +305,59 @@ func (raft *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.App
 	defer raft.mu.Unlock()
 	//TO DO PERSIST
 	defer raft.PersistRaftState()
+	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
 
 	if req.Term < raft.curTerm {
 		resp.Term = raft.curTerm
 		resp.Success = false
 		return
 	}
-
 	if req.Term > raft.curTerm {
 		raft.curTerm = req.Term
 		raft.votedFor = None
 	}
-
 	raft.ChangeRole(FOLLOWER)
 	raft.leaderId = req.LeaderId
-	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
-
-	if req.PrevLogIndex < raft.logs.GetFirst().Index {
-		resp.Term = 0
-		resp.Success = false
-		log.MainLogger.Debug().Msgf("peer %d reject append entires request from %d", raft.me, req.LeaderId)
-		return
-	}
+	
+	// if req.PrevLogIndex < int64(raft.logs.firstIdx) {
+	// 	resp.Term = 0
+	// 	resp.Success = false
+	// 	log.MainLogger.Debug().Msgf("peer %d reject append entires request from %d", raft.me, req.LeaderId)
+	// 	return
+	// }
 
 	if !raft.MatchLog(req.PrevLogTerm, req.PrevLogIndex) {
 		resp.Term, resp.Success = raft.curTerm, false
-		lastIndex := raft.logs.GetLast().Index
-		if lastIndex < req.PrevLogIndex {
+		lastIndex := int64(raft.logs.lastIdx)
+		if lastIndex < req.PrevLogIndex+1 {
 			log.MainLogger.Debug().Msgf("log confict with term %d, index %d", -1, lastIndex+1)
 			resp.ConflictIndex, resp.ConflictTerm = lastIndex+1, -1
 		} else {
-			firstIndex := raft.logs.GetFirst().Index
-			resp.ConflictTerm = int64(raft.logs.GetEntry(req.PrevLogIndex - firstIndex).Term)
-			index := req.PrevLogIndex - 1
-			for index >= firstIndex && raft.logs.GetEntry(index-firstIndex).Term == uint64(resp.ConflictIndex) {
+			firstIndex := int64(raft.logs.firstIdx)
+			// resp.ConflictTerm = int64(raft.logs.GetEntry(req.PrevLogIndex - firstIndex).Term)
+			resp.ConflictTerm = int64(raft.logs.GetEntry(req.PrevLogIndex).Term)
+			index := req.PrevLogIndex
+			for index >= firstIndex && raft.logs.GetEntry(index).Term == uint64(resp.ConflictIndex) {
 				index--
 			}
 			resp.ConflictIndex = index
 		}
 		return
-	}
-
-	firstIndex := raft.logs.GetFirst().Index
-	for index, entry := range req.Entries {
-		if int(entry.Index-firstIndex) >= raft.logs.LogItemCount() || raft.logs.GetEntry(entry.Index-firstIndex).Term != entry.Term {
-			raft.logs.EraseAfter(entry.Index-firstIndex, true)
-			for _, newEnt := range req.Entries[index:] {
-				raft.logs.Append(newEnt)
+	}else {
+		firstIndex := int64(raft.logs.firstIdx)
+		for index, entry := range req.Entries {
+			// if int(entry.Index-firstIndex) >= raft.logs.LogItemCount() || raft.logs.GetEntry(entry.Index-firstIndex).Term != entry.Term {
+			if int(entry.Index-firstIndex) >= raft.logs.LogItemCount() || raft.logs.GetEntry(entry.Index).Term != entry.Term {
+				raft.logs.EraseAfter(entry.Index, true)
+				for _, newEnt := range req.Entries[index:] {
+					raft.logs.Append(newEnt)
+				}
+				break
 			}
-			break
 		}
+		raft.advanceCommitIndexForFollower(int(req.LeaderCommit))
+		resp.Term, resp.Success = raft.curTerm, true	
 	}
-
-	raft.advanceCommitIndexForFollower(int(req.LeaderCommit))
-	resp.Term, resp.Success = raft.curTerm, true
 }
 
 // HandleRequestVote  handle request vote from other node
@@ -366,19 +378,21 @@ func (raft *Raft) HandleRequestVote(req *pb.RequestVoteRequest, resp *pb.Request
 		resp.Term, resp.VoteGranted = raft.curTerm, false
 		return
 	}
-
+	log.MainLogger.Debug().Msgf("peer %d vote %d", raft.me, req.CandidateId)
 	raft.votedFor = req.CandidateId
 	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
 }
 
 // Append append a new command to it's logs
 func (raft *Raft) Append(command []byte) *pb.Entry {
-	lastLog := raft.logs.GetLast()
+	// lastLog := raft.logs.GetLast()
+	lastLogIdx := raft.logs.lastIdx
 	newLog := &pb.Entry{
-		Index: lastLog.Index + 1,
+		Index: int64(lastLogIdx) + 1,
 		Term:  uint64(raft.curTerm),
 		Data:  command,
 	}
+	// atomic.AddUint64(&raft.logs.lastIdx, 1)
 	raft.logs.Append(newLog)
 	raft.matchIdx[raft.me] = int(newLog.Index)
 	raft.nextIdx[raft.me] = raft.matchIdx[raft.me] + 1
@@ -411,7 +425,7 @@ func (raft *Raft) StartNewElection() {
 	voteReq := &pb.RequestVoteRequest{
 		Term:         raft.curTerm,
 		CandidateId:  int64(raft.me),
-		LastLogIndex: raft.logs.GetLast().Index,
+		LastLogIndex: int64(raft.logs.lastIdx),
 		LastLogTerm:  int64(raft.logs.GetLast().Term),
 	}
 	// TO DO PERSIST RAFT STATE
@@ -456,6 +470,64 @@ func (raft *Raft) StartNewElection() {
 	}
 }
 
+func (raft *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	log.MainLogger.Debug().Msgf("follower start install snapshot\n")
+	if lastIncludedIndex <= int(raft.commitIdx) {
+		return false
+	}
+
+	if lastIncludedIndex > int(raft.logs.lastIdx) {
+		log.MainLogger.Debug().Msgf("lastIncludedIndex > last log id")
+		raft.logs.ReInitLogs()
+	} else {
+		log.MainLogger.Debug().Msgf("install snapshot del old log")
+		// raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex) - int64(raft.logs.firstIdx))
+		raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex))
+		// raft.logs.SetEntFirstData([]byte{})
+	}
+
+	raft.logs.SetEntFirstTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
+
+	raft.lastApplied = int64(lastIncludedIndex)
+	raft.commitIdx = int64(lastIncludedIndex)
+
+	return true
+}
+
+func (raft *Raft) isUpToDate(lastIdx, term int64) bool {
+	return term > int64(raft.logs.GetLast().Term) || (term == int64(raft.logs.GetLast().Term) && lastIdx >= int64(raft.logs.lastIdx))
+}
+
+// take a snapshot
+func (raft *Raft) Snapshot(index int, snapshot []byte) {
+	raft.mu.Lock()
+	defer raft.mu.Unlock()
+	raft.isSnapshoting = true
+
+	firstIndex := raft.logs.GetFirstLogId()
+	if index <= int(firstIndex) {
+		raft.isSnapshoting = false
+		log.MainLogger.Debug().Msgf("reject snapshot, current snapshotIndex is larger in cur term")
+		return
+	}
+	log.MainLogger.Debug().Msgf("take a snapshot, index:%d", index)
+	raft.logs.EraseBeforeWithDel(int64(index))
+	// raft.logs.SetEntFirstData([]byte{})
+	// log.MainLogger.Debug().Msgf("del log entry before idx %d", index)
+	raft.isSnapshoting = false
+	raft.logs.PersisSnapshot(snapshot)
+}
+
+func (raft *Raft) ReadSnapshot() []byte {
+	b, err := raft.logs.ReadSnapshot()
+	if err != nil {
+		log.MainLogger.Debug().Msgf(err.Error())
+	}
+	return b
+}
+
 // install snapshot from leader
 func (raft *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, response *pb.InstallSnapshotResponse) {
 	raft.mu.Lock()
@@ -475,10 +547,10 @@ func (raft *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, resp
 
 	raft.ChangeRole(FOLLOWER)
 	raft.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(raft.baseElecTimeout))))
-
-	if request.LastIncludedIndex <= raft.commitIdx {
-		return
-	}
+	//
+	// if request.LastIncludedIndex <= raft.commitIdx {
+	// 	return
+	// }
 
 	go func() {
 		raft.applyCh <- &pb.ApplyMsg{
@@ -491,12 +563,13 @@ func (raft *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, resp
 }
 
 func (raft *Raft) advanceCommitIndexForLeader() {
-	sort.Ints(raft.matchIdx)
-	n := len(raft.matchIdx)
-	newCommitIndex := raft.matchIdx[n/2]
+	match := raft.matchIdx
+	sort.Ints(match)
+	n := len(match)
+	newCommitIndex := match[n/2]
 	if int64(newCommitIndex) > raft.commitIdx {
 		if raft.MatchLog(raft.curTerm, int64(newCommitIndex)) {
-			log.MainLogger.Debug().Msgf("peer %d advance commit index %d at term %d", raft.me, raft.commitIdx, raft.curTerm)
+			log.MainLogger.Debug().Msgf("Leader peer %d advance commit index %d at term %d", raft.me, newCommitIndex, raft.curTerm)
 			raft.commitIdx = int64(newCommitIndex)
 			raft.applyCond.Signal()
 		}
@@ -504,9 +577,9 @@ func (raft *Raft) advanceCommitIndexForLeader() {
 }
 
 func (raft *Raft) advanceCommitIndexForFollower(leaderCommit int) {
-	newCommitIndex := Min(leaderCommit, int(raft.logs.GetLast().Index))
+	newCommitIndex := Min(leaderCommit, int(raft.logs.lastIdx))
 	if newCommitIndex > int(raft.commitIdx) {
-		PrintDebugLog(fmt.Sprintf("peer %d advance commit index %d at term %d", raft.me, raft.commitIdx, raft.curTerm))
+		PrintDebugLog(fmt.Sprintf("Follower peer %d advance commit index %d at term %d", raft.me, newCommitIndex, raft.curTerm))
 		raft.commitIdx = int64(newCommitIndex)
 		raft.applyCond.Signal()
 	}
@@ -576,8 +649,8 @@ func (raft *Raft) GetLogCount() int {
 // MatchLog is log matched
 //
 func (raft *Raft) MatchLog(term, index int64) bool {
-	return index <= int64(raft.logs.GetLast().Index) &&
-		raft.logs.GetEntry(index-int64(raft.logs.GetFirst().Index)).Term == uint64(term)
+	return index <= int64(raft.logs.lastIdx) && index >= int64(raft.logs.firstIdx) &&
+		raft.logs.GetEntry(index).Term == uint64(term)
 }
 
 // change raft node's role to new role
@@ -602,62 +675,6 @@ func (raft *Raft) ChangeRole(newrole RAFTROLE) {
 		raft.electionTimer.Stop()
 		raft.heartBeatTimer.Reset(time.Duration(raft.heartBeatTimeout) * time.Millisecond)
 	}
-}
-
-func (raft *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
-	raft.mu.Lock()
-	defer raft.mu.Unlock()
-
-	if lastIncludedIndex <= int(raft.commitIdx) {
-		return false
-	}
-
-	if lastIncludedIndex > int(raft.logs.GetLast().Index) {
-		log.MainLogger.Debug().Msgf("lastIncludedIndex > last log id")
-		raft.logs.ReInitLogs()
-	} else {
-		log.MainLogger.Debug().Msgf("install snapshot del old log")
-		raft.logs.EraseBeforeWithDel(int64(lastIncludedIndex) - raft.logs.GetFirst().Index)
-		raft.logs.SetEntFirstData([]byte{})
-	}
-
-	raft.logs.SetEntFirstTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
-
-	raft.lastApplied = int64(lastIncludedIndex)
-	raft.commitIdx = int64(lastIncludedIndex)
-
-	return true
-}
-
-func (raft *Raft) isUpToDate(lastIdx, term int64) bool {
-	return term > int64(raft.logs.GetLast().Term) || (term == int64(raft.logs.GetLast().Term) && lastIdx >= int64(raft.logs.GetLast().Index))
-}
-
-// take a snapshot
-func (raft *Raft) Snapshot(index int, snapshot []byte) {
-	raft.mu.Lock()
-	defer raft.mu.Unlock()
-	raft.isSnapshoting = true
-
-	snapshotIndex := raft.logs.GetFirstLogId()
-	if index <= int(snapshotIndex) {
-		raft.isSnapshoting = false
-		log.MainLogger.Debug().Msgf("reject snapshot, current snapshotIndex is larger in cur term")
-		return
-	}
-	raft.logs.EraseBeforeWithDel(int64(index) - int64(snapshotIndex))
-	raft.logs.SetEntFirstData([]byte{})
-	log.MainLogger.Debug().Msgf("del log entry before idx %d", index)
-	raft.isSnapshoting = false
-	raft.logs.PersisSnapshot(snapshot)
-}
-
-func (raft *Raft) ReadSnapshot() []byte {
-	b, err := raft.logs.ReadSnapshot()
-	if err != nil {
-		log.MainLogger.Debug().Msgf(err.Error())
-	}
-	return b
 }
 
 // CloseEndsConn close rpc client connect

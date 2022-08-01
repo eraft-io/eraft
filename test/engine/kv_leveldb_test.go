@@ -73,8 +73,11 @@ func TestIterLeveldb(t *testing.T) {
 
 	iter := leveldb.NewIterator(util.BytesPrefix([]byte{0x11}), &opt.ReadOptions{})
 	defer iter.Release()
+	i := int32(0)
 	for iter.Next() {
 		t.Log(fmt.Println(string(iter.Key()) + string(iter.Value())))
+		i++
 	}
+	assert.Equal(t, i, int32(3))
 	RemoveDir("./test_data")
 }
