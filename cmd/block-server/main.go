@@ -27,6 +27,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/eraft-io/eraft/pkg/blockserver"
+	"github.com/eraft-io/eraft/pkg/consts"
 	"github.com/eraft-io/eraft/pkg/log"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
 	"google.golang.org/grpc"
@@ -55,7 +56,7 @@ func main() {
 	}
 	metaAddrsArr := strings.Split(*metaNodeAddrs, ",")
 	blockServer := blockserver.MakeBlockServer(blockSvrPeersMap, *nodeId, *groupId, *dataDir, metaAddrsArr)
-	svr := grpc.NewServer()
+	svr := grpc.NewServer(grpc.MaxSendMsgSize(consts.MAX_GRPC_SEND_MSG_SIZE), grpc.MaxRecvMsgSize(consts.MAX_GRPC_RECV_MSG_SIZE))
 	pb.RegisterRaftServiceServer(svr, blockServer)
 	pb.RegisterFileBlockServiceServer(svr, blockServer)
 	sigChan := make(chan os.Signal, 1)

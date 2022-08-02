@@ -43,3 +43,7 @@ var RAFT_STATE_KEY = []byte{0x19, 0x49}
 const INIT_LOG_INDEX = 0
 
 var SNAPSHOT_STATE_KEY = []byte{0x19, 0x97}
+
+const MAX_GRPC_SEND_MSG_SIZE = 1024 * 1024 * 200
+
+const MAX_GRPC_RECV_MSG_SIZE = 1024 * 1024 * 200
