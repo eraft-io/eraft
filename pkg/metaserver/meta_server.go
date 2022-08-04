@@ -81,9 +81,9 @@ func (s *MetaServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest
 
 func (s *MetaServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
+	// log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
 	s.rf.HandleAppendEntries(req, resp)
-	log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
+	// log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
 	return resp, nil
 }
 
