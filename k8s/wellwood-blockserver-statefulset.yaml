@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
       - name: init-blockserver
-        image: eraft/eraft_wellwood:v2
+        image: eraft/eraft_wellwood:v3
         command:
         - bash
         - "-c"
@@ -29,7 +29,7 @@ spec:
           mountPath: /mnt/data
       containers:
       - name: wellwood-blockserver
-        image: eraft/eraft_wellwood:v2
+        image: eraft/eraft_wellwood:v3
         command:
         - bash
         - "-c"
