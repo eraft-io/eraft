@@ -57,7 +57,7 @@ func (ldb *KvStoreLevelDB) GetPrefixRangeKvs(prefix []byte) ([]string, []string,
 	vals := make([]string, 0)
 	iter := ldb.db.NewIterator(util.BytesPrefix([]byte(prefix)), nil)
 	for iter.Next() {
-		log.MainLogger.Debug().Msgf("leveldb iter key -> %v, val -> %v", iter.Key(), iter.Value())
+		log.MainLogger.Debug().Msgf("leveldb iter key -> %v", iter.Key())
 		keys = append(keys, string(iter.Key()))
 		vals = append(vals, string(iter.Value()))
 	}

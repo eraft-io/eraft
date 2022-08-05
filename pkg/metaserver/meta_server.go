@@ -81,9 +81,9 @@ func (s *MetaServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest
 
 func (s *MetaServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
+	// log.MainLogger.Debug().Msgf("handle append entries req: %s", req.String())
 	s.rf.HandleAppendEntries(req, resp)
-	log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
+	// log.MainLogger.Debug().Msgf("handle append entries resp: " + resp.String())
 	return resp, nil
 }
 
@@ -287,7 +287,7 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 					}
 				}
 				s.lastApplied = int(appliedMsg.CommandIndex)
-				if s.rf.GetLogCount() > 10 {
+				if s.rf.GetLogCount() > 20 {
 					s.taskSnapshot(int(appliedMsg.CommandIndex))
 				}
 				log.MainLogger.Debug().Msgf("apply op to meta server stm: %s", req.String())
@@ -298,6 +298,7 @@ func (s *MetaServer) ApplingToSTM(done <-chan interface{}) {
 			} else if appliedMsg.SnapshotValid {
 				s.mu.Lock()
 				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
+					log.MainLogger.Debug().Msgf("restoresnapshot \n")
 					s.restoreSnapshot(appliedMsg.Snapshot)
 					s.lastApplied = int(appliedMsg.SnapshotIndex)
 				}

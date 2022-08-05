@@ -35,10 +35,11 @@ func MakeMetaServerClient(metaServerAddrs []string) *MetaSvrCli {
 }
 
 func (cli *MetaSvrCli) CallServerGroupMeta(req *pb.ServerGroupMetaConfigRequest) *pb.ServerGroupMetaConfigResponse {
-	resp := pb.ServerGroupMetaConfigResponse{}
+	resp := &pb.ServerGroupMetaConfigResponse{}
 	resp.ServerGroupMetas = &pb.ServerGroupMetas{}
+	var err error
 	for _, end := range cli.endpoints {
-		resp, err := (*end.GetMetaServiceCli()).ServerGroupMeta(context.Background(), req)
+		resp, err = (*end.GetMetaServiceCli()).ServerGroupMeta(context.Background(), req)
 		if err != nil {
 			log.MainLogger.Warn().Msgf("a node in cluster is down, try next")
 			continue
@@ -59,5 +60,5 @@ func (cli *MetaSvrCli) CallServerGroupMeta(req *pb.ServerGroupMetaConfigRequest)
 			return resp
 		}
 	}
-	return &resp
+	return resp
 }

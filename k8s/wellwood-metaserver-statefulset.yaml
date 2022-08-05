@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wellwood-metaserver
+spec:
+  selector:
+    matchLabels:
+      app: wellwood-metaserver
+  serviceName: wellwood-metaserver
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: wellwood-metaserver
+    spec:
+      initContainers:
+      - name: init-metaserver
+        image: eraft/eraft_wellwood:v2
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+          ordinal=${BASH_REMATCH[1]}
+          echo ${ordinal} > /mnt/data/server_id
+        volumeMounts:
+        - name: meta-data
+          mountPath: /mnt/data
+      containers:
+      - name: wellwood-metaserver
+        image: eraft/eraft_wellwood:v2
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          /usr/bin/meta_server -id "$(< /mnt/data/server_id)" -addrs "wellwood-metaserver-0:8088,wellwood-metaserver-1:8089,wellwood-metaserver-2:8090"
+        env:
+        - name: ERAFT_METASERVER_VERSION
+          value: "1.0"
+        volumeMounts:
+        - name: meta-data
+          mountPath: /mnt/data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: meta-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 200Mi
