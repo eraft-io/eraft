@@ -41,6 +41,14 @@ func NewClient(metaSvrAddrs string, accessKey string, accessSecret string) *Clie
 	}
 }
 
+func (c *Client) GetMetaSvrCli() *metaserver.MetaSvrCli {
+	return c.metaSvrCli
+}
+
+func (c *Client) GetBlockSvrCil() *blockserver.BlockSvrCli {
+	return c.blockSvrCli
+}
+
 func (c *Client) ListBuckets() ([]*pb.Bucket, error) {
 	return nil, nil
 }
