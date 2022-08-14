@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/eraft-io/eraft/pkg/blockserver"
@@ -41,13 +40,31 @@ const tpl = `<html>
  <input type="hidden" name="token" value="{...{.}...}"/>
  <input type="submit" value="upload" />
 </form>
-</body>
-</html>`
+`
 
 var metaNodeAddrs = flag.String("meta_addrs", "wellwood-metaserver-0.wellwood-metaserver:8088,wellwood-metaserver-1.wellwood-metaserver:8089,wellwood-metaserver-2.wellwood-metaserver:8090", "input block server node addrs")
 
 func index(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(tpl))
+	c := clientsdk.NewClient(*metaNodeAddrs, "", "")
+	// query server group meta
+	req := pb.ServerGroupMetaConfigRequest{
+		BucketOpReq: &pb.BucketOpRequest{
+			BucketId: consts.DEFAULT_BUCKET_ID,
+		},
+		OpType: pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_LIST,
+	}
+	serverGroupMetaResp := c.GetMetaSvrCli().CallServerGroupMeta(&req)
+	if serverGroupMetaResp != nil {
+		for _, obj := range serverGroupMetaResp.BucketOpRes.Objects {
+			w.Write([]byte(obj.ObjectId))
+			w.Write([]byte("<br/>"))
+			w.Write([]byte(obj.ObjectName))
+			w.Write([]byte("<br/>"))
+		}
+	}
+	w.Write([]byte(`</body>
+	</html>`))
 }
 
 func upload(w http.ResponseWriter, r *http.Request) {
@@ -58,15 +75,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-	f, err := os.OpenFile(handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer f.Close()
 	// upload to wellwood
+	log.MainLogger.Debug().Msgf("meta addrs: %s", *metaNodeAddrs)
 	c := clientsdk.NewClient(*metaNodeAddrs, "", "")
-	fileReader := bufio.NewReader(f)
+	fileReader := bufio.NewReader(file)
 	blockBuf := make([]byte, consts.FILE_BLOCK_SIZE)
 	fileBlockMetas := []*pb.FileBlockMeta{}
 	objRandId := common.GenGoogleUUID()
@@ -137,13 +149,16 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	}
-	if serverGroupMetaResp.ErrCode != pb.ErrCode_NO_ERR {
-		w.Write([]byte(err.Error()))
+	if serverGroupMetaResp != nil {
+		if serverGroupMetaResp.ErrCode != pb.ErrCode_NO_ERR {
+			log.MainLogger.Error().Msgf("%d", serverGroupMetaResp.ErrCode)
+		}
 	}
 	fmt.Fprintln(w, "upload ok!")
 }
 
 func main() {
+	flag.Parse()
 	http.HandleFunc("/", index)
 	http.HandleFunc("/upload", upload)
 	log.MainLogger.Info().Msgf("dashboard server success listen on: %s", ":12008")
