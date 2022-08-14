@@ -32,9 +32,19 @@ import (
 
 const tpl = `<html>
 <head>
-<title>上传文件</title>
+<title>WellWood</title>
 </head>
 <body>
+
+<pre> 
+_       __     _____       __                __
+| |     / /__  / / / |     / /___  ____  ____/ /
+| | /| / / _ \/ / /| | /| / / __ \/ __ \/ __  /
+| |/ |/ /  __/ / / | |/ |/ / /_/ / /_/ / /_/ /
+|__/|__/\___/_/_/  |__/|__/\____/\____/\__,_/
+</pre>
+
+<h4>选择要上传到 wellwood 对象存储系统的文件</h4>
 <form enctype="multipart/form-data" action="/upload" method="post">
  <input type="file" name="uploadfile" />
  <input type="hidden" name="token" value="{...{.}...}"/>
@@ -56,15 +66,71 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 	serverGroupMetaResp := c.GetMetaSvrCli().CallServerGroupMeta(&req)
 	if serverGroupMetaResp != nil {
+		w.Write([]byte(`<a href="javascript:location.reload();">点击刷新列表</a>`))
+		w.Write([]byte(`<h4>对象列表</h4> <table border="1"> <tr> <th>对象 ID</th> <th>对象名</th> <th>操作</th> </tr>`))
 		for _, obj := range serverGroupMetaResp.BucketOpRes.Objects {
-			w.Write([]byte(obj.ObjectId))
-			w.Write([]byte("<br/>"))
+			w.Write([]byte("<tr>"))
+			w.Write([]byte("<td>"))
 			w.Write([]byte(obj.ObjectName))
-			w.Write([]byte("<br/>"))
+			w.Write([]byte("</td>"))
+			w.Write([]byte("<td>"))
+			w.Write([]byte(obj.ObjectId))
+			w.Write([]byte("</td>"))
+			w.Write([]byte("<td>"))
+			w.Write([]byte(`<a target="_blank" href="/download?obj_id=` + obj.ObjectName + `">点击下载</a>`))
+			w.Write([]byte("</td>"))
+			w.Write([]byte("</tr>"))
 		}
 	}
 	w.Write([]byte(`</body>
 	</html>`))
+}
+
+func download(w http.ResponseWriter, r *http.Request) {
+	objId, ok := r.URL.Query()["obj_id"]
+	if !ok || len(objId[0]) < 1 {
+		log.MainLogger.Error().Msgf("Url Param 'obj_id' is missing")
+		return
+	}
+	req := pb.ServerGroupMetaConfigRequest{
+		ConfigVersion: -1,
+		OpType:        pb.ConfigServerGroupMetaOpType_OP_OSS_OBJECT_LIST,
+		BucketOpReq: &pb.BucketOpRequest{
+			BucketId: consts.DEFAULT_BUCKET_ID,
+		},
+	}
+	c := clientsdk.NewClient(*metaNodeAddrs, "", "")
+	objListMetaResp := c.GetMetaSvrCli().CallServerGroupMeta(&req)
+	if objListMetaResp.ErrCode != pb.ErrCode_NO_ERR {
+		log.MainLogger.Error().Msgf("got objects meta error")
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	for _, obj := range objListMetaResp.BucketOpRes.Objects {
+		if obj.ObjectName == objId[0] {
+			// find block meta
+			// query server group meta
+			req := pb.ServerGroupMetaConfigRequest{
+				ConfigVersion: -1,
+				OpType:        pb.ConfigServerGroupMetaOpType_OP_SERVER_GROUP_QUERY,
+			}
+			serverGroupMetaResp := c.GetMetaSvrCli().CallServerGroupMeta(&req)
+			slotsToGroupArr := serverGroupMetaResp.ServerGroupMetas.Slots
+			for _, blockMeta := range obj.ObjectBlocksMeta {
+				serverGroupAddrs := serverGroupMetaResp.ServerGroupMetas.ServerGroups[slotsToGroupArr[blockMeta.BlockSlotId]]
+				// find block server
+				serverAddrArr := strings.Split(serverGroupAddrs, ",")
+				blockSvrCli := blockserver.MakeBlockServerClient(serverAddrArr)
+				fileBlockRequest := &pb.FileBlockOpRequest{
+					FileName:       objId[0],
+					FileBlocksMeta: blockMeta,
+					OpType:         pb.FileBlockOpType_OP_BLOCK_READ,
+				}
+				readBlockResp := blockSvrCli.CallFileBlockOp(fileBlockRequest)
+				w.Write(readBlockResp.BlockContent)
+			}
+		}
+	}
 }
 
 func upload(w http.ResponseWriter, r *http.Request) {
@@ -154,13 +220,20 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			log.MainLogger.Error().Msgf("%d", serverGroupMetaResp.ErrCode)
 		}
 	}
-	fmt.Fprintln(w, "upload ok!")
+	w.Write([]byte(`<html>
+	<head>
+	<title>上传成功</title>
+	</head>
+	<body>
+	`))
+	w.Write([]byte(`<a href="javascript:history.go(-1);">返回继续传文件</a> <body> </html>`))
 }
 
 func main() {
 	flag.Parse()
 	http.HandleFunc("/", index)
 	http.HandleFunc("/upload", upload)
+	http.HandleFunc("/download", download)
 	log.MainLogger.Info().Msgf("dashboard server success listen on: %s", ":12008")
 	http.ListenAndServe(":12008", nil)
 }
