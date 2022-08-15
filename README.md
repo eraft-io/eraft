@@ -9,6 +9,13 @@ The following is our architecture diagram:
 
 ![WellWood](https://cdn.nlark.com/yuque/0/2022/png/29306112/1656687604705-cefdbe9e-3242-4173-871f-fdb11fcacd83.png)
 
+## build 
+```
+git clone https://github.com/eraft-io/eraft.git
+cd eraft
+make
+```
+
 ## quick start
 
 run meta server
@@ -38,5 +45,4 @@ run web dashboard
 
 to http://127.0.0.1:12008/ 
 
-![WellWood Dashboard](https://cdn.nlark.com/yuque/0/2022/png/29306112/1660487200803-cd19187a-19a1-4e57-8417-71e84388a693.png)
-
+![WellWood Dashboard](https://cdn.nlark.com/yuque/0/2022/png/29306112/1660571703459-a2775f27-0436-4e3b-a2ee-f81e912a794c.png)
