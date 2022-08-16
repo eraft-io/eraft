@@ -12,10 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: meta-data
-provisioner: kubernetes.io/gce-pd
-parameters:
-  type: pd-standard
+kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30080:12008
