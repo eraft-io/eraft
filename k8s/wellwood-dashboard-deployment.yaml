@@ -13,16 +13,28 @@
 # limitations under the License.
 # Headless service for stable DNS entries of StatefulSet members.
 
-apiVersion: v1  
-kind: Service
+apiVersion: apps/v1  
+kind: Deployment
 metadata:
-  name: wellwood-metaserver
-  labels:
-    app: wellwood-metaserver
+  name: dashboard-deployment
 spec:
-  ports:
-  - name: wellwood-metaserver
-    port: 8088
-  clusterIP: None
   selector:
-    app: wellwood-metaserver
+    matchLabels:
+      app: dashboard
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+      - name: dashboard
+        image: eraft/eraft_wellwood:v5
+        command: 
+        - bash
+        - "-c"
+        - |
+          set -ex
+          /usr/bin/dashboard -meta_addrs wellwood-metaserver-0.wellwood-metaserver:8088,wellwood-metaserver-1.wellwood-metaserver:8089,wellwood-metaserver-2.wellwood-metaserver:8090
+        ports:
+        - containerPort: 12008
