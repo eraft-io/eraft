@@ -34,3 +34,25 @@ kubectl run wellwood-client --image=eraft/eraft_wellwood:v3 -i -t --rm --restart
 	}
 }
 ```
+
+### 部署 web 控制台
+
+```
+kubectl apply -f wellwood-dashboard-deployment.yaml
+kubectl apply -f wellwood-dashboard-services.yaml
+```
+
+### 开放访问端口到宿主机
+
+由于 minikube 是跑在 docker 里面的，所以需要配置一个 port 转发吧 dashboard 服务端口转发到宿主机也能访问
+
+```
+kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30080:12008
+```
+
+### 访问控制台
+
+```
+http://127.0.0.1:30080/
+
+```
