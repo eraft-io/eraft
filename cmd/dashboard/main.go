@@ -47,7 +47,7 @@ _       __     _____       __                __
 <h4>选择要上传到 wellwood 对象存储系统的文件</h4>
 <form enctype="multipart/form-data" action="/upload" method="post">
  <input type="file" name="uploadfile" />
- <input type="hidden" name="token" value="{...{.}...}"/>
+ <input type="hidden" name="token" value="82e9fd7deb40aaedd32641af0512abbc"/>
  <input type="submit" value="upload" />
 </form>
 `

@@ -46,3 +46,7 @@ run web dashboard
 to http://127.0.0.1:12008/ 
 
 ![WellWood Dashboard](https://cdn.nlark.com/yuque/0/2022/png/29306112/1660571703459-a2775f27-0436-4e3b-a2ee-f81e912a794c.png)
+
+## Next step
+
+- Full [documentation](https://eraft.cn/wellwood/)

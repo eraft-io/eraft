@@ -30,6 +30,7 @@ import (
 	"github.com/eraft-io/eraft/pkg/consts"
 	"github.com/eraft-io/eraft/pkg/log"
 	pb "github.com/eraft-io/eraft/pkg/protocol"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -37,10 +38,12 @@ import (
 var nodeId = flag.Int("id", 0, "input this block server node id")
 var nodeAddrs = flag.String("addrs", "127.0.0.1:7088,127.0.0.1:7089,127.0.0.1:7090", "input block server node addrs")
 var peerAddrs = flag.String("peers", "wellwood-blockserver-0.wellwood-blockserver:7088,wellwood-blockserver-1.wellwood-blockserver:7089,wellwood-blockserver-2.wellwood-blockserver:7090", "input block server node peers")
-var monitorAddrs = flag.String("monitor_addrs", ":17088,:17089,:17090", "input block server monitor addrs")
+var debugAddrs = flag.String("debug_addrs", ":17088,:17089,:17090", "input block server debug addrs")
+var monitorAddrs = flag.String("monitor_addrs", ":27088,:27089,:27090", "input block server monitor addrs")
 var dataDir = flag.String("data_path", "./data", "input block server data path")
 var groupId = flag.Int("gid", 0, "input this block server node id")
 var metaNodeAddrs = flag.String("meta_addrs", "wellwood-metaserver-0.wellwood-metaserver:8088,wellwood-metaserver-1.wellwood-metaserver:8089,wellwood-metaserver-2.wellwood-metaserver:8090", "input block server node addrs")
+var enableDebug = flag.Bool("enable_debug", false, "if the server enable debug")
 
 func main() {
 	flag.Parse()
@@ -55,10 +58,6 @@ func main() {
 	nodeAddrsArr := strings.Split(*nodeAddrs, ",")
 	for i, addr := range nodeAddrsArr {
 		blockSvrNodesMap[i] = addr
-	}
-	monitorSvrPeersMap := make(map[int]string)
-	for i, addr := range strings.Split(*monitorAddrs, ",") {
-		monitorSvrPeersMap[i] = addr
 	}
 	metaAddrsArr := strings.Split(*metaNodeAddrs, ",")
 	blockServer := blockserver.MakeBlockServer(blockSvrPeersMap, *nodeId, *groupId, *dataDir, metaAddrsArr)
@@ -79,11 +78,27 @@ func main() {
 		log.MainLogger.Error().Msgf("block server failed to listen: %v", err)
 		return
 	}
+	debugSvrPeersMap := make(map[int]string)
+	for i, addr := range strings.Split(*debugAddrs, ",") {
+		debugSvrPeersMap[i] = addr
+	}
+	if *enableDebug {
+		go func() {
+			if err := http.ListenAndServe(debugSvrPeersMap[*nodeId], nil); err != nil {
+				log.MainLogger.Error().Msgf("block server monitor failed to: %v", err)
+			}
+			os.Exit(0)
+		}()
+	}
+	monitorSvrPeersMap := make(map[int]string)
+	for i, addr := range strings.Split(*monitorAddrs, ",") {
+		monitorSvrPeersMap[i] = addr
+	}
 	go func() {
-		if err := http.ListenAndServe(monitorSvrPeersMap[*nodeId], nil); err != nil {
-			log.MainLogger.Error().Msgf("block server monitor failed to: %v", err)
-		}
-		os.Exit(0)
+		blockserver.RecordMetrics()
+		http.Handle("/metrics", promhttp.Handler())
+		log.MainLogger.Info().Msgf("block monitor server success listen on: %s", monitorSvrPeersMap[*nodeId])
+		http.ListenAndServe(monitorSvrPeersMap[*nodeId], nil)
 	}()
 	log.MainLogger.Info().Msgf("block server success listen on: %s", blockSvrNodesMap[*nodeId])
 	if err := svr.Serve(lis); err != nil {
