@@ -61,3 +61,13 @@ kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 3008
 http://127.0.0.1:30080/
 
 ```
+
+### 清除集群
+
+```
+kubectl delete deployment dashboard-deployment
+kubectl delete statefulset  wellwood-blockserver
+kubectl delete statefulset wellwood-metaserve
+kubectl delete svc wellwood-blockserver wellwood-metaserver
+```
+
