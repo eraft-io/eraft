@@ -11,7 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Headless service for stable DNS entries of StatefulSet members.
 
-kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30080:12008
-
-kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30060:8080
+apiVersion: v1  
+kind: Service
+metadata:
+  name: monitor-service
+spec:
+  selector:
+    app: monitor
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    nodePort: 30060
+  type: NodePort
