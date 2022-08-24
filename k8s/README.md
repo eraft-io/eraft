@@ -47,12 +47,21 @@ kubectl apply -f wellwood-dashboard-deployment.yaml
 kubectl apply -f wellwood-dashboard-services.yaml
 ```
 
+### 部署监控采集容器
+
+```
+kubectl apply -f wellwood-monitor-deployment.yaml
+kubectl apply -f wellwood-monitor-services.yaml
+```
+
 ### 开放访问端口到宿主机
 
-由于 minikube 是跑在 docker 里面的，所以需要配置一个 port 转发吧 dashboard 服务端口转发到宿主机也能访问
+由于 minikube 是跑在 docker 里面的，所以需要配置一个 port 转发吧 dashboard 以及监控的服务端口转发到宿主机也能访问
 
 ```
 kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30080:12008
+kubectl port-forward --address 0.0.0.0 -n default service/monitor-service 30060:8080
+
 ```
 
 ### 访问控制台
@@ -66,8 +75,10 @@ http://127.0.0.1:30080/
 
 ```
 kubectl delete deployment dashboard-deployment
+kubectl delete deployment monitor-deployment
 kubectl delete statefulset  wellwood-blockserver
-kubectl delete statefulset wellwood-metaserve
-kubectl delete svc wellwood-blockserver wellwood-metaserver
+kubectl delete statefulset wellwood-metaserver
+kubectl delete svc wellwood-blockserver wellwood-metaserver monitor-service dashboard-service
+kubectl delete storageclass block-data meta-data
 ```
 
