@@ -14,4 +14,4 @@
 
 kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30080:12008
 
-kubectl port-forward --address 0.0.0.0 -n default service/dashboard-service 30060:8080
+kubectl port-forward --address 0.0.0.0 -n default service/monitor-service 30060:8080
