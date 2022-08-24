@@ -15,18 +15,21 @@
 package blockserver
 
 import (
+	"runtime"
 	"time"
 
+	"github.com/eraft-io/eraft/pkg/common"
 	"github.com/eraft-io/eraft/pkg/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/shirou/gopsutil/mem"
 )
 
-func RecordMetrics() {
+func RecordMetrics(dataPath string, gid int, nodeId int) {
 	go func() {
 		for {
 			opsProcessed.Inc()
+			preDiskUsage := float64(common.GetTotalFileSizeInDir(dataPath)) / 1024 / 1024
 			time.Sleep(1 * time.Second)
 			v, err := mem.VirtualMemory()
 			if err != nil {
@@ -35,6 +38,16 @@ func RecordMetrics() {
 			totalMemory.Set(float64(v.Total))
 			memoryAvailable.Set(float64(v.Available))
 			memoryUsedPercent.Set(float64(v.UsedPercent))
+			// data size (mb)
+			lastDiskUsage := float64(common.GetTotalFileSizeInDir(dataPath)) / 1024 / 1024
+			blockDataUsedSize.Set(lastDiskUsage)
+			// speed (mb/s)
+			blockServerWriteDiskSpeed.Set(lastDiskUsage - preDiskUsage)
+			var m runtime.MemStats
+			// process memory (mb)
+			runtime.ReadMemStats(&m)
+			blockServerAlloc.Set(float64(m.Alloc) / 1024 / 1024)
+			blockServerHeapAlloc.Set(float64(m.HeapAlloc) / 1024 / 1024)
 		}
 	}()
 }
@@ -55,5 +68,21 @@ var (
 	memoryUsedPercent = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "wellwood_host_memory_used_percent",
 		Help: "host memory used percent",
+	})
+	blockDataUsedSize = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "wellwood_host_block_data_disk_used",
+		Help: "wellwood blockserver block data used",
+	})
+	blockServerWriteDiskSpeed = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "wellwood_block_server_write_disk_speed",
+		Help: "block server write block data speed",
+	})
+	blockServerAlloc = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "wellwood_block_server_alloc",
+		Help: "block server alloc memory",
+	})
+	blockServerHeapAlloc = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "wellwood_block_server_heap_alloc",
+		Help: "block server heap alloc",
 	})
 )

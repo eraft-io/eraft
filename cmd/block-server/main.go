@@ -95,7 +95,7 @@ func main() {
 		monitorSvrPeersMap[i] = addr
 	}
 	go func() {
-		blockserver.RecordMetrics()
+		blockserver.RecordMetrics(*dataDir, *groupId, *groupId)
 		http.Handle("/metrics", promhttp.Handler())
 		log.MainLogger.Info().Msgf("block monitor server success listen on: %s", monitorSvrPeersMap[*nodeId])
 		http.ListenAndServe(monitorSvrPeersMap[*nodeId], nil)

@@ -31,6 +31,24 @@ add server group to cluster
 ./wellwood-ctl add_server_group 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090 1 127.0.0.1:7088,127.0.0.1:7089,127.0.0.1:7090
 ```
 
+check cluster topo
+```
+./wellwood-ctl  get_cluster_topo 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090
+```
+
+output
+```
+{
+	"server_group_metas": {
+		"config_version": 1,
+		"slots": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		"server_groups": {
+			"1": "127.0.0.1:7088,127.0.0.1:7089,127.0.0.1:7090"
+		}
+	}
+}
+```
+
 run block_server
 ```
 ./block_server -id  0 -gid 1 -peers 127.0.0.1:7088,127.0.0.1:7089,127.0.0.1:7090
