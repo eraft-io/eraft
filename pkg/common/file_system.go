@@ -17,8 +17,12 @@ package common
 import (
 	"crypto/md5"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+
+	"github.com/eraft-io/eraft/pkg/log"
 )
 
 //
@@ -55,4 +59,24 @@ func ReadFileMetaInDir(path string) ([]string, int64, error) {
 		totalSize += file.Size()
 	}
 	return fileNames, totalSize, nil
+}
+
+// get total file size in a dir
+func GetTotalFileSizeInDir(path string) int64 {
+	var totalSize int64
+	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			log.MainLogger.Error().Msgf("err %s", err.Error())
+			return nil
+		}
+		if !info.IsDir() {
+			totalSize += info.Size()
+		}
+		return nil
+	})
+	if err != nil {
+		log.MainLogger.Error().Msgf("err %s", err.Error())
+		return -1
+	}
+	return totalSize
 }

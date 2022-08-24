@@ -37,7 +37,8 @@ var nodeId = flag.Int("id", 0, "input this meta server node id")
 var nodeAddrs = flag.String("addrs", "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", "input meta server node addrs")
 var peerAddrs = flag.String("peers", "wellwood-metaserver-0.wellwood-metaserver:8088,wellwood-metaserver-1.wellwood-metaserver:8089,wellwood-metaserver-2.wellwood-metaserver:8090", "input meta server node peers")
 var dataDir = flag.String("data_path", "./data", "input meta server data path")
-var monitorAddrs = flag.String("monitor_addrs", ":18088,:18089,:18090", "input block server monitor addrs")
+var debugAddrs = flag.String("debug_addrs", ":18088,:18089,:18090", "input block server debug addrs")
+var enableDebug = flag.Bool("enable_debug", false, "if the server enable debug")
 
 func main() {
 	flag.Parse()
@@ -54,10 +55,6 @@ func main() {
 	nodeAddrsArr := strings.Split(*nodeAddrs, ",")
 	for i, addr := range nodeAddrsArr {
 		nodeAddrsMap[i] = addr
-	}
-	monitorSvrPeersMap := make(map[int]string)
-	for i, addr := range strings.Split(*monitorAddrs, ",") {
-		monitorSvrPeersMap[i] = addr
 	}
 	metaServer := meta_svr.MakeMetaServer(metaSvrPeersMap, *nodeId, *dataDir)
 	svr := grpc.NewServer()
@@ -77,12 +74,18 @@ func main() {
 		log.MainLogger.Error().Msgf("meta server failed to listen: %v", err)
 		return
 	}
-	go func() {
-		if err := http.ListenAndServe(monitorSvrPeersMap[*nodeId], nil); err != nil {
-			log.MainLogger.Error().Msgf("block server monitor failed to: %v", err)
+	if *enableDebug {
+		debugSvrPeersMap := make(map[int]string)
+		for i, addr := range strings.Split(*debugAddrs, ",") {
+			debugSvrPeersMap[i] = addr
 		}
-		os.Exit(0)
-	}()
+		go func() {
+			if err := http.ListenAndServe(debugSvrPeersMap[*nodeId], nil); err != nil {
+				log.MainLogger.Error().Msgf("block server debug failed to: %v", err)
+			}
+			os.Exit(0)
+		}()
+	}
 	log.MainLogger.Info().Msgf("meta server success listen on: %s", nodeAddrsMap[*nodeId])
 	if err := svr.Serve(lis); err != nil {
 		log.MainLogger.Error().Msgf("meta server failed to serve: %v", err)
