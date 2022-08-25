@@ -21,7 +21,7 @@ spec:
   selector:
     matchLabels:
       app: dashboard
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: dashboard
-        image: eraft/eraft_wellwood:v5
+        image: eraft/eraft_wellwood:v7
         command: 
         - bash
         - "-c"
