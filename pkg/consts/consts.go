@@ -22,7 +22,11 @@ const KB = 1024
 
 const GB = 1024 * 1024 * 1024
 
-const FILE_BLOCK_SIZE = 1024 * 1024 * 1
+const FILE_BLOCK_SIZE = 1024 * 1024 * 8
+
+const FILE_BLOCK_SIZE_64MB = 1024 * 1024 * 64
+
+const FILE_BLOCK_SIZE_128MB = 1024 * 1024 * 128
 
 var BUCKET_META_PREFIX = []byte{0x01, 0x09, 0x09, 0x08}
 
