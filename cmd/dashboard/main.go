@@ -145,7 +145,14 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	log.MainLogger.Debug().Msgf("meta addrs: %s", *metaNodeAddrs)
 	c := clientsdk.NewClient(*metaNodeAddrs, "", "")
 	fileReader := bufio.NewReader(file)
-	blockBuf := make([]byte, consts.FILE_BLOCK_SIZE)
+	blockSize := consts.FILE_BLOCK_SIZE
+	if handler.Size > 1024*1024*50 && handler.Size <= 1024*1024*300 {
+		blockSize = consts.FILE_BLOCK_SIZE_64MB
+	}
+	if handler.Size > 1024*1024*300 {
+		blockSize = consts.FILE_BLOCK_SIZE_128MB
+	}
+	blockBuf := make([]byte, blockSize)
 	fileBlockMetas := []*pb.FileBlockMeta{}
 	objRandId := common.GenGoogleUUID()
 	index := 0
