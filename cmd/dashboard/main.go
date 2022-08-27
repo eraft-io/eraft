@@ -147,10 +147,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	fileReader := bufio.NewReader(file)
 	blockSize := consts.FILE_BLOCK_SIZE
 	if handler.Size > 1024*1024*50 && handler.Size <= 1024*1024*300 {
-		blockSize = consts.FILE_BLOCK_SIZE_64MB
+		blockSize = consts.FILE_BLOCK_SIZE_2MB
 	}
 	if handler.Size > 1024*1024*300 {
-		blockSize = consts.FILE_BLOCK_SIZE_128MB
+		blockSize = consts.FILE_BLOCK_SIZE_4MB
 	}
 	blockBuf := make([]byte, blockSize)
 	fileBlockMetas := []*pb.FileBlockMeta{}
@@ -197,10 +197,25 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		}
 		writeBlockResp := blockSvrCli.CallFileBlockOp(fileBlockRequest)
 		if err != nil {
+			w.Write([]byte(`<html>
+			<head>
+			<title>上传失败</title>
+			</head>
+			<body>
+			`))
+			w.Write([]byte(`<a href="javascript:history.go(-1);">返回继续传文件</a> <body> </html>`))
 			w.Write([]byte(err.Error()))
+			return
 		}
 		if writeBlockResp.ErrCode != pb.ErrCode_NO_ERR {
-			w.Write([]byte(err.Error()))
+			w.Write([]byte(`<html>
+			<head>
+			<title>上传失败</title>
+			</head>
+			<body>
+			`))
+			w.Write([]byte(`<a href="javascript:history.go(-1);">返回继续传文件</a> <body> </html>`))
+			return
 		}
 		fileBlockMetas = append(fileBlockMetas, blockMeta)
 		index += 1
@@ -220,11 +235,26 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	}
 	serverGroupMetaResp := c.GetMetaSvrCli().CallServerGroupMeta(&req)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(`<html>
+		<head>
+		<title>上传失败</title>
+		</head>
+		<body>
+		`))
+		w.Write([]byte(`<a href="javascript:history.go(-1);">返回继续传文件</a> <body> </html>`))
+		return
 	}
 	if serverGroupMetaResp != nil {
 		if serverGroupMetaResp.ErrCode != pb.ErrCode_NO_ERR {
 			log.MainLogger.Error().Msgf("%d", serverGroupMetaResp.ErrCode)
+			w.Write([]byte(`<html>
+			<head>
+			<title>上传失败</title>
+			</head>
+			<body>
+			`))
+			w.Write([]byte(`<a href="javascript:history.go(-1);">返回继续传文件</a> <body> </html>`))
+			return
 		}
 	}
 	w.Write([]byte(`<html>

@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: dashboard
-        image: eraft/eraft_wellwood:v7
+        image: eraft/eraft_wellwood:v8
         command: 
         - bash
         - "-c"
