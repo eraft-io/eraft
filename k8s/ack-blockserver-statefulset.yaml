@@ -1,0 +1,67 @@
+# Copyright [2022] [WellWood] [wellwood-x@googlegroups.com]
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Headless service for stable DNS entries of StatefulSet members.
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wellwood-blockserver
+spec:
+  selector:
+    matchLabels:
+      app: wellwood-blockserver
+  serviceName: wellwood-blockserver
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: wellwood-blockserver
+    spec:
+      initContainers:
+      - name: init-blockserver
+        image: eraft/eraft_wellwood:v7
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+          ordinal=${BASH_REMATCH[1]}
+          echo ${ordinal} > /mnt/data/server_id
+        volumeMounts:
+        - name: blocksvr-pvc-disk
+          mountPath: /mnt/data
+      containers:
+      - name: wellwood-blockserver
+        image: eraft/eraft_wellwood:v7
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          /usr/bin/block_server -data_path "/mnt/data" -id "$(< /mnt/data/server_id)" -addrs "wellwood-blockserver-0:7088,wellwood-blockserver-1:7089,wellwood-blockserver-2:7090"
+        env:
+        - name: ERAFT_METASERVER_VERSION
+          value: "1.0"
+        volumeMounts:
+        - name: blocksvr-pvc-disk
+          mountPath: /mnt/data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      volumes:
+        - name: blocksvr-pvc-disk
+          persistentVolumeClaim:
+           claimName: blockserver-hostpath
