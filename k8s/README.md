@@ -6,12 +6,12 @@ minikube start --image-mirror-country='cn'
 #### 在 k8s 创建一个 wellwood 集群需要的资源
 
 ```
-kubectl apply -f wellwood-metaserver-storage-class.yaml
-kubectl apply -f wellwood-metaserver-statefulset.yaml
+kubectl apply -f ack-metaserver-storage.yaml
+kubectl apply -f ack-metaserver-statefulset.yaml
 kubectl apply -f wellwood-metaserver-services.yaml
 
-kubectl apply -f wellwood-blockserver-storage-class.yaml
-kubectl apply -f wellwood-blockserver-statefulset.yaml
+kubectl apply -f ack-blockserver-storage.yaml
+kubectl apply -f ack-blockserver-statefulset.yaml
 kubectl apply -f wellwood-blockserver-services.yaml
 ```
 
@@ -80,5 +80,7 @@ kubectl delete statefulset  wellwood-blockserver
 kubectl delete statefulset wellwood-metaserver
 kubectl delete svc wellwood-blockserver wellwood-metaserver monitor-service dashboard-service
 kubectl delete storageclass block-data meta-data
+kubectl delete pvc blockserver-hostpath metaserver-hostpath
+kubectl delete pv blockserver-pv-volume metaserver-pv-volume
 ```
 
