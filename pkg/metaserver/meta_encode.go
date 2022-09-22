@@ -55,7 +55,7 @@ func EncodeBucketKey(bucketId string) []byte {
 
 // EncodeBucketKey decode bucket id and return
 func DecodeBucketKey(bkey []byte) string {
-	return string(bkey[:len(consts.BUCKET_META_PREFIX)])
+	return string(bkey[len(consts.BUCKET_META_PREFIX):])
 }
 
 //
@@ -87,7 +87,7 @@ func EncodeObjectKey(objId string) []byte {
 
 // DecodeObjectKey deocde object id and return
 func DecodeObjectKey(okey []byte) string {
-	return string(okey[:len(consts.OBJECT_META_PREFIX)])
+	return string(okey[len(consts.OBJECT_META_PREFIX):])
 }
 
 // EncodeObject encode object to bytes sequence
