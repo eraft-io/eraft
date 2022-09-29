@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-default: cfgcli cfgserver shardserver shardcli bench_cli eng_bench kv_server kvcli
+default: cfgcli cfgserver shardserver shardcli bench_cli eng_bench kv_server kvcli rdserver
 
 kvcli:
 	go build -o output/kvcli cmd/kvcli/kvcli.go
@@ -36,6 +36,9 @@ cfgcli:
 
 cfgserver:
 	go build -o output/cfgserver cmd/configsvr/cfg_svr.go
+
+rdserver:
+	go build -o output/rds_server cmd/rds_server/rds_svr.go
 
 shardserver:
 	go build -o output/shardserver cmd/shardsvr/shard_svr.go
