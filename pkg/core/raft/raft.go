@@ -31,9 +31,7 @@ type RAFTROLE uint8
 
 const None int64 = -1
 
-//
 // raft node stateim
-//
 const (
 	FOLLOWER RAFTROLE = iota
 	CANDIDATE
@@ -52,9 +50,7 @@ func RoleToString(role RAFTROLE) string {
 	return "unknow"
 }
 
-//
 // raft stack definition
-//
 type Raft struct {
 	mu             sync.RWMutex
 	peers          []*RaftClientEnd // rpc client end
@@ -224,7 +220,7 @@ func (raft *Raft) replicatorOneRound(peer *RaftClientEnd) {
 			if raft.role == LEADER && raft.curTerm == snapShotReq.Term {
 				if snapShotResp.Term > raft.curTerm {
 					raft.ChangeRole(FOLLOWER)
-					raft.curTerm = snapShotReq.Term
+					raft.curTerm = snapShotResp.Term
 					raft.votedFor = -1
 					raft.PersistRaftState()
 				} else {
@@ -396,7 +392,6 @@ func (raft *Raft) Propose(payload []byte) (int, int, bool) {
 }
 
 // Election  make a new election
-//
 func (raft *Raft) StartNewElection() {
 	log.MainLogger.Debug().Msgf("%d start a new election \n", raft.me)
 	raft.grantedVotes = 1
@@ -619,7 +614,6 @@ func (raft *Raft) GetLogCount() int {
 }
 
 // MatchLog is log matched
-//
 func (raft *Raft) MatchLog(term, index int64) bool {
 	return index <= int64(raft.logs.lastIdx) && index >= int64(raft.logs.firstIdx) &&
 		raft.logs.GetEntry(index).Term == uint64(term)
