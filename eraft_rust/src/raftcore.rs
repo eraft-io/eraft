@@ -537,7 +537,7 @@ mod raftcore_tests {
     use std::sync::mpsc;
     use std::thread;
 
-    use crate::{raftcore::{INIT_TERM, VOTE_FOR_NO_ONE, Peer}, eraft_proto::raft_service_client::RaftServiceClient};
+    use crate::{raftcore::{INIT_TERM, VOTE_FOR_NO_ONE, Peer, ApplyMsg}};
 
     use super::{role_to_string, NodeRole, build_raftstack};
 
@@ -591,12 +591,21 @@ mod raftcore_tests {
         assert_eq!(raftstack.is_snapshoting, false);
 
         thread::spawn(move || {
-            let val = String::from("hi eraft!");
-            tx1.send(val).unwrap();
+            let apply_msg = ApplyMsg{
+                command_valid: true,
+                command: vec![],
+                command_term: 0,
+                command_index: 0,
+                snapshot_valid: false,
+                snapshot: Vec::new(),
+                snapshot_term: 0,
+                snapshot_index: 0,
+            };
+            tx1.send(apply_msg).unwrap();
         });
 
         let received = rx.recv().unwrap();
-        println!("Got: {}", received);
+        println!("Got: {:?}", received);
 
         // test log
         assert_eq!(raftstack.logs.size(), 1);
