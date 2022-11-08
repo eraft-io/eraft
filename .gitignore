@@ -4,6 +4,5 @@ vendor
 .vscode
 deps
 pmem-redis.tar.gz
-eraft_rust/target
-eraft_client/target
+target
 .idea

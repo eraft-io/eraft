@@ -4,7 +4,7 @@
 中文 | [English](README_en.md)
 
 ```
-./target/debug/eraft_rust 0 '[::1]:8088'
-./target/debug/eraft_rust 1 '[::1]:8089'
-./target/debug/eraft_rust 2 '[::1]:8090'
+./target/debug/eraft-ctl 0 '[::1]:8088'
+./target/debug/eraft-ctl 1 '[::1]:8089'
+./target/debug/eraft-ctl 2 '[::1]:8090'
 ```
