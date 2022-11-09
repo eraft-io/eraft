@@ -1,4 +1,4 @@
-use crate::raftcore::{RaftStack, Peer, Raft};
+use crate::raft_core::{RaftStack, Peer, Raft};
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::Duration;
@@ -8,7 +8,6 @@ use crate::{eraft_proto};
 
 use eraft_proto::raft_service_client::{RaftServiceClient};
 
-
 use tonic::{transport::{Server, Channel}, Request, Response, Status};
 use eraft_proto::raft_service_server::{RaftService, RaftServiceServer};
 use eraft_proto::{RequestVoteRequest, RequestVoteResponse};
@@ -16,7 +15,6 @@ use eraft_proto::{AppendEntriesRequest, AppendEntriesResponse};
 use eraft_proto::{CommandRequest, CommandResponse};
 
 use std::sync::Mutex;
-
 
 #[derive(Clone)]
 struct RaftServiceImpl{
@@ -63,7 +61,7 @@ impl RaftService for RaftServiceImpl {
                  &self,
                    request: Request<CommandRequest>,
     ) -> Result<Response<CommandResponse>, Status> {
-        // simplelog::info!("do command req from {:?} with {:?}", request.remote_addr(), request);
+        simplelog::info!("do command req from {:?} with {:?}", request.remote_addr(), request);
         let mut raft_stack = self.f.lock().unwrap();
 
         let resp = CommandResponse{
@@ -71,11 +69,10 @@ impl RaftService for RaftServiceImpl {
             leader_id: raft_stack.get_leader_id() as i64,
             err_code: 0
         };
-    
+
         let (idx, _, is_leader) = raft_stack.propose(request.into_inner().key);
 
         simplelog::info!("send log entry with idx {} to raft", idx);
-
 
         Ok(Response::new(resp))
     }

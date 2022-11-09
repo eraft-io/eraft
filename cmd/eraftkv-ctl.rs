@@ -1,4 +1,4 @@
-use eraft::server;
+use eraft::kv_server;
 use std::{env};
 
 extern crate simplelog;
@@ -20,9 +20,9 @@ fn main() {
     CombinedLogger::init(
         vec![
             TermLogger::new(LevelFilter::Info, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
-            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(format!("eraft-node-{}.log", server_id)).unwrap()),
+            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(format!("eraftkv-node-{}.log", server_id)).unwrap()),
         ]
     ).unwrap();
 
-    let _ = server::run_server(server_id, args[2].as_str());
+    let _ = kv_server::run_server(server_id, args[2].as_str());
 }

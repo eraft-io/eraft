@@ -537,7 +537,7 @@ mod raftcore_tests {
     use std::sync::mpsc;
     use std::thread;
 
-    use crate::{raftcore::{INIT_TERM, VOTE_FOR_NO_ONE, Peer, ApplyMsg}};
+    use crate::{raft_core::{INIT_TERM, VOTE_FOR_NO_ONE, Peer, ApplyMsg}};
 
     use super::{role_to_string, NodeRole, build_raftstack};
 
