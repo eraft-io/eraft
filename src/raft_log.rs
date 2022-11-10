@@ -9,7 +9,6 @@ lazy_static! {
 
 #[derive(Default, Debug, Clone)]
 pub struct RaftLog {
-   applied_idx: i64,
    ents:  Vec<Entry>,
 }
 
@@ -27,7 +26,6 @@ fn build_raft_log() -> RaftLog {
     }; 
     log_ents.push(empty_ent);
     RaftLog { 
-        applied_idx: 0,
         ents:     log_ents, 
     }
 }
@@ -99,7 +97,6 @@ mod raftlog_tests {
             data: vec![],
         };
         let mut raft_log = RaftLog::new();
-        assert_eq!(raft_log.applied_idx, 0);
         // test append a log
         raft_log.append(ent);
         assert_eq!(raft_log.size(), 2);

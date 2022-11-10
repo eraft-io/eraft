@@ -24,6 +24,7 @@ async-executor = "0.1.2"
 rand = "0.8.5"
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
 simplelog = { version = "^0.11.0", features = ["paris"] }
+rocksdb = "0.19.0"
 
 [build-dependencies]
 tonic-build = "0.7.2"

@@ -1,8 +1,6 @@
-use std::{sync::{Mutex, mpsc::{Sender, self}, mpsc::{Receiver, SyncSender}}, thread, time::Duration};
-use lazy_static::lazy_static;
+use std::{sync::{mpsc::{SyncSender}}};
 use rand::Rng;
 use simplelog::*;
-use tonic::{transport::{Server, Channel}, Request, Response, Status};
 use eraft_proto::raft_service_client::{RaftServiceClient};
 use std::cmp;
 
@@ -47,9 +45,11 @@ pub trait Raft {
 
     fn advance_commit_index_for_leader(&mut self);
 
+    fn get_resp_ch(&self) -> &std::sync::mpsc::Receiver<String>;
+
     fn advance_commit_index_for_follower(&mut self, leader_commit_id: i64);
 
-    fn propose(&mut self, payload: String) -> (i64, i64, bool);
+    fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, bool);
 
     fn handle_request_vote(&mut self, req: RequestVoteRequest) -> RequestVoteResponse;
 
@@ -68,8 +68,8 @@ pub trait Raft {
 #[derive(Debug)]
 pub struct RaftStack {
     me_id: u16,
-    dead: bool,
     apply_ch: SyncSender<ApplyMsg>,
+    cmd_resp_ch_: std::sync::mpsc::Receiver<String>,
     role: NodeRole,
     cur_term: i64,
     voted_for: i16,
@@ -79,7 +79,6 @@ pub struct RaftStack {
     last_applied: i64,
     next_idx: Vec<i64>,
     match_idx: Vec<i64>,
-    is_snapshoting: bool,
     peers: Vec<Peer>,
     leader_id: u16,
     tick_count: u64,
@@ -93,8 +92,8 @@ pub struct RaftStack {
 }
 
 impl RaftStack {
-    pub fn new(me: u16, peers: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>) -> RaftStack {
-        build_raftstack(me, peers, heart_base, elec_base, app_apply_ch)
+    pub fn new(me: u16, peers: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>, cmd_resp_ch: std::sync::mpsc::Receiver<String>) -> RaftStack {
+        build_raftstack(me, peers, heart_base, elec_base, app_apply_ch, cmd_resp_ch)
     }
 }
 
@@ -157,7 +156,7 @@ impl Raft for RaftStack {
         }
     }
 
-    fn propose(&mut self, payload: String) -> (i64, i64, bool) {
+    fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, bool) {
         if self.role != NodeRole::Leader {
             return (-1, -1, false);
         }
@@ -171,7 +170,7 @@ impl Raft for RaftStack {
             entry_type: EntryType::EntryNormal as i32,
             index: new_log_ent_index,
             term: new_log_ent_term,
-            data: payload.as_bytes().to_vec(),
+            data: payload,
         };
 
         self.logs.append(new_log_ent);
@@ -476,20 +475,24 @@ impl Raft for RaftStack {
         &self.apply_ch
     }
 
+    fn get_resp_ch(&self) -> &std::sync::mpsc::Receiver<String> {
+        &self.cmd_resp_ch_
+    }
+
     fn set_apply_ch(&mut self, apply_ch: SyncSender<ApplyMsg>) {
         self.apply_ch = apply_ch;
     }
 }
 
-fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>) -> RaftStack {
+fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>, cmd_resp_ch: std::sync::mpsc::Receiver<String>) -> RaftStack {
     let mut rng = rand::thread_rng();
     let random_election_timeout = rng.gen_range(elec_base..2*elec_base);
     let peer_size = prs.len();
     simplelog::info!("raft gen random timeout {}", random_election_timeout);
     RaftStack {
         me_id: me, 
-        dead: false, 
         apply_ch: app_apply_ch, 
+        cmd_resp_ch_: cmd_resp_ch,
         role: NodeRole::Follower, 
         cur_term: INIT_TERM, 
         voted_for: VOTE_FOR_NO_ONE, 
@@ -500,7 +503,6 @@ fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app
         peers: prs,
         next_idx: vec![0; peer_size], 
         match_idx: vec![0; peer_size], 
-        is_snapshoting: false, 
         leader_id: 0, 
         tick_count: 0,
         heartbeat_running: true,
@@ -573,7 +575,10 @@ mod raftcore_tests {
         let (tx, rx) = mpsc::sync_channel(2);
         let tx1 = tx.clone();
 
-        let raftstack = build_raftstack(1, peers, 1, 5, tx);
+        let (cmd_tx, cmd_rx)  = mpsc::sync_channel(2);
+        let cmd_tx1 = cmd_tx.clone();
+
+        let raftstack = build_raftstack(1, peers, 1, 5, tx, cmd_rx);
         assert_eq!(raftstack.me_id, 1);
         assert_eq!(raftstack.heartbeat_time_base, 1);
         assert!(raftstack.election_timeout >= 5);
@@ -584,11 +589,9 @@ mod raftcore_tests {
         assert_eq!(raftstack.granted_votes, 0);
         assert_eq!(raftstack.last_applied, 0);
         assert_eq!(raftstack.leader_id, 0);
-        assert_eq!(raftstack.dead, false);
         assert_eq!(raftstack.commit_idx, 0);
         let my_role = NodeRole::Follower;
         assert_eq!(raftstack.role, my_role);
-        assert_eq!(raftstack.is_snapshoting, false);
 
         thread::spawn(move || {
             let apply_msg = ApplyMsg{
