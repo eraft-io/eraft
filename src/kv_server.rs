@@ -1,13 +1,15 @@
+use crate::eraft_proto::OpType;
 use crate::raft_core::{RaftStack, Peer, Raft};
-use std::sync::mpsc::SyncSender;
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::Duration;
-use async_std::channel::Receiver;
+
 use prost::bytes::BufMut;
 use simplelog::*;
 
 use crate::{eraft_proto};
+use std::sync::Mutex;
+
 
 use tonic::{transport::{Server}, Request, Response, Status};
 use eraft_proto::raft_service_server::{RaftService, RaftServiceServer};
@@ -15,8 +17,16 @@ use eraft_proto::{RequestVoteRequest, RequestVoteResponse};
 use eraft_proto::{AppendEntriesRequest, AppendEntriesResponse};
 use eraft_proto::{CommandRequest, CommandResponse};
 
-use std::sync::Mutex;
 use rocksdb::DB;
+
+use std::sync::atomic::{AtomicUsize, Ordering};
+static GLOBAL_ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
+
+use lazy_static::lazy_static;
+lazy_static! {
+    static ref REPS: Mutex<String> = Mutex::new(String::from(""));
+}
 
 #[derive(Clone)]
 struct RaftServiceImpl {
@@ -64,36 +74,50 @@ impl RaftService for RaftServiceImpl {
                    request: Request<CommandRequest>,
     ) -> Result<Response<CommandResponse>, Status> {
         simplelog::info!("do command req from {:?} with {:?}", request.remote_addr(), request);
-        let mut raft_stack = self.f.lock().unwrap();
-
         let mut resp = CommandResponse{
-            value: String::from("ok"),
-            leader_id: raft_stack.get_leader_id() as i64,
+            value: String::from(""),
+            leader_id: 0,
             err_code: 0
         };
 
-        //  ------------------------------------------------------------------------
-        // |  2 bytes  |  8 bytes    |   n bytes   |    8 bytes      |   n bytes    |
-        //  ------------------------------------------------------------------------
-        // | op type   |  key length |   key       |    val length   |   val        |
-        //  ------------------------------------------------------------------------
+        {
+            let mut raft_stack = self.f.lock().unwrap();
+            //  ------------------------------------------------------------------------
+            // |  2 bytes  |  8 bytes    |   n bytes   |    8 bytes      |   n bytes    |
+            //  ------------------------------------------------------------------------
+            // | op type   |  key length |   key       |    val length   |   val        |
+            //  ------------------------------------------------------------------------
 
-        let mut propose_seq: Vec<u8> = Vec::new();
+            let mut propose_seq: Vec<u8> = Vec::new();
 
-        let op_type: i16 = request.get_ref().op_type as i16;  
-        propose_seq.put_i16(op_type);
-        propose_seq.put_u64(request.get_ref().key.clone().len() as u64);
-        propose_seq.put_slice(request.get_ref().key.clone().into_bytes().as_slice());
-        propose_seq.put_u64(request.get_ref().value.clone().len() as u64);
-        propose_seq.put_slice(request.get_ref().value.clone().into_bytes().as_slice());
-        
-        let (idx, _, is_leader) = raft_stack.propose(propose_seq);
+            let op_type: i16 = request.get_ref().op_type as i16;  
+            propose_seq.put_i16(op_type);
+            propose_seq.put_u64(request.get_ref().key.clone().len() as u64);
+            propose_seq.put_slice(request.get_ref().key.clone().into_bytes().as_slice());
+            propose_seq.put_u64(request.get_ref().value.clone().len() as u64);
+            propose_seq.put_slice(request.get_ref().value.clone().into_bytes().as_slice());
+            
+            let (idx, _, is_leader) = raft_stack.propose(propose_seq);
+            if !is_leader {
+                simplelog::info!("node is not leader cmd idx {}", idx);
+                resp.err_code = 2; // is not leader return
+                return Ok(Response::new(resp));
+            }
+        }
 
-        simplelog::info!("is_leader: {}, send log entry with idx {} to raft", is_leader, idx);
+        {
+            while GLOBAL_ID_COUNTER.load(Ordering::Relaxed) == 0 {}
 
-        // let data = raft_stack.get_resp_ch().recv().unwrap();
-        // resp.value = data;
-        
+            {
+                let v = REPS.lock().unwrap();
+                resp.value = v.to_string();
+            }
+
+            {
+                GLOBAL_ID_COUNTER.store(0, Ordering::Relaxed)
+            }
+        }
+
         Ok(Response::new(resp))
     }
 
@@ -115,11 +139,11 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
             addr: String::from("http://[::1]:8090")
         }           
     ];
+
+
     let (tx, rx) = mpsc::sync_channel(100);
 
-    let (cmd_tx, cmd_rx) = mpsc::channel();
-
-    let raft_stack = RaftStack::new(sid, peers, 1, 5, tx, cmd_rx);
+    let raft_stack = RaftStack::new(sid, peers, 1, 5, tx);
     let addr = svr_addr.parse().unwrap();
     let db = DB::open_default(format!("./data_{}", svr_addr)).unwrap();
 
@@ -130,7 +154,7 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
     // tick
     thread::spawn(move || {
         loop {
-            thread::sleep(Duration::from_millis(1000 as u64));
+            thread::sleep(Duration::from_millis(200 as u64));
             let mut raft = raft_service_clone.f.lock().unwrap();
             raft.tick_run();
         }
@@ -166,18 +190,44 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
             let val = String::from_utf8(received.command.as_slice()[(10+key_length+8) as usize..(10+key_length+8+val_length) as usize].to_vec()).unwrap();
             println!("Get value {:?}", val);
             let seek_key = key.clone();
-            if op_type == 0 { // put
+            if op_type == OpType::OpPut as i16 { // put
                 let _ = db.put(key, val);
-                // cmd_tx.send(String::from("ok"));
+                {
+                    GLOBAL_ID_COUNTER.store(2, Ordering::Relaxed);
+                    {
+                        let mut v = REPS.lock().unwrap();
+                        v.clear();
+                        v.push_str("ok");
+                    }
+                }
             }
-            if op_type == 2 { // get
+            if op_type == OpType::OpGet as i16 { // get
                 match db.get(seek_key) {
                     Ok(Some(value)) => {
                         let resp_val = String::from_utf8(value.to_vec()).unwrap();
-                        // cmd_tx.send(resp_val);
+                        GLOBAL_ID_COUNTER.store(2, Ordering::Relaxed);
+                        {
+                            let mut v = REPS.lock().unwrap();
+                            v.clear();
+                            v.push_str(&resp_val);
+                        }
                     },
-                    Ok(None) => { cmd_tx.send(String::from("not found!")).unwrap() },
-                    Err(e) => { cmd_tx.send(String::from(format!("error -> {:?}", e))).unwrap() },
+                    Ok(None) => { 
+                        GLOBAL_ID_COUNTER.store(2, Ordering::Relaxed);
+                        {
+                            let mut v = REPS.lock().unwrap();
+                            v.clear();
+                            v.push_str("not found");
+                        }
+                     },
+                    Err(e) => {              
+                        GLOBAL_ID_COUNTER.store(2, Ordering::Relaxed);
+                        {
+                            let mut v = REPS.lock().unwrap();
+                            v.clear();
+                            v.push_str(format!("error {:?}", e).as_str());
+                        }
+                    },
                  }
             }
         }

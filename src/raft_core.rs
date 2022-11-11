@@ -45,8 +45,6 @@ pub trait Raft {
 
     fn advance_commit_index_for_leader(&mut self);
 
-    fn get_resp_ch(&self) -> &std::sync::mpsc::Receiver<String>;
-
     fn advance_commit_index_for_follower(&mut self, leader_commit_id: i64);
 
     fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, bool);
@@ -69,7 +67,6 @@ pub trait Raft {
 pub struct RaftStack {
     me_id: u16,
     apply_ch: SyncSender<ApplyMsg>,
-    cmd_resp_ch_: std::sync::mpsc::Receiver<String>,
     role: NodeRole,
     cur_term: i64,
     voted_for: i16,
@@ -92,8 +89,8 @@ pub struct RaftStack {
 }
 
 impl RaftStack {
-    pub fn new(me: u16, peers: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>, cmd_resp_ch: std::sync::mpsc::Receiver<String>) -> RaftStack {
-        build_raftstack(me, peers, heart_base, elec_base, app_apply_ch, cmd_resp_ch)
+    pub fn new(me: u16, peers: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>) -> RaftStack {
+        build_raftstack(me, peers, heart_base, elec_base, app_apply_ch)
     }
 }
 
@@ -475,16 +472,12 @@ impl Raft for RaftStack {
         &self.apply_ch
     }
 
-    fn get_resp_ch(&self) -> &std::sync::mpsc::Receiver<String> {
-        &self.cmd_resp_ch_
-    }
-
     fn set_apply_ch(&mut self, apply_ch: SyncSender<ApplyMsg>) {
         self.apply_ch = apply_ch;
     }
 }
 
-fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>, cmd_resp_ch: std::sync::mpsc::Receiver<String>) -> RaftStack {
+fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app_apply_ch: SyncSender<ApplyMsg>) -> RaftStack {
     let mut rng = rand::thread_rng();
     let random_election_timeout = rng.gen_range(elec_base..2*elec_base);
     let peer_size = prs.len();
@@ -492,7 +485,6 @@ fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app
     RaftStack {
         me_id: me, 
         apply_ch: app_apply_ch, 
-        cmd_resp_ch_: cmd_resp_ch,
         role: NodeRole::Follower, 
         cur_term: INIT_TERM, 
         voted_for: VOTE_FOR_NO_ONE, 
@@ -575,10 +567,7 @@ mod raftcore_tests {
         let (tx, rx) = mpsc::sync_channel(2);
         let tx1 = tx.clone();
 
-        let (cmd_tx, cmd_rx)  = mpsc::sync_channel(2);
-        let cmd_tx1 = cmd_tx.clone();
-
-        let raftstack = build_raftstack(1, peers, 1, 5, tx, cmd_rx);
+        let raftstack = build_raftstack(1, peers, 1, 5, tx);
         assert_eq!(raftstack.me_id, 1);
         assert_eq!(raftstack.heartbeat_time_base, 1);
         assert!(raftstack.election_timeout >= 5);

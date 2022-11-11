@@ -8,7 +8,6 @@ use simplelog::*;
 use std::fs::File;
 
 fn main() {
-
     let args: Vec<String> = env::args().collect();
     let server_id: u16 = match args[1].trim().parse() {
         Ok(id) => id,
