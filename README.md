@@ -16,11 +16,13 @@
 ```
 ./target/debug/eraftproxy-ctl 'http://[::1]:8088' "INSERT INTO classtab (
                                                     Name,
-                                                    Class
+                                                    Class,
+                                                    Age
                                                     )
                                                     VALUES
                                                     ('Tom',
-                                                    'BXCCC');"
+                                                    'BXCCC',
+                                                    '18');"
 
 ```
 

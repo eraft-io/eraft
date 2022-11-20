@@ -6,7 +6,6 @@ use simplelog::*;
 use tonic::{Response};
 use eraft_proto::{CommandResponse};
 
-#[tokio::main]
 pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut cli = RaftServiceClient::connect(target).await?;
     let request = tonic::Request::new(CommandRequest {
@@ -18,5 +17,7 @@ pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Resul
         context: vec![0],
     });
     let resp = cli.do_command(request).await?;
+    // simplelog::info!();
+    println!("{:?} ", resp.into_inner().value);
     Ok(())
 }
