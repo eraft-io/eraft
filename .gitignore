@@ -6,3 +6,6 @@ deps
 pmem-redis.tar.gz
 target
 .idea
+data_*
+eraftkv-node*
+eraftkv-proxy*

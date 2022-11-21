@@ -1,10 +1,6 @@
 use crate::{eraft_proto};
 use eraft_proto::raft_service_client::RaftServiceClient;
 use eraft_proto::{CommandRequest, OpType};
-use simplelog::*;
-
-use tonic::{Response};
-use eraft_proto::{CommandResponse};
 
 pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut cli = RaftServiceClient::connect(target).await?;
@@ -17,7 +13,6 @@ pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Resul
         context: vec![0],
     });
     let resp = cli.do_command(request).await?;
-    // simplelog::info!();
     println!("{:?} ", resp.into_inner().value);
     Ok(())
 }
