@@ -1,4 +1,3 @@
-[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
 中文 | [English](README_en.md)
@@ -31,3 +30,4 @@
 ./target/debug/eraftproxy-ctl 'http://[::1]:8088' "SELECT * FROM classtab WHERE Name = 'Tom';"
 
 ```
+

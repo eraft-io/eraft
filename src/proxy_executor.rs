@@ -1,11 +1,7 @@
-use sqlparser::dialect::GenericDialect;
-use sqlparser::parser::*;
 use sqlparser::ast::*;
 use crate::kv_client;
 use crate::{eraft_proto};
-use eraft_proto::*;
 extern crate simplelog;
-use simplelog::*;
 
 pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<(), Box<dyn std::error::Error>> {
     match stmt {
@@ -51,7 +47,7 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                     let mut tb_name = String::new();
                     let mut query_val = String::new();
                     match &sel.from[0].relation {
-                        TableFactor::Table { name, alias, args, with_hints } => {
+                        TableFactor::Table { name, alias: _, args: _, with_hints: _ } => {
                             let table_name_ident : &Ident =  &name.0[0];  
                             tb_name = table_name_ident.value.clone();
                         },
@@ -61,9 +57,6 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                         match selection {
                             Expr::BinaryOp { left, op, right } => {
                                 match &**left {
-                                    Expr::Identifier(idt) => {
-                                        // simplelog::info!("left val {:?} ", idt.value);  
-                                    },
                                     _ => {}
                                 }
                                 match op {
