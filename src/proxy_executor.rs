@@ -1,17 +1,20 @@
 use sqlparser::ast::*;
 use crate::kv_client;
+use crate::consts;
 use crate::{eraft_proto};
 extern crate simplelog;
+use simplelog::*;
 
 pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<(), Box<dyn std::error::Error>> {
     match stmt {
         Statement::Insert { or: _, into: _, columns, overwrite: _, source, partitioned: _, after_columns: _, table: _, on: _, table_name } => {
             let table_name_ident : &Ident =  &table_name.0[0];
-            let _cols: &std::vec::Vec<sqlparser::ast::Ident> = columns;
-            let mut col_vals: Vec<&String> = vec![];
+            let cols: &std::vec::Vec<sqlparser::ast::Ident> = columns;
             let mut row_vals: String = String::new();
             let s : &std::boxed::Box<sqlparser::ast::Query> = source;
             let bd: &std::boxed::Box<sqlparser::ast::SetExpr> = &s.body;
+            let mut count = 0;
+            let mut row_key : String = String::new();
             match &**bd {
                 SetExpr::Values(v) =>{
                     row_vals.push('|');
@@ -21,23 +24,26 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                                 Expr::Value(v_) => {
                                     match v_ {
                                         Value::SingleQuotedString(ss) => {
-                                            col_vals.push(ss);
-                                            row_vals.push_str(ss.as_str());
-                                            row_vals.push('|');
+                                            // /table_name/row_key/feild_name    feild_value
+                                            if count == 0 {
+                                                row_key = String::from(ss.as_str());
+                                            }
+                                            simplelog::info!("/{}/{}/{} => {}", table_name_ident.value, row_key, cols[count], ss.as_str());
                                         },
                                         _ => {},
                                     }
                                 },
                                 _ => {},
                             }
+                            count += 1;
                         }
                     }
                 },
                 _ => {} 
             }
-            let key = format!("{}_p_{}", table_name_ident.value, col_vals[0]);
+            // let key = format!("{}_p_{}", table_name_ident.value, col_vals[0]);
             // sample set
-            let _ = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), row_vals.as_str()).await?;
+            // let _ = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), row_vals.as_str()).await?;
         },
 
         Statement::Query(s) => {
@@ -86,6 +92,18 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                 _ => {}
             }
         },
+
+        Statement::CreateDatabase {
+            db_name,
+            if_not_exists,
+            location,
+            managed_location,
+        } => {
+            let db_name_ident : &Ident =  &db_name.0[0];
+            let key = format!("{}{}", consts::DBS_KEY_PREFIX, db_name_ident.value);
+            let _ = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), "").await?;
+        },
+
         _ => {
         }
     }

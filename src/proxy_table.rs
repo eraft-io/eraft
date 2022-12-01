@@ -13,6 +13,21 @@ pub enum FieldType {
 
 }
 
+pub trait TabOperation {
+
+    fn create_idx(column_name: &String) -> bool;
+
+    fn drop_idx(column_name: &String) -> bool;
+
+    // insert record to table (feild_name, record_value)
+    fn insert_record(record: Vec<(String, String)>) -> bool;
+
+    fn delete_record(match_condition: (String, String)) -> u32;
+
+    fn select_records(query_condition: (String, String)) -> String;
+
+}
+
 pub struct Table {
     
     // the number of table columns
@@ -29,6 +44,3 @@ pub struct Table {
     auto_inc_counter: i64,
 
 }
-
-
-
