@@ -11,8 +11,10 @@ pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Resul
         client_id: 999,
         command_id: 999,
         context: vec![0],
+        limit: 0,
+        offset: 0,
     });
     let resp = cli.do_command(request).await?;
-    println!("{:?} ", resp.into_inner().value);
+    println!("{:?} ", resp);
     Ok(())
 }

@@ -24,7 +24,6 @@ async fn main() {
     thread::spawn(move || {
         let dialect = GenericDialect {}; // or AnsiDialect, or your own dialect ...
         let ast = Parser::parse_sql(&dialect, args[2].as_str()).unwrap();
-        // simplelog::info!("ast {:?} ", ast);
         let stmt_ = &ast[0];
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async{

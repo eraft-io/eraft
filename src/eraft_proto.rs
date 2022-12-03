@@ -107,6 +107,10 @@ pub struct CommandRequest {
     pub command_id: i64,
     #[prost(bytes="vec", tag="6")]
     pub context: ::prost::alloc::vec::Vec<u8>,
+    #[prost(int64, tag="7")]
+    pub offset: i64,
+    #[prost(int64, tag="8")]
+    pub limit: i64,
 }
 ///
 /// client command response
@@ -119,76 +123,8 @@ pub struct CommandResponse {
     pub leader_id: i64,
     #[prost(int64, tag="3")]
     pub err_code: i64,
-}
-///
-/// config server request
-/// to manager the server config table
-///
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct ConfigRequest {
-    /// gid -> [s1, s2, s3]
-    #[prost(map="int64, string", tag="1")]
-    pub servers: ::std::collections::HashMap<i64, ::prost::alloc::string::String>,
-    #[prost(int64, repeated, tag="2")]
-    pub gids: ::prost::alloc::vec::Vec<i64>,
-    #[prost(int64, tag="3")]
-    pub bucket_id: i64,
-    #[prost(int64, tag="4")]
-    pub gid: i64,
-    #[prost(int64, tag="5")]
-    pub config_version: i64,
-    #[prost(enumeration="ConfigOpType", tag="6")]
-    pub op_type: i32,
-    #[prost(int64, tag="7")]
-    pub client_id: i64,
-    #[prost(int64, tag="8")]
-    pub command_id: i64,
-}
-///
-///
-///
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct ServerConfig {
-    #[prost(int64, tag="1")]
-    pub config_version: i64,
-    #[prost(int64, repeated, tag="2")]
-    pub buckets: ::prost::alloc::vec::Vec<i64>,
-    /// gid -> [s1, s2, s3]
-    #[prost(map="int64, string", tag="3")]
-    pub groups: ::std::collections::HashMap<i64, ::prost::alloc::string::String>,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct ConfigResponse {
-    #[prost(string, tag="1")]
-    pub err_msg: ::prost::alloc::string::String,
-    #[prost(message, optional, tag="2")]
-    pub config: ::core::option::Option<ServerConfig>,
-    #[prost(int64, tag="3")]
-    pub leader_id: i64,
-    #[prost(int64, tag="4")]
-    pub err_code: i64,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct BucketOperationRequest {
-    #[prost(int64, tag="1")]
-    pub config_version: i64,
-    #[prost(int64, repeated, tag="2")]
-    pub bucket_ids: ::prost::alloc::vec::Vec<i64>,
-    #[prost(enumeration="BucketOpType", tag="3")]
-    pub bucket_op_type: i32,
-    #[prost(int64, tag="4")]
-    pub gid: i64,
-    #[prost(bytes="vec", tag="5")]
-    pub buckets_datas: ::prost::alloc::vec::Vec<u8>,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct BucketOperationResponse {
-    #[prost(int64, tag="1")]
-    pub config_version: i64,
-    #[prost(bytes="vec", tag="2")]
-    pub buckets_datas: ::prost::alloc::vec::Vec<u8>,
-    #[prost(string, tag="3")]
-    pub err_msg: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag="4")]
+    pub match_keys: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct InstallSnapshotRequest {
@@ -228,29 +164,7 @@ pub enum OpType {
     OpPut = 0,
     OpAppend = 1,
     OpGet = 2,
-    OpConfigChange = 3,
-    OpDeleteBuckets = 4,
-    OpInsertBuckets = 5,
-}
-///
-/// config client op type
-///
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum ConfigOpType {
-    OpJoin = 0,
-    OpLeave = 1,
-    OpMove = 2,
-    OpQuery = 3,
-    OpSetBucket = 4,
-    OpMigBucket = 5,
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum BucketOpType {
-    OpGetData = 0,
-    OpDeleteData = 1,
-    OpInsertData = 2,
+    OpScan = 3,
 }
 /// Generated client implementations.
 pub mod raft_service_client {

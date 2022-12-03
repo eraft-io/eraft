@@ -83,9 +83,7 @@ enum OpType {
     OpPut = 0;
     OpAppend = 1;
     OpGet = 2;
-    OpConfigChange = 3;
-    OpDeleteBuckets = 4;
-    OpInsertBuckets = 5;
+    OpScan = 3;
 }
 
 //
@@ -98,6 +96,8 @@ message CommandRequest {
     int64  client_id = 4;
     int64  command_id = 5;
     bytes  context = 6;
+    int64  offset = 7;
+    int64  limit = 8;
 }
 
 //
@@ -107,69 +107,7 @@ message CommandResponse {
     string value = 1;
     int64  leader_id = 2;
     int64  err_code = 3;
-}
-
-//
-// config client op type
-//
-enum ConfigOpType {
-    OpJoin = 0;
-    OpLeave = 1;
-    OpMove = 2;
-    OpQuery = 3;
-    OpSetBucket = 4;
-    OpMigBucket = 5;
-}
-
-//
-// config server request
-// to manager the server config table
-//
-message ConfigRequest {
-    map<int64, string> servers = 1; // gid -> [s1, s2, s3]
-    repeated int64  gids = 2;
-    int64  bucket_id  = 3;
-    int64  gid = 4;
-    int64 config_version = 5;
-    ConfigOpType op_type  = 6;
-    int64  client_id = 7;
-    int64  command_id = 8;
-}
-
-//
-//
-//
-message ServerConfig {
-    int64  config_version = 1;
-    repeated int64 buckets = 2; 
-    map<int64, string> groups = 3; // gid -> [s1, s2, s3]
-}
-
-message ConfigResponse {
-    string err_msg = 1;
-    ServerConfig config = 2;
-    int64 leader_id = 3;
-    int64 err_code = 4;
-}
-
-enum BucketOpType {
-    OpGetData = 0;
-    OpDeleteData = 1;
-    OpInsertData = 2;
-}
-
-message BucketOperationRequest {
-    int64 config_version = 1;
-    repeated int64 bucket_ids = 2;
-    BucketOpType bucket_op_type = 3;
-    int64 gid = 4;
-    bytes buckets_datas = 5;
-}
-
-message BucketOperationResponse {
-    int64 config_version = 1;
-    bytes buckets_datas  = 2;
-    string err_msg = 3;
+    repeated string match_keys = 4;
 }
 
 message InstallSnapshotRequest {
@@ -188,7 +126,4 @@ service RaftService {
     rpc RequestVote (RequestVoteRequest) returns (RequestVoteResponse) {}
     rpc AppendEntries (AppendEntriesRequest) returns (AppendEntriesResponse) {}
     rpc DoCommand (CommandRequest) returns (CommandResponse) {}
-    // rpc DoConfig (ConfigRequest) returns (ConfigResponse) {}
-    // rpc DoBucketsOperation (BucketOperationRequest) returns (BucketOperationResponse) {}
-    // rpc Snapshot (InstallSnapshotRequest) returns (InstallSnapshotResponse) {}
 }

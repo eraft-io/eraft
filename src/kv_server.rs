@@ -25,7 +25,7 @@ static GLOBAL_ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 use lazy_static::lazy_static;
 lazy_static! {
-    static ref REPS: Mutex<String> = Mutex::new(String::from(""));
+    static ref REPS: Mutex<Vec<String>> = Mutex::new(vec![]);
 }
 
 #[derive(Clone)]
@@ -77,7 +77,8 @@ impl RaftService for RaftServiceImpl {
         let mut resp = CommandResponse{
             value: String::from(""),
             leader_id: 0,
-            err_code: 0
+            err_code: 0,
+            match_keys: vec![String::from("")],
         };
 
         {
@@ -110,7 +111,12 @@ impl RaftService for RaftServiceImpl {
 
             {
                 let v = REPS.lock().unwrap();
-                resp.value = v.to_string();
+                if v.len() >= 1 {
+                    if request.get_ref().op_type as i16 == eraft_proto::OpType::OpScan as i16 {
+                        resp.match_keys = v.to_vec();
+                    }
+                    resp.value = v[0].to_string();
+                }
             }
 
             {
@@ -197,7 +203,24 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
                     {
                         let mut v = REPS.lock().unwrap();
                         v.clear();
-                        v.push_str("ok");
+                        v.push(String::from("ok"));
+                    }
+                }
+            }
+            if op_type == OpType::OpScan as i16 {
+                let mut db_iter = db.raw_iterator();
+                db_iter.seek(seek_key.as_bytes());
+                GLOBAL_ID_COUNTER.store(2, Ordering::Relaxed);
+                let mut v = REPS.lock().unwrap();
+                v.clear();
+                {
+                    while db_iter.valid() {
+                        let key_vec = &db_iter.key().unwrap();
+                        let key_str = String::from_utf8_lossy(key_vec);
+                        if key_str.starts_with(seek_key.as_str()) {
+                            v.push(key_str.to_string());
+                        }
+                        db_iter.next()
                     }
                 }
             }
@@ -209,7 +232,7 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
                         {
                             let mut v = REPS.lock().unwrap();
                             v.clear();
-                            v.push_str(&resp_val);
+                            v.push(String::from(&resp_val));
                         }
                     },
                     Ok(None) => { 
@@ -217,7 +240,7 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
                         {
                             let mut v = REPS.lock().unwrap();
                             v.clear();
-                            v.push_str("not found");
+                            v.push(String::from("not found"));
                         }
                      },
                     Err(e) => {              
@@ -225,7 +248,7 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
                         {
                             let mut v = REPS.lock().unwrap();
                             v.clear();
-                            v.push_str(format!("error {:?}", e).as_str());
+                            v.push(String::from(format!("error {:?}", e).as_str()));
                         }
                     },
                  }
