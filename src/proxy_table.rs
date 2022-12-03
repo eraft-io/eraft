@@ -19,7 +19,6 @@ pub trait TabOperation {
 
     fn drop_idx(column_name: &String) -> bool;
 
-    // insert record to table (feild_name, record_value)
     fn insert_record(record: Vec<(String, String)>) -> bool;
 
     fn delete_record(match_condition: (String, String)) -> u32;

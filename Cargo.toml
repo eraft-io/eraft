@@ -11,6 +11,10 @@ path = "cmd/eraftkv-ctl.rs"
 name = "eraftproxy-ctl"
 path = "cmd/eraftproxy-ctl.rs"
 
+[[bin]]
+name = "eraftkv-bench-tool"
+path = "cmd/eraftkv-bench-tool.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

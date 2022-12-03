@@ -41,9 +41,6 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                 },
                 _ => {} 
             }
-            // let key = format!("{}_p_{}", table_name_ident.value, col_vals[0]);
-            // sample set
-            // let _ = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), row_vals.as_str()).await?;
         },
 
         Statement::Query(s) => {
