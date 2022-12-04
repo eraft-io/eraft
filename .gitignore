@@ -9,3 +9,4 @@ target
 data_*
 eraftkv-node*
 eraftkv-proxy*
+eraftkv-bench*

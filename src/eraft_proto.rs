@@ -125,6 +125,8 @@ pub struct CommandResponse {
     pub err_code: i64,
     #[prost(string, repeated, tag="4")]
     pub match_keys: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(string, tag="5")]
+    pub context: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct InstallSnapshotRequest {

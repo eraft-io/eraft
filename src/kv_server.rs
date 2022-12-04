@@ -79,6 +79,7 @@ impl RaftService for RaftServiceImpl {
             leader_id: 0,
             err_code: 0,
             match_keys: vec![String::from("")],
+            context: String::from("")
         };
 
         {
@@ -211,9 +212,9 @@ pub async fn run_server(sid: u16, svr_addr: &str) -> Result<(), Box<dyn std::err
                 let mut db_iter = db.raw_iterator();
                 db_iter.seek(seek_key.as_bytes());
                 GLOBAL_ID_COUNTER.store(2, Ordering::Relaxed);
-                let mut v = REPS.lock().unwrap();
-                v.clear();
                 {
+                    let mut v = REPS.lock().unwrap();
+                    v.clear();
                     while db_iter.valid() {
                         let key_vec = &db_iter.key().unwrap();
                         let key_str = String::from_utf8_lossy(key_vec);

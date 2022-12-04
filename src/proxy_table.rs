@@ -1,6 +1,6 @@
+use serde::{Serialize, Deserialize};
 
-const MAX_COLUMN_NUM: usize = 100;
-
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FieldType {
     
     TypeInt,
@@ -27,19 +27,21 @@ pub trait TabOperation {
 
 }
 
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Table {
     
     // the number of table columns
-    columns_num: u16,
+    pub columns_num: u16,
 
-    records_num: u64,
+    pub records_num: u64,
 
-    name: String,
+    pub name: String,
     
-    column_names: [String; MAX_COLUMN_NUM],
+    pub column_names: Vec<String>,
 
-    field_type: [FieldType; MAX_COLUMN_NUM],
+    pub field_type: Vec<FieldType>,
 
-    auto_inc_counter: i64,
+    pub auto_inc_counter: i64,
 
 }
