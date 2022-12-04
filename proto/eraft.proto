@@ -108,6 +108,7 @@ message CommandResponse {
     int64  leader_id = 2;
     int64  err_code = 3;
     repeated string match_keys = 4;
+    string context = 5;
 }
 
 message InstallSnapshotRequest {

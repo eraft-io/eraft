@@ -1,17 +1,3 @@
-[![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
-
-中文 | [English](README_en.md)
-
-## 运行 raft kv 服务复制组
-
-```
-./target/debug/eraftkv-ctl 0 '[::1]:8088'
-./target/debug/eraftkv-ctl 1 '[::1]:8089'
-./target/debug/eraftkv-ctl 2 '[::1]:8090'
-```
-
-## 支持的 SQL 
-
 ### CREATE DATABASE
 
 ```
@@ -34,6 +20,7 @@ Class VARCHAR(100),
 Score INT, 
 PRIMARY KEY(Name)
 );"
+
 ```
 
 ### SHOW CREATE TABLE
@@ -61,7 +48,3 @@ PRIMARY KEY(Name)
 ```
 ./target/debug/eraftproxy-ctl 'http://[::1]:8088' "SELECT * FROM classtab WHERE Name = 'Tom';"
 ```
-
-
-
-

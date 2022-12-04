@@ -1,2 +1,4 @@
 
-pub static DBS_KEY_PREFIX: &'static str = "DBS_";
+pub static DBS_KEY_PREFIX: &'static str = "/catalog/db/";
+
+pub static TBS_KEY_PREFIX: &'static str = "/catalog/tab/";

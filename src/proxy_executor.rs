@@ -1,6 +1,7 @@
 use sqlparser::ast::*;
 use crate::kv_client;
 use crate::consts;
+use crate::proxy_table;
 use crate::{eraft_proto};
 extern crate simplelog;
 use simplelog::*;
@@ -28,7 +29,9 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                                             if count == 0 {
                                                 row_key = String::from(ss.as_str());
                                             }
-                                            simplelog::info!("/{}/{}/{} => {}", table_name_ident.value, row_key, cols[count], ss.as_str());
+                                            let key = format!("/{}/{}/{}", table_name_ident.value, row_key, cols[count]);
+                                            let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(),ss.as_str()).await?;
+                                            simplelog::info!("{:?}", resp);
                                         },
                                         _ => {},
                                     }
@@ -83,8 +86,9 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                             _ => {},
                         }
                     }
-                    let key = format!("{}_p_{}", tb_name, query_val);
-                    let _ = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, key.as_str(), "").await?;
+                    let key = format!("/{}/{}", tb_name, query_val);
+                    let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
+                    simplelog::info!("{:?}", resp);
                 },
                 _ => {}
             }
@@ -98,11 +102,76 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
         } => {
             let db_name_ident : &Ident =  &db_name.0[0];
             let key = format!("{}{}", consts::DBS_KEY_PREFIX, db_name_ident.value);
-            let _ = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), "").await?;
+            let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), "").await?;
+            simplelog::info!("{:?}", resp);
         },
+
+        Statement::ShowVariable { variable } => {
+            if variable.len() == 1 && variable[0].value.eq_ignore_ascii_case("databases") {
+                let key = format!("{}", consts::DBS_KEY_PREFIX);
+                let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
+                simplelog::info!("{:?}", resp);
+            }
+        }
+
+        Statement::ShowCreate { obj_type, obj_name } => {
+            match &obj_type {
+                ShowCreateObject::Table => {
+                    let tab_name_ident : &Ident =  &obj_name.0[0];
+                    let key = format!("{}{}", consts::TBS_KEY_PREFIX, tab_name_ident.value);
+                    let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, key.as_str(), "").await?;
+                    simplelog::info!("{:?}", resp);                    
+                },
+                _ => {}
+            }
+        }
+
+        Statement::CreateTable { or_replace, temporary, external, global, if_not_exists, name, columns, constraints, hive_distribution, hive_formats, table_properties, with_options, file_format, location, query, without_rowid, like, clone, engine, default_charset, collation, on_commit, on_cluster } => {
+            let tab_name_ident : &Ident =  &name.0[0];
+
+            let mut proxy_tab = proxy_table::Table{
+                columns_num: columns.len() as u16,
+
+                records_num: 0,
+            
+                name: tab_name_ident.value.clone(),
+                
+                column_names: vec![],
+            
+                field_type: vec![],
+            
+                auto_inc_counter: 0,
+            };
+
+            for col in columns {
+                proxy_tab.column_names.push(col.name.value.clone());
+                match &col.data_type {
+                    DataType::Varchar(_) => {
+                        proxy_tab.field_type.push(proxy_table::FieldType::TypeVarchar);
+                    },
+                    DataType::Int(_) => {
+                        proxy_tab.field_type.push(proxy_table::FieldType::TypeInt);
+                    }
+                    DataType::Float(_) => {
+                        proxy_tab.field_type.push(proxy_table::FieldType::TypeFloat);
+                    }
+                    _ => {
+                        simplelog::error!("Unsupport data type");
+                    }
+                }
+            }
+
+            let serialized_tab_meta = serde_json::to_string(&proxy_tab).unwrap();
+
+            let key = format!("{}{}", consts::TBS_KEY_PREFIX, proxy_tab.name);
+            let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), &serialized_tab_meta).await?;
+            simplelog::info!("{:?}", resp);
+        }
 
         _ => {
         }
     }
+    
     Ok(())
+
 }

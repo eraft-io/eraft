@@ -1,8 +1,8 @@
 use crate::{eraft_proto};
 use eraft_proto::raft_service_client::RaftServiceClient;
-use eraft_proto::{CommandRequest, OpType};
+use eraft_proto::{CommandRequest, CommandResponse, OpType};
 
-pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Result<tonic::Response<CommandResponse>, Box<dyn std::error::Error>> {
     let mut cli = RaftServiceClient::connect(target).await?;
     let request = tonic::Request::new(CommandRequest {
         key: String::from(k),
@@ -15,6 +15,5 @@ pub async fn send_command(target: String, op: OpType, k: &str, v: &str) -> Resul
         offset: 0,
     });
     let resp = cli.do_command(request).await?;
-    println!("{:?} ", resp);
-    Ok(())
+    Ok(resp)
 }
