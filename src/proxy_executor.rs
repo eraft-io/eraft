@@ -6,7 +6,7 @@ use crate::{eraft_proto};
 extern crate simplelog;
 use simplelog::*;
 
-pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<(String), Box<dyn std::error::Error>> {
     match stmt {
         Statement::Insert { or: _, into: _, columns, overwrite: _, source, partitioned: _, after_columns: _, table: _, on: _, table_name } => {
             let table_name_ident : &Ident =  &table_name.0[0];
@@ -41,6 +41,7 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                             count += 1;
                         }
                     }
+                    return Ok(String::from("ok"))
                 },
                 _ => {} 
             }
@@ -87,8 +88,14 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                         }
                     }
                     let key = format!("/{}/{}", tb_name, query_val);
-                    let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
+                    let mut resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
                     simplelog::info!("{:?}", resp);
+                    let mut res_str = String::from("");
+                    for head in &resp.get_mut().match_keys {
+                        res_str.push_str(head);
+                        res_str.push('|');
+                    }
+                    return Ok(res_str)
                 },
                 _ => {}
             }
@@ -172,6 +179,6 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
         }
     }
     
-    Ok(())
+    Ok(String::from("ok"))
 
 }

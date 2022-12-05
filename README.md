@@ -27,13 +27,7 @@
 
 ```
 
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "CREATE TABLE classtab 
-( 
-Name VARCHAR(100), 
-Class VARCHAR(100), 
-Score INT, 
-PRIMARY KEY(Name)
-);"
+./target/debug/eraftproxy-ctl 'http://[::1]:8088' "CREATE TABLE classtab ( Name VARCHAR(100), Class VARCHAR(100), Score INT, PRIMARY KEY(Name));"
 ```
 
 ### SHOW CREATE TABLE
@@ -45,15 +39,7 @@ PRIMARY KEY(Name)
 ### INSERT INTO
 
 ```
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "INSERT INTO classtab (
-                                                    Name,
-                                                    Class,
-                                                    Score
-                                                    )
-                                                    VALUES
-                                                    ('Tom',
-                                                    'B',
-                                                    '88');";
+./target/debug/eraftproxy-ctl 'http://[::1]:8088' "INSERT INTO classtab (Name,Class,Score) VALUES ('Tom', 'B', '88');";
 ```
 
 ### SELECT BY PRIMARY KEY
