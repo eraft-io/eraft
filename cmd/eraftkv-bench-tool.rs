@@ -4,7 +4,6 @@ use std::thread;
 extern crate simplelog;
 use simplelog::*;
 use std::fs::File;
-use std::{env};
 
 #[tokio::main]
 async fn main() {

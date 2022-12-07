@@ -87,15 +87,43 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                             _ => {},
                         }
                     }
+
+                    let mut proxy_tab = proxy_table::Table{
+                        columns_num: 0,
+        
+                        records_num: 0,
+                    
+                        name: String::from(""),
+                        
+                        column_names: vec![],
+                    
+                        field_type: vec![],
+                    
+                        auto_inc_counter: 0,
+                    };
+
+                    let tb_meta_key = format!("{}{}", consts::TBS_KEY_PREFIX, tb_name);
+                    let tb_meta_resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, tb_meta_key.as_str(), "").await?;
+                    proxy_tab = serde_json::from_str(tb_meta_resp.get_ref().value.as_str())?;
                     let key = format!("/{}/{}", tb_name, query_val);
-                    let mut resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
+                    let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
                     simplelog::info!("{:?}", resp);
                     let mut res_str = String::from("");
-                    for head in &resp.get_mut().match_keys {
+                    res_str.push('|');
+                    for head in &proxy_tab.column_names {
                         res_str.push_str(head);
                         res_str.push('|');
                     }
-                    return Ok(res_str)
+                    res_str.push_str(String::from("\r\n").as_str());
+                    res_str.push('|');
+                    for head in &proxy_tab.column_names {
+                        let col_key = key.clone() + "/" + head;
+                        let col_resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, col_key.as_str(), "").await?;
+                        res_str.push_str(col_resp.get_ref().value.as_str());
+                        res_str.push('|');
+                   }
+
+                   return Ok(res_str)
                 },
                 _ => {}
             }
@@ -127,7 +155,7 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                     let tab_name_ident : &Ident =  &obj_name.0[0];
                     let key = format!("{}{}", consts::TBS_KEY_PREFIX, tab_name_ident.value);
                     let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, key.as_str(), "").await?;
-                    simplelog::info!("{:?}", resp);                    
+                    simplelog::info!("{:?}", resp);                   
                 },
                 _ => {}
             }
