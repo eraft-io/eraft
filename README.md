@@ -12,7 +12,7 @@
 
 ## 运行 proxy 服务
 ```
-./target/debug/eraftproxy-ctl '127.0.0.1:8080' 'http://[::1]:8088'
+./target/debug/eraftproxy-ctl '127.0.0.1:8080' 'http://[::1]:8088,http://[::1]:8089,http://[::1]:8090'
 ```
 
 ## 连接 proxy 执行 SQL
