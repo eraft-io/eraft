@@ -8,10 +8,14 @@ use sqlparser::parser::*;
 use eraft::proxy_executor;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use std::sync::mpsc;
+use std::sync::{mpsc, Mutex};
 
 extern crate simplelog;
 
+use lazy_static::lazy_static;
+lazy_static! {
+    static ref KV_SVR_ADDRS: Mutex<Vec<String>> = Mutex::new(vec![]);
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -26,7 +30,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let listener = TcpListener::bind(&addr).await?;
     simplelog::info!("proxy server success listene on: {}", addr);
 
+    {
+        let args: Vec<String> = env::args().collect();
+        let mut v = KV_SVR_ADDRS.lock().unwrap();
+        v.push(String::from(args[2].as_str()));
+    }
+
     loop {
+
         // Asynchronously wait for an inbound socket.
         let (mut socket, _) = listener.accept().await?;
 
@@ -51,16 +62,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     sql_stmt = sql_stmt.replace("\r", "");
                     sql_stmt = sql_stmt.replace("\n", "");
                     simplelog::info!("{:?} ", sql_stmt);
-
                     let dialect = GenericDialect {}; // or AnsiDialect, or your own dialect ...
                     let ast = Parser::parse_sql(&dialect, &sql_stmt.as_str()).unwrap();
                     let stmt_ = &ast[0];
                     simplelog::info!("{:?} ", stmt_);
-                        let rt = tokio::runtime::Runtime::new().unwrap();
-                        rt.block_on(async{
-                            let resp = proxy_executor::exec(stmt_, "http://[::1]:8088").await;
+                    let rt = tokio::runtime::Runtime::new().unwrap();
+
+                    rt.block_on(async{
+                        {
+                            let v = KV_SVR_ADDRS.lock().unwrap();
+                            let resp = proxy_executor::exec(stmt_, v[0].to_string().as_str()).await;
                             tx.send(resp.unwrap()).unwrap();
-                        });
+                        }
+                    });
                 }).join().expect("Thread panicked");
 
                 let mut received = rx.recv().unwrap();
