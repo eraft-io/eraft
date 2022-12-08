@@ -6,7 +6,7 @@ use crate::{eraft_proto};
 extern crate simplelog;
 use simplelog::*;
 
-pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<String, Box<dyn std::error::Error>> {
     match stmt {
         Statement::Insert { or: _, into: _, columns, overwrite: _, source, partitioned: _, after_columns: _, table: _, on: _, table_name } => {
             let table_name_ident : &Ident =  &table_name.0[0];
@@ -41,6 +41,7 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                             count += 1;
                         }
                     }
+                    return Ok(String::from("ok"))
                 },
                 _ => {} 
             }
@@ -86,9 +87,29 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                             _ => {},
                         }
                     }
+
+                    let tb_meta_key = format!("{}{}", consts::TBS_KEY_PREFIX, tb_name);
+                    let tb_meta_resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, tb_meta_key.as_str(), "").await?;
+                    let proxy_tab: proxy_table::Table = serde_json::from_str(tb_meta_resp.get_ref().value.as_str())?;
                     let key = format!("/{}/{}", tb_name, query_val);
                     let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
                     simplelog::info!("{:?}", resp);
+                    let mut res_str = String::from("");
+                    res_str.push('|');
+                    for head in &proxy_tab.column_names {
+                        res_str.push_str(head);
+                        res_str.push('|');
+                    }
+                    res_str.push_str(String::from("\r\n").as_str());
+                    res_str.push('|');
+                    for head in &proxy_tab.column_names {
+                        let col_key = key.clone() + "/" + head;
+                        let col_resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, col_key.as_str(), "").await?;
+                        res_str.push_str(col_resp.get_ref().value.as_str());
+                        res_str.push('|');
+                   }
+
+                   return Ok(res_str)
                 },
                 _ => {}
             }
@@ -96,9 +117,9 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
 
         Statement::CreateDatabase {
             db_name,
-            if_not_exists,
-            location,
-            managed_location,
+            if_not_exists: _,
+            location: _,
+            managed_location: _,
         } => {
             let db_name_ident : &Ident =  &db_name.0[0];
             let key = format!("{}{}", consts::DBS_KEY_PREFIX, db_name_ident.value);
@@ -111,6 +132,12 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                 let key = format!("{}", consts::DBS_KEY_PREFIX);
                 let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
                 simplelog::info!("{:?}", resp);
+                let mut res_str = String::from("");
+                for match_key in &resp.get_ref().match_keys {
+                    res_str.push_str(match_key.strip_prefix(consts::DBS_KEY_PREFIX).unwrap_or(match_key));
+                    res_str.push_str(String::from("\r\n").as_str());
+                }
+                return Ok(res_str)
             }
         }
 
@@ -120,15 +147,17 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                     let tab_name_ident : &Ident =  &obj_name.0[0];
                     let key = format!("{}{}", consts::TBS_KEY_PREFIX, tab_name_ident.value);
                     let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpGet, key.as_str(), "").await?;
-                    simplelog::info!("{:?}", resp);                    
+                    simplelog::info!("{:?}", resp);    
                 },
                 _ => {}
             }
         }
 
-        Statement::CreateTable { or_replace, temporary, external, global, if_not_exists, name, columns, constraints, hive_distribution, hive_formats, table_properties, with_options, file_format, location, query, without_rowid, like, clone, engine, default_charset, collation, on_commit, on_cluster } => {
+        Statement::CreateTable { or_replace:_, temporary: _, external:_, global:_, if_not_exists:_, name, columns, 
+            constraints:_, hive_distribution:_, hive_formats:_, table_properties:_, with_options:_, file_format:_, location:_, 
+            query:_, without_rowid:_, like:_, clone:_, engine:_, 
+            default_charset:_,collation:_, on_commit:_, on_cluster:_ } => {
             let tab_name_ident : &Ident =  &name.0[0];
-
             let mut proxy_tab = proxy_table::Table{
                 columns_num: columns.len() as u16,
 
@@ -172,6 +201,6 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
         }
     }
     
-    Ok(())
+    Ok(String::from("ok"))
 
 }

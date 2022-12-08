@@ -10,58 +10,62 @@
 ./target/debug/eraftkv-ctl 2 '[::1]:8090'
 ```
 
+## 运行 proxy 服务
+```
+./target/debug/eraftproxy-ctl '127.0.0.1:8080' 'http://[::1]:8088'
+```
+
+## 连接 proxy 执行 SQL
+
+telnet [proxy 地址]
+
+操作示例
+
+```
+colin@colindeMacBook-Pro eraft % telnet 127.0.0.1 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+SHOW DATABASES;
+ok
+SELECT * FROM classtab WHERE Name = 'Tom';
+|Name|Class|Score|
+|Tom|B|88|
+```
+
 ## 支持的 SQL 
 
 ### CREATE DATABASE
 
 ```
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "CREATE DATABASE testdb_1;"
+CREATE DATABASE testdb_1;
 ```
 
 ### SHOW DATABASES
 ```
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "SHOW DATABASES;"
+SHOW DATABASES;
 ```
 
 ### CREATE TABLE
 
 ```
-
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "CREATE TABLE classtab 
-( 
-Name VARCHAR(100), 
-Class VARCHAR(100), 
-Score INT, 
-PRIMARY KEY(Name)
-);"
+CREATE TABLE classtab ( Name VARCHAR(100), Class VARCHAR(100), Score INT, PRIMARY KEY(Name));
 ```
 
 ### SHOW CREATE TABLE
 
 ```
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "SHOW CREATE TABLE classtab;"
+SHOW CREATE TABLE classtab;
 ```
 
 ### INSERT INTO
 
 ```
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "INSERT INTO classtab (
-                                                    Name,
-                                                    Class,
-                                                    Score
-                                                    )
-                                                    VALUES
-                                                    ('Tom',
-                                                    'B',
-                                                    '88');";
+INSERT INTO classtab (Name,Class,Score) VALUES ('Tom', 'B', '88');
 ```
 
 ### SELECT BY PRIMARY KEY
 
 ```
-./target/debug/eraftproxy-ctl 'http://[::1]:8088' "SELECT * FROM classtab WHERE Name = 'Tom';"
+SELECT * FROM classtab WHERE Name = 'Tom';
 ```
-
-
-
-
