@@ -8,6 +8,7 @@ use prost::bytes::BufMut;
 use simplelog::*;
 
 use crate::{eraft_proto};
+use crate::consts;
 use std::sync::Mutex;
 
 
@@ -99,15 +100,24 @@ impl RaftService for RaftServiceImpl {
             propose_seq.put_u64(request.get_ref().value.clone().len() as u64);
             propose_seq.put_slice(request.get_ref().value.clone().into_bytes().as_slice());
             
-            let (idx, _, is_leader) = raft_stack.propose(propose_seq);
+            if raft_stack.get_leader_id() != raft_stack.get_me_id() {
+                simplelog::info!("I am not leader! leader is {:?}", raft_stack.get_leader_id());
+                resp.err_code = consts::ErrorCode::ErrorWrongLeader as i64; // is not leader return
+                resp.leader_id = raft_stack.get_leader_id() as i64;
+                return Ok(Response::new(resp));
+            }
+
+            let (idx, _, leader_id_, is_leader) = raft_stack.propose(propose_seq);
             if !is_leader {
                 simplelog::info!("node is not leader cmd idx {}", idx);
-                resp.err_code = 2; // is not leader return
+                resp.err_code = consts::ErrorCode::ErrorWrongLeader as i64; // is not leader return
+                resp.leader_id = leader_id_ as i64;
                 return Ok(Response::new(resp));
             }
         }
 
         {
+
             while GLOBAL_ID_COUNTER.load(Ordering::Relaxed) == 0 {}
 
             {
@@ -117,6 +127,11 @@ impl RaftService for RaftServiceImpl {
                         resp.match_keys = v.to_vec();
                     }
                     resp.value = v[0].to_string();
+
+                    {
+                        let raft_stack = self.f.lock().unwrap();
+                        resp.leader_id = raft_stack.get_leader_id() as i64;
+                    }
                 }
             }
 

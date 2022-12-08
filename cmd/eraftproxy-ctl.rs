@@ -1,6 +1,7 @@
 use std::{env};
 use std::error::Error;
 use std::thread;
+use prost::Message;
 use simplelog::*;
 use std::fs::File;
 use sqlparser::dialect::GenericDialect;
@@ -16,6 +17,10 @@ use lazy_static::lazy_static;
 lazy_static! {
     static ref KV_SVR_ADDRS: Mutex<Vec<String>> = Mutex::new(vec![]);
 }
+
+use std::sync::atomic::{AtomicUsize, Ordering};
+static GLOBAL_LEADER_ID: AtomicUsize = AtomicUsize::new(0);
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -33,7 +38,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     {
         let args: Vec<String> = env::args().collect();
         let mut v = KV_SVR_ADDRS.lock().unwrap();
-        v.push(String::from(args[2].as_str()));
+        let svr_addrs: Vec<&str> = args[2].split(",").collect();
+        simplelog::info!("svr_addrs {:?}", svr_addrs);
+        for s in svr_addrs {
+            v.push(String::from(s))
+        }
     }
 
     loop {
@@ -55,41 +64,49 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     return;
                 }
                 let query_buf = &buf[0..n].to_vec();
-                let mut sql_stmt = String::from_utf8(query_buf.clone()).unwrap();
-                let (tx, rx) = mpsc::channel();
 
-                thread::spawn(move || {
-                    sql_stmt = sql_stmt.replace("\r", "");
-                    sql_stmt = sql_stmt.replace("\n", "");
-                    simplelog::info!("{:?} ", sql_stmt);
-                    let dialect = GenericDialect {}; // or AnsiDialect, or your own dialect ...
-                    let ast = Parser::parse_sql(&dialect, &sql_stmt.as_str()).unwrap();
-                    let stmt_ = &ast[0];
-                    simplelog::info!("{:?} ", stmt_);
-                    let rt = tokio::runtime::Runtime::new().unwrap();
+                let sql_stmt_pas = String::from_utf8(query_buf.clone());
 
-                    rt.block_on(async{
-                        {
-                            let v = KV_SVR_ADDRS.lock().unwrap();
-                            let resp = proxy_executor::exec(stmt_, v[0].to_string().as_str()).await;
-                            tx.send(resp.unwrap()).unwrap();
-                        }
-                    });
-                }).join().expect("Thread panicked");
-
-                let mut received = rx.recv().unwrap();
-                received.push_str("\r\n");
-                socket
-                .write_all(received.as_bytes())
-                .await
-                .expect("failed to write data to socket");
+                match sql_stmt_pas {
+                    Ok(mut sql_stmt) => {
+                        let (tx, rx) = mpsc::channel();
+                        thread::spawn(move || {
+                            sql_stmt = sql_stmt.replace("\r", "");
+                            sql_stmt = sql_stmt.replace("\n", "");
+                            simplelog::info!("{:?} ", sql_stmt);
+                            let dialect = GenericDialect {}; // or AnsiDialect, or your own dialect ...
+                            let ast = Parser::parse_sql(&dialect, &sql_stmt.as_str()).unwrap();
+                            let stmt_ = &ast[0];
+                            simplelog::info!("{:?} ", stmt_);
+                            let rt = tokio::runtime::Runtime::new().unwrap();
+        
+                            rt.block_on(async{
+                                {
+                                    let id = GLOBAL_LEADER_ID.load(Ordering::Relaxed);
+                                    let v = KV_SVR_ADDRS.lock().unwrap();
+                                    simplelog::info!("send to {:?}", id);
+                                    let resp = proxy_executor::exec(stmt_, v[id].to_string().as_str()).await;
+                                    let exec_res = resp.unwrap();
+                                    GLOBAL_LEADER_ID.store(exec_res.leader_id as usize, Ordering::Relaxed);
+                                    tx.send(exec_res.res_line).unwrap(); 
+                                }
+                            });
+                        }).join().expect("Thread panicked");
+                        let mut received = rx.recv().unwrap();
+                        received.push_str("\r\n");
+                        socket
+                        .write_all(received.as_bytes())
+                        .await
+                        .expect("failed to write data to socket");
+                    },
+                    Err(e) => {
+                        simplelog::error!("{:?}", e);
+                    }
+                }
+           
             }
 
         });
 
     }
-
-
-
-    // Ok(())
 }

@@ -47,7 +47,9 @@ pub trait Raft {
 
     fn advance_commit_index_for_follower(&mut self, leader_commit_id: i64);
 
-    fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, bool);
+    fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, u16, bool);
+
+    fn get_me_id(&self) -> u16;
 
     fn handle_request_vote(&mut self, req: RequestVoteRequest) -> RequestVoteResponse;
 
@@ -98,6 +100,10 @@ impl Raft for RaftStack {
 
     fn get_leader_id(&self) -> u16 {
         self.leader_id
+    }
+
+    fn get_me_id(&self) -> u16 {
+        self.me_id
     }
 
     fn match_log(&self, term: i64, index: i64) -> bool {
@@ -153,9 +159,9 @@ impl Raft for RaftStack {
         }
     }
 
-    fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, bool) {
+    fn propose(&mut self, payload: Vec<u8>) -> (i64, i64, u16, bool) {
         if self.role != NodeRole::Leader {
-            return (-1, -1, false);
+            return (-1, -1, self.get_leader_id(),false);
         }
         simplelog::info!("recv propose {:?}", payload);
         let read_logs = self.logs.clone();
@@ -173,7 +179,7 @@ impl Raft for RaftStack {
         self.logs.append(new_log_ent);
         self.match_idx[self.me_id as usize] = new_log_ent_index;
         self.next_idx[self.me_id as usize] = new_log_ent_index + 1;
-        (new_log_ent_index, new_log_ent_term as i64, true)
+        (new_log_ent_index, new_log_ent_term as i64, self.get_leader_id(), true)
     }
 
     fn broadcast_heartbeat(&mut self) {

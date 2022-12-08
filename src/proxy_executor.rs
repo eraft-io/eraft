@@ -6,7 +6,12 @@ use crate::{eraft_proto};
 extern crate simplelog;
 use simplelog::*;
 
-pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<String, Box<dyn std::error::Error>> {
+pub struct ExecResult {
+    pub res_line: String,
+    pub leader_id: i64,
+}
+
+pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Result<ExecResult, Box<dyn std::error::Error>> {
     match stmt {
         Statement::Insert { or: _, into: _, columns, overwrite: _, source, partitioned: _, after_columns: _, table: _, on: _, table_name } => {
             let table_name_ident : &Ident =  &table_name.0[0];
@@ -17,7 +22,11 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
             let mut count = 0;
             let mut row_key : String = String::new();
             match &**bd {
-                SetExpr::Values(v) =>{
+                SetExpr::Values(v) => {
+                    let mut res = ExecResult{
+                        res_line: String::from(""),
+                        leader_id: 0,
+                    };
                     row_vals.push('|');
                     for row in &v.0 {
                         for rl in row {
@@ -32,6 +41,8 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                                             let key = format!("/{}/{}/{}", table_name_ident.value, row_key, cols[count]);
                                             let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(),ss.as_str()).await?;
                                             simplelog::info!("{:?}", resp);
+                                            res.res_line = String::from("ok");
+                                            res.leader_id = resp.get_ref().leader_id;
                                         },
                                         _ => {},
                                     }
@@ -41,7 +52,7 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                             count += 1;
                         }
                     }
-                    return Ok(String::from("ok"))
+                    return Ok(res)
                 },
                 _ => {} 
             }
@@ -51,6 +62,10 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
             let bd: &std::boxed::Box<sqlparser::ast::SetExpr> = &s.body;
             match &**bd {
                 SetExpr::Select(sel) => {
+                    let mut res = ExecResult{
+                        res_line: String::from(""),
+                        leader_id: 0,
+                    };
                     let mut tb_name = String::new();
                     let mut query_val = String::new();
                     match &sel.from[0].relation {
@@ -108,8 +123,9 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                         res_str.push_str(col_resp.get_ref().value.as_str());
                         res_str.push('|');
                    }
-
-                   return Ok(res_str)
+                   res.leader_id = resp.get_ref().leader_id;
+                   res.res_line = res_str;
+                   return Ok(res)
                 },
                 _ => {}
             }
@@ -128,6 +144,10 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
         },
 
         Statement::ShowVariable { variable } => {
+            let mut res = ExecResult{
+                res_line: String::from(""),
+                leader_id: 0,
+            };
             if variable.len() == 1 && variable[0].value.eq_ignore_ascii_case("databases") {
                 let key = format!("{}", consts::DBS_KEY_PREFIX);
                 let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpScan, key.as_str(), "").await?;
@@ -137,7 +157,9 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
                     res_str.push_str(match_key.strip_prefix(consts::DBS_KEY_PREFIX).unwrap_or(match_key));
                     res_str.push_str(String::from("\r\n").as_str());
                 }
-                return Ok(res_str)
+                res.leader_id = resp.get_ref().leader_id;
+                res.res_line = res_str;
+                return Ok(res)
             }
         }
 
@@ -157,6 +179,10 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
             constraints:_, hive_distribution:_, hive_formats:_, table_properties:_, with_options:_, file_format:_, location:_, 
             query:_, without_rowid:_, like:_, clone:_, engine:_, 
             default_charset:_,collation:_, on_commit:_, on_cluster:_ } => {
+            let mut res = ExecResult{
+                res_line: String::from(""),
+                leader_id: 0,
+            };
             let tab_name_ident : &Ident =  &name.0[0];
             let mut proxy_tab = proxy_table::Table{
                 columns_num: columns.len() as u16,
@@ -195,12 +221,15 @@ pub async fn exec(stmt: &sqlparser::ast::Statement, kv_svr_addrs: &str) -> Resul
             let key = format!("{}{}", consts::TBS_KEY_PREFIX, proxy_tab.name);
             let resp = kv_client::send_command(String::from(kv_svr_addrs), eraft_proto::OpType::OpPut, key.as_str(), &serialized_tab_meta).await?;
             simplelog::info!("{:?}", resp);
+            res.leader_id = resp.get_ref().leader_id;
+            res.res_line = String::from("ok");
+            return Ok(res);
         }
 
         _ => {
         }
     }
     
-    Ok(String::from("ok"))
+    Ok(ExecResult { res_line: (String::from("ok")), leader_id: (0) })
 
 }
