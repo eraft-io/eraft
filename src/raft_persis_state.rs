@@ -20,30 +20,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-use eraft::kv_server;
-use std::{env};
+use serde::{Serialize, Deserialize};
 
-extern crate simplelog;
-
-use simplelog::*;
-
-use std::fs::File;
-
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let server_id: u16 = match args[1].trim().parse() {
-        Ok(id) => id,
-        Err(err) => {
-            simplelog::error!("{:?}", err);
-            0
-        }
-    };
-    CombinedLogger::init(
-        vec![
-            TermLogger::new(LevelFilter::Info, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
-            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(format!("eraftkv-node-{}.log", server_id)).unwrap()),
-        ]
-    ).unwrap();
-
-    let _ = kv_server::run_server(server_id, args[2].as_str());
+#[derive(Clone, Serialize, Deserialize)]
+pub struct RaftPersistenState {
+    cur_term: i64,
+    vote_for: i64,
 }
+#[derive(Clone, Serialize, Deserialize)]
+
+pub struct RaftLogPersistenState {
+    pub commit_idx: u64,
+    pub apply_idx: u64,
+    pub first_idx: u64,
+    pub last_idx: u64,
+    pub snap_idx: u64,
+}
+
