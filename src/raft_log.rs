@@ -1,3 +1,25 @@
+//  MIT License
+
+//  Copyright (c) 2022 eraft dev group
+
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
+
 use lazy_static::lazy_static;
 use std::sync::{Mutex};
 
@@ -7,16 +29,16 @@ lazy_static! {
     static ref RAFT_LOG_LOCK: Mutex<u8> = Mutex::new(6);
 }
 
+
 #[derive(Default, Debug, Clone)]
-pub struct RaftLog {
+pub struct RaftMemLog {
    ents:  Vec<Entry>,
 }
-
 
 //
 // build a new raft log
 //
-fn build_raft_log() -> RaftLog {
+fn build_raft_log() -> RaftMemLog {
     let mut log_ents : Vec<Entry> = Vec::new();
     let empty_ent = Entry{
         entry_type: EntryType::EntryNormal as i32,
@@ -25,14 +47,14 @@ fn build_raft_log() -> RaftLog {
         data: vec![],
     }; 
     log_ents.push(empty_ent);
-    RaftLog { 
+    RaftMemLog { 
         ents:     log_ents, 
     }
 }
 
-impl RaftLog {
+impl RaftMemLog {
     
-    pub fn new() -> RaftLog {
+    pub fn new() -> RaftMemLog {
         build_raft_log()
     }
     
@@ -77,11 +99,11 @@ impl RaftLog {
 mod raftlog_tests {
     use crate::eraft_proto::{EntryType, Entry};
 
-    use super::RaftLog;
+    use super::RaftMemLog;
 
     #[test]
     fn test_build_raft_log() {
-        let raft_log = RaftLog::new();
+        let raft_log = RaftMemLog::new();
         let frist_log = raft_log.get_first();
         assert_eq!(frist_log.index, 0);
         assert_eq!(frist_log.entry_type, EntryType::EntryNormal as i32);
@@ -96,7 +118,7 @@ mod raftlog_tests {
             entry_type: EntryType::EntryNormal as i32,
             data: vec![],
         };
-        let mut raft_log = RaftLog::new();
+        let mut raft_log = RaftMemLog::new();
         // test append a log
         raft_log.append(ent);
         assert_eq!(raft_log.size(), 2);
@@ -144,7 +166,7 @@ mod raftlog_tests {
             entry_type: EntryType::EntryConfChange as i32,
             data: vec![],
         };
-        let mut raft_log = RaftLog::new();
+        let mut raft_log = RaftMemLog::new();
         // test append a log
         raft_log.append(ent);
         raft_log.append(ent1);

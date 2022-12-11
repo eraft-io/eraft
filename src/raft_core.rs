@@ -1,10 +1,32 @@
+//  MIT License
+
+//  Copyright (c) 2022 eraft dev group
+
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
+
 use std::{sync::{mpsc::{SyncSender}}};
 use rand::Rng;
 use simplelog::*;
 use eraft_proto::raft_service_client::{RaftServiceClient};
 use std::cmp;
 
-use crate::{raft_log::RaftLog, eraft_proto::{self, RequestVoteRequest, RequestVoteResponse, AppendEntriesRequest, AppendEntriesResponse, Entry, EntryType, ApplyMsg}};
+use crate::{raft_log::RaftMemLog, eraft_proto::{self, RequestVoteRequest, RequestVoteResponse, AppendEntriesRequest, AppendEntriesResponse, Entry, EntryType, ApplyMsg}};
 
 // raft node role
 #[derive(PartialEq)]
@@ -74,7 +96,7 @@ pub struct RaftStack {
     voted_for: i16,
     granted_votes: u16,
     commit_idx: i64,
-    logs: RaftLog,
+    logs: RaftMemLog,
     last_applied: i64,
     next_idx: Vec<i64>,
     match_idx: Vec<i64>,
@@ -496,7 +518,7 @@ fn build_raftstack(me: u16, prs: Vec<Peer>, heart_base: i64, elec_base: u64, app
         voted_for: VOTE_FOR_NO_ONE, 
         granted_votes: 0, 
         commit_idx: 0, 
-        logs: RaftLog::new(),
+        logs: RaftMemLog::new(),
         last_applied: 0, 
         peers: prs,
         next_idx: vec![0; peer_size], 

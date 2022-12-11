@@ -1,7 +1,9 @@
+use serde::{Serialize, Deserialize};
+
 ///
 /// raft basic request vote  definition
 ///
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, ::prost::Message)]
 pub struct RequestVoteRequest {
     #[prost(int64, tag="1")]
     pub term: i64,
@@ -25,7 +27,7 @@ pub struct RequestVoteResponse {
 ///
 /// raft basic log entry definition
 ///
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, ::prost::Message)]
 pub struct Entry {
     #[prost(enumeration="EntryType", tag="1")]
     pub entry_type: i32,
