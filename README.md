@@ -1,71 +1,82 @@
-[![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
+# 一个云原生分布式的关系型数据库
 
-中文 | [English](README_en.md)
+E-DB
 
-## 运行 raft kv 服务复制组
+![edb](doc/edb.svg)
 
-```
-./target/debug/eraftkv-ctl 0 '[::1]:8088'
-./target/debug/eraftkv-ctl 1 '[::1]:8089'
-./target/debug/eraftkv-ctl 2 '[::1]:8090'
-```
-
-## 运行 proxy 服务
-```
-./target/debug/eraftproxy-ctl '127.0.0.1:8080' 'http://[::1]:8088,http://[::1]:8089,http://[::1]:8090'
-```
-
-## 连接 proxy 执行 SQL
-
-telnet [proxy 地址]
-
-操作示例
+## 编译及运行
 
 ```
-colin@colindeMacBook-Pro eraft % telnet 127.0.0.1 8080
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-SHOW DATABASES;
-ok
-SELECT * FROM classtab WHERE Name = 'Tom';
-|Name|Class|Score|
-|Tom|B|88|
+make image
+make build-dev
+make run
 ```
 
-## 支持的 SQL 
+启动之后可以直接运行 sql
 
-### CREATE DATABASE
+## Demo
 
-```
-CREATE DATABASE testdb_1;
-```
+![1](https://learnbycoding.oss-cn-beijing.aliyuncs.com/001.png)
 
-### SHOW DATABASES
-```
-SHOW DATABASES;
-```
+![2](https://learnbycoding.oss-cn-beijing.aliyuncs.com/002.png)
 
-### CREATE TABLE
+![3](https://learnbycoding.oss-cn-beijing.aliyuncs.com/003.png)
+
+![4](https://learnbycoding.oss-cn-beijing.aliyuncs.com/004.png)
 
 ```
-CREATE TABLE classtab ( Name VARCHAR(100), Class VARCHAR(100), Score INT, PRIMARY KEY(Name));
+CREATE DATABASE db;
+
+USE db;
+
+CREATE TABLE Persons (
+   PersonID int PRIMARY KEY, 
+   LastName varchar(20), 
+   FirstName varchar(20), 
+   Address varchar(20), 
+   City varchar(10)
+);
+
+CREATE INDEX Persons(PersonID);
+CREATE INDEX Persons(FirstName);
+INSERT INTO Persons VALUES 
+(23, 'Yi', '测试', 'Tsinghua Univ.', 'Beijing'), 
+(-238, 'Zhong', 'Lei', 'Beijing Univ.', 'Neijing'),
+(1+999, 'Wasserstein', 'Zhang', 'Hunan Univ.', 'Hunan');
+
+INSERT INTO Persons VALUES (1, 'Yi', '测试', 'Tsinghua Univ.', 'Beijing'), 
+(3, 'Zhong', 'Lei', 'Beijing Univ.', 'Neijing'),
+(4, 'Wasserstein', 'Zhang', 'Hunan Univ.', 'Hunan');
+
+SELECT PersonID, LastName, FirstName, Address, City FROM Persons;
+
+SELECT PersonID, LastName, FirstName FROM Persons WHERE FirstName = '测试'; 
+
+UPDATE Persons SET FirstName = 'CxSpace' WHERE PersonID = 3;
+
+SELECT * FROM Persons;
+
+INSERT INTO Persons VALUES 
+(100001, 'Zarisk', 'C', 'Unknown', 'US'), 
+(100002, 'Wasserstein', 'D', 'Unknwon.', 'EU');
+
+DELETE FROM Persons WHERE PersonID < 0;
+SELECT * FROM Persons;
+DELETE FROM Persons;
+SELECT * FROM Persons;
+INSERT INTO Persons 
+(LastName, PersonID) 
+VALUES ('Zarisk', 10), 
+       ('1999-10-10', 30), 
+       ('Wasserstein', 20);
+       
+SELECT * FROM Persons;
+SELECT COUNT(*) FROM Persons;
+SELECT SUM(PersonID) FROM Persons;
+SELECT AVG(PersonID) FROM Persons;
+SELECT PersonID, LastName FROM Persons;
 ```
 
-### SHOW CREATE TABLE
+## Acknowledgments
 
-```
-SHOW CREATE TABLE classtab;
-```
-
-### INSERT INTO
-
-```
-INSERT INTO classtab (Name,Class,Score) VALUES ('Tom', 'B', '88');
-```
-
-### SELECT BY PRIMARY KEY
-
-```
-SELECT * FROM classtab WHERE Name = 'Tom';
-```
+*  基于项目 TrivialDB 开发

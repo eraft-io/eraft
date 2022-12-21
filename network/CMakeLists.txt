@@ -1,0 +1,32 @@
+set(network_sources)
+
+list(APPEND network_sources async_buffer.cc)
+list(APPEND network_sources client.cc)
+list(APPEND network_sources common.cc)
+list(APPEND network_sources config.cc)
+list(APPEND network_sources epoller.cc)
+list(APPEND network_sources listen_socket.cc)
+list(APPEND network_sources net_thread_pool.cc)
+list(APPEND network_sources proto_parser.cc)
+list(APPEND network_sources server.cc)
+list(APPEND network_sources socket.cc)
+list(APPEND network_sources stream_socket.cc)
+list(APPEND network_sources task_manager.cc)
+list(APPEND network_sources thread_pool.cc)
+list(APPEND network_sources unbounded_buffer.cc)
+list(APPEND network_sources greeting.cc)
+list(APPEND network_sources auth.cc)
+list(APPEND network_sources eof.cc)
+list(APPEND network_sources err.cc)
+list(APPEND network_sources field.cc)
+list(APPEND network_sources ok.cc)
+list(APPEND network_sources protocol_buffer.cc)
+list(APPEND network_sources type.cc)
+
+set(network_INCLUDE_DIR ${network_sources_SOURCE_DIR})
+
+add_library(network ${network_sources})
+target_link_libraries(network PUBLIC
+    edb_static
+)
+target_include_directories(network PUBLIC ${network_INCLUDE_DIR})
