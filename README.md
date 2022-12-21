@@ -2,7 +2,7 @@
 
 E-DB
 
-![edb](doc/edb.svg)
+![edb](doc/edb_arch.svg)
 
 ## 编译及运行
 
