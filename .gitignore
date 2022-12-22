@@ -3,11 +3,6 @@ vendor
 .DS_Store
 .vscode
 deps
-pmem-redis.tar.gz
 target
 .idea
-data_*
-eraftkv-node*
-eraftkv-proxy*
-eraftkv-bench*
 build

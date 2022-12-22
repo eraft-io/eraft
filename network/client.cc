@@ -111,16 +111,16 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
     return static_cast<PacketLength>(bytes);
   } else {
     if(queryStr != "select @@version_comment limit 1") {
-      std::cout << "cmd type -> " << std::to_string(cmdType) << std::endl;
+      // std::cout << "cmd type -> " << std::to_string(cmdType) << std::endl;
       switch (cmdType)
       {
       case MYSQL_COM_INIT_DB:
         {
           queryStr.push_back(';');
           run_parser(queryStr.c_str());
-          std::cout << "execute_use_database -> " << queryStr << std::endl;
+          // std::cout << "execute_use_database -> " << queryStr << std::endl;
           std::string dbName((char*)result.param);
-          std::cout << dbName << std::endl;
+          // std::cout << dbName << std::endl;
           dbms::get_instance()->switch_database(dbName.c_str(), this, start);
           result.type = SQL_RESET;
           break;
@@ -129,7 +129,7 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
         {
           queryStr.push_back(';');
           run_parser(queryStr.c_str());
-          std::cout << "result type -> " << std::to_string(result.type) << std::endl;
+          // std::cout << "result type -> " << std::to_string(result.type) << std::endl;
           switch (result.type)
           {
           case SQL_CREATE_DATABASE:
@@ -158,10 +158,10 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
             }
           case SQL_CREATE_TABLE:
             {
-              std::cout << "execute_create_table" << std::endl;
+              // std::cout << "execute_create_table" << std::endl;
               table_def_t *table = (table_def_t*)result.param;
               table_header_t *header = new table_header_t;
-              std::cout << "T name:" << table->name << std::endl;
+              // std::cout << "T name:" << table->name << std::endl;
               if(fill_table_header(header, table)) {
                   dbms::get_instance()->create_table(header, this, start);
               } else {
