@@ -6,3 +6,5 @@ deps
 target
 .idea
 build
+leveldb
+spdlog

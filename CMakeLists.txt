@@ -52,6 +52,7 @@ set_target_properties(gtest gtest_main PROPERTIES
 
 add_subdirectory(network)
 add_subdirectory(raftcore)
+add_subdirectory(protocol)
 
 add_library(${CMAKE_PROJECT_NAME}_static STATIC ${SOURCE} ${HEADERS})
 target_link_libraries(${CMAKE_PROJECT_NAME}_static PUBLIC

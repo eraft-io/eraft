@@ -13,3 +13,11 @@ RUN apt update -y \
 RUN apt install bison flex -y
 
 RUN apt install mariadb-server -y
+
+RUN apt update -y && apt install protobuf-compiler libprotobuf-dev -y
+
+RUN cd ~; git clone --recurse-submodules https://github.com/google/leveldb.git && cd leveldb && mkdir build && cd build \
+       && cmake .. && make && make install && rm -rf build
+
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git && cd spdlog && mkdir build && cd build \
+       && cmake .. && make -j && make install && rm -rf build

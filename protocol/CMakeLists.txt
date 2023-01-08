@@ -20,35 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 cmake_minimum_required(VERSION 3.8)
-set(This raftcore)
+set(This protocol)
 
-set(Headers 
-    include/raftcore/log.h
-    include/raftcore/memory_storage.h
-    include/raftcore/raft.h
-    include/raftcore/raw_node.h
-    include/raftcore/storage.h
-    include/raftcore/util.h
-)
+file(GLOB __tmp RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} eraftio/*.cc eraftio/*.h)
+list(APPEND generated_files ${__tmp})
 
-set(Sources
-    src/log.cc
-    src/memory_storage.cc
-    src/raft.cc
-    src/raw_node.cc
-)
-
-add_library(${This} STATIC ${Sources} ${Headers})
-set_target_properties(${This} PROPERTIES
-    FOLDER Libraries
-)
-
-target_include_directories(${This} PUBLIC include)
-
+add_library(protocol ${generated_files})
+include_directories(${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(protocol PUBLIC ./)
 target_link_libraries(${This} PUBLIC
-    protocol
-    gtest_main
+    protobuf
 )
-
-add_subdirectory(test)

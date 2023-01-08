@@ -6,4 +6,8 @@ cd /eraft/build/build; ./edb &
 
 sleep 1s
 
+/eraft/build/raftcore/test/build/raft_tests
+
+sleep 1s
+
 /usr/bin/mysql --host 127.0.0.1 --port 12306 -u root
