@@ -31,6 +31,22 @@ class Uhpsqld : public Server {
   unsigned short port_;
 };
 
+class UhpsqlSyncServer : public Server {
+public:
+	UhpsqlSyncServer();
+	~UhpsqlSyncServer();
+
+	void SetPort(unsigned short p) { this->port_ = p; }
+
+private:
+	std::shared_ptr<StreamSocket> _OnNewConnection(int fd, int tag) override;
+
+	bool _Init() override;
+	bool _RunLogic() override;
+	bool _Recycle() override;
+
+	unsigned short port_;
+};
 
 class dbms
 {

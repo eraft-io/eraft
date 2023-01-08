@@ -2,7 +2,7 @@
 
 mkdir /eraft/build/build/data
 rm -rf /eraft/build/build/data/*
-cd /eraft/build/build; ./edb &
+cd /eraft/build/build; ./edb 1 &
 
 sleep 1s
 

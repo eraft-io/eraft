@@ -22,6 +22,8 @@ list(APPEND network_sources field.cc)
 list(APPEND network_sources ok.cc)
 list(APPEND network_sources protocol_buffer.cc)
 list(APPEND network_sources type.cc)
+list(APPEND network_sources sync_client.cc)
+
 
 set(network_INCLUDE_DIR ${network_sources_SOURCE_DIR})
 

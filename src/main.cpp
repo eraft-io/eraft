@@ -28,13 +28,20 @@
 #include "parser/parser.h"
 #include "database/dbms.h"
 #include "../network/client.h"
+#include "../network/sync_client.h"
 #include "../network/server.h"
 #include "../network/socket.h"
 #include "parser/defs.h"
 #include "parser/parser.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 extern "C" char run_parser(const char *input);
 
+///
+///  Uhpsqld: for mysql server
+///
 Uhpsqld::Uhpsqld() : port_(0) {}
 
 Uhpsqld::~Uhpsqld() {}
@@ -62,11 +69,49 @@ bool Uhpsqld::_Recycle() {
   return true;
 }
 
+///
+/// UhpsqlSyncServer: for unpsql server raft sync service
+///
+UhpsqlSyncServer::UhpsqlSyncServer() : port_(0) {
+  // init peer clients
+  
+}
+
+UhpsqlSyncServer::~UhpsqlSyncServer() {}
+
+std::shared_ptr<StreamSocket> UhpsqlSyncServer::_OnNewConnection(int connfd, int tag) {
+  // SocketAddr peer;
+  // Socket::GetPeerAddr(connfd, peer);
+
+  auto cli(std::make_shared<SyncClient>());
+  // if (!cli->Init(connfd, peer)) cli.reset();
+  return cli;
+}
+
+bool UhpsqlSyncServer::_Init() {
+  SocketAddr addr("127.0.0.1", port_);
+  if (!Server::TCPBind(addr, 1)) {
+    return false;
+  }
+  return true;
+}
+
+bool UhpsqlSyncServer::_RunLogic() { return Server::_RunLogic(); }
+
+bool UhpsqlSyncServer::_Recycle() {
+  return true;
+}
+
+
 int main(int argc, char *argv[]) {
   Uhpsqld svr;
   std::cout << "WELCOME TO TINY DB!" << std::endl;
   run_parser("USE db;");
-  svr.MainLoop(false);
+  svr.MainLoop(true);
+  int node_id = atoi(argv[1]);
+  UhpsqlSyncServer syncServer;
+  syncServer.SetPort(node_id + 10000);
+  syncServer.MainLoop(true);
 
   return 0;
 }
