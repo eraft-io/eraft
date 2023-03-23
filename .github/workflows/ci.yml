@@ -25,6 +25,8 @@ jobs:
       - name: Build
         run: |
           mkdir build && cd build
-          cmake .. -DSANITIZER=address -DPYTEST_OPTS="--redis-executable=redis/src/redis-server -v"
+          cmake ..
           make
-
+      - name: Run Main
+        run: |
+          cd build && ./build/eraft_kv
