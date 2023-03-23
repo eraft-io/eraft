@@ -1,0 +1,30 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install build dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential autoconf automake libtool cmake lcov
+    - name: Setup Python for testing
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.9'
+        architecture: 'x64'
+
+
+  test-sanitizer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential autoconf automake libtool cmake lcov
+      - name: Build
+        run: |
+          mkdir build && cd build
+          cmake .. -DSANITIZER=address -DPYTEST_OPTS="--redis-executable=redis/src/redis-server -v"
+          make
+
