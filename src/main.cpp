@@ -15,6 +15,6 @@
 #include <iostream>
 
 int main() {
-  std::cout << "hello eraftkv ~" << std::endl;
-  return 1;
+  std::cout << "Hello eraftkv ~" << std::endl;
+  return 0;
 }
