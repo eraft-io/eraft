@@ -14,8 +14,10 @@ jobs:
       with:
         python-version: '3.9'
         architecture: 'x64'
-
-
+    - name: Check Style - src
+      run: |
+        find src -type f \( -name '*.h' -or -name '*.hpp' -or -name '*.cpp' -or -name '*.c' -or -name '*.cc' \) -print | xargs clang-format -style=file --sort-includes -i -n -Werror
+  
   test-sanitizer:
     runs-on: ubuntu-latest
     steps:
