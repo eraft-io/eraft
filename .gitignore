@@ -1,10 +1,5 @@
 output
-vendor
 .DS_Store
 .vscode
 deps
-target
-.idea
 build
-leveldb
-spdlog
