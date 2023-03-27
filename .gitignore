@@ -1,0 +1,5 @@
+output
+.DS_Store
+.vscode
+deps
+build
