@@ -1,5 +1,6 @@
 output
 .DS_Store
-.vscode
+.vscode/
 deps
-build
+build/
+build_/

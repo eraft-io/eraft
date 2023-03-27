@@ -21,28 +21,28 @@
 # SOFTWARE.
 
 
-cmake_minimum_required (VERSION  3.7.2)
+cmake_minimum_required (VERSION 3.9)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+project(eraftkv VERSION 0.0.1 LANGUAGES C CXX)
 
+# C standard can be overridden when this is used as a sub-project.
+if(NOT CMAKE_C_STANDARD)
+  # This project can use C11, but will gracefully decay down to C89.
+  set(CMAKE_C_STANDARD 11)
+  set(CMAKE_C_STANDARD_REQUIRED OFF)
+  set(CMAKE_C_EXTENSIONS OFF)
+endif(NOT CMAKE_C_STANDARD)
 
-project(eraft_kv)
-enable_testing()
+# C++ standard can be overridden when this is used as a sub-project.
+if(NOT CMAKE_CXX_STANDARD)
+  # This project requires C++11.
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif(NOT CMAKE_CXX_STANDARD)
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_BINARY_DIR build)
-set(EXECUTABLE_OUTPUT_PATH build)
-# set(SOURCE
-# 	${SOURCE}
+option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
+option(ERAFTKV_BUILD_BENCHMARKS "Build ERaftKV's benchmarks" ON)
+option(ERAFTKV_INSTALL "Install ERaftKV's header and library" ON)
 
-# )
-
-# set(
-# 	HEADERS
-# 	${HEADERS}
-# )
-
-add_executable(${CMAKE_PROJECT_NAME} src/main.cpp)
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC include)
+add_executable(${CMAKE_PROJECT_NAME} src/main.cc)
