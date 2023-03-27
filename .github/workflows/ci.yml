@@ -31,4 +31,4 @@ jobs:
           make
       - name: Run Main
         run: |
-          cd build && ./build/eraft_kv
+          cd build && ./build/eraftkv
