@@ -15,7 +15,7 @@ jobs:
       run: |
         mkdir build && cd build
         cmake ..
-        make
+        make -j4
     - name: Run Main
       run: |
         ./build/eraftkv
