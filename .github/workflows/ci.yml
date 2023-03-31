@@ -5,7 +5,12 @@ on: [push, pull_request]
 jobs:
   test-ubuntu:
     runs-on: ubuntu-latest
-    steps:       
+    steps:
+    - name: Set up GCC
+      uses: egor-tensin/setup-gcc@v1
+      with:
+        version: 7
+        platform: x64       
     - uses: actions/checkout@v2
     - name: Install build dependencies
       run: sudo apt-get update && sudo apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev
