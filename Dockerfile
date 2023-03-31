@@ -26,25 +26,9 @@ ENV TZ=Asia/Kolkata \
     DEBIAN_FRONTEND=noninteractive
 
 # install build dependency
-RUN apt-get update && apt-get install -y \
-  build-essential autoconf libtool git pkg-config curl \
-  automake libtool curl make g++ unzip cmake gdb \
-  && apt-get clean
+RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git
 
-# go root home dir
-RUN cd /root
-# build grpc
-RUN git clone -b v1.53.0 https://github.com/grpc/grpc && \
-    cd grpc && \
-    git submodule update --init && \
-    cd ./third_party/protobuf && \
-    ./autogen.sh && \
-    ./configure --prefix=/opt/protobuf && \
-    make -j `nproc` && make install && \
-    cd ../.. && \
-    make -j `nproc` PROTOC=/opt/protobuf/bin/protoc && \
-    make prefix=/opt/grpc install
+# install rocksdb
+RUN apt-get update && apt-get install librocksdb-dev
 
-# build rocksdb
-RUN git clone --branch v6.20.3 https://github.com/facebook/rocksdb.git && cd rocksdb && mkdir build && cd build \
-       && cmake .. && make -j && make install && rm -rf build
+RUN git clone -b feature_20230323_initdesign https://github.com/eraft-io/eraft.git && cd eraft && mkdir build && cd build && cmake .. && make -j4
