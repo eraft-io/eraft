@@ -25,7 +25,7 @@ class RocksDBStorageImpl : public Storage {
    * @param id
    * @return std::string
    */
-  std::string GetNodeAddress(RaftServer* raft, std::string id) {}
+  std::string GetNodeAddress(RaftServer* raft, std::string id);
 
   /**
    * @brief
@@ -37,7 +37,7 @@ class RocksDBStorageImpl : public Storage {
    */
   EStatus SaveNodeAddress(RaftServer* raft,
                           std::string id,
-                          std::string address) {}
+                          std::string address);
 
   /**
    * @brief
@@ -49,7 +49,7 @@ class RocksDBStorageImpl : public Storage {
    */
   EStatus ApplyLog(RaftServer* raft,
                    int64_t     snapshot_index,
-                   int64_t     snapshot_term) = {}
+                   int64_t     snapshot_term);
 
   /**
    * @brief Get the Snapshot Block object
@@ -63,7 +63,7 @@ class RocksDBStorageImpl : public Storage {
   EStatus GetSnapshotBlock(RaftServer * raft,
                            RaftNode*               node,
                            int64_t                 offset,
-                           eraftkv::SnapshotBlock* block) {}
+                           eraftkv::SnapshotBlock* block);
 
   /**
    * @brief
@@ -77,7 +77,7 @@ class RocksDBStorageImpl : public Storage {
   EStatus StoreSnapshotBlock(RaftServer*             raft,
                              int64_t                 snapshot_index,
                              int64_t                 offset,
-                             eraftkv::SnapshotBlock* block) {}
+                             eraftkv::SnapshotBlock* block);
 
   /**
    * @brief
@@ -85,24 +85,14 @@ class RocksDBStorageImpl : public Storage {
    * @param raft
    * @return EStatus
    */
-  EStatus ClearSnapshot(RaftServer* raft) {}
+  EStatus ClearSnapshot(RaftServer* raft);
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus CreateDBSnapshot() {}
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param term
-   * @param vote
-   * @return EStatus
-   */
-  EStatus SaveRaftMeta(RaftServer* raft, int64_t term, int64_t vote) {}
+  EStatus CreateDBSnapshot();
 
   /**
    * @brief
@@ -112,14 +102,29 @@ class RocksDBStorageImpl : public Storage {
    * @param vote
    * @return EStatus
    */
-  EStatus ReadRaftMeta(RaftServer* raft, int64_t* term, int64_t* vote) {}
+  EStatus SaveRaftMeta(RaftServer* raft, int64_t term, int64_t vote);
+
+  /**
+   * @brief
+   *
+   * @param raft
+   * @param term
+   * @param vote
+   * @return EStatus
+   */
+  EStatus ReadRaftMeta(RaftServer* raft, int64_t* term, int64_t* vote);
+
+
+  EStatus PutKV(std::string key, std::string val);
+
+  EStatus GetKV(std::string key);
 
   /**
    * @brief Construct a new RocksDB Storage Impl object
    *
    * @param db_path
    */
-  RocksDBStorageImpl(std::string db_path) : kv_db_(db_path) {}
+  RocksDBStorageImpl(std::string db_path);
 
  private:
   /**
