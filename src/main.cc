@@ -12,10 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * @file main.cc
+ * @author ERaftGroup
+ * @brief
+ * @version 0.1
+ * @date 2023-03-30
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+
+#include <rocksdb/db.h>
+
 #include <iostream>
 
-
-int main(int argc, char **argv) {
+/**
+ * @brief
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
+int main(int argc, char** argv) {
+  rocksdb::DB*     db;
+  rocksdb::Options options;
+  options.create_if_missing = true;
+  rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/testdb", &db);
+  assert(status.ok());
   std::cout << "Hi, ERaftGroup!" << std::endl;
+  delete db;
   return 0;
 }

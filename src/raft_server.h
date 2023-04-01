@@ -1,241 +1,26 @@
-#  ERaftKV RPC 
+/**
+ * @file raft_server.h
+ * @author ERaftGroup
+ * @brief
+ * @version 0.1
+ * @date 2023-03-30
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 
-*注意：设计文档里面代码都是伪代码*
+#include <cstdint>
 
-## 消息定义
+#include "estatus.h"
+#include "raft_config.h"
+#include "raft_log.h"
+#include "raft_node.h"
 
-* 投票请求
-
-```
-message RequestVoteReq 
-{
-    bool prevote;
-
-    int64 term;
-
-    int64 candidtate_id;
-
-    int64 last_log_idx;
-
-    int64 last_log_term;
-}
-```
-* 投票响应
-
-```
-message RequestVoteResp
-{
-    bool prevote;
-
-    int64 request_term;
-
-    int64 term;
-
-    bool vote_granted;
-}
-```
-
-* 日志项
-
-```
-enum EntryType {
-  Normal = 0;
-  JoinNode = 1;
-  LeaveNode = 2;
-  JoinGroup = 3;
-  LeaveGroup = 4;
-  NoOp = 5;
-}
-
-message Entry {
-  int64     term = 1;
-  int64     id = 2;
-  EntryType e_type = 3;
-  int64     data_size = 4;
-  bytes     data = 5;
-}
-```
-
-* 追加日志请求
-
-```
-message AppendEntriesReq {
-  int64          leader_id = 1;
-  int64          message_index = 2;
-  int64          term = 3;
-  int64          prev_log_index = 4;
-  int64          prev_log_term = 5;
-  int64          leader_commit = 6;
-  int64          entries_size = 7;
-  repeated Entry entries = 8;
-}
-```
-
-* 追加日志的响应
-```
-message AppendEntriesResp {
-  string message_token = 1;
-  int64  term = 2;
-  bool   success = 3;
-  int64  current_index = 4;
-}
-```
-
-* 发送快照的请求
-```
-message SnapshotBlock {
-  int64 offset = 1;
-  bytes data = 2;
-  int64 block_size = 3;
-  bool  is_last_chunk = 4;
-}
-
-message SnapshotReq {
-  int64         term = 1;
-  int64         leader_id = 2;
-  string        message_index = 3;
-  int64         snapshot_index = 4;
-  int64         snapshot_term = 5;
-  SnapshotBlock block = 6;
-}
-```
-
-* 发送快照的响应
-
-message SnapshotResp {
-  int64  term = 1;
-  string message_index = 2;
-  int64  offset = 3;
-  bool   success = 4;
-  bool   is_last_chunk = 5;
-}
-```
-
-* KeyRange 定义
-
-```
-
-enum KeyRangeStatus {
-  Running = 0;
-  Migrating = 1;
-  Importing = 2;
-  Init = 3;
-}
-
-message KeyRange {
-  KeyRangeStatus key_range_status = 1;
-  int64          shard_id = 2;
-  int64          status_modify_time = 3;
-  string         start = 4;
-  string         end = 5;
-}
-
-```
-
-* 服务定义
-
-```
-
-enum ServerStatus {
-  Up = 0;
-  Down = 1;
-}
-
-message Server {
-  string       id = 1;
-  string       address = 2;
-  ServerStatus server_status = 3;
-}
-
-```
-
-* 集群分片定义
-
-```
-
-message ShardGroup {
-  int64           id = 1;
-  KeyRange        key_range = 2;
-  repeated Server servers = 3;
-}
-
-```
-
-* 增删节点到分片的请求和响应
-```
-enum ClusterConfigChangeType {
-  AddServer = 0;
-  RemoveServer = 1;
-}
-
-message ClusterConfigChangeReq {
-  ClusterConfigChangeType change_type = 1;
-  int64                   shard_id = 2;
-  Server                  server = 3;
-  int64                   config_version = 4;
-}
-
-message ClusterConfigChangeResp {
-  bool                success = 1;
-  repeated ShardGroup shard_group = 2;
-  int64               config_version = 3;
-}
-
-```
-
-* 客户数据读写请求
-
-```
-enum ClientOpType {
-  Put = 0;
-  Get = 1;
-  Del = 2;
-  Scan = 3;
-}
-
-message KvOpPair {
-  ClientOpType op_type = 1;
-  string       key = 2;
-  string       value = 3;
-  uint64       cursor = 4;
-}
-
-message ClientOperationReq {
-  uint64            op_timestamp = 1;
-  repeated KvOpPair kvs = 2;
-}
-
-message ClientOperationResp {
-  bool              success = 1;
-  repeated KvOpPair ops = 2;
-}
-
-```
-
-## 服务定义
-
-```
-
-service ERaftKv {
-  rpc RequestVote(RequestVoteReq) returns (RequestVoteResp);
-  rpc AppendEntries(AppendEntriesReq) returns (RequestVoteResp);
-  rpc Snapshot(SnapshotReq) returns (SnapshotResp);
-
-  rpc ProcessRWOperation(ClientOperationReq) returns (ClientOperationResp);
-  rpc ClusterConfigChange(ClusterConfigChangeReq)
-      returns (ClusterConfigChangeResp);
-}
-
-
-```
-
-#  ERaftKV Raft 服务层数据结构以及操作接口
-
-* raft_server 核心
-
-```
+/**
+ * @brief
+ *
+ */
 enum RaftStateEnum { Follower, PreCandidate, Candidate, Leader };
-
 
 /**
  * @brief
@@ -307,11 +92,11 @@ class Event {
   virtual void RaftStateChangeEvent(RaftServer* raft, RaftStateEnum* state) = 0;
 
   /**
-   * @brief 
-   * 
-   * @param raft 
-   * @param node 
-   * @param ety 
+   * @brief
+   *
+   * @param raft
+   * @param node
+   * @param ety
    */
   virtual void RaftGroupMembershipChangeEvent(RaftServer*     raft,
                                               RaftNode*       node,
@@ -522,6 +307,37 @@ class LogStore {
   virtual int64_t LogCount() = 0;
 }
 
+/**
+ * @brief
+ *
+ */
+class InternalMemLogStorageImpl : public LogStore {
+
+ private:
+  /**
+   * @brief the number of entries in memory
+   *
+   */
+  uint64_t count_;
+
+  /**
+   * @brief the node id
+   *
+   */
+  std::string node_id_;
+
+  /**
+   * @brief master log
+   *
+   */
+  std::vector<eraftkv::Entry> master_log_db_;
+
+  /**
+   * @brief standby log when snapshoting
+   *
+   */
+  std::vector<eraftkv::Entry> standby_log_db_;
+};
 
 /**
  * @brief
@@ -932,160 +748,3 @@ class RaftServer {
    */
   LogStore* log_store_;
 };
-
-
-```
-
-#  ERaftKV KvServer 层数据结构以及操作接口
-```
-
-/**
- * @brief
- *
- */
-struct ERaftKvServerOptions {
-  std::string svr_version;
-  std::string svr_addr;
-  std::string kv_db_path;
-  std::string log_db_path;
-
-  int64_t tick_interval;
-  int64_t request_timeout;
-  int64_t election_timeout;
-
-  int64_t response_timeout;
-
-  int64_t ae_max_count;
-  int64_t ae_max_size;
-
-  int64_t snap_max_count;
-  int64_t snap_max_size;
-
-  int64_t grpc_max_recv_msg_size;
-  int64_t grpc_max_send_msg_size;
-}
-
-class ERaftKvServer : public grpc::EraftKv::Service {
-
-  /**
-   * @brief Construct a new ERaftKvServer object
-   *
-   * @param config
-   */
-  ERaftKvServer(ERaftKvServerOptions config) {
-    // init raft lib
-    RaftConfig raft_config;
-    raft_config.net_impl = new GRpcNetworkImpl();
-    raft_config.store_impl = new RocksDBStorageImpl();
-    raft_config.log_impl = new RocksDBLogStorageImpl();
-    raft_context_ = new RaftServer(raft_config);
-  };
-
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status RequestVote(RequestVoteReq* req, RequestVoteResp* resp){
-      //
-      // call raft_context_->HandleRequestVoteReq()
-      //
-  };
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status AppendEntries(AppendEntriesReq* req, RequestVoteResp* resp){
-      // 1.call raft_context_->HandleAppendEntriesReq()
-  };
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status Snapshot(SnapshotReq* req, SnapshotResp* resp){
-      //  raftcore
-      // 1.call raft_context_->HandleSnapshotReq();
-  };
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status ProcessRWOperation(ClientOperationReq*  req,
-                                  ClientOperationResp* resp){
-      // 1. req into log entry
-      // 2. call raft_context_->ProposeEntry()
-      // 3. wait commit
-  };
-
-  /**
-   * @brief
-   *
-   * @return grpc::Status
-   */
-  grpc::Status ClusterConfigChange(ClusterConfigChangeReq,
-                                   ClusterConfigChangeResp) {
-    return EStatus::NotSupport();
-  }
-
-  /**
-   * @brief
-   *
-   * @param interval
-   * @return EStatus
-   */
-  EStatus InitTicker(int interval){
-      // 1.set up raft_context_->RunCycle() run interval with periodic_caller_
-  };
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus BuildAndRunRpcServer() {
-    // set up rpc
-    ERaftKvServer service;
-    grpc::EnableDefaultHealthCheckService(true);
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort(this->options_.svr_addr,
-                             grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    server->Wait();
-  };
-
- private:
-  /**
-   * @brief
-   *
-   */
-  RaftServer* raft_context_;
-
-  /**
-   * @brief
-   *
-   */
-  PeriodicCaller* periodic_caller_;
-
-  /**
-   * @brief
-   *
-   */
-  ERaftKvServerOptions options_;
-};
-```

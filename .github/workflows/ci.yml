@@ -4,31 +4,31 @@ on: [push, pull_request]
 
 jobs:
   test-ubuntu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
+    - name: Set up GCC
+      uses: egor-tensin/setup-gcc@v1
+      with:
+        version: 7
+        platform: x64       
     - uses: actions/checkout@v2
     - name: Install build dependencies
-      run: sudo apt-get update && sudo apt-get install -y build-essential autoconf automake libtool cmake lcov
-    - name: Setup Python for testing
-      uses: actions/setup-python@v1
-      with:
-        python-version: '3.9'
-        architecture: 'x64'
-    - name: Check Style - src
+      run: sudo apt-get update && sudo apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev
+    - name: Install RocksDB
+      run: sudo apt-get update && sudo apt-get install librocksdb-dev
+    - name: Build
       run: |
-        find src -type f \( -name '*.h' -or -name '*.hpp' -or -name '*.cpp' -or -name '*.c' -or -name '*.cc' \) -print | xargs clang-format -style=file --sort-includes -i -n -Werror
-  
+        mkdir build && cd build
+        cmake ..
+        make -j4
+    - name: Run Main
+      run: |
+        ./build/eraftkv
+
   test-sanitizer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential autoconf automake libtool cmake lcov
-      - name: Build
-        run: |
-          mkdir build && cd build
-          cmake ..
-          make
-      - name: Run Main
-        run: |
-          cd build && ./build/eraftkv
+

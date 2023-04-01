@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required (VERSION 3.15)
 
 project(eraftkv VERSION 0.0.1 LANGUAGES C CXX)
 
@@ -41,8 +41,65 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif(NOT CMAKE_CXX_STANDARD)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
+
+################################################
+# rocksdb begion
+#
+find_path(ROCKSDB_ROOT_DIR
+    NAMES include/rocksdb/db.h
+)
+
+find_library(ROCKSDB_LIBRARIES
+    NAMES rocksdb
+    HINTS ${ROCKSDB_ROOT_DIR}/lib
+)
+
+find_path(ROCKSDB_INCLUDE_DIRS
+    NAMES rocksdb/db.h
+    HINTS ${ROCKSDB_ROOT_DIR}/include
+)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(RocksDB DEFAULT_MSG
+    ROCKSDB_LIBRARIES
+    ROCKSDB_INCLUDE_DIRS
+)
+
+mark_as_advanced(
+    ROCKSDB_ROOT_DIR
+    ROCKSDB_LIBRARIES
+    ROCKSDB_INCLUDE_DIRS
+)
+
+#
+# rocksdb end
+################################################
+
+################################################
+# grpc begin
+#
+
+
+include(FetchContent)
+FetchContent_Declare(
+  gRPC
+  GIT_REPOSITORY https://github.com/grpc/grpc
+  GIT_TAG        v1.28.0
+)
+set(FETCHCONTENT_QUIET OFF)
+FetchContent_MakeAvailable(gRPC)
+
+#
+# grpc end
+################################################
+
 option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
 option(ERAFTKV_BUILD_BENCHMARKS "Build ERaftKV's benchmarks" ON)
 option(ERAFTKV_INSTALL "Install ERaftKV's header and library" ON)
 
 add_executable(${CMAKE_PROJECT_NAME} src/main.cc)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
+    rocksdb
+    grpc++
+)

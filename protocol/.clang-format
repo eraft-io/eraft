@@ -1,0 +1,34 @@
+# find ./* -type f \( -name '*.proto' \) -print | xargs clang-format -style=file --sort-includes -i
+---
+Language: Proto
+BasedOnStyle: Google
+IndentWidth: 2
+IndentCaseLabels: true
+ColumnLimit: 80
+AlignTrailingComments: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortLoopsOnASingleLine: false
+SortIncludes: true
+AlignAfterOpenBracket: Align
+BinPackArguments: false
+BinPackParameters: false
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlinesLeft: true
+AlignOperands: true
+AllowShortBlocksOnASingleLine : false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: None
+PointerAlignment: Right
+MaxEmptyLinesToKeep: 2
+SpacesInSquareBrackets: false
+SpacesInParentheses : false
+SpaceBeforeAssignmentOperators: true
+SpacesInContainerLiterals: true
+IndentWrappedFunctionNames: true
+KeepEmptyLinesAtTheStartOfBlocks: true
+BreakConstructorInitializersBeforeComma: true
+SpaceAfterCStyleCast: false
+TabWidth: 4
+UseTab: Never

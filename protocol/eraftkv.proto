@@ -1,0 +1,167 @@
+syntax = "proto3";
+package eraftkv;
+
+enum ErrorCode {
+  REQUEST_NOT_LEADER_NODE = 0;
+  NODE_IS_DOWN = 1;
+  REQUEST_TIMEOUT = 2;
+}
+
+message RequestVoteReq {
+  bool  prevote = 1;
+  int64 term = 2;
+  int64 candidtate_id = 3;
+  int64 last_log_idx = 4;
+  int64 last_log_term = 5;
+}
+
+message RequestVoteResp {
+  bool  prevote = 1;
+  int64 request_term = 2;
+  int64 term = 3;
+  bool  vote_granted = 4;
+}
+
+enum EntryType {
+  Normal = 0;
+  JoinNode = 1;
+  LeaveNode = 2;
+  JoinGroup = 3;
+  LeaveGroup = 4;
+  NoOp = 5;
+}
+
+message Entry {
+  int64     term = 1;
+  int64     id = 2;
+  EntryType e_type = 3;
+  int64     data_size = 4;
+  bytes     data = 5;
+}
+
+message AppendEntriesReq {
+  int64          leader_id = 1;
+  int64          message_index = 2;
+  int64          term = 3;
+  int64          prev_log_index = 4;
+  int64          prev_log_term = 5;
+  int64          leader_commit = 6;
+  int64          entries_size = 7;
+  repeated Entry entries = 8;
+}
+
+message AppendEntriesResp {
+  string message_token = 1;
+  int64  term = 2;
+  bool   success = 3;
+  int64  current_index = 4;
+}
+
+message SnapshotBlock {
+  int64 offset = 1;
+  bytes data = 2;
+  int64 block_size = 3;
+  bool  is_last_chunk = 4;
+}
+
+message SnapshotReq {
+  int64         term = 1;
+  int64         leader_id = 2;
+  string        message_index = 3;
+  int64         snapshot_index = 4;
+  int64         snapshot_term = 5;
+  SnapshotBlock block = 6;
+}
+
+message SnapshotResp {
+  int64  term = 1;
+  string message_index = 2;
+  int64  offset = 3;
+  bool   success = 4;
+  bool   is_last_chunk = 5;
+}
+
+enum KeyRangeStatus {
+  Running = 0;
+  Migrating = 1;
+  Importing = 2;
+  Init = 3;
+}
+
+message KeyRange {
+  KeyRangeStatus key_range_status = 1;
+  int64          shard_id = 2;
+  int64          status_modify_time = 3;
+  string         start = 4;
+  string         end = 5;
+}
+
+enum ServerStatus {
+  Up = 0;
+  Down = 1;
+}
+
+message Server {
+  string       id = 1;
+  string       address = 2;
+  ServerStatus server_status = 3;
+}
+
+message ShardGroup {
+  int64           id = 1;
+  KeyRange        key_range = 2;
+  repeated Server servers = 3;
+}
+
+enum ClusterConfigChangeType {
+  AddServer = 0;
+  RemoveServer = 1;
+}
+
+message ClusterConfigChangeReq {
+  ClusterConfigChangeType change_type = 1;
+  int64                   shard_id = 2;
+  Server                  server = 3;
+  int64                   config_version = 4;
+}
+
+message ClusterConfigChangeResp {
+  bool                success = 1;
+  repeated ShardGroup shard_group = 2;
+  int64               config_version = 3;
+}
+
+enum ClientOpType {
+  Put = 0;
+  Get = 1;
+  Del = 2;
+  Scan = 3;
+}
+
+message KvOpPair {
+  ClientOpType op_type = 1;
+  string       key = 2;
+  string       value = 3;
+  uint64       cursor = 4;
+}
+
+
+message ClientOperationReq {
+  uint64            op_timestamp = 1;
+  repeated KvOpPair kvs = 2;
+}
+
+message ClientOperationResp {
+  bool              success = 1;
+  repeated KvOpPair ops = 2;
+}
+
+service ERaftKv {
+  rpc RequestVote(RequestVoteReq) returns (RequestVoteResp);
+  rpc AppendEntries(AppendEntriesReq) returns (RequestVoteResp);
+  rpc Snapshot(SnapshotReq) returns (SnapshotResp);
+
+  rpc ProcessRWOperation(ClientOperationReq) returns (ClientOperationResp);
+  rpc ClusterConfigChange(ClusterConfigChangeReq)
+      returns (ClusterConfigChangeResp);
+}
