@@ -8,9 +8,16 @@
  * @copyright Copyright (c) 2023
  *
  */
+#ifndef RAFT_CONFIG_H_
+#define RAFT_CONFIG_H_
 
-#include "raft_server.h"
+#include <string>
+#include <vector>
 
+#include "network.h"
+#include "raft_log.h"
+#include "raft_node.h"
+#include "storage.h"
 /**
  * @brief
  *
@@ -26,3 +33,5 @@ struct RaftConfig {
   Storage*                              store_impl;
   LogStore*                             log_impl;
 };
+
+#endif

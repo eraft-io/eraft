@@ -9,6 +9,8 @@
  *
  */
 
+#ifndef ESTATUS_H_
+#define ESTATUS_H_
 #include <string>
 
 /**
@@ -27,9 +29,9 @@ class EStatus {
    * @param msg
    * @return EStatus
    */
-  static EStatus NotFound(const std::string& msg) {
-    return Status(kNotFound, msg);
-  }
+  // static EStatus NotFound(const std::string& msg) {
+  //   return EStatus(kNotFound, msg);
+  // }
 
  private:
   /**
@@ -48,5 +50,7 @@ class EStatus {
    * @param code
    * @param msg
    */
-  EStatus(StatusCode code, std::string& msg) {}
+  // EStatus(StatusCode code, std::string& msg) {}
 };
+
+#endif

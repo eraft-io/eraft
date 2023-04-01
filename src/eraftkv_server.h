@@ -9,6 +9,9 @@
  *
  */
 
+#ifndef ERAFTKV_SERVER_H_
+#define ERAFTKV_SERVER_H_
+
 #include <cstdint>
 #include <string>
 
@@ -49,6 +52,7 @@ class ERaftKvServer : public grpc::EraftKv::Service {
    * @param config
    */
   ERaftKvServer(ERaftKvServerOptions config) {
+    this.options_ = config;
     // init raft lib
     RaftConfig raft_config;
     raft_config.net_impl = new GRpcNetworkImpl();
@@ -164,3 +168,6 @@ class ERaftKvServer : public grpc::EraftKv::Service {
    */
   ERaftKvServerOptions options_;
 };
+
+
+#endif

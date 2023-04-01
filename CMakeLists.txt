@@ -47,7 +47,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
 option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
 option(ERAFTKV_BUILD_BENCHMARKS "Build ERaftKV's benchmarks" ON)
 option(ERAFTKV_INSTALL "Install ERaftKV's header and library" ON)
-option(DOWNLOAD_GRPC_CN "Download grpc source code in china" OFF)
+option(DOWNLOAD_GRPC_CN "Download grpc source code in china" ON)
 
 ################################################
 # rocksdb begion

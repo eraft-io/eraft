@@ -8,6 +8,8 @@
  * @copyright Copyright (c) 2023
  *
  */
+#ifndef RAFT_NODE_H_
+#define RAFT_NODE_H_
 
 #include <cstdint>
 #include <string>
@@ -28,3 +30,5 @@ struct RaftNode {
   int64_t       match_log_index;
   NodeStateEnum node_state;
 };
+
+#endif

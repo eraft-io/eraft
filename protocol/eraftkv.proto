@@ -46,7 +46,7 @@ message AppendEntriesReq {
   int64          prev_log_index = 4;
   int64          prev_log_term = 5;
   int64          leader_commit = 6;
-  int64          entries_size = 7;
+//  int64          entries_size = 7;
   repeated Entry entries = 8;
 }
 
