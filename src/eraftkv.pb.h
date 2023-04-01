@@ -287,8 +287,10 @@ inline bool ClientOpType_Parse(const ::std::string& name, ClientOpType* value) {
 }
 // ===================================================================
 
-class RequestVoteReq : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.RequestVoteReq)
-                                                           */
+class RequestVoteReq
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.RequestVoteReq)
+                   */
 {
  public:
   RequestVoteReq();
@@ -422,8 +424,10 @@ class RequestVoteReq : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
-class RequestVoteResp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.RequestVoteResp)
-                                                            */
+class RequestVoteResp
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.RequestVoteResp)
+                   */
 {
  public:
   RequestVoteResp();
@@ -550,8 +554,10 @@ class RequestVoteResp : public ::google::protobuf::Message /* @@protoc_insertion
 };
 // -------------------------------------------------------------------
 
-class Entry : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.Entry)
-                                                  */
+class Entry
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.Entry)
+                   */
 {
  public:
   Entry();
@@ -692,8 +698,10 @@ class Entry : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 };
 // -------------------------------------------------------------------
 
-class AppendEntriesReq : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.AppendEntriesReq)
-                                                             */
+class AppendEntriesReq
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.AppendEntriesReq)
+                   */
 {
  public:
   AppendEntriesReq();
@@ -852,8 +860,10 @@ class AppendEntriesReq : public ::google::protobuf::Message /* @@protoc_insertio
 };
 // -------------------------------------------------------------------
 
-class AppendEntriesResp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.AppendEntriesResp)
-                                                              */
+class AppendEntriesResp
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.AppendEntriesResp)
+                   */
 {
  public:
   AppendEntriesResp();
@@ -988,8 +998,10 @@ class AppendEntriesResp : public ::google::protobuf::Message /* @@protoc_inserti
 };
 // -------------------------------------------------------------------
 
-class SnapshotBlock : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotBlock)
-                                                          */
+class SnapshotBlock
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotBlock)
+                   */
 {
  public:
   SnapshotBlock();
@@ -1124,8 +1136,10 @@ class SnapshotBlock : public ::google::protobuf::Message /* @@protoc_insertion_p
 };
 // -------------------------------------------------------------------
 
-class SnapshotReq : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotReq)
-                                                        */
+class SnapshotReq
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotReq)
+                   */
 {
  public:
   SnapshotReq();
@@ -1282,8 +1296,10 @@ class SnapshotReq : public ::google::protobuf::Message /* @@protoc_insertion_poi
 };
 // -------------------------------------------------------------------
 
-class SnapshotResp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotResp)
-                                                         */
+class SnapshotResp
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotResp)
+                   */
 {
  public:
   SnapshotResp();
@@ -1425,8 +1441,10 @@ class SnapshotResp : public ::google::protobuf::Message /* @@protoc_insertion_po
 };
 // -------------------------------------------------------------------
 
-class KeyRange : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.KeyRange)
-                                                     */
+class KeyRange
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.KeyRange)
+                   */
 {
  public:
   KeyRange();
@@ -1575,8 +1593,10 @@ class KeyRange : public ::google::protobuf::Message /* @@protoc_insertion_point(
 };
 // -------------------------------------------------------------------
 
-class Server : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.Server)
-                                                   */
+class Server
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.Server)
+                   */
 {
  public:
   Server();
@@ -1711,8 +1731,10 @@ class Server : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 };
 // -------------------------------------------------------------------
 
-class ShardGroup : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.ShardGroup)
-                                                       */
+class ShardGroup
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.ShardGroup)
+                   */
 {
  public:
   ShardGroup();
@@ -1844,8 +1866,10 @@ class ShardGroup : public ::google::protobuf::Message /* @@protoc_insertion_poin
 };
 // -------------------------------------------------------------------
 
-class ClusterConfigChangeReq : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.ClusterConfigChangeReq)
-                                                                   */
+class ClusterConfigChangeReq
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.ClusterConfigChangeReq)
+                   */
 {
  public:
   ClusterConfigChangeReq();
@@ -1982,8 +2006,10 @@ class ClusterConfigChangeReq : public ::google::protobuf::Message /* @@protoc_in
 };
 // -------------------------------------------------------------------
 
-class ClusterConfigChangeResp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.ClusterConfigChangeResp)
-                                                                    */
+class ClusterConfigChangeResp
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.ClusterConfigChangeResp)
+                   */
 {
  public:
   ClusterConfigChangeResp();
@@ -2112,8 +2138,10 @@ class ClusterConfigChangeResp : public ::google::protobuf::Message /* @@protoc_i
 };
 // -------------------------------------------------------------------
 
-class KvOpPair : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.KvOpPair)
-                                                     */
+class KvOpPair
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.KvOpPair)
+                   */
 {
  public:
   KvOpPair();
@@ -2255,8 +2283,10 @@ class KvOpPair : public ::google::protobuf::Message /* @@protoc_insertion_point(
 };
 // -------------------------------------------------------------------
 
-class ClientOperationReq : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.ClientOperationReq)
-                                                               */
+class ClientOperationReq
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.ClientOperationReq)
+                   */
 {
  public:
   ClientOperationReq();
@@ -2374,8 +2404,10 @@ class ClientOperationReq : public ::google::protobuf::Message /* @@protoc_insert
 };
 // -------------------------------------------------------------------
 
-class ClientOperationResp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:eraftkv.ClientOperationResp)
-                                                                */
+class ClientOperationResp
+    : public ::google::protobuf::
+          Message /* @@protoc_insertion_point(class_definition:eraftkv.ClientOperationResp)
+                   */
 {
  public:
   ClientOperationResp();

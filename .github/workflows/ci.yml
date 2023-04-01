@@ -16,6 +16,8 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev
     - name: Install RocksDB
       run: sudo apt-get update && sudo apt-get install librocksdb-dev
+    - name: Install GoogleTest
+      run: sudo apt-get install libgtest-dev -y && cd /usr/src/gtest && cmake CMakeLists.txt && make && mv lib/* /usr/lib && cd /eraft
     - name: Build
       run: |
         mkdir build && cd build
