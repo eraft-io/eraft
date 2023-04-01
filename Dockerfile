@@ -29,6 +29,10 @@ ENV TZ=Asia/Kolkata \
 RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git
 
 # install rocksdb
-RUN apt-get update && apt-get install librocksdb-dev
+RUN apt-get update && apt-get install -y librocksdb-dev
 
-RUN git clone -b feature_20230323_initdesign https://github.com/eraft-io/eraft.git && cd eraft && mkdir build && cd build && cmake .. && make -j4
+# install protoc
+RUN apt install -y protobuf-compiler
+
+# build grpc_cpp_plugin 
+RUN git clone -b feature_20230323_initdesign https://github.com/eraft-io/eraft.git && cd eraft && mkdir build && cd build && cmake .. && make -j4 && mv /eraft/build/_deps/grpc-build/grpc_cpp_plugin /usr/bin/ && rm -rf /eraft
