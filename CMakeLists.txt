@@ -105,9 +105,27 @@ endif()
 # grpc end
 ################################################
 
+################################################
+# gtest begin
+#
 
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+#
+# gtest end
+################################################
+
+# build eraftkv
 add_executable(${CMAKE_PROJECT_NAME} src/main.cc)
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     rocksdb
     grpc++
+)
+
+# build gtest demo
+add_executable(gtest_example_tests src/gtest_example_tests.cc)
+target_link_libraries(gtest_example_tests PUBLIC
+    ${GTEST_LIBRARIES}
+    pthread
 )

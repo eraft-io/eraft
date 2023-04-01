@@ -60,7 +60,7 @@ class RocksDBStorageImpl : public Storage {
    * @param block
    * @return EStatus
    */
-  EStatus GetSnapshotBlock(RaftServer * raft,
+  EStatus GetSnapshotBlock(RaftServer*             raft,
                            RaftNode*               node,
                            int64_t                 offset,
                            eraftkv::SnapshotBlock* block);
