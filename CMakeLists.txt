@@ -43,6 +43,12 @@ endif(NOT CMAKE_CXX_STANDARD)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
 
+
+option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
+option(ERAFTKV_BUILD_BENCHMARKS "Build ERaftKV's benchmarks" ON)
+option(ERAFTKV_INSTALL "Install ERaftKV's header and library" ON)
+option(DOWNLOAD_GRPC_CN "Download grpc source code in china" OFF)
+
 ################################################
 # rocksdb begion
 #
@@ -80,23 +86,25 @@ mark_as_advanced(
 # grpc begin
 #
 
-
-include(FetchContent)
-FetchContent_Declare(
-  gRPC
-  GIT_REPOSITORY https://github.com/grpc/grpc
-  GIT_TAG        v1.28.0
-)
-set(FETCHCONTENT_QUIET OFF)
-FetchContent_MakeAvailable(gRPC)
+if (DOWNLOAD_GRPC_CN)
+    message(STATUS "download grpc source code from alicloud")
+    add_subdirectory(grpc)
+else()
+    message(STATUS "download grpc use FetchContent")
+    include(FetchContent)
+    FetchContent_Declare(
+      gRPC
+      GIT_REPOSITORY https://github.com/grpc/grpc
+      GIT_TAG        v1.28.0
+    )
+    set(FETCHCONTENT_QUIET OFF)
+    FetchContent_MakeAvailable(gRPC)
+endif()
 
 #
 # grpc end
 ################################################
 
-option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
-option(ERAFTKV_BUILD_BENCHMARKS "Build ERaftKV's benchmarks" ON)
-option(ERAFTKV_INSTALL "Install ERaftKV's header and library" ON)
 
 add_executable(${CMAKE_PROJECT_NAME} src/main.cc)
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
