@@ -36,3 +36,6 @@ RUN apt install -y protobuf-compiler
 
 # build grpc_cpp_plugin 
 RUN git clone -b feature_20230323_initdesign https://github.com/eraft-io/eraft.git && cd eraft && mkdir build && cd build && cmake .. && make -j4 && mv /eraft/build/_deps/grpc-build/grpc_cpp_plugin /usr/bin/ && rm -rf /eraft
+
+# install gtest
+RUN apt-get install libgtest-dev -y && cd /usr/src/gtest && cmake CMakeLists.txt && make && mv lib/* /usr/lib

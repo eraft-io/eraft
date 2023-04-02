@@ -40,4 +40,4 @@ make tests
 
 # Contributing
 
-You can quickly participate in development by following the instructions in [CONTROLUTING.md](CONTROLUTING.md)
+You can quickly participate in development by following the instructions in [CONTROLUTING.md](https://github.com/eraft-io/eraft/blob/master/CONTRIBUTING.md)
