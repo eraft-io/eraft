@@ -9,8 +9,8 @@ image:
 
 # generate protobuf cpp source file
 gen-protocol-code:
-	docker run --rm -v $(realpath .):/eraft-outer hub.docker.com/eraftio/eraftkv:latest protoc --grpc_out /eraft-outer/src/ --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin -I /eraft-outer/protocol eraftkv.proto
-	docker run --rm -v $(realpath .):/eraft-outer hub.docker.com/eraftio/eraftkv:latest protoc --cpp_out /eraft-outer/src/ -I /eraft-outer/protocol eraftkv.proto
+	docker run --rm -v $(realpath .):/eraft hub.docker.com/eraftio/eraftkv:latest /eraft/build/grpc/third_party/protobuf/protoc --grpc_out /eraft/src/ --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin -I /eraft/protocol eraftkv.proto
+	docker run --rm -v $(realpath .):/eraft hub.docker.com/eraftio/eraftkv:latest /eraft/build/grpc/third_party/protobuf/protoc --cpp_out /eraft/src/ -I /eraft/protocol eraftkv.proto
 
 build-dev:
 	chmod +x utils/build-dev.sh

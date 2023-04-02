@@ -9,335 +9,24 @@
  *
  */
 
-#include <cstdint>
+#ifndef RAFT_SERVER_H_
+#define RAFT_SERVER_H_
 
+#include <cstdint>
+#include <iostream>
+
+#include "eraftkv.pb.h"
 #include "estatus.h"
 #include "raft_config.h"
-#include "raft_log.h"
 #include "raft_node.h"
+#include "periodic_caller.h"
 
 /**
  * @brief
  *
  */
-enum RaftStateEnum { Follower, PreCandidate, Candidate, Leader };
+// enum RaftStateEnum { Follower, PreCandidate, Candidate, Leader };
 
-/**
- * @brief
- *
- */
-class Network {
- public:
-  /**
-   * @brief Destroy the Network object
-   *
-   */
-  virtual ~Network() {}
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param target_node
-   * @param req
-   * @return EStatus
-   */
-  virtual EStatus SendRequestVote(RaftServer*              raft,
-                                  RaftNode*                target_node,
-                                  eraftkv::RequestVoteReq* req) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param target_node
-   * @param req
-   * @return EStatus
-   */
-  virtual EStatus SendAppendEntries(RaftServer*                raft,
-                                    RaftNode*                  target_node,
-                                    eraftkv::AppendEntriesReq* req) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param target_node
-   * @param req
-   * @return EStatus
-   */
-  virtual EStatus SendSnapshot(RaftServer*           raft,
-                               RaftNode*             target_node,
-                               eraftkv::SnapshotReq* req) = 0;
-}
-
-/**
- * @brief
- *
- */
-class Event {
- public:
-  /**
-   * @brief Destroy the Event object
-   *
-   */
-  virtual ~Event() {}
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param state
-   */
-  virtual void RaftStateChangeEvent(RaftServer* raft, RaftStateEnum* state) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param node
-   * @param ety
-   */
-  virtual void RaftGroupMembershipChangeEvent(RaftServer*     raft,
-                                              RaftNode*       node,
-                                              eraftkv::Entry* ety) = 0;
-}
-
-
-/**
- * @brief
- *
- */
-class Storage {
-
- public:
-  /**
-   * @brief Destroy the Storage object
-   *
-   */
-  virtual ~Storage() {}
-
-
-  /**
-   * @brief Get the Node Address object
-   *
-   * @param raft
-   * @param id
-   * @return std::string
-   */
-  virtual std::string GetNodeAddress(RaftServer* raft, std::string id) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param id
-   * @param address
-   * @return EStatus
-   */
-  virtual EStatus SaveNodeAddress(RaftServer* raft,
-                                  std::string id,
-                                  std::string address) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param snapshot_index
-   * @param snapshot_term
-   * @return EStatus
-   */
-  virtual EStatus ApplyLog(RaftServer* raft,
-                           int64_t     snapshot_index,
-                           int64_t     snapshot_term) = 0;
-
-  /**
-   * @brief Get the Snapshot Block object
-   *
-   * @param raft
-   * @param node
-   * @param offset
-   * @param block
-   * @return EStatus
-   */
-  virtual EStatus GetSnapshotBlock(RaftServer*             raft,
-                                   RaftNode*               node,
-                                   int64_t                 offset,
-                                   eraftkv::SnapshotBlock* block) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param snapshot_index
-   * @param offset
-   * @param block
-   * @return EStatus
-   */
-  virtual EStatus StoreSnapshotBlock(RaftServer*             raft,
-                                     int64_t                 snapshot_index,
-                                     int64_t                 offset,
-                                     eraftkv::SnapshotBlock* block) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @return EStatus
-   */
-  virtual EStatus ClearSnapshot(RaftServer* raft) = 0;
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  virtual EStatus CreateDBSnapshot() = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param term
-   * @param vote
-   * @return EStatus
-   */
-  virtual EStatus SaveRaftMeta(RaftServer* raft,
-                               int64_t     term,
-                               int64_t     vote) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param term
-   * @param vote
-   * @return EStatus
-   */
-  virtual EStatus ReadRaftMeta(RaftServer* raft,
-                               int64_t*    term,
-                               int64_t*    vote) = 0;
-};
-
-/**
- * @brief
- *
- */
-class LogStore {
- public:
-  /**
-   * @brief Destroy the Log Store object
-   *
-   */
-  virtual ~LogStore() {}
-
-  /**
-   * @brief
-   *
-   */
-  virtual void Init() = 0;
-
-  /**
-   * @brief
-   *
-   */
-  virtual void Free() = 0;
-
-  /**
-   * @brief Append add new entries
-   *
-   * @param ety
-   * @return EStatus
-   */
-  virtual EStatus Append(eraftkv::Entry* ety) = 0;
-
-  /**
-   * @brief EraseBefore erase all entries before the given index
-   *
-   * @param first_index
-   * @return EStatus
-   */
-  virtual EStatus EraseBefore(int64_t first_index) = 0;
-
-  /**
-   * @brief EraseAfter erase all entries after the given index
-   *
-   * @param from_index
-   * @return EStatus
-   */
-  virtual EStatus EraseAfter(int64_t from_index) = 0;
-
-  /**
-   * @brief Get get the given index entry
-   *
-   * @param index
-   * @return eraftkv::Entry*
-   */
-  virtual eraftkv::Entry* Get(int64_t index) = 0;
-
-  /**
-   * @brief Gets get the given index range entry
-   *
-   * @param start_index
-   * @param end_index
-   * @return std::vector<eraftkv::Entry*>
-   */
-  virtual std::vector<eraftkv::Entry*> Gets(int64_t start_index,
-                                            int64_t end_index) = 0;
-
-  /**
-   * @brief FirstIndex get the first index in the entry
-   *
-   * @return int64_t
-   */
-  virtual int64_t FirstIndex() = 0;
-
-  /**
-   * @brief LastIndex get the last index in the entry
-   *
-   * @return int64_t
-   */
-  virtual int64_t LastIndex() = 0;
-
-  /**
-   * @brief LogCount get the number of entries
-   *
-   * @return int64_t
-   */
-  virtual int64_t LogCount() = 0;
-}
-
-/**
- * @brief
- *
- */
-class InternalMemLogStorageImpl : public LogStore {
-
- private:
-  /**
-   * @brief the number of entries in memory
-   *
-   */
-  uint64_t count_;
-
-  /**
-   * @brief the node id
-   *
-   */
-  std::string node_id_;
-
-  /**
-   * @brief master log
-   *
-   */
-  std::vector<eraftkv::Entry> master_log_db_;
-
-  /**
-   * @brief standby log when snapshoting
-   *
-   */
-  std::vector<eraftkv::Entry> standby_log_db_;
-};
 
 /**
  * @brief
@@ -372,7 +61,7 @@ class RaftServer {
    * @param vote
    * @return EStatus
    */
-  EStatus SaveMetaData(int64 term, int64 vote) {}
+  EStatus SaveMetaData(int64_t term, int64_t vote) {}
 
   /**
    * @brief
@@ -388,7 +77,7 @@ class RaftServer {
    * @param is_self
    * @return RaftNode*
    */
-  RaftNode* JoinNode(int64 id, bool is_self) {}
+  RaftNode* JoinNode(int64_t id, bool is_self) {}
 
   /**
    * @brief
@@ -611,14 +300,14 @@ class RaftServer {
    *
    * @return Entry*
    */
-  Entry* GetLastAppliedEntry() {}
+  eraftkv::Entry* GetLastAppliedEntry() {}
 
   /**
    * @brief Get the First Entry Idx object
    *
-   * @return int64
+   * @return int64_t
    */
-  int64 GetFirstEntryIdx() {}
+  int64_t GetFirstEntryIdx() {}
 
   /**
    * @brief
@@ -634,8 +323,8 @@ class RaftServer {
    * @param last_included_index
    * @return EStatus
    */
-  EStatus BeginLoadSnapshot(int64 last_included_term,
-                            int64 last_included_index) {}
+  EStatus BeginLoadSnapshot(int64_t last_included_term,
+                            int64_t last_included_index) {}
 
   /**
    * @brief
@@ -654,9 +343,9 @@ class RaftServer {
   /**
    * @brief Get the Logs Count Can Snapshot object
    *
-   * @return int64
+   * @return int64_t
    */
-  int64 GetLogsCountCanSnapshot() {}
+  int64_t GetLogsCountCanSnapshot() {}
 
   /**
    * @brief
@@ -701,7 +390,7 @@ class RaftServer {
    * @brief
    *
    */
-  RaftStateEnum state_;
+  int state_;
   /**
    * @brief
    *
@@ -748,3 +437,6 @@ class RaftServer {
    */
   LogStore* log_store_;
 };
+
+
+#endif  // RAFT_SERVER_H_

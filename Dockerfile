@@ -26,7 +26,7 @@ ENV TZ=Asia/Kolkata \
     DEBIAN_FRONTEND=noninteractive
 
 # install build dependency
-RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git
+RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git wget
 
 # install rocksdb
 RUN apt-get update && apt-get install -y librocksdb-dev

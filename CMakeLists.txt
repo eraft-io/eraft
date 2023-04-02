@@ -117,11 +117,20 @@ include_directories(${GTEST_INCLUDE_DIRS})
 ################################################
 
 # build eraftkv
-add_executable(${CMAKE_PROJECT_NAME} src/main.cc)
+set(eraftkv_sources)
+list(APPEND eraftkv_sources src/eraftkv_server.cc)
+list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
+list(APPEND eraftkv_sources src/eraftkv.pb.cc)
+list(APPEND eraftkv_sources src/main.cc)
+
+set(eraftkv_INCLUDE_DIR ${eraftkv_sources_SOURCE_DIR})
+
+add_executable(${CMAKE_PROJECT_NAME} ${eraftkv_sources})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     rocksdb
     grpc++
 )
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
 # build gtest demo
 add_executable(gtest_example_tests src/gtest_example_tests.cc)

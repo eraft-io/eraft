@@ -8,7 +8,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-
+#ifndef PERIODIC_CALLER_H_
+#define PERIODIC_CALLER_H_
 #include <chrono>
 #include <cstdio>
 #include <functional>
@@ -54,3 +55,5 @@ class PeriodicCaller {
     }
   }
 };
+
+#endif

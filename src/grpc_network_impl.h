@@ -82,4 +82,4 @@ class GRpcNetworkImpl : public Network {
    *
    */
   std::map<std::string, std::unique_ptr<EraftKv::Stub>> peer_node_connections_;
-}
+};

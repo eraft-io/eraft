@@ -4,6 +4,9 @@
 #ifndef GRPC_eraftkv_2eproto__INCLUDED
 #define GRPC_eraftkv_2eproto__INCLUDED
 
+#include "eraftkv.pb.h"
+
+#include <functional>
 #include <grpc/impl/codegen/port_platform.h>
 #include <grpcpp/impl/codegen/async_generic_service.h>
 #include <grpcpp/impl/codegen/async_stream.h>
@@ -23,10 +26,6 @@
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
 
-#include <functional>
-
-#include "eraftkv.pb.h"
-
 namespace eraftkv {
 
 class ERaftKv final {
@@ -37,723 +36,268 @@ class ERaftKv final {
   class StubInterface {
    public:
     virtual ~StubInterface() {}
-    virtual ::grpc::Status RequestVote(
-        ::grpc::ClientContext*           context,
-        const ::eraftkv::RequestVoteReq& request,
-        ::eraftkv::RequestVoteResp*      response) = 0;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::RequestVoteResp>>
-        AsyncRequestVote(::grpc::ClientContext*           context,
-                         const ::eraftkv::RequestVoteReq& request,
-                         ::grpc::CompletionQueue*         cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::RequestVoteResp>>(
-          AsyncRequestVoteRaw(context, request, cq));
+    virtual ::grpc::Status RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::eraftkv::RequestVoteResp* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>> AsyncRequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>>(AsyncRequestVoteRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::RequestVoteResp>>
-        PrepareAsyncRequestVote(::grpc::ClientContext*           context,
-                                const ::eraftkv::RequestVoteReq& request,
-                                ::grpc::CompletionQueue*         cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::RequestVoteResp>>(
-          PrepareAsyncRequestVoteRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>> PrepareAsyncRequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>>(PrepareAsyncRequestVoteRaw(context, request, cq));
     }
-    virtual ::grpc::Status AppendEntries(
-        ::grpc::ClientContext*             context,
-        const ::eraftkv::AppendEntriesReq& request,
-        ::eraftkv::RequestVoteResp*        response) = 0;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::RequestVoteResp>>
-        AsyncAppendEntries(::grpc::ClientContext*             context,
-                           const ::eraftkv::AppendEntriesReq& request,
-                           ::grpc::CompletionQueue*           cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::RequestVoteResp>>(
-          AsyncAppendEntriesRaw(context, request, cq));
+    virtual ::grpc::Status AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::eraftkv::RequestVoteResp* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>> AsyncAppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>>(AsyncAppendEntriesRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::RequestVoteResp>>
-        PrepareAsyncAppendEntries(::grpc::ClientContext*             context,
-                                  const ::eraftkv::AppendEntriesReq& request,
-                                  ::grpc::CompletionQueue*           cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::RequestVoteResp>>(
-          PrepareAsyncAppendEntriesRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>> PrepareAsyncAppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>>(PrepareAsyncAppendEntriesRaw(context, request, cq));
     }
-    virtual ::grpc::Status Snapshot(::grpc::ClientContext*        context,
-                                    const ::eraftkv::SnapshotReq& request,
-                                    ::eraftkv::SnapshotResp*      response) = 0;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::SnapshotResp>>
-        AsyncSnapshot(::grpc::ClientContext*        context,
-                      const ::eraftkv::SnapshotReq& request,
-                      ::grpc::CompletionQueue*      cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::SnapshotResp>>(
-          AsyncSnapshotRaw(context, request, cq));
+    virtual ::grpc::Status Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::eraftkv::SnapshotResp* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>> AsyncSnapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>>(AsyncSnapshotRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::SnapshotResp>>
-        PrepareAsyncSnapshot(::grpc::ClientContext*        context,
-                             const ::eraftkv::SnapshotReq& request,
-                             ::grpc::CompletionQueue*      cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::SnapshotResp>>(
-          PrepareAsyncSnapshotRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>> PrepareAsyncSnapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>>(PrepareAsyncSnapshotRaw(context, request, cq));
     }
-    virtual ::grpc::Status ProcessRWOperation(
-        ::grpc::ClientContext*               context,
-        const ::eraftkv::ClientOperationReq& request,
-        ::eraftkv::ClientOperationResp*      response) = 0;
-    std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClientOperationResp>>
-        AsyncProcessRWOperation(::grpc::ClientContext*               context,
-                                const ::eraftkv::ClientOperationReq& request,
-                                ::grpc::CompletionQueue*             cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::ClientOperationResp>>(
-          AsyncProcessRWOperationRaw(context, request, cq));
+    virtual ::grpc::Status ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::eraftkv::ClientOperationResp* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>> AsyncProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>>(AsyncProcessRWOperationRaw(context, request, cq));
     }
-    std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClientOperationResp>>
-        PrepareAsyncProcessRWOperation(
-            ::grpc::ClientContext*               context,
-            const ::eraftkv::ClientOperationReq& request,
-            ::grpc::CompletionQueue*             cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::ClientOperationResp>>(
-          PrepareAsyncProcessRWOperationRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>> PrepareAsyncProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>>(PrepareAsyncProcessRWOperationRaw(context, request, cq));
     }
-    virtual ::grpc::Status ClusterConfigChange(
-        ::grpc::ClientContext*                   context,
-        const ::eraftkv::ClusterConfigChangeReq& request,
-        ::eraftkv::ClusterConfigChangeResp*      response) = 0;
-    std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClusterConfigChangeResp>>
-        AsyncClusterConfigChange(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::ClusterConfigChangeResp>>(
-          AsyncClusterConfigChangeRaw(context, request, cq));
+    virtual ::grpc::Status ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::eraftkv::ClusterConfigChangeResp* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>> AsyncClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>>(AsyncClusterConfigChangeRaw(context, request, cq));
     }
-    std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClusterConfigChangeResp>>
-        PrepareAsyncClusterConfigChange(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReaderInterface<
-          ::eraftkv::ClusterConfigChangeResp>>(
-          PrepareAsyncClusterConfigChangeRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>> PrepareAsyncClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>>(PrepareAsyncClusterConfigChangeRaw(context, request, cq));
     }
     class experimental_async_interface {
      public:
       virtual ~experimental_async_interface() {}
-      virtual void RequestVote(::grpc::ClientContext*           context,
-                               const ::eraftkv::RequestVoteReq* request,
-                               ::eraftkv::RequestVoteResp*      response,
-                               std::function<void(::grpc::Status)>) = 0;
-      virtual void RequestVote(::grpc::ClientContext*      context,
-                               const ::grpc::ByteBuffer*   request,
-                               ::eraftkv::RequestVoteResp* response,
-                               std::function<void(::grpc::Status)>) = 0;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void RequestVote(::grpc::ClientContext*           context,
-                               const ::eraftkv::RequestVoteReq* request,
-                               ::eraftkv::RequestVoteResp*      response,
-                               ::grpc::ClientUnaryReactor*      reactor) = 0;
-#else
-      virtual void RequestVote(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::RequestVoteReq*          request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void RequestVote(::grpc::ClientContext*      context,
-                               const ::grpc::ByteBuffer*   request,
-                               ::eraftkv::RequestVoteResp* response,
-                               ::grpc::ClientUnaryReactor* reactor) = 0;
-#else
-      virtual void RequestVote(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-      virtual void AppendEntries(::grpc::ClientContext*             context,
-                                 const ::eraftkv::AppendEntriesReq* request,
-                                 ::eraftkv::RequestVoteResp*        response,
-                                 std::function<void(::grpc::Status)>) = 0;
-      virtual void AppendEntries(::grpc::ClientContext*      context,
-                                 const ::grpc::ByteBuffer*   request,
-                                 ::eraftkv::RequestVoteResp* response,
-                                 std::function<void(::grpc::Status)>) = 0;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void AppendEntries(::grpc::ClientContext*             context,
-                                 const ::eraftkv::AppendEntriesReq* request,
-                                 ::eraftkv::RequestVoteResp*        response,
-                                 ::grpc::ClientUnaryReactor* reactor) = 0;
-#else
-      virtual void AppendEntries(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::AppendEntriesReq*        request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void AppendEntries(::grpc::ClientContext*      context,
-                                 const ::grpc::ByteBuffer*   request,
-                                 ::eraftkv::RequestVoteResp* response,
-                                 ::grpc::ClientUnaryReactor* reactor) = 0;
-#else
-      virtual void AppendEntries(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-      virtual void Snapshot(::grpc::ClientContext*        context,
-                            const ::eraftkv::SnapshotReq* request,
-                            ::eraftkv::SnapshotResp*      response,
-                            std::function<void(::grpc::Status)>) = 0;
-      virtual void Snapshot(::grpc::ClientContext*    context,
-                            const ::grpc::ByteBuffer* request,
-                            ::eraftkv::SnapshotResp*  response,
-                            std::function<void(::grpc::Status)>) = 0;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void Snapshot(::grpc::ClientContext*        context,
-                            const ::eraftkv::SnapshotReq* request,
-                            ::eraftkv::SnapshotResp*      response,
-                            ::grpc::ClientUnaryReactor*   reactor) = 0;
-#else
-      virtual void Snapshot(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::SnapshotReq*             request,
-          ::eraftkv::SnapshotResp*                  response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void Snapshot(::grpc::ClientContext*      context,
-                            const ::grpc::ByteBuffer*   request,
-                            ::eraftkv::SnapshotResp*    response,
-                            ::grpc::ClientUnaryReactor* reactor) = 0;
-#else
-      virtual void Snapshot(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::SnapshotResp*                  response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-      virtual void ProcessRWOperation(
-          ::grpc::ClientContext*               context,
-          const ::eraftkv::ClientOperationReq* request,
-          ::eraftkv::ClientOperationResp*      response,
-          std::function<void(::grpc::Status)>) = 0;
-      virtual void ProcessRWOperation(::grpc::ClientContext*          context,
-                                      const ::grpc::ByteBuffer*       request,
-                                      ::eraftkv::ClientOperationResp* response,
-                                      std::function<void(::grpc::Status)>) = 0;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void ProcessRWOperation(
-          ::grpc::ClientContext*               context,
-          const ::eraftkv::ClientOperationReq* request,
-          ::eraftkv::ClientOperationResp*      response,
-          ::grpc::ClientUnaryReactor*          reactor) = 0;
-#else
-      virtual void ProcessRWOperation(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::ClientOperationReq*      request,
-          ::eraftkv::ClientOperationResp*           response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void ProcessRWOperation(::grpc::ClientContext*          context,
-                                      const ::grpc::ByteBuffer*       request,
-                                      ::eraftkv::ClientOperationResp* response,
-                                      ::grpc::ClientUnaryReactor* reactor) = 0;
-#else
-      virtual void ProcessRWOperation(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::ClientOperationResp*           response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-      virtual void ClusterConfigChange(
-          ::grpc::ClientContext*                   context,
-          const ::eraftkv::ClusterConfigChangeReq* request,
-          ::eraftkv::ClusterConfigChangeResp*      response,
-          std::function<void(::grpc::Status)>) = 0;
-      virtual void ClusterConfigChange(
-          ::grpc::ClientContext*              context,
-          const ::grpc::ByteBuffer*           request,
-          ::eraftkv::ClusterConfigChangeResp* response,
-          std::function<void(::grpc::Status)>) = 0;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void ClusterConfigChange(
-          ::grpc::ClientContext*                   context,
-          const ::eraftkv::ClusterConfigChangeReq* request,
-          ::eraftkv::ClusterConfigChangeResp*      response,
-          ::grpc::ClientUnaryReactor*              reactor) = 0;
-#else
-      virtual void ClusterConfigChange(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::ClusterConfigChangeReq*  request,
-          ::eraftkv::ClusterConfigChangeResp*       response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void ClusterConfigChange(
-          ::grpc::ClientContext*              context,
-          const ::grpc::ByteBuffer*           request,
-          ::eraftkv::ClusterConfigChangeResp* response,
-          ::grpc::ClientUnaryReactor*         reactor) = 0;
-#else
-      virtual void ClusterConfigChange(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::ClusterConfigChangeResp*       response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
-#endif
+      virtual void RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RequestVote(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void RequestVote(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void RequestVote(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      virtual void AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void AppendEntries(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void AppendEntries(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void AppendEntries(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      virtual void Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      virtual void ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void ClusterConfigChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClusterConfigChangeResp* response, std::function<void(::grpc::Status)>) = 0;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void ClusterConfigChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      #else
+      virtual void ClusterConfigChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      #endif
     };
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     typedef class experimental_async_interface async_interface;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-    async_interface* async() {
-      return experimental_async();
-    }
-#endif
-    virtual class experimental_async_interface* experimental_async() {
-      return nullptr;
-    }
-
-   private:
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::RequestVoteResp>*
-        AsyncRequestVoteRaw(::grpc::ClientContext*           context,
-                            const ::eraftkv::RequestVoteReq& request,
-                            ::grpc::CompletionQueue*         cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::RequestVoteResp>*
-        PrepareAsyncRequestVoteRaw(::grpc::ClientContext*           context,
-                                   const ::eraftkv::RequestVoteReq& request,
-                                   ::grpc::CompletionQueue*         cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::RequestVoteResp>*
-        AsyncAppendEntriesRaw(::grpc::ClientContext*             context,
-                              const ::eraftkv::AppendEntriesReq& request,
-                              ::grpc::CompletionQueue*           cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::RequestVoteResp>*
-        PrepareAsyncAppendEntriesRaw(::grpc::ClientContext*             context,
-                                     const ::eraftkv::AppendEntriesReq& request,
-                                     ::grpc::CompletionQueue*           cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::SnapshotResp>*
-        AsyncSnapshotRaw(::grpc::ClientContext*        context,
-                         const ::eraftkv::SnapshotReq& request,
-                         ::grpc::CompletionQueue*      cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<::eraftkv::SnapshotResp>*
-        PrepareAsyncSnapshotRaw(::grpc::ClientContext*        context,
-                                const ::eraftkv::SnapshotReq& request,
-                                ::grpc::CompletionQueue*      cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClientOperationResp>*
-        AsyncProcessRWOperationRaw(::grpc::ClientContext*               context,
-                                   const ::eraftkv::ClientOperationReq& request,
-                                   ::grpc::CompletionQueue*             cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClientOperationResp>*
-        PrepareAsyncProcessRWOperationRaw(
-            ::grpc::ClientContext*               context,
-            const ::eraftkv::ClientOperationReq& request,
-            ::grpc::CompletionQueue*             cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClusterConfigChangeResp>*
-        AsyncClusterConfigChangeRaw(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface<
-        ::eraftkv::ClusterConfigChangeResp>*
-        PrepareAsyncClusterConfigChangeRaw(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) = 0;
+    #endif
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    async_interface* async() { return experimental_async(); }
+    #endif
+    virtual class experimental_async_interface* experimental_async() { return nullptr; }
+  private:
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>* AsyncRequestVoteRaw(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>* PrepareAsyncRequestVoteRaw(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>* AsyncAppendEntriesRaw(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::RequestVoteResp>* PrepareAsyncAppendEntriesRaw(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>* AsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>* AsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>* PrepareAsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>* AsyncClusterConfigChangeRaw(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>* PrepareAsyncClusterConfigChangeRaw(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
-    Stub(const std::shared_ptr<::grpc::ChannelInterface>& channel);
-    ::grpc::Status RequestVote(::grpc::ClientContext*           context,
-                               const ::eraftkv::RequestVoteReq& request,
-                               ::eraftkv::RequestVoteResp* response) override;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>
-        AsyncRequestVote(::grpc::ClientContext*           context,
-                         const ::eraftkv::RequestVoteReq& request,
-                         ::grpc::CompletionQueue*         cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>(
-          AsyncRequestVoteRaw(context, request, cq));
+    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
+    ::grpc::Status RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::eraftkv::RequestVoteResp* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>> AsyncRequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>>(AsyncRequestVoteRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>
-        PrepareAsyncRequestVote(::grpc::ClientContext*           context,
-                                const ::eraftkv::RequestVoteReq& request,
-                                ::grpc::CompletionQueue*         cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>(
-          PrepareAsyncRequestVoteRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>> PrepareAsyncRequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>>(PrepareAsyncRequestVoteRaw(context, request, cq));
     }
-    ::grpc::Status AppendEntries(::grpc::ClientContext*             context,
-                                 const ::eraftkv::AppendEntriesReq& request,
-                                 ::eraftkv::RequestVoteResp* response) override;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>
-        AsyncAppendEntries(::grpc::ClientContext*             context,
-                           const ::eraftkv::AppendEntriesReq& request,
-                           ::grpc::CompletionQueue*           cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>(
-          AsyncAppendEntriesRaw(context, request, cq));
+    ::grpc::Status AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::eraftkv::RequestVoteResp* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>> AsyncAppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>>(AsyncAppendEntriesRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>
-        PrepareAsyncAppendEntries(::grpc::ClientContext*             context,
-                                  const ::eraftkv::AppendEntriesReq& request,
-                                  ::grpc::CompletionQueue*           cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>>(
-          PrepareAsyncAppendEntriesRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>> PrepareAsyncAppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>>(PrepareAsyncAppendEntriesRaw(context, request, cq));
     }
-    ::grpc::Status Snapshot(::grpc::ClientContext*        context,
-                            const ::eraftkv::SnapshotReq& request,
-                            ::eraftkv::SnapshotResp*      response) override;
-    std::unique_ptr<::grpc::ClientAsyncResponseReader<::eraftkv::SnapshotResp>>
-        AsyncSnapshot(::grpc::ClientContext*        context,
-                      const ::eraftkv::SnapshotReq& request,
-                      ::grpc::CompletionQueue*      cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::SnapshotResp>>(
-          AsyncSnapshotRaw(context, request, cq));
+    ::grpc::Status Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::eraftkv::SnapshotResp* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>> AsyncSnapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>>(AsyncSnapshotRaw(context, request, cq));
     }
-    std::unique_ptr<::grpc::ClientAsyncResponseReader<::eraftkv::SnapshotResp>>
-        PrepareAsyncSnapshot(::grpc::ClientContext*        context,
-                             const ::eraftkv::SnapshotReq& request,
-                             ::grpc::CompletionQueue*      cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::SnapshotResp>>(
-          PrepareAsyncSnapshotRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>> PrepareAsyncSnapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>>(PrepareAsyncSnapshotRaw(context, request, cq));
     }
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ClientContext*               context,
-        const ::eraftkv::ClientOperationReq& request,
-        ::eraftkv::ClientOperationResp*      response) override;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::ClientOperationResp>>
-        AsyncProcessRWOperation(::grpc::ClientContext*               context,
-                                const ::eraftkv::ClientOperationReq& request,
-                                ::grpc::CompletionQueue*             cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::ClientOperationResp>>(
-          AsyncProcessRWOperationRaw(context, request, cq));
+    ::grpc::Status ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::eraftkv::ClientOperationResp* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>> AsyncProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>>(AsyncProcessRWOperationRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::ClientOperationResp>>
-        PrepareAsyncProcessRWOperation(
-            ::grpc::ClientContext*               context,
-            const ::eraftkv::ClientOperationReq& request,
-            ::grpc::CompletionQueue*             cq) {
-      return std::unique_ptr<
-          ::grpc::ClientAsyncResponseReader<::eraftkv::ClientOperationResp>>(
-          PrepareAsyncProcessRWOperationRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>> PrepareAsyncProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>>(PrepareAsyncProcessRWOperationRaw(context, request, cq));
     }
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ClientContext*                   context,
-        const ::eraftkv::ClusterConfigChangeReq& request,
-        ::eraftkv::ClusterConfigChangeResp*      response) override;
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::ClusterConfigChangeResp>>
-        AsyncClusterConfigChange(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReader<
-          ::eraftkv::ClusterConfigChangeResp>>(
-          AsyncClusterConfigChangeRaw(context, request, cq));
+    ::grpc::Status ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::eraftkv::ClusterConfigChangeResp* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>> AsyncClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>>(AsyncClusterConfigChangeRaw(context, request, cq));
     }
-    std::unique_ptr<
-        ::grpc::ClientAsyncResponseReader<::eraftkv::ClusterConfigChangeResp>>
-        PrepareAsyncClusterConfigChange(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) {
-      return std::unique_ptr<::grpc::ClientAsyncResponseReader<
-          ::eraftkv::ClusterConfigChangeResp>>(
-          PrepareAsyncClusterConfigChangeRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>> PrepareAsyncClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>>(PrepareAsyncClusterConfigChangeRaw(context, request, cq));
     }
-    class experimental_async final
-        : public StubInterface::experimental_async_interface {
+    class experimental_async final :
+      public StubInterface::experimental_async_interface {
      public:
-      void RequestVote(::grpc::ClientContext*           context,
-                       const ::eraftkv::RequestVoteReq* request,
-                       ::eraftkv::RequestVoteResp*      response,
-                       std::function<void(::grpc::Status)>) override;
-      void RequestVote(::grpc::ClientContext*      context,
-                       const ::grpc::ByteBuffer*   request,
-                       ::eraftkv::RequestVoteResp* response,
-                       std::function<void(::grpc::Status)>) override;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void RequestVote(::grpc::ClientContext*           context,
-                       const ::eraftkv::RequestVoteReq* request,
-                       ::eraftkv::RequestVoteResp*      response,
-                       ::grpc::ClientUnaryReactor*      reactor) override;
-#else
-      void RequestVote(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::RequestVoteReq*          request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void RequestVote(::grpc::ClientContext*      context,
-                       const ::grpc::ByteBuffer*   request,
-                       ::eraftkv::RequestVoteResp* response,
-                       ::grpc::ClientUnaryReactor* reactor) override;
-#else
-      void RequestVote(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-      void AppendEntries(::grpc::ClientContext*             context,
-                         const ::eraftkv::AppendEntriesReq* request,
-                         ::eraftkv::RequestVoteResp*        response,
-                         std::function<void(::grpc::Status)>) override;
-      void AppendEntries(::grpc::ClientContext*      context,
-                         const ::grpc::ByteBuffer*   request,
-                         ::eraftkv::RequestVoteResp* response,
-                         std::function<void(::grpc::Status)>) override;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void AppendEntries(::grpc::ClientContext*             context,
-                         const ::eraftkv::AppendEntriesReq* request,
-                         ::eraftkv::RequestVoteResp*        response,
-                         ::grpc::ClientUnaryReactor*        reactor) override;
-#else
-      void AppendEntries(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::AppendEntriesReq*        request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void AppendEntries(::grpc::ClientContext*      context,
-                         const ::grpc::ByteBuffer*   request,
-                         ::eraftkv::RequestVoteResp* response,
-                         ::grpc::ClientUnaryReactor* reactor) override;
-#else
-      void AppendEntries(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::RequestVoteResp*               response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-      void Snapshot(::grpc::ClientContext*        context,
-                    const ::eraftkv::SnapshotReq* request,
-                    ::eraftkv::SnapshotResp*      response,
-                    std::function<void(::grpc::Status)>) override;
-      void Snapshot(::grpc::ClientContext*    context,
-                    const ::grpc::ByteBuffer* request,
-                    ::eraftkv::SnapshotResp*  response,
-                    std::function<void(::grpc::Status)>) override;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void Snapshot(::grpc::ClientContext*        context,
-                    const ::eraftkv::SnapshotReq* request,
-                    ::eraftkv::SnapshotResp*      response,
-                    ::grpc::ClientUnaryReactor*   reactor) override;
-#else
-      void Snapshot(::grpc::ClientContext*                    context,
-                    const ::eraftkv::SnapshotReq*             request,
-                    ::eraftkv::SnapshotResp*                  response,
-                    ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void Snapshot(::grpc::ClientContext*      context,
-                    const ::grpc::ByteBuffer*   request,
-                    ::eraftkv::SnapshotResp*    response,
-                    ::grpc::ClientUnaryReactor* reactor) override;
-#else
-      void Snapshot(::grpc::ClientContext*                    context,
-                    const ::grpc::ByteBuffer*                 request,
-                    ::eraftkv::SnapshotResp*                  response,
-                    ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-      void ProcessRWOperation(::grpc::ClientContext*               context,
-                              const ::eraftkv::ClientOperationReq* request,
-                              ::eraftkv::ClientOperationResp*      response,
-                              std::function<void(::grpc::Status)>) override;
-      void ProcessRWOperation(::grpc::ClientContext*          context,
-                              const ::grpc::ByteBuffer*       request,
-                              ::eraftkv::ClientOperationResp* response,
-                              std::function<void(::grpc::Status)>) override;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void ProcessRWOperation(::grpc::ClientContext*               context,
-                              const ::eraftkv::ClientOperationReq* request,
-                              ::eraftkv::ClientOperationResp*      response,
-                              ::grpc::ClientUnaryReactor* reactor) override;
-#else
-      void ProcessRWOperation(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::ClientOperationReq*      request,
-          ::eraftkv::ClientOperationResp*           response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void ProcessRWOperation(::grpc::ClientContext*          context,
-                              const ::grpc::ByteBuffer*       request,
-                              ::eraftkv::ClientOperationResp* response,
-                              ::grpc::ClientUnaryReactor*     reactor) override;
-#else
-      void ProcessRWOperation(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::ClientOperationResp*           response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-      void ClusterConfigChange(::grpc::ClientContext*                   context,
-                               const ::eraftkv::ClusterConfigChangeReq* request,
-                               ::eraftkv::ClusterConfigChangeResp* response,
-                               std::function<void(::grpc::Status)>) override;
-      void ClusterConfigChange(::grpc::ClientContext*              context,
-                               const ::grpc::ByteBuffer*           request,
-                               ::eraftkv::ClusterConfigChangeResp* response,
-                               std::function<void(::grpc::Status)>) override;
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void ClusterConfigChange(::grpc::ClientContext*                   context,
-                               const ::eraftkv::ClusterConfigChangeReq* request,
-                               ::eraftkv::ClusterConfigChangeResp* response,
-                               ::grpc::ClientUnaryReactor* reactor) override;
-#else
-      void ClusterConfigChange(
-          ::grpc::ClientContext*                    context,
-          const ::eraftkv::ClusterConfigChangeReq*  request,
-          ::eraftkv::ClusterConfigChangeResp*       response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void ClusterConfigChange(::grpc::ClientContext*              context,
-                               const ::grpc::ByteBuffer*           request,
-                               ::eraftkv::ClusterConfigChangeResp* response,
-                               ::grpc::ClientUnaryReactor* reactor) override;
-#else
-      void ClusterConfigChange(
-          ::grpc::ClientContext*                    context,
-          const ::grpc::ByteBuffer*                 request,
-          ::eraftkv::ClusterConfigChangeResp*       response,
-          ::grpc::experimental::ClientUnaryReactor* reactor) override;
-#endif
+      void RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) override;
+      void RequestVote(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void RequestVote(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void RequestVote(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      void AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) override;
+      void AppendEntries(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void AppendEntries(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void AppendEntries(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void AppendEntries(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::RequestVoteResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      void Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response, std::function<void(::grpc::Status)>) override;
+      void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void Snapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) override;
+      void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      void ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response, std::function<void(::grpc::Status)>) override;
+      void ClusterConfigChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClusterConfigChangeResp* response, std::function<void(::grpc::Status)>) override;
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void ClusterConfigChange(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void ClusterConfigChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::ClientUnaryReactor* reactor) override;
+      #else
+      void ClusterConfigChange(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClusterConfigChangeResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      #endif
      private:
       friend class Stub;
-      explicit experimental_async(Stub* stub) : stub_(stub) {}
-      Stub* stub() {
-        return stub_;
-      }
+      explicit experimental_async(Stub* stub): stub_(stub) { }
+      Stub* stub() { return stub_; }
       Stub* stub_;
     };
-    class experimental_async_interface* experimental_async() override {
-      return &async_stub_;
-    }
+    class experimental_async_interface* experimental_async() override { return &async_stub_; }
 
    private:
-    std::shared_ptr<::grpc::ChannelInterface> channel_;
-    class experimental_async                  async_stub_ {
-      this
-    };
-    ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>*
-        AsyncRequestVoteRaw(::grpc::ClientContext*           context,
-                            const ::eraftkv::RequestVoteReq& request,
-                            ::grpc::CompletionQueue*         cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>*
-        PrepareAsyncRequestVoteRaw(::grpc::ClientContext*           context,
-                                   const ::eraftkv::RequestVoteReq& request,
-                                   ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>*
-        AsyncAppendEntriesRaw(::grpc::ClientContext*             context,
-                              const ::eraftkv::AppendEntriesReq& request,
-                              ::grpc::CompletionQueue*           cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::RequestVoteResp>*
-        PrepareAsyncAppendEntriesRaw(::grpc::ClientContext*             context,
-                                     const ::eraftkv::AppendEntriesReq& request,
-                                     ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::SnapshotResp>*
-        AsyncSnapshotRaw(::grpc::ClientContext*        context,
-                         const ::eraftkv::SnapshotReq& request,
-                         ::grpc::CompletionQueue*      cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::SnapshotResp>*
-        PrepareAsyncSnapshotRaw(::grpc::ClientContext*        context,
-                                const ::eraftkv::SnapshotReq& request,
-                                ::grpc::CompletionQueue*      cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::ClientOperationResp>*
-        AsyncProcessRWOperationRaw(::grpc::ClientContext*               context,
-                                   const ::eraftkv::ClientOperationReq& request,
-                                   ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::ClientOperationResp>*
-        PrepareAsyncProcessRWOperationRaw(
-            ::grpc::ClientContext*               context,
-            const ::eraftkv::ClientOperationReq& request,
-            ::grpc::CompletionQueue*             cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::ClusterConfigChangeResp>*
-        AsyncClusterConfigChangeRaw(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) override;
-    ::grpc::ClientAsyncResponseReader<::eraftkv::ClusterConfigChangeResp>*
-        PrepareAsyncClusterConfigChangeRaw(
-            ::grpc::ClientContext*                   context,
-            const ::eraftkv::ClusterConfigChangeReq& request,
-            ::grpc::CompletionQueue*                 cq) override;
+    std::shared_ptr< ::grpc::ChannelInterface> channel_;
+    class experimental_async async_stub_{this};
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>* AsyncRequestVoteRaw(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>* PrepareAsyncRequestVoteRaw(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>* AsyncAppendEntriesRaw(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::RequestVoteResp>* PrepareAsyncAppendEntriesRaw(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>* AsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>* AsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>* PrepareAsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>* AsyncClusterConfigChangeRaw(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>* PrepareAsyncClusterConfigChangeRaw(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_RequestVote_;
     const ::grpc::internal::RpcMethod rpcmethod_AppendEntries_;
     const ::grpc::internal::RpcMethod rpcmethod_Snapshot_;
     const ::grpc::internal::RpcMethod rpcmethod_ProcessRWOperation_;
     const ::grpc::internal::RpcMethod rpcmethod_ClusterConfigChange_;
   };
-  static std::unique_ptr<Stub> NewStub(
-      const std::shared_ptr<::grpc::ChannelInterface>& channel,
-      const ::grpc::StubOptions& options = ::grpc::StubOptions());
+  static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
   class Service : public ::grpc::Service {
    public:
     Service();
     virtual ~Service();
-    virtual ::grpc::Status RequestVote(::grpc::ServerContext*           context,
-                                       const ::eraftkv::RequestVoteReq* request,
-                                       ::eraftkv::RequestVoteResp* response);
-    virtual ::grpc::Status AppendEntries(
-        ::grpc::ServerContext*             context,
-        const ::eraftkv::AppendEntriesReq* request,
-        ::eraftkv::RequestVoteResp*        response);
-    virtual ::grpc::Status Snapshot(::grpc::ServerContext*        context,
-                                    const ::eraftkv::SnapshotReq* request,
-                                    ::eraftkv::SnapshotResp*      response);
-    virtual ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext*               context,
-        const ::eraftkv::ClientOperationReq* request,
-        ::eraftkv::ClientOperationResp*      response);
-    virtual ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext*                   context,
-        const ::eraftkv::ClusterConfigChangeReq* request,
-        ::eraftkv::ClusterConfigChangeResp*      response);
+    virtual ::grpc::Status RequestVote(::grpc::ServerContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response);
+    virtual ::grpc::Status AppendEntries(::grpc::ServerContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response);
+    virtual ::grpc::Status Snapshot(::grpc::ServerContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response);
+    virtual ::grpc::Status ProcessRWOperation(::grpc::ServerContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response);
+    virtual ::grpc::Status ClusterConfigChange(::grpc::ServerContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_RequestVote : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithAsyncMethod_RequestVote() {
       ::grpc::Service::MarkMethodAsync(0);
@@ -762,29 +306,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestVote(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status RequestVote(::grpc::ServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestRequestVote(
-        ::grpc::ServerContext*                                         context,
-        ::eraftkv::RequestVoteReq*                                     request,
-        ::grpc::ServerAsyncResponseWriter<::eraftkv::RequestVoteResp>* response,
-        ::grpc::CompletionQueue*       new_call_cq,
-        ::grpc::ServerCompletionQueue* notification_cq,
-        void*                          tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          0, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestRequestVote(::grpc::ServerContext* context, ::eraftkv::RequestVoteReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::RequestVoteResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithAsyncMethod_AppendEntries : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithAsyncMethod_AppendEntries() {
       ::grpc::Service::MarkMethodAsync(1);
@@ -793,29 +326,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status AppendEntries(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status AppendEntries(::grpc::ServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestAppendEntries(
-        ::grpc::ServerContext*                                         context,
-        ::eraftkv::AppendEntriesReq*                                   request,
-        ::grpc::ServerAsyncResponseWriter<::eraftkv::RequestVoteResp>* response,
-        ::grpc::CompletionQueue*       new_call_cq,
-        ::grpc::ServerCompletionQueue* notification_cq,
-        void*                          tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          1, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestAppendEntries(::grpc::ServerContext* context, ::eraftkv::AppendEntriesReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::RequestVoteResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithAsyncMethod_Snapshot : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithAsyncMethod_Snapshot() {
       ::grpc::Service::MarkMethodAsync(2);
@@ -824,28 +346,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/,
-                            const ::eraftkv::SnapshotReq* /*request*/,
-                            ::eraftkv::SnapshotResp* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestSnapshot(
-        ::grpc::ServerContext*                                      context,
-        ::eraftkv::SnapshotReq*                                     request,
-        ::grpc::ServerAsyncResponseWriter<::eraftkv::SnapshotResp>* response,
-        ::grpc::CompletionQueue*                                    new_call_cq,
-        ::grpc::ServerCompletionQueue* notification_cq,
-        void*                          tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          2, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestSnapshot(::grpc::ServerContext* context, ::eraftkv::SnapshotReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::SnapshotResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithAsyncMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithAsyncMethod_ProcessRWOperation() {
       ::grpc::Service::MarkMethodAsync(3);
@@ -854,30 +366,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/) override {
+    ::grpc::Status ProcessRWOperation(::grpc::ServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestProcessRWOperation(
-        ::grpc::ServerContext*         context,
-        ::eraftkv::ClientOperationReq* request,
-        ::grpc::ServerAsyncResponseWriter<::eraftkv::ClientOperationResp>*
-                                       response,
-        ::grpc::CompletionQueue*       new_call_cq,
-        ::grpc::ServerCompletionQueue* notification_cq,
-        void*                          tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          3, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestProcessRWOperation(::grpc::ServerContext* context, ::eraftkv::ClientOperationReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::ClientOperationResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithAsyncMethod_ClusterConfigChange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithAsyncMethod_ClusterConfigChange() {
       ::grpc::Service::MarkMethodAsync(4);
@@ -886,409 +386,259 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
+    ::grpc::Status ClusterConfigChange(::grpc::ServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestClusterConfigChange(
-        ::grpc::ServerContext*             context,
-        ::eraftkv::ClusterConfigChangeReq* request,
-        ::grpc::ServerAsyncResponseWriter<::eraftkv::ClusterConfigChangeResp>*
-                                       response,
-        ::grpc::CompletionQueue*       new_call_cq,
-        ::grpc::ServerCompletionQueue* notification_cq,
-        void*                          tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          4, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestClusterConfigChange(::grpc::ServerContext* context, ::eraftkv::ClusterConfigChangeReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::ClusterConfigChangeResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_RequestVote<WithAsyncMethod_AppendEntries<
-      WithAsyncMethod_Snapshot<WithAsyncMethod_ProcessRWOperation<
-          WithAsyncMethod_ClusterConfigChange<Service>>>>>
-      AsyncService;
+  typedef WithAsyncMethod_RequestVote<WithAsyncMethod_AppendEntries<WithAsyncMethod_Snapshot<WithAsyncMethod_ProcessRWOperation<WithAsyncMethod_ClusterConfigChange<Service > > > > > AsyncService;
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_RequestVote : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithCallbackMethod_RequestVote() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodCallback(0,
-                             new ::grpc_impl::internal::CallbackUnaryHandler<
-                                 ::eraftkv::RequestVoteReq,
-                                 ::eraftkv::RequestVoteResp>(
-                                 [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                                     ::grpc::CallbackServerContext*
-#else
-                                     ::grpc::experimental::
-                                         CallbackServerContext*
-#endif
-                                                                      context,
-                                     const ::eraftkv::RequestVoteReq* request,
-                                     ::eraftkv::RequestVoteResp* response) {
-                                   return this->RequestVote(
-                                       context, request, response);
-                                 }));
-    }
+    #endif
+        MarkMethodCallback(0,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::RequestVoteReq, ::eraftkv::RequestVoteResp>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response) { return this->RequestVote(context, request, response); }));}
     void SetMessageAllocatorFor_RequestVote(
-        ::grpc::experimental::MessageAllocator<::eraftkv::RequestVoteReq,
-                                               ::eraftkv::RequestVoteResp>*
-            allocator) {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::GetHandler(0);
-#else
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::experimental().GetHandler(0);
-#endif
-      static_cast<::grpc_impl::internal::CallbackUnaryHandler<
-          ::eraftkv::RequestVoteReq,
-          ::eraftkv::RequestVoteResp>*>(handler)
-          ->SetMessageAllocator(allocator);
+        ::grpc::experimental::MessageAllocator< ::eraftkv::RequestVoteReq, ::eraftkv::RequestVoteResp>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(0);
+    #endif
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::RequestVoteReq, ::eraftkv::RequestVoteResp>*>(handler)
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RequestVote() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestVote(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status RequestVote(::grpc::ServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* RequestVote(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* RequestVote(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_AppendEntries : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithCallbackMethod_AppendEntries() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodCallback(1,
-                             new ::grpc_impl::internal::CallbackUnaryHandler<
-                                 ::eraftkv::AppendEntriesReq,
-                                 ::eraftkv::RequestVoteResp>(
-                                 [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                                     ::grpc::CallbackServerContext*
-#else
-                                     ::grpc::experimental::
-                                         CallbackServerContext*
-#endif
-                                                                        context,
-                                     const ::eraftkv::AppendEntriesReq* request,
-                                     ::eraftkv::RequestVoteResp* response) {
-                                   return this->AppendEntries(
-                                       context, request, response);
-                                 }));
-    }
+    #endif
+        MarkMethodCallback(1,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::AppendEntriesReq, ::eraftkv::RequestVoteResp>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::RequestVoteResp* response) { return this->AppendEntries(context, request, response); }));}
     void SetMessageAllocatorFor_AppendEntries(
-        ::grpc::experimental::MessageAllocator<::eraftkv::AppendEntriesReq,
-                                               ::eraftkv::RequestVoteResp>*
-            allocator) {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::GetHandler(1);
-#else
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::experimental().GetHandler(1);
-#endif
-      static_cast<::grpc_impl::internal::CallbackUnaryHandler<
-          ::eraftkv::AppendEntriesReq,
-          ::eraftkv::RequestVoteResp>*>(handler)
-          ->SetMessageAllocator(allocator);
+        ::grpc::experimental::MessageAllocator< ::eraftkv::AppendEntriesReq, ::eraftkv::RequestVoteResp>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(1);
+    #endif
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::AppendEntriesReq, ::eraftkv::RequestVoteResp>*>(handler)
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_AppendEntries() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status AppendEntries(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status AppendEntries(::grpc::ServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* AppendEntries(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* AppendEntries(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_Snapshot : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithCallbackMethod_Snapshot() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodCallback(2,
-                             new ::grpc_impl::internal::CallbackUnaryHandler<
-                                 ::eraftkv::SnapshotReq,
-                                 ::eraftkv::SnapshotResp>(
-                                 [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                                     ::grpc::CallbackServerContext*
-#else
-                                     ::grpc::experimental::
-                                         CallbackServerContext*
-#endif
-                                                                   context,
-                                     const ::eraftkv::SnapshotReq* request,
-                                     ::eraftkv::SnapshotResp*      response) {
-                                   return this->Snapshot(
-                                       context, request, response);
-                                 }));
-    }
+    #endif
+        MarkMethodCallback(2,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::SnapshotReq, ::eraftkv::SnapshotResp>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response) { return this->Snapshot(context, request, response); }));}
     void SetMessageAllocatorFor_Snapshot(
-        ::grpc::experimental::MessageAllocator<::eraftkv::SnapshotReq,
-                                               ::eraftkv::SnapshotResp>*
-            allocator) {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::GetHandler(2);
-#else
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::experimental().GetHandler(2);
-#endif
-      static_cast<::grpc_impl::internal::CallbackUnaryHandler<
-          ::eraftkv::SnapshotReq,
-          ::eraftkv::SnapshotResp>*>(handler)
-          ->SetMessageAllocator(allocator);
+        ::grpc::experimental::MessageAllocator< ::eraftkv::SnapshotReq, ::eraftkv::SnapshotResp>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(2);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(2);
+    #endif
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::SnapshotReq, ::eraftkv::SnapshotResp>*>(handler)
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/,
-                            const ::eraftkv::SnapshotReq* /*request*/,
-                            ::eraftkv::SnapshotResp* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* Snapshot(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::eraftkv::SnapshotReq* /*request*/,
-        ::eraftkv::SnapshotResp* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* Snapshot(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::eraftkv::SnapshotReq* /*request*/,
-        ::eraftkv::SnapshotResp* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithCallbackMethod_ProcessRWOperation() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodCallback(
-              3,
-              new ::grpc_impl::internal::CallbackUnaryHandler<
-                  ::eraftkv::ClientOperationReq,
-                  ::eraftkv::ClientOperationResp>(
-                  [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                      ::grpc::CallbackServerContext*
-#else
-                      ::grpc::experimental::CallbackServerContext*
-#endif
-                                                           context,
-                      const ::eraftkv::ClientOperationReq* request,
-                      ::eraftkv::ClientOperationResp*      response) {
-                    return this->ProcessRWOperation(context, request, response);
-                  }));
-    }
+    #endif
+        MarkMethodCallback(3,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response) { return this->ProcessRWOperation(context, request, response); }));}
     void SetMessageAllocatorFor_ProcessRWOperation(
-        ::grpc::experimental::MessageAllocator<::eraftkv::ClientOperationReq,
-                                               ::eraftkv::ClientOperationResp>*
-            allocator) {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::GetHandler(3);
-#else
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::experimental().GetHandler(3);
-#endif
-      static_cast<::grpc_impl::internal::CallbackUnaryHandler<
-          ::eraftkv::ClientOperationReq,
-          ::eraftkv::ClientOperationResp>*>(handler)
-          ->SetMessageAllocator(allocator);
+        ::grpc::experimental::MessageAllocator< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(3);
+    #endif
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>*>(handler)
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_ProcessRWOperation() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/) override {
+    ::grpc::Status ProcessRWOperation(::grpc::ServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* ProcessRWOperation(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* ProcessRWOperation(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_ClusterConfigChange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithCallbackMethod_ClusterConfigChange() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodCallback(
-              4,
-              new ::grpc_impl::internal::CallbackUnaryHandler<
-                  ::eraftkv::ClusterConfigChangeReq,
-                  ::eraftkv::ClusterConfigChangeResp>(
-                  [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                      ::grpc::CallbackServerContext*
-#else
-                      ::grpc::experimental::CallbackServerContext*
-#endif
-                                                               context,
-                      const ::eraftkv::ClusterConfigChangeReq* request,
-                      ::eraftkv::ClusterConfigChangeResp*      response) {
-                    return this->ClusterConfigChange(
-                        context, request, response);
-                  }));
-    }
+    #endif
+        MarkMethodCallback(4,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response) { return this->ClusterConfigChange(context, request, response); }));}
     void SetMessageAllocatorFor_ClusterConfigChange(
-        ::grpc::experimental::MessageAllocator<
-            ::eraftkv::ClusterConfigChangeReq,
-            ::eraftkv::ClusterConfigChangeResp>* allocator) {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::GetHandler(4);
-#else
-      ::grpc::internal::MethodHandler* const handler =
-          ::grpc::Service::experimental().GetHandler(4);
-#endif
-      static_cast<::grpc_impl::internal::CallbackUnaryHandler<
-          ::eraftkv::ClusterConfigChangeReq,
-          ::eraftkv::ClusterConfigChangeResp>*>(handler)
-          ->SetMessageAllocator(allocator);
+        ::grpc::experimental::MessageAllocator< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>* allocator) {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
+    #else
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(4);
+    #endif
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>*>(handler)
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_ClusterConfigChange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
+    ::grpc::Status ClusterConfigChange(::grpc::ServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* ClusterConfigChange(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* ClusterConfigChange(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/)
+    #endif
+      { return nullptr; }
   };
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-  typedef ExperimentalWithCallbackMethod_RequestVote<
-      ExperimentalWithCallbackMethod_AppendEntries<
-          ExperimentalWithCallbackMethod_Snapshot<
-              ExperimentalWithCallbackMethod_ProcessRWOperation<
-                  ExperimentalWithCallbackMethod_ClusterConfigChange<
-                      Service>>>>>
-      CallbackService;
-#endif
+  #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+  typedef ExperimentalWithCallbackMethod_RequestVote<ExperimentalWithCallbackMethod_AppendEntries<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_ProcessRWOperation<ExperimentalWithCallbackMethod_ClusterConfigChange<Service > > > > > CallbackService;
+  #endif
 
-  typedef ExperimentalWithCallbackMethod_RequestVote<
-      ExperimentalWithCallbackMethod_AppendEntries<
-          ExperimentalWithCallbackMethod_Snapshot<
-              ExperimentalWithCallbackMethod_ProcessRWOperation<
-                  ExperimentalWithCallbackMethod_ClusterConfigChange<
-                      Service>>>>>
-      ExperimentalCallbackService;
+  typedef ExperimentalWithCallbackMethod_RequestVote<ExperimentalWithCallbackMethod_AppendEntries<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_ProcessRWOperation<ExperimentalWithCallbackMethod_ClusterConfigChange<Service > > > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_RequestVote : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithGenericMethod_RequestVote() {
       ::grpc::Service::MarkMethodGeneric(0);
@@ -1297,10 +647,7 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestVote(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status RequestVote(::grpc::ServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1309,7 +656,6 @@ class ERaftKv final {
   class WithGenericMethod_AppendEntries : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithGenericMethod_AppendEntries() {
       ::grpc::Service::MarkMethodGeneric(1);
@@ -1318,10 +664,7 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status AppendEntries(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status AppendEntries(::grpc::ServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1330,7 +673,6 @@ class ERaftKv final {
   class WithGenericMethod_Snapshot : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithGenericMethod_Snapshot() {
       ::grpc::Service::MarkMethodGeneric(2);
@@ -1339,9 +681,7 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/,
-                            const ::eraftkv::SnapshotReq* /*request*/,
-                            ::eraftkv::SnapshotResp* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1350,7 +690,6 @@ class ERaftKv final {
   class WithGenericMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithGenericMethod_ProcessRWOperation() {
       ::grpc::Service::MarkMethodGeneric(3);
@@ -1359,10 +698,7 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/) override {
+    ::grpc::Status ProcessRWOperation(::grpc::ServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1371,7 +707,6 @@ class ERaftKv final {
   class WithGenericMethod_ClusterConfigChange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithGenericMethod_ClusterConfigChange() {
       ::grpc::Service::MarkMethodGeneric(4);
@@ -1380,10 +715,7 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
+    ::grpc::Status ClusterConfigChange(::grpc::ServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1392,7 +724,6 @@ class ERaftKv final {
   class WithRawMethod_RequestVote : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithRawMethod_RequestVote() {
       ::grpc::Service::MarkMethodRaw(0);
@@ -1401,29 +732,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestVote(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status RequestVote(::grpc::ServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestRequestVote(
-        ::grpc::ServerContext*                                 context,
-        ::grpc::ByteBuffer*                                    request,
-        ::grpc::ServerAsyncResponseWriter<::grpc::ByteBuffer>* response,
-        ::grpc::CompletionQueue*                               new_call_cq,
-        ::grpc::ServerCompletionQueue*                         notification_cq,
-        void*                                                  tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          0, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestRequestVote(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithRawMethod_AppendEntries : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithRawMethod_AppendEntries() {
       ::grpc::Service::MarkMethodRaw(1);
@@ -1432,29 +752,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status AppendEntries(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status AppendEntries(::grpc::ServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestAppendEntries(
-        ::grpc::ServerContext*                                 context,
-        ::grpc::ByteBuffer*                                    request,
-        ::grpc::ServerAsyncResponseWriter<::grpc::ByteBuffer>* response,
-        ::grpc::CompletionQueue*                               new_call_cq,
-        ::grpc::ServerCompletionQueue*                         notification_cq,
-        void*                                                  tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          1, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestAppendEntries(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithRawMethod_Snapshot : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithRawMethod_Snapshot() {
       ::grpc::Service::MarkMethodRaw(2);
@@ -1463,28 +772,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/,
-                            const ::eraftkv::SnapshotReq* /*request*/,
-                            ::eraftkv::SnapshotResp* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestSnapshot(
-        ::grpc::ServerContext*                                 context,
-        ::grpc::ByteBuffer*                                    request,
-        ::grpc::ServerAsyncResponseWriter<::grpc::ByteBuffer>* response,
-        ::grpc::CompletionQueue*                               new_call_cq,
-        ::grpc::ServerCompletionQueue*                         notification_cq,
-        void*                                                  tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          2, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestSnapshot(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithRawMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithRawMethod_ProcessRWOperation() {
       ::grpc::Service::MarkMethodRaw(3);
@@ -1493,29 +792,18 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/) override {
+    ::grpc::Status ProcessRWOperation(::grpc::ServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestProcessRWOperation(
-        ::grpc::ServerContext*                                 context,
-        ::grpc::ByteBuffer*                                    request,
-        ::grpc::ServerAsyncResponseWriter<::grpc::ByteBuffer>* response,
-        ::grpc::CompletionQueue*                               new_call_cq,
-        ::grpc::ServerCompletionQueue*                         notification_cq,
-        void*                                                  tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          3, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestProcessRWOperation(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class WithRawMethod_ClusterConfigChange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithRawMethod_ClusterConfigChange() {
       ::grpc::Service::MarkMethodRaw(4);
@@ -1524,486 +812,307 @@ class ERaftKv final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
+    ::grpc::Status ClusterConfigChange(::grpc::ServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestClusterConfigChange(
-        ::grpc::ServerContext*                                 context,
-        ::grpc::ByteBuffer*                                    request,
-        ::grpc::ServerAsyncResponseWriter<::grpc::ByteBuffer>* response,
-        ::grpc::CompletionQueue*                               new_call_cq,
-        ::grpc::ServerCompletionQueue*                         notification_cq,
-        void*                                                  tag) {
-      ::grpc::Service::RequestAsyncUnary(
-          4, context, request, response, new_call_cq, notification_cq, tag);
+    void RequestClusterConfigChange(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_RequestVote : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithRawCallbackMethod_RequestVote() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodRawCallback(
-              0,
-              new ::grpc_impl::internal::
-                  CallbackUnaryHandler<::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-                      [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                          ::grpc::CallbackServerContext*
-#else
-                          ::grpc::experimental::CallbackServerContext*
-#endif
-                                                    context,
-                          const ::grpc::ByteBuffer* request,
-                          ::grpc::ByteBuffer*       response) {
-                        return this->RequestVote(context, request, response);
-                      }));
+    #endif
+        MarkMethodRawCallback(0,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->RequestVote(context, request, response); }));
     }
     ~ExperimentalWithRawCallbackMethod_RequestVote() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestVote(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status RequestVote(::grpc::ServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* RequestVote(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* RequestVote(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_AppendEntries : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithRawCallbackMethod_AppendEntries() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodRawCallback(
-              1,
-              new ::grpc_impl::internal::
-                  CallbackUnaryHandler<::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-                      [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                          ::grpc::CallbackServerContext*
-#else
-                          ::grpc::experimental::CallbackServerContext*
-#endif
-                                                    context,
-                          const ::grpc::ByteBuffer* request,
-                          ::grpc::ByteBuffer*       response) {
-                        return this->AppendEntries(context, request, response);
-                      }));
+    #endif
+        MarkMethodRawCallback(1,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->AppendEntries(context, request, response); }));
     }
     ~ExperimentalWithRawCallbackMethod_AppendEntries() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status AppendEntries(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status AppendEntries(::grpc::ServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* AppendEntries(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* AppendEntries(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_Snapshot : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithRawCallbackMethod_Snapshot() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodRawCallback(
-              2,
-              new ::grpc_impl::internal::
-                  CallbackUnaryHandler<::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-                      [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                          ::grpc::CallbackServerContext*
-#else
-                          ::grpc::experimental::CallbackServerContext*
-#endif
-                                                    context,
-                          const ::grpc::ByteBuffer* request,
-                          ::grpc::ByteBuffer*       response) {
-                        return this->Snapshot(context, request, response);
-                      }));
+    #endif
+        MarkMethodRawCallback(2,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->Snapshot(context, request, response); }));
     }
     ~ExperimentalWithRawCallbackMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/,
-                            const ::eraftkv::SnapshotReq* /*request*/,
-                            ::eraftkv::SnapshotResp* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* Snapshot(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* Snapshot(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_ProcessRWOperation
-      : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithRawCallbackMethod_ProcessRWOperation() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodRawCallback(
-              3,
-              new ::grpc_impl::internal::
-                  CallbackUnaryHandler<::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-                      [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                          ::grpc::CallbackServerContext*
-#else
-                          ::grpc::experimental::CallbackServerContext*
-#endif
-                                                    context,
-                          const ::grpc::ByteBuffer* request,
-                          ::grpc::ByteBuffer*       response) {
-                        return this->ProcessRWOperation(
-                            context, request, response);
-                      }));
+    #endif
+        MarkMethodRawCallback(3,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ProcessRWOperation(context, request, response); }));
     }
     ~ExperimentalWithRawCallbackMethod_ProcessRWOperation() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/) override {
+    ::grpc::Status ProcessRWOperation(::grpc::ServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* ProcessRWOperation(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* ProcessRWOperation(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_ClusterConfigChange
-      : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_ClusterConfigChange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     ExperimentalWithRawCallbackMethod_ClusterConfigChange() {
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
-#else
+    #else
       ::grpc::Service::experimental().
-#endif
-          MarkMethodRawCallback(
-              4,
-              new ::grpc_impl::internal::
-                  CallbackUnaryHandler<::grpc::ByteBuffer, ::grpc::ByteBuffer>(
-                      [this](
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                          ::grpc::CallbackServerContext*
-#else
-                          ::grpc::experimental::CallbackServerContext*
-#endif
-                                                    context,
-                          const ::grpc::ByteBuffer* request,
-                          ::grpc::ByteBuffer*       response) {
-                        return this->ClusterConfigChange(
-                            context, request, response);
-                      }));
+    #endif
+        MarkMethodRawCallback(4,
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ClusterConfigChange(context, request, response); }));
     }
     ~ExperimentalWithRawCallbackMethod_ClusterConfigChange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
+    ::grpc::Status ClusterConfigChange(::grpc::ServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-#ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerUnaryReactor* ClusterConfigChange(
-        ::grpc::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#else
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #else
     virtual ::grpc::experimental::ServerUnaryReactor* ClusterConfigChange(
-        ::grpc::experimental::CallbackServerContext* /*context*/,
-        const ::grpc::ByteBuffer* /*request*/,
-        ::grpc::ByteBuffer* /*response*/)
-#endif
-    {
-      return nullptr;
-    }
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_RequestVote : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithStreamedUnaryMethod_RequestVote() {
-      ::grpc::Service::MarkMethodStreamed(
-          0,
-          new ::grpc::internal::StreamedUnaryHandler<
-              ::eraftkv::RequestVoteReq,
-              ::eraftkv::RequestVoteResp>(
-              std::bind(&WithStreamedUnaryMethod_RequestVote<
-                            BaseClass>::StreamedRequestVote,
-                        this,
-                        std::placeholders::_1,
-                        std::placeholders::_2)));
+      ::grpc::Service::MarkMethodStreamed(0,
+        new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::RequestVoteReq, ::eraftkv::RequestVoteResp>(std::bind(&WithStreamedUnaryMethod_RequestVote<BaseClass>::StreamedRequestVote, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_RequestVote() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status RequestVote(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::RequestVoteReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status RequestVote(::grpc::ServerContext* /*context*/, const ::eraftkv::RequestVoteReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedRequestVote(
-        ::grpc::ServerContext* context,
-        ::grpc::ServerUnaryStreamer<::eraftkv::RequestVoteReq,
-                                    ::eraftkv::RequestVoteResp>*
-            server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedRequestVote(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::eraftkv::RequestVoteReq,::eraftkv::RequestVoteResp>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_AppendEntries : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithStreamedUnaryMethod_AppendEntries() {
-      ::grpc::Service::MarkMethodStreamed(
-          1,
-          new ::grpc::internal::StreamedUnaryHandler<
-              ::eraftkv::AppendEntriesReq,
-              ::eraftkv::RequestVoteResp>(
-              std::bind(&WithStreamedUnaryMethod_AppendEntries<
-                            BaseClass>::StreamedAppendEntries,
-                        this,
-                        std::placeholders::_1,
-                        std::placeholders::_2)));
+      ::grpc::Service::MarkMethodStreamed(1,
+        new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::AppendEntriesReq, ::eraftkv::RequestVoteResp>(std::bind(&WithStreamedUnaryMethod_AppendEntries<BaseClass>::StreamedAppendEntries, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_AppendEntries() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status AppendEntries(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::AppendEntriesReq* /*request*/,
-        ::eraftkv::RequestVoteResp* /*response*/) override {
+    ::grpc::Status AppendEntries(::grpc::ServerContext* /*context*/, const ::eraftkv::AppendEntriesReq* /*request*/, ::eraftkv::RequestVoteResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedAppendEntries(
-        ::grpc::ServerContext* context,
-        ::grpc::ServerUnaryStreamer<::eraftkv::AppendEntriesReq,
-                                    ::eraftkv::RequestVoteResp>*
-            server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedAppendEntries(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::eraftkv::AppendEntriesReq,::eraftkv::RequestVoteResp>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_Snapshot : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithStreamedUnaryMethod_Snapshot() {
-      ::grpc::Service::MarkMethodStreamed(
-          2,
-          new ::grpc::internal::StreamedUnaryHandler<
-              ::eraftkv::SnapshotReq,
-              ::eraftkv::SnapshotResp>(std::bind(
-              &WithStreamedUnaryMethod_Snapshot<BaseClass>::StreamedSnapshot,
-              this,
-              std::placeholders::_1,
-              std::placeholders::_2)));
+      ::grpc::Service::MarkMethodStreamed(2,
+        new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::SnapshotReq, ::eraftkv::SnapshotResp>(std::bind(&WithStreamedUnaryMethod_Snapshot<BaseClass>::StreamedSnapshot, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_Snapshot() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/,
-                            const ::eraftkv::SnapshotReq* /*request*/,
-                            ::eraftkv::SnapshotResp* /*response*/) override {
+    ::grpc::Status Snapshot(::grpc::ServerContext* /*context*/, const ::eraftkv::SnapshotReq* /*request*/, ::eraftkv::SnapshotResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedSnapshot(
-        ::grpc::ServerContext* context,
-        ::grpc::ServerUnaryStreamer<::eraftkv::SnapshotReq,
-                                    ::eraftkv::SnapshotResp>*
-            server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedSnapshot(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::eraftkv::SnapshotReq,::eraftkv::SnapshotResp>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithStreamedUnaryMethod_ProcessRWOperation() {
-      ::grpc::Service::MarkMethodStreamed(
-          3,
-          new ::grpc::internal::StreamedUnaryHandler<
-              ::eraftkv::ClientOperationReq,
-              ::eraftkv::ClientOperationResp>(
-              std::bind(&WithStreamedUnaryMethod_ProcessRWOperation<
-                            BaseClass>::StreamedProcessRWOperation,
-                        this,
-                        std::placeholders::_1,
-                        std::placeholders::_2)));
+      ::grpc::Service::MarkMethodStreamed(3,
+        new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>(std::bind(&WithStreamedUnaryMethod_ProcessRWOperation<BaseClass>::StreamedProcessRWOperation, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_ProcessRWOperation() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status ProcessRWOperation(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClientOperationReq* /*request*/,
-        ::eraftkv::ClientOperationResp* /*response*/) override {
+    ::grpc::Status ProcessRWOperation(::grpc::ServerContext* /*context*/, const ::eraftkv::ClientOperationReq* /*request*/, ::eraftkv::ClientOperationResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedProcessRWOperation(
-        ::grpc::ServerContext* context,
-        ::grpc::ServerUnaryStreamer<::eraftkv::ClientOperationReq,
-                                    ::eraftkv::ClientOperationResp>*
-            server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedProcessRWOperation(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::eraftkv::ClientOperationReq,::eraftkv::ClientOperationResp>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_ClusterConfigChange : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
-
    public:
     WithStreamedUnaryMethod_ClusterConfigChange() {
-      ::grpc::Service::MarkMethodStreamed(
-          4,
-          new ::grpc::internal::StreamedUnaryHandler<
-              ::eraftkv::ClusterConfigChangeReq,
-              ::eraftkv::ClusterConfigChangeResp>(
-              std::bind(&WithStreamedUnaryMethod_ClusterConfigChange<
-                            BaseClass>::StreamedClusterConfigChange,
-                        this,
-                        std::placeholders::_1,
-                        std::placeholders::_2)));
+      ::grpc::Service::MarkMethodStreamed(4,
+        new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>(std::bind(&WithStreamedUnaryMethod_ClusterConfigChange<BaseClass>::StreamedClusterConfigChange, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_ClusterConfigChange() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status ClusterConfigChange(
-        ::grpc::ServerContext* /*context*/,
-        const ::eraftkv::ClusterConfigChangeReq* /*request*/,
-        ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
+    ::grpc::Status ClusterConfigChange(::grpc::ServerContext* /*context*/, const ::eraftkv::ClusterConfigChangeReq* /*request*/, ::eraftkv::ClusterConfigChangeResp* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedClusterConfigChange(
-        ::grpc::ServerContext* context,
-        ::grpc::ServerUnaryStreamer<::eraftkv::ClusterConfigChangeReq,
-                                    ::eraftkv::ClusterConfigChangeResp>*
-            server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedClusterConfigChange(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::eraftkv::ClusterConfigChangeReq,::eraftkv::ClusterConfigChangeResp>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_RequestVote<
-      WithStreamedUnaryMethod_AppendEntries<WithStreamedUnaryMethod_Snapshot<
-          WithStreamedUnaryMethod_ProcessRWOperation<
-              WithStreamedUnaryMethod_ClusterConfigChange<Service>>>>>
-                  StreamedUnaryService;
+  typedef WithStreamedUnaryMethod_RequestVote<WithStreamedUnaryMethod_AppendEntries<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_ProcessRWOperation<WithStreamedUnaryMethod_ClusterConfigChange<Service > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_RequestVote<
-      WithStreamedUnaryMethod_AppendEntries<WithStreamedUnaryMethod_Snapshot<
-          WithStreamedUnaryMethod_ProcessRWOperation<
-              WithStreamedUnaryMethod_ClusterConfigChange<Service>>>>>
-      StreamedService;
+  typedef WithStreamedUnaryMethod_RequestVote<WithStreamedUnaryMethod_AppendEntries<WithStreamedUnaryMethod_Snapshot<WithStreamedUnaryMethod_ProcessRWOperation<WithStreamedUnaryMethod_ClusterConfigChange<Service > > > > > StreamedService;
 };
 
 }  // namespace eraftkv

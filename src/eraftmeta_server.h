@@ -9,6 +9,8 @@
  *
  */
 
+#ifndef SRC_ERAFTMETA_SERVER_H_
+#define SRC_ERAFTMETA_SERVER_H_
 #include <cstdint>
 #include <string>
 
@@ -112,6 +114,7 @@ struct ERaftMetaServerOptions {
  */
 class ERaftMetaServer : public grpc::EraftKv::Service {
 
+public:
   /**
    * @brief Construct a new ERaftKvServer object
    *  Initialize the meta server
@@ -130,7 +133,7 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    *
    * @return grpc::Status
    */
-  grpc::Status RequestVote(RequestVoteReq, RequestVoteResp){};
+  grpc::Status RequestVote(RequestVoteReq, RequestVoteResp){}
 
   /**
    * @brief  AppendEntries sends an append rpc with new entries and
@@ -138,13 +141,13 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    *
    * @return grpc::Status
    */
-  grpc::Status AppendEntries(AppendEntriesReq, RequestVoteResp){};
+  grpc::Status AppendEntries(AppendEntriesReq, RequestVoteResp){}
   /**
    * @brief  Snapshot send a snaphost rpc with snapshot
    *
    * @return grpc::Status
    */
-  grpc::Status Snapshot(SnapshotReq, SnapshotResp){};
+  grpc::Status Snapshot(SnapshotReq, SnapshotResp){}
   /**
    * @brief ProcessRWOperation recv read|write request
    *
@@ -152,7 +155,7 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    */
   grpc::Status ProcessRWOperation(ClientOperationReq, ClientOperationResp) {
     return EStatus::NotSupport();
-  };
+  }
 
   grpc::Status ClusterConfigChange(ClusterConfigChangeReq,
                                    ClusterConfigChangeResp) {}
@@ -162,19 +165,19 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    *
    * @return EStatus
    */
-  EStatus InitTicker(){};
+  EStatus InitTicker(){}
   /**
    * @brief BuildAndRunRpcServer make new rpc server and run
    *
    * @return EStatus
    */
-  EStatus BuildAndRunRpcServer(){};
+  EStatus BuildAndRunRpcServer(){}
   /**
    * @brief RunRaftCycle raft loop
    *
    * @return EStatus
    */
-  EStatus RunRaftCycle(){};
+  EStatus RunRaftCycle(){}
 
  private:
   /**
@@ -195,3 +198,6 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    */
   ERaftMetaServerOptions options_;
 };
+
+
+#endif  // SRC_ERAFTMETA_SERVER_H_

@@ -8,16 +8,24 @@
  * @copyright Copyright (c) 2023
  *
  */
+#ifndef RAFT_CONFIG_H_
+#define RAFT_CONFIG_H_
 
-#include "raft_server.h"
+#include <string>
+#include <vector>
+#include <map>
 
+#include "network.h"
+#include "raft_log.h"
+#include "raft_node.h"
+#include "storage.h"
 /**
  * @brief
  *
  */
 struct RaftConfig {
   int64_t                               id;
-  std::vector<std::string, std::string> peer_address_map;
+  std::map<std::string, std::string>    peer_address_map;
   int64_t                               election_tick;
   int64_t                               heartbeat_tick;
   int64_t                               applied;
@@ -26,3 +34,5 @@ struct RaftConfig {
   Storage*                              store_impl;
   LogStore*                             log_impl;
 };
+
+#endif
