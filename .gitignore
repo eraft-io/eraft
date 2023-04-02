@@ -6,3 +6,5 @@ build/
 build_/
 grpc/
 grpc
+rocksdb/
+rocksdb

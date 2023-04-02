@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "network.h"
 #include "raft_log.h"
@@ -24,7 +25,7 @@
  */
 struct RaftConfig {
   int64_t                               id;
-  std::vector<std::string, std::string> peer_address_map;
+  std::map<std::string, std::string>    peer_address_map;
   int64_t                               election_tick;
   int64_t                               heartbeat_tick;
   int64_t                               applied;

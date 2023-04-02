@@ -19,12 +19,13 @@
 #include "estatus.h"
 #include "raft_config.h"
 #include "raft_node.h"
+#include "periodic_caller.h"
 
 /**
  * @brief
  *
  */
-enum RaftStateEnum { Follower, PreCandidate, Candidate, Leader };
+// enum RaftStateEnum { Follower, PreCandidate, Candidate, Leader };
 
 
 /**
@@ -299,7 +300,7 @@ class RaftServer {
    *
    * @return Entry*
    */
-  Entry* GetLastAppliedEntry() {}
+  eraftkv::Entry* GetLastAppliedEntry() {}
 
   /**
    * @brief Get the First Entry Idx object
@@ -389,7 +390,7 @@ class RaftServer {
    * @brief
    *
    */
-  RaftStateEnum state_;
+  int state_;
   /**
    * @brief
    *

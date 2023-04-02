@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
   delete db;
   std::cout << "Start grpc" << std::endl;
   ERaftKvServerOptions options_;
-  options.svr_addr = "0.0.0.0:50051";
+  options_.svr_addr = "0.0.0.0:50051";
   ERaftKvServer server(options_);
-  server.BuildAndRunRpcServer();
+  // server.BuildAndRunRpcServer();
   return 0;
 }

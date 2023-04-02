@@ -4,6 +4,10 @@
 #include "estatus.h"
 #include "raft_node.h"
 #include "raft_server.h"
+
+class RaftServer;
+// enum RaftStateEnum;
+
 /**
  * @brief
  *
@@ -71,7 +75,7 @@ class Event {
    * @param raft
    * @param state
    */
-  virtual void RaftStateChangeEvent(RaftServer* raft, RaftStateEnum* state) = 0;
+  virtual void RaftStateChangeEvent(RaftServer* raft, int state) = 0;
 
   /**
    * @brief

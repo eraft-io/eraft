@@ -20,8 +20,8 @@
 class EStatus {
 
  public:
-  EStatus();
-  ~EStatus();
+  EStatus() {}
+  ~EStatus() {}
 
   /**
    * @brief

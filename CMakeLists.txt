@@ -105,9 +105,17 @@ endif()
 # grpc end
 ################################################
 
+set(eraftkv_sources)
+list(APPEND eraftkv_sources src/eraftkv_server.cc)
+list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
+list(APPEND eraftkv_sources src/eraftkv.pb.cc)
+list(APPEND eraftkv_sources src/main.cc)
 
-add_executable(${CMAKE_PROJECT_NAME} src/main.cc)
+set(eraftkv_INCLUDE_DIR ${eraftkv_sources_SOURCE_DIR})
+
+add_executable(${CMAKE_PROJECT_NAME} ${eraftkv_sources})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     rocksdb
     grpc++
 )
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})

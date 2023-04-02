@@ -14,9 +14,17 @@
 
 #include <cstdint>
 #include <string>
+#include <memory>
 
 #include "estatus.h"
 #include "raft_server.h"
+#include "eraftkv.grpc.pb.h"
+#include "eraftkv.pb.h"
+#include <grpcpp/grpcpp.h>
+
+using eraftkv::ERaftKv;
+using grpc::ServerContext;
+using grpc::Status;
 
 /**
  * @brief
@@ -42,112 +50,93 @@ struct ERaftKvServerOptions {
 
   int64_t grpc_max_recv_msg_size;
   int64_t grpc_max_send_msg_size;
-}
+};
 
-class ERaftKvServer : public grpc::EraftKv::Service {
+class ERaftKvServer : public eraftkv::ERaftKv::Service {
 
+public:
   /**
    * @brief Construct a new ERaftKvServer object
    *
    * @param config
    */
   ERaftKvServer(ERaftKvServerOptions config) {
-    this.options_ = config;
-    // init raft lib
-    RaftConfig raft_config;
-    raft_config.net_impl = new GRpcNetworkImpl();
-    raft_config.store_impl = new RocksDBStorageImpl();
-    raft_config.log_impl = new RocksDBLogStorageImpl();
-    raft_context_ = new RaftServer(raft_config);
-  };
-
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status RequestVote(RequestVoteReq* req, RequestVoteResp* resp){
-      //
-      // call raft_context_->HandleRequestVoteReq()
-      //
-  };
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status AppendEntries(AppendEntriesReq* req, RequestVoteResp* resp){
-      // 1.call raft_context_->HandleAppendEntriesReq()
-  };
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status Snapshot(SnapshotReq* req, SnapshotResp* resp){
-      //  raftcore
-      // 1.call raft_context_->HandleSnapshotReq();
-  };
-
-  /**
-   * @brief
-   *
-   * @param req
-   * @param resp
-   * @return grpc::Status
-   */
-  grpc::Status ProcessRWOperation(ClientOperationReq*  req,
-                                  ClientOperationResp* resp){
-      // 1. req into log entry
-      // 2. call raft_context_->ProposeEntry()
-      // 3. wait commit
-  };
-
-  /**
-   * @brief
-   *
-   * @return grpc::Status
-   */
-  grpc::Status ClusterConfigChange(ClusterConfigChangeReq,
-                                   ClusterConfigChangeResp) {
-    return EStatus::NotSupport();
+    // this.options_ = config;
+    // // init raft lib
+    // RaftConfig raft_config;
+    // raft_config.net_impl = new GRpcNetworkImpl();
+    // raft_config.store_impl = new RocksDBStorageImpl();
+    // raft_config.log_impl = new RocksDBLogStorageImpl();
+    // raft_context_ = new RaftServer(raft_config);
   }
 
+  ERaftKvServer() {
+
+  }
+
+  /**
+   * @brief
+   *
+   * @param req
+   * @param resp
+   * @return grpc::Status
+   */
+  Status RequestVote(ServerContext* context,const eraftkv::RequestVoteReq* req, eraftkv::RequestVoteResp* resp);
+
+  /**
+   * @brief
+   *
+   * @param req
+   * @param resp
+   * @return grpc::Status
+   */
+  Status AppendEntries(ServerContext* context,const eraftkv::AppendEntriesReq* req, eraftkv::RequestVoteResp* resp);
+  /**
+   * @brief
+   *
+   * @param req
+   * @param resp
+   * @return grpc::Status
+   */
+  Status Snapshot(ServerContext* context,const eraftkv::SnapshotReq* req, eraftkv::SnapshotResp* resp);
+
+  /**
+   * @brief
+   *
+   * @param req
+   * @param resp
+   * @return grpc::Status
+   */
+  Status ProcessRWOperation(ServerContext* context,const eraftkv::ClientOperationReq*  req,
+                                  eraftkv::ClientOperationResp* resp);
+
+  /**
+   * @brief
+   *
+   * @return grpc::Status
+   */
+  Status ClusterConfigChange(ServerContext* context,const eraftkv::ClusterConfigChangeReq*  req,
+                                  eraftkv::ClusterConfigChangeResp* resp);
   /**
    * @brief
    *
    * @param interval
    * @return EStatus
    */
-  EStatus InitTicker(int interval){
-      // 1.set up raft_context_->RunCycle() run interval with periodic_caller_
-  };
+  EStatus InitTicker(int interval);
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus BuildAndRunRpcServer() {
-    // set up rpc
-    ERaftKvServer service;
-    grpc::EnableDefaultHealthCheckService(true);
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort(this->options_.svr_addr,
-                             grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    server->Wait();
-  };
+  EStatus BuildAndRunRpcServer();
+
+  /**
+   * @brief
+   *
+   */
+  ERaftKvServerOptions options_;
 
  private:
   /**
@@ -162,11 +151,6 @@ class ERaftKvServer : public grpc::EraftKv::Service {
    */
   PeriodicCaller* periodic_caller_;
 
-  /**
-   * @brief
-   *
-   */
-  ERaftKvServerOptions options_;
 };
 
 

@@ -5,6 +5,7 @@
 #include "estatus.h"
 #include "raft_server.h"
 
+class RaftServer;
 /**
  * @brief
  *
