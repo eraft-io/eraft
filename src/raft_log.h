@@ -126,4 +126,4 @@ class InternalMemLogStorageImpl : public LogStore {
   std::vector<eraftkv::Entry> standby_log_db_;
 };
 
-#endif // SRC_RAFT_LOG_H_
+#endif  // SRC_RAFT_LOG_H_

@@ -27,7 +27,6 @@ To compile eraftkv, you will need:
 
 To build:
 ```
-make image
 make gen-protocol-code
 make build-dev
 ```
@@ -36,6 +35,12 @@ Run test:
 ```
 make tests
 ```
+
+If you want to build image youtself
+```
+make image
+```
+
 # Documentation
 
 # Contributing

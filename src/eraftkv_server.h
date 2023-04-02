@@ -12,15 +12,16 @@
 #ifndef ERAFTKV_SERVER_H_
 #define ERAFTKV_SERVER_H_
 
-#include <cstdint>
-#include <string>
-#include <memory>
+#include <grpcpp/grpcpp.h>
 
-#include "estatus.h"
-#include "raft_server.h"
+#include <cstdint>
+#include <memory>
+#include <string>
+
 #include "eraftkv.grpc.pb.h"
 #include "eraftkv.pb.h"
-#include <grpcpp/grpcpp.h>
+#include "estatus.h"
+#include "raft_server.h"
 
 using eraftkv::ERaftKv;
 using grpc::ServerContext;
@@ -54,7 +55,7 @@ struct ERaftKvServerOptions {
 
 class ERaftKvServer : public eraftkv::ERaftKv::Service {
 
-public:
+ public:
   /**
    * @brief Construct a new ERaftKvServer object
    *
@@ -70,9 +71,7 @@ public:
     // raft_context_ = new RaftServer(raft_config);
   }
 
-  ERaftKvServer() {
-
-  }
+  ERaftKvServer() {}
 
   /**
    * @brief
@@ -81,7 +80,9 @@ public:
    * @param resp
    * @return grpc::Status
    */
-  Status RequestVote(ServerContext* context,const eraftkv::RequestVoteReq* req, eraftkv::RequestVoteResp* resp);
+  Status RequestVote(ServerContext*                 context,
+                     const eraftkv::RequestVoteReq* req,
+                     eraftkv::RequestVoteResp*      resp);
 
   /**
    * @brief
@@ -90,7 +91,9 @@ public:
    * @param resp
    * @return grpc::Status
    */
-  Status AppendEntries(ServerContext* context,const eraftkv::AppendEntriesReq* req, eraftkv::RequestVoteResp* resp);
+  Status AppendEntries(ServerContext*                   context,
+                       const eraftkv::AppendEntriesReq* req,
+                       eraftkv::RequestVoteResp*        resp);
   /**
    * @brief
    *
@@ -98,7 +101,9 @@ public:
    * @param resp
    * @return grpc::Status
    */
-  Status Snapshot(ServerContext* context,const eraftkv::SnapshotReq* req, eraftkv::SnapshotResp* resp);
+  Status Snapshot(ServerContext*              context,
+                  const eraftkv::SnapshotReq* req,
+                  eraftkv::SnapshotResp*      resp);
 
   /**
    * @brief
@@ -107,16 +112,18 @@ public:
    * @param resp
    * @return grpc::Status
    */
-  Status ProcessRWOperation(ServerContext* context,const eraftkv::ClientOperationReq*  req,
-                                  eraftkv::ClientOperationResp* resp);
+  Status ProcessRWOperation(ServerContext*                     context,
+                            const eraftkv::ClientOperationReq* req,
+                            eraftkv::ClientOperationResp*      resp);
 
   /**
    * @brief
    *
    * @return grpc::Status
    */
-  Status ClusterConfigChange(ServerContext* context,const eraftkv::ClusterConfigChangeReq*  req,
-                                  eraftkv::ClusterConfigChangeResp* resp);
+  Status ClusterConfigChange(ServerContext*                         context,
+                             const eraftkv::ClusterConfigChangeReq* req,
+                             eraftkv::ClusterConfigChangeResp*      resp);
   /**
    * @brief
    *
@@ -150,7 +157,6 @@ public:
    *
    */
   PeriodicCaller* periodic_caller_;
-
 };
 
 

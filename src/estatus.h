@@ -17,40 +17,11 @@
  * @brief
  *
  */
-class EStatus {
-
- public:
-  EStatus() {}
-  ~EStatus() {}
-
-  /**
-   * @brief
-   *
-   * @param msg
-   * @return EStatus
-   */
-  // static EStatus NotFound(const std::string& msg) {
-  //   return EStatus(kNotFound, msg);
-  // }
-
- private:
-  /**
-   * @brief
-   *
-   */
-  enum StatusCode {
+enum class EStatus {
     kOk = 0,
     kNotFound = 1,
     kNotSupport = 2,
-  };
-
-  /**
-   * @brief Construct a new EStatus object
-   *
-   * @param code
-   * @param msg
-   */
-  // EStatus(StatusCode code, std::string& msg) {}
+    kPutKeyToRocksDBErr = 3,
 };
 
 #endif
