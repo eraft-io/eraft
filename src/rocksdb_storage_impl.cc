@@ -114,7 +114,7 @@ EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
 
 
 /**
- * @brief
+ * @brief put key and value to kv rocksdb
  *
  * @param key
  * @param val
@@ -126,15 +126,14 @@ EStatus RocksDBStorageImpl::PutKV(std::string key, std::string val) {
 }
 
 /**
- * @brief
+ * @brief get value from kv rocksdb
  *
- * @param key
+ * @param key 
  * @return std::string
  */
 std::string RocksDBStorageImpl::GetKV(std::string key) {
     std::string value;
     auto status = kv_db_->Get(rocksdb::ReadOptions(), key, &value);
-    assert(status.ok());
     return status.IsNotFound() ? "" : value;
 }
 

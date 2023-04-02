@@ -12,10 +12,16 @@
 #include <gtest/gtest.h>
 #include "rocksdb_storage_impl.h"
 
-TEST(RockDBStorageImplTest, PutPut) {
+TEST(RockDBStorageImplTest, PutGet) {
+    std::string testk = "testkey";
+    std::string testv = "testval";
+    std::string not_exist_key = "not_exist";
     RocksDBStorageImpl* kv_store = new RocksDBStorageImpl("/tmp/testdb");
-    ASSERT_EQ(kv_store->PutKV(std::string("testkey"), std::string("testval")), EStatus::kOk);
+    ASSERT_EQ(kv_store->PutKV(testk, testv), EStatus::kOk);
+    ASSERT_EQ(kv_store->GetKV(testk), testv);
+    ASSERT_EQ(kv_store->GetKV(""), std::string(""));
     delete kv_store;
+    // TODO: remove the files in /tmp/testdb
 }
 
 int main(int argc, char **argv) {
