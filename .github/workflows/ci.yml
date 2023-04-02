@@ -25,7 +25,7 @@ jobs:
         make -j4
     - name: Run Main
       run: |
-        ./build/gtest_example_tests.cc
+        ./build/gtest_example_tests
 
   test-sanitizer:
     runs-on: ubuntu-latest
