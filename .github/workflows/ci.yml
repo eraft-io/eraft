@@ -19,7 +19,7 @@ jobs:
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - name: Install grpc
-      run: sudo git clone https://github.com/grpc/grpc.git && cd grpc && sudo git checkout v1.24.3 && sudo git submodule update --init && sudo mkdir .build && cd .build && sudo cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && sudo make install -j4 && cd .. && sudo rm -rf .build && sudo mkdir .build && cd .build && sudo cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && sudo make install -j4
+      run: sudo git clone https://github.com/grpc/grpc.git && cd grpc && sudo git checkout v1.28.0 && sudo git submodule update --init && sudo mkdir .build && cd .build && sudo cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && sudo make install -j4 && cd .. && sudo rm -rf .build && sudo mkdir .build && cd .build && sudo cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && sudo make install -j4
     - name: Build
       run: |
         mkdir build && cd build
