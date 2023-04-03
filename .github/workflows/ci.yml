@@ -26,6 +26,7 @@ jobs:
     - name: Run Main
       run: |
         ./build/gtest_example_tests
+        ./build/rocksdb_storage_impl_tests
 
   test-sanitizer:
     runs-on: ubuntu-latest

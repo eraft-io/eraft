@@ -1,4 +1,24 @@
-# Makefile
+# MIT License
+
+# Copyright (c) 2023 ERaftGroup
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 default: image
 
 BUILDER_IMAGE := $(or $(BUILDER_IMAGE),hub.docker.com/eraftio/eraftkv)
@@ -9,13 +29,15 @@ image:
 
 # generate protobuf cpp source file
 gen-protocol-code:
-	docker run --rm -v $(realpath .):/eraft hub.docker.com/eraftio/eraftkv:latest /eraft/build/grpc/third_party/protobuf/protoc --grpc_out /eraft/src/ --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin -I /eraft/protocol eraftkv.proto
-	docker run --rm -v $(realpath .):/eraft hub.docker.com/eraftio/eraftkv:latest /eraft/build/grpc/third_party/protobuf/protoc --cpp_out /eraft/src/ -I /eraft/protocol eraftkv.proto
+	docker run --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.1 /eraft/build/grpc/third_party/protobuf/protoc --grpc_out /eraft/src/ --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin -I /eraft/protocol eraftkv.proto
+	docker run --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.1 /eraft/build/grpc/third_party/protobuf/protoc --cpp_out /eraft/src/ -I /eraft/protocol eraftkv.proto
 
+# build eraftkv on local machine
 build-dev:
 	chmod +x utils/build-dev.sh
 	@if [ ! -d "grpc" ]; then wget https://eraft.oss-cn-beijing.aliyuncs.com/grpc.tar.gz; tar xzvf grpc.tar.gz; rm -rf grpc.tar.gz; fi
-	docker run -it --rm -v  $(realpath .):/eraft hub.docker.com/eraftio/eraftkv:latest /eraft/utils/build-dev.sh
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.1 /eraft/utils/build-dev.sh
 
 tests:
-	echo "TO SUPPORT"
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.1 /eraft/build/gtest_example_tests
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.1 /eraft/build/rocksdb_storage_impl_tests

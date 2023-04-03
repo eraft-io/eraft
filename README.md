@@ -1,6 +1,6 @@
 # ERaftKV 
 
-A persistent distributed KV storage system, ERaftKV, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding to form multi shard large-scale data storage clusters.
+ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding to form multi shard large-scale data storage clusters.
 
 # Features
 - Strong and consistent data storage ensures secure and reliable data persistence in distributed systems.
@@ -27,7 +27,6 @@ To compile eraftkv, you will need:
 
 To build:
 ```
-make image
 make gen-protocol-code
 make build-dev
 ```
@@ -36,6 +35,12 @@ Run test:
 ```
 make tests
 ```
+
+If you want to build image youtself
+```
+make image
+```
+
 # Documentation
 
 # Contributing

@@ -119,6 +119,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # build eraftkv
 set(eraftkv_sources)
 list(APPEND eraftkv_sources src/eraftkv_server.cc)
+list(APPEND eraftkv_sources src/rocksdb_storage_impl.cc)
 list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftkv_sources src/eraftkv.pb.cc)
 list(APPEND eraftkv_sources src/main.cc)
@@ -136,5 +137,13 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 add_executable(gtest_example_tests src/gtest_example_tests.cc)
 target_link_libraries(gtest_example_tests PUBLIC
     ${GTEST_LIBRARIES}
+    pthread
+)
+
+add_executable(rocksdb_storage_impl_tests src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc)
+target_link_libraries(rocksdb_storage_impl_tests PUBLIC
+    ${GTEST_LIBRARIES}
+    rocksdb
+    grpc++
     pthread
 )
