@@ -82,6 +82,16 @@ mark_as_advanced(
 # rocksdb end
 ################################################
 
+include(FetchContent)
+FetchContent_Declare(protobuf
+  GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+  GIT_TAG        v3.11.2
+  SOURCE_SUBDIR  cmake
+  FIND_PACKAGE_ARGS NAMES protobuf
+)
+FetchContent_MakeAvailable(protobuf)
+include(FindProtobuf)
+find_package(protobuf CONFIG REQUIRED)
 ################################################
 # grpc begin
 #
@@ -138,7 +148,17 @@ add_executable(gtest_example_tests src/gtest_example_tests.cc)
 target_link_libraries(gtest_example_tests PUBLIC
     ${GTEST_LIBRARIES}
     pthread
+    protobuf
 )
+
+# build eraftkv_server test
+# add_executable(eraftkv_server_test src/eraftkv_server_test.cc)
+# target_link_libraries(eraftkv_server_test PUBLIC
+#     ${GTEST_LIBRARIES}
+#     pthread
+#     grpc++
+#     protobuf
+# )
 
 add_executable(rocksdb_storage_impl_tests src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc)
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
