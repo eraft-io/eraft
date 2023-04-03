@@ -144,6 +144,7 @@ add_executable(gtest_example_tests src/gtest_example_tests.cc)
 target_link_libraries(gtest_example_tests PUBLIC
     ${GTEST_LIBRARIES}
     pthread
+    gRPC::grpc++
     protobuf
 )
 
@@ -160,6 +161,6 @@ add_executable(rocksdb_storage_impl_tests src/rocksdb_storage_impl.cc src/rocksd
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     ${GTEST_LIBRARIES}
     rocksdb
-    grpc++
+    gRPC::grpc++
     pthread
 )
