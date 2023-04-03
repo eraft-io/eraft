@@ -82,34 +82,30 @@ mark_as_advanced(
 # rocksdb end
 ################################################
 
-include(FetchContent)
-FetchContent_Declare(protobuf
-  GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
-  GIT_TAG        v3.11.2
-  SOURCE_SUBDIR  cmake
-  FIND_PACKAGE_ARGS NAMES protobuf
-)
-FetchContent_MakeAvailable(protobuf)
-include(FindProtobuf)
-find_package(protobuf CONFIG REQUIRED)
+
 ################################################
 # grpc begin
 #
 
-if (DOWNLOAD_GRPC_CN)
-    message(STATUS "download grpc source code from alicloud")
-    add_subdirectory(grpc)
-else()
-    message(STATUS "download grpc use FetchContent")
-    include(FetchContent)
-    FetchContent_Declare(
-      gRPC
-      GIT_REPOSITORY https://github.com/grpc/grpc
-      GIT_TAG        v1.28.0
-    )
-    set(FETCHCONTENT_QUIET OFF)
-    FetchContent_MakeAvailable(gRPC)
-endif()
+find_package (OpenSSL)
+message (STATUS "Using ssl=${OPENSSL_FOUND}: ${OPENSSL_INCLUDE_DIR} : ${OPENSSL_LIBRARIES}")
+
+find_package(Protobuf REQUIRED)
+message(STATUS "Using protobuf: ${Protobuf_VERSION} : ${Protobuf_INCLUDE_DIRS}, ${Protobuf_LIBRARIES}")
+
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+find_package(c-ares REQUIRED)
+message(STATUS "Lib c-ares found")
+
+find_package(ZLIB REQUIRED)
+message(STATUS "Using ZLIB: ${ZLIB_INCLUDE_DIRS}, ${ZLIB_LIBRARIES}")
+
+find_package(gRPC CONFIG REQUIRED)
+message(STATUS "Using gRPC: ${gRPC_VERSION}")
+
+find_package(Gflags REQUIRED)
+include_directories(${GFLAGS_INCLUDE_DIRS})
 
 #
 # grpc end
