@@ -151,14 +151,14 @@ target_link_libraries(gtest_example_tests PUBLIC
 target_include_directories(gtest_example_tests PUBLIC ${eraftkv_INCLUDE_DIR})
 
 
-# build eraftkv_server test
-# add_executable(eraftkv_server_test src/eraftkv_server_test.cc)
-# target_link_libraries(eraftkv_server_test PUBLIC
-#     ${GTEST_LIBRARIES}
-#     pthread
-#     grpc++
-#     protobuf
-# )
+build eraftkv_server test
+add_executable(eraftkv_server_test src/eraftkv_server_test.cc)
+target_link_libraries(eraftkv_server_test PUBLIC
+    ${GTEST_LIBRARIES}
+    pthread
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
 
 add_executable(rocksdb_storage_impl_tests src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc)
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC

@@ -34,7 +34,7 @@ TEST(ERaftKvServerTest, voterpc) {
     std::cout << "fork error!\n";
   }
   if (fpid == 0) {
-    sleep(1000 * 1);
+    sleep(1);
     auto                           chan_ = grpc::CreateChannel("0.0.0.0:50051",
                                      grpc::InsecureChannelCredentials());
     std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
@@ -58,7 +58,7 @@ TEST(ERaftKvServerTest, voterpc) {
                              grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
     std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    sleep(5 * 1000);
+    sleep(5);
   }
 }
 
