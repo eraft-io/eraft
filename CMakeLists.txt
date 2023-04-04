@@ -90,7 +90,7 @@ mark_as_advanced(
 find_package (OpenSSL)
 message (STATUS "Using ssl=${OPENSSL_FOUND}: ${OPENSSL_INCLUDE_DIR} : ${OPENSSL_LIBRARIES}")
 
-find_package(Protobuf REQUIRED)
+find_package(Protobuf EXACT REQUIRED PATHS /usr/local/lib)
 message(STATUS "Using protobuf: ${Protobuf_VERSION} : ${Protobuf_INCLUDE_DIRS}, ${Protobuf_LIBRARIES}")
 
 include_directories(${PROTOBUF_INCLUDE_DIRS})
@@ -152,7 +152,12 @@ target_include_directories(gtest_example_tests PUBLIC ${eraftkv_INCLUDE_DIR})
 
 
 # build eraftkv_server test
-add_executable(eraftkv_server_test src/eraftkv_server_test.cc)
+add_executable(eraftkv_server_test 
+    src/eraftkv_server_test.cc 
+    src/eraftkv_server.cc 
+    src/eraftkv.pb.cc 
+    src/eraftkv.grpc.pb.cc
+)
 target_link_libraries(eraftkv_server_test PUBLIC
     ${GTEST_LIBRARIES}
     pthread
