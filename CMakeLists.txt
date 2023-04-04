@@ -145,7 +145,7 @@ target_link_libraries(gtest_example_tests PUBLIC
     ${GTEST_LIBRARIES}
     pthread
     gRPC::grpc++
-    protobuf
+    ${Protobuf_LIBRARY}
 )
 target_include_directories(gtest_example_tests PUBLIC ${eraftkv_INCLUDE_DIR})
 
