@@ -29,13 +29,14 @@ ENV TZ=Asia/Kolkata \
 RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git wget
 
 # install rocksdb
-RUN apt-get update && apt-get install -y librocksdb-dev
-
-# install protoc
-RUN apt install -y protobuf-compiler
-
-# build grpc_cpp_plugin 
-RUN git clone -b feature_20230323_initdesign https://github.com/eraft-io/eraft.git && cd eraft && mkdir build && cd build && cmake .. && make -j4 && mv /eraft/build/_deps/grpc-build/grpc_cpp_plugin /usr/bin/ && rm -rf /eraft
+RUN apt-get update && apt-get install -y librocksdb-dev libssl-dev
 
 # install gtest
-RUN apt-get install libgtest-dev -y && cd /usr/src/gtest && cmake CMakeLists.txt && make && mv lib/* /usr/lib
+RUN apt-get install -y libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt && make && cp lib/*.a /usr/lib && ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+
+RUN apt update -y \
+       && apt install -y cmake ccache libssl-dev libcrypto++-dev \
+       libglib2.0-dev \
+       gcc-7 g++-7
+
+RUN git clone https://github.com/grpc/grpc.git && cd grpc && git checkout v1.28.0 && git submodule update --init && mkdir .build && cd .build && cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && make install -j4 && cd .. && rm -rf .build/CMakeCache.txt && cd .build && cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && make install -j4
