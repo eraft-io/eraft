@@ -135,7 +135,8 @@ set(eraftkv_INCLUDE_DIR ${eraftkv_sources_SOURCE_DIR})
 add_executable(${CMAKE_PROJECT_NAME} ${eraftkv_sources})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     rocksdb
-    grpc++
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
