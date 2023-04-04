@@ -140,7 +140,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
 # build gtest demo
-add_executable(gtest_example_tests src/gtest_example_tests.cc)
+add_executable(gtest_example_tests src/gtest_example_tests.cc src/eraftkv.pb.cc)
 target_link_libraries(gtest_example_tests PUBLIC
     ${GTEST_LIBRARIES}
     pthread
