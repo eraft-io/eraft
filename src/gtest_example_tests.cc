@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <math.h>
 
+#include "eraftkv.pb.h"
+
 double squareRoot(const double a) {
   double b = sqrt(a);
   if (b != b) {  // nan check
@@ -8,6 +10,11 @@ double squareRoot(const double a) {
   } else {
     return sqrt(a);
   }
+}
+
+TEST(SquareRootTest, Proto) {
+  eraftkv::AppendEntriesReq req;
+  ASSERT_EQ(1, 1);
 }
 
 TEST(SquareRootTest, PositiveNos) {

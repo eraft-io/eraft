@@ -14,3 +14,4 @@ make -j $NPROC
 
 # run test exe
 /eraft/build/gtest_example_tests
+/eraft/build/eraftkv_server_test
