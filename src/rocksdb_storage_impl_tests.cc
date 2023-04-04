@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 #include "rocksdb_storage_impl.h"
+#include "util.h"
 
 TEST(RockDBStorageImplTest, PutGet) {
     std::string testk = "testkey";
@@ -21,7 +22,7 @@ TEST(RockDBStorageImplTest, PutGet) {
     ASSERT_EQ(kv_store->GetKV(testk), testv);
     ASSERT_EQ(kv_store->GetKV(""), std::string(""));
     delete kv_store;
-    // TODO: remove the files in /tmp/testdb
+    DirectoryTool::DeleteDir("/tmp/testdb");
 }
 
 int main(int argc, char **argv) {
