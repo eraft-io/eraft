@@ -82,24 +82,30 @@ mark_as_advanced(
 # rocksdb end
 ################################################
 
+
 ################################################
 # grpc begin
 #
 
-if (DOWNLOAD_GRPC_CN)
-    message(STATUS "download grpc source code from alicloud")
-    add_subdirectory(grpc)
-else()
-    message(STATUS "download grpc use FetchContent")
-    include(FetchContent)
-    FetchContent_Declare(
-      gRPC
-      GIT_REPOSITORY https://github.com/grpc/grpc
-      GIT_TAG        v1.28.0
-    )
-    set(FETCHCONTENT_QUIET OFF)
-    FetchContent_MakeAvailable(gRPC)
-endif()
+find_package (OpenSSL)
+message (STATUS "Using ssl=${OPENSSL_FOUND}: ${OPENSSL_INCLUDE_DIR} : ${OPENSSL_LIBRARIES}")
+
+find_package(Protobuf EXACT REQUIRED PATHS /usr/local/lib)
+message(STATUS "Using protobuf: ${Protobuf_VERSION} : ${Protobuf_INCLUDE_DIRS}, ${Protobuf_LIBRARIES}")
+
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+find_package(c-ares REQUIRED)
+message(STATUS "Lib c-ares found")
+
+find_package(ZLIB REQUIRED)
+message(STATUS "Using ZLIB: ${ZLIB_INCLUDE_DIRS}, ${ZLIB_LIBRARIES}")
+
+find_package(gRPC CONFIG REQUIRED)
+message(STATUS "Using gRPC: ${gRPC_VERSION}")
+
+find_package(Gflags REQUIRED)
+include_directories(${GFLAGS_INCLUDE_DIRS})
 
 #
 # grpc end
@@ -133,23 +139,42 @@ set(eraftkv_INCLUDE_DIR ${eraftkv_sources_SOURCE_DIR})
 add_executable(${CMAKE_PROJECT_NAME} ${eraftkv_sources})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     rocksdb
-    grpc++
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
     stdc++fs
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
 # build gtest demo
-add_executable(gtest_example_tests src/gtest_example_tests.cc)
+add_executable(gtest_example_tests src/gtest_example_tests.cc src/eraftkv.pb.cc)
 target_link_libraries(gtest_example_tests PUBLIC
     ${GTEST_LIBRARIES}
     pthread
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
+target_include_directories(gtest_example_tests PUBLIC ${eraftkv_INCLUDE_DIR})
+
+
+# build eraftkv_server test
+add_executable(eraftkv_server_test 
+    src/eraftkv_server_test.cc 
+    src/eraftkv_server.cc 
+    src/eraftkv.pb.cc 
+    src/eraftkv.grpc.pb.cc
+)
+target_link_libraries(eraftkv_server_test PUBLIC
+    ${GTEST_LIBRARIES}
+    pthread
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
 )
 
 add_executable(rocksdb_storage_impl_tests src/util.cc src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc )
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     ${GTEST_LIBRARIES}
     rocksdb
-    grpc++
+    gRPC::grpc++
     pthread
     stdc++fs
 )
