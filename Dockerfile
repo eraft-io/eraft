@@ -26,7 +26,12 @@ ENV TZ=Asia/Kolkata \
     DEBIAN_FRONTEND=noninteractive
 
 # install build dependency
-RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool cmake lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git wget
+RUN apt-get update && apt-get install -y clang-format build-essential autoconf automake libtool lcov libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev git wget
+
+# install latest cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3-linux-x86_64.sh -q -O /tmp/cmake-install.sh && chmod u+x /tmp/cmake-install.sh \
+ && mkdir /opt/cmake-3.26.3 && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.26.3 \
+  && rm /tmp/cmake-install.sh && ln -s /opt/cmake-3.26.3/bin/* /usr/local/bin
 
 # install rocksdb
 RUN apt-get update && apt-get install -y librocksdb-dev libssl-dev
@@ -35,8 +40,10 @@ RUN apt-get update && apt-get install -y librocksdb-dev libssl-dev
 RUN apt-get install -y libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt && make && cp lib/*.a /usr/lib && ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
 
 RUN apt update -y \
-       && apt install -y cmake ccache libssl-dev libcrypto++-dev \
+       && apt install -y ccache libssl-dev libcrypto++-dev \
        libglib2.0-dev \
-       gcc-7 g++-7
+       gcc-10 g++-10 \
+       && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 20 \
+       && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 20
 
 RUN git clone https://github.com/grpc/grpc.git && cd grpc && git checkout v1.28.0 && git submodule update --init && mkdir .build && cd .build && cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && make install -j4 && cd .. && rm -rf .build/CMakeCache.txt && cd .build && cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && make install -j4

@@ -21,24 +21,24 @@
 # SOFTWARE.
 default: image
 
-IMAGE_VERSION := v0.0.2
+IMAGE_VERSION := v0.0.3
 
 BUILDER_IMAGE := $(or $(BUILDER_IMAGE),eraft/eraftkv:$(IMAGE_VERSION))
 
 # build base image from Dockerfile
 image:
-	docker build -f Dockerfile -t $(BUILDER_IMAGE) .
+	docker build -f Dockerfile --network=host -t $(BUILDER_IMAGE) .
 
 # generate protobuf cpp source file
 gen-protocol-code:
-	docker run --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.2 protoc --grpc_out /eraft/src/ --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin -I /eraft/protocol eraftkv.proto
-	docker run --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.2 protoc --cpp_out /eraft/src/ -I /eraft/protocol eraftkv.proto
+	docker run --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.3 protoc --grpc_out /eraft/src/ --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin -I /eraft/protocol eraftkv.proto
+	docker run --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.3 protoc --cpp_out /eraft/src/ -I /eraft/protocol eraftkv.proto
 
 # build eraftkv on local machine
 build-dev:
 	chmod +x utils/build-dev.sh
-	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.2 /eraft/utils/build-dev.sh
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.3 /eraft/utils/build-dev.sh
 
 tests:
-	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.2 /eraft/build/gtest_example_tests
-	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.2 /eraft/build/rocksdb_storage_impl_tests
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.3 /eraft/build/gtest_example_tests
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.3 /eraft/build/rocksdb_storage_impl_tests

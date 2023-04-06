@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.26)
 
 project(eraftkv VERSION 0.0.1 LANGUAGES C CXX)
 
@@ -35,13 +35,13 @@ endif(NOT CMAKE_C_STANDARD)
 
 # C++ standard can be overridden when this is used as a sub-project.
 if(NOT CMAKE_CXX_STANDARD)
-  # This project requires C++11.
-  set(CMAKE_CXX_STANDARD 11)
+  # This project requires C++20.
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif(NOT CMAKE_CXX_STANDARD)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 ")
 
 
 option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
@@ -122,13 +122,17 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # gtest end
 ################################################
 
+
+
 # build eraftkv
 set(eraftkv_sources)
 list(APPEND eraftkv_sources src/eraftkv_server.cc)
 list(APPEND eraftkv_sources src/rocksdb_storage_impl.cc)
 list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftkv_sources src/eraftkv.pb.cc)
+list(APPEND eraftkv_sources src/util.cc)
 list(APPEND eraftkv_sources src/main.cc)
+
 
 set(eraftkv_INCLUDE_DIR ${eraftkv_sources_SOURCE_DIR})
 
@@ -137,6 +141,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     rocksdb
     gRPC::grpc++
     ${Protobuf_LIBRARY}
+    stdc++fs
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
@@ -165,10 +170,12 @@ target_link_libraries(eraftkv_server_test PUBLIC
     ${Protobuf_LIBRARY}
 )
 
-add_executable(rocksdb_storage_impl_tests src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc)
+add_executable(rocksdb_storage_impl_tests src/util.cc src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc )
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     ${GTEST_LIBRARIES}
     rocksdb
     gRPC::grpc++
     pthread
+    stdc++fs
 )
+
