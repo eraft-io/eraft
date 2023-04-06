@@ -21,14 +21,14 @@
 # SOFTWARE.
 
 
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.26)
 
 project(eraftkv VERSION 0.0.1 LANGUAGES C CXX)
 
 # C standard can be overridden when this is used as a sub-project.
 if(NOT CMAKE_C_STANDARD)
-  # This project can use C20, but will gracefully decay down to C89.
-  set(CMAKE_C_STANDARD 20)
+  # This project can use C11, but will gracefully decay down to C89.
+  set(CMAKE_C_STANDARD 11)
   set(CMAKE_C_STANDARD_REQUIRED OFF)
   set(CMAKE_C_EXTENSIONS OFF)
 endif(NOT CMAKE_C_STANDARD)
@@ -41,7 +41,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif(NOT CMAKE_CXX_STANDARD)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 ")
 
 
 option(ERAFTKV_BUILD_TESTS "Build ERaftKV's unit tests" ON)
