@@ -20,7 +20,7 @@ jobs:
       run: |
         sudo wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3-linux-x86_64.sh -q -O /tmp/cmake-install.sh && sudo chmod u+x /tmp/cmake-install.sh
         sudo mkdir /opt/cmake-3.26.3 && sudo /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.26.3
-        sudo rm /tmp/cmake-install.sh && sudo ln -s /opt/cmake-3.26.3/bin/* /usr/local/bin
+        sudo rm /tmp/cmake-install.sh && sudo ln -sf /opt/cmake-3.26.3/bin/* /usr/local/bin
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - name: Install grpc
