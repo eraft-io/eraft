@@ -8,3 +8,4 @@ grpc/
 grpc
 rocksdb/
 rocksdb
+protobuf/

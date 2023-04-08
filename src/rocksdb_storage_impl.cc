@@ -121,20 +121,20 @@ EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
  * @return EStatus
  */
 EStatus RocksDBStorageImpl::PutKV(std::string key, std::string val) {
-    auto status = kv_db_->Put(rocksdb::WriteOptions(), key, val);
-    return status.ok() ? EStatus::kOk : EStatus::kPutKeyToRocksDBErr;
+  auto status = kv_db_->Put(rocksdb::WriteOptions(), key, val);
+  return status.ok() ? EStatus::kOk : EStatus::kPutKeyToRocksDBErr;
 }
 
 /**
  * @brief get value from kv rocksdb
  *
- * @param key 
+ * @param key
  * @return std::string
  */
 std::string RocksDBStorageImpl::GetKV(std::string key) {
-    std::string value;
-    auto status = kv_db_->Get(rocksdb::ReadOptions(), key, &value);
-    return status.IsNotFound() ? "" : value;
+  std::string value;
+  auto        status = kv_db_->Get(rocksdb::ReadOptions(), key, &value);
+  return status.IsNotFound() ? "" : value;
 }
 
 /**
@@ -151,10 +151,10 @@ RocksDBStorageImpl::RocksDBStorageImpl(std::string db_path) {
 
 /**
  * @brief Destroy the Rocks D B Storage Impl:: RocksDB Storage Impl object
- * 
+ *
  */
 RocksDBStorageImpl::~RocksDBStorageImpl() {
-    delete kv_db_;
+  delete kv_db_;
 }
 
 

@@ -122,19 +122,19 @@ class RocksDBStorageImpl : public Storage {
 
 
   /**
-   * @brief 
-   * 
-   * @param key 
-   * @param val 
-   * @return EStatus 
+   * @brief
+   *
+   * @param key
+   * @param val
+   * @return EStatus
    */
   EStatus PutKV(std::string key, std::string val);
 
   /**
-   * @brief 
-   * 
-   * @param key 
-   * @return std::string 
+   * @brief
+   *
+   * @param key
+   * @return std::string
    */
   std::string GetKV(std::string key);
 
@@ -147,7 +147,7 @@ class RocksDBStorageImpl : public Storage {
 
   /**
    * @brief Destroy the Rocks DB Storage Impl object
-   * 
+   *
    */
   ~RocksDBStorageImpl();
 

@@ -131,6 +131,7 @@ list(APPEND eraftkv_sources src/rocksdb_storage_impl.cc)
 list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftkv_sources src/eraftkv.pb.cc)
 list(APPEND eraftkv_sources src/util.cc)
+list(APPEND eraftkv_sources src/log_entry_cache.cc)
 list(APPEND eraftkv_sources src/main.cc)
 
 
@@ -179,3 +180,10 @@ target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     stdc++fs
 )
 
+add_executable(log_entry_cache_tests src/log_entry_cache_tests.cc src/log_entry_cache.cc src/eraftkv.pb.cc)
+target_link_libraries(log_entry_cache_tests PUBLIC
+    ${GTEST_LIBRARIES}
+    pthread
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
