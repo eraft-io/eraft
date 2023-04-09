@@ -122,6 +122,15 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # gtest end
 ################################################
 
+################################################
+# google benchmark begin
+#
+
+find_package(benchmark REQUIRED)
+
+#
+# google benchmark end
+################################################
 
 
 # build eraftkv
@@ -183,6 +192,19 @@ target_link_libraries(rocksdb_storage_impl_tests PUBLIC
 add_executable(log_entry_cache_tests src/log_entry_cache_tests.cc src/log_entry_cache.cc src/eraftkv.pb.cc)
 target_link_libraries(log_entry_cache_tests PUBLIC
     ${GTEST_LIBRARIES}
+    pthread
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
+
+add_executable(google_example_banchmark src/google_example_benchmark.cc)
+target_link_libraries(google_example_banchmark PUBLIC
+    benchmark::benchmark
+)
+
+add_executable(log_entry_cache_benchmark src/log_entry_cache_benchmark.cc src/log_entry_cache.cc src/eraftkv.pb.cc)
+target_link_libraries(log_entry_cache_benchmark PUBLIC
+    benchmark::benchmark
     pthread
     gRPC::grpc++
     ${Protobuf_LIBRARY}
