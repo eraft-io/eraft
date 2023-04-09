@@ -35,12 +35,12 @@ jobs:
     - name: Run Main
       run: |
         ./build/gtest_example_tests
-        ./eraft/build/eraftkv_server_test
-        ./eraft/build/rocksdb_storage_impl_tests
-        ./eraft/build/log_entry_cache_tests
-        ./eraft/build/log_entry_cache_tests
-        ./eraft/build/google_example_banchmark
-        ./eraft/build/log_entry_cache_benchmark
+        ./build/eraftkv_server_test
+        ./build/rocksdb_storage_impl_tests
+        ./build/log_entry_cache_tests
+        ./build/log_entry_cache_tests
+        ./build/google_example_banchmark
+        ./build/log_entry_cache_benchmark
 
   test-sanitizer:
     runs-on: ubuntu-latest
