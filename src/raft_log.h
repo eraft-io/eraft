@@ -19,18 +19,6 @@ class LogStore {
   virtual ~LogStore() {}
 
   /**
-   * @brief
-   *
-   */
-  virtual void Init() = 0;
-
-  /**
-   * @brief
-   *
-   */
-  virtual void Free() = 0;
-
-  /**
    * @brief Append add new entries
    *
    * @param ety

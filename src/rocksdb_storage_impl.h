@@ -16,6 +16,7 @@
 #include <rocksdb/db.h>
 
 #include "raft_server.h"
+#include "log_entry_cache.h"
 
 /**
  * @brief
@@ -177,13 +178,13 @@ class RocksDBLogStorageImpl : public LogStore {
    * @brief
    *
    */
-  void Init();
+  RocksDBLogStorageImpl();
 
   /**
    * @brief
    *
    */
-  void Free();
+  ~RocksDBLogStorageImpl();
 
   /**
    * @brief
@@ -263,11 +264,31 @@ class RocksDBLogStorageImpl : public LogStore {
    *
    */
   rocksdb::DB* master_log_db_;
+
+  /**
+   * @brief 
+   * 
+   */
+  int64_t m_logdb_lastindex_;
+
   /**
    * @brief
    *
    */
   rocksdb::DB* standby_log_db_;
+
+  /**
+   * @brief 
+   * 
+   */
+  int64_t s_logdb_lastindex_;
+
+  /**
+   * @brief cache for log entry
+   * 
+   */
+  LogEntryCache* log_cache_;
+
 };
 
 #endif
