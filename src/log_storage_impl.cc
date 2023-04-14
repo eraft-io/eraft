@@ -13,10 +13,30 @@
  */
 RocksDBLogStorageImpl::RocksDBLogStorageImpl()
     : log_cache_(new LogEntryCache())
-    , m_logdb_lastindex_(0)
-    , s_logdb_lastindex_(0) {
-      
-    }
+{
+  // read meta data from log storage
+  m_status_.last_log_index = 0;
+  s_status_.last_log_index = 0;
+}
+
+EStatus RocksDBLogStorageImpl::Reset(int64_t index, int64_t term) {
+
+}
+
+/**
+ * @brief init log db when cluster init
+ * 
+ * @param logdb_path 
+ * @return EStatus 
+ */
+EStatus RocksDBLogStorageImpl::Open(std::string logdb_path, int64_t prev_log_term, int64_t prev_log_index) {
+  // init master log db status
+  m_status_.last_log_index = prev_log_index;
+  m_status_.prev_log_index = prev_log_index;
+  m_status_.prev_log_term = prev_log_term;
+  
+  // write status to master log db
+}
 
 /**
  * @brief
@@ -36,7 +56,7 @@ RocksDBLogStorageImpl::~RocksDBLogStorageImpl() {
 EStatus RocksDBLogStorageImpl::Append(eraftkv::Entry* ety) {
   if (standby_log_db_ != nullptr) {
     // gnerator ety index
-    int64_t ety_index = s_logdb_lastindex_ + 1;
+    int64_t ety_index = this->s_status_.last_log_index + 1;
     ety->set_id(ety_index);
     std::cout << "append log entry with id: " << ety->id()
               << " index: " << ety_index << std::endl;
@@ -53,7 +73,7 @@ EStatus RocksDBLogStorageImpl::Append(eraftkv::Entry* ety) {
 
   } else {
     // gnerator ety index
-    int64_t ety_index = m_logdb_lastindex_ + 1;
+    int64_t ety_index = this->m_status_.last_log_index + 1;
     ety->set_id(ety_index);
     std::cout << "append log entry with id: " << ety->id()
               << " index: " << ety_index << std::endl;
@@ -68,6 +88,11 @@ EStatus RocksDBLogStorageImpl::Append(eraftkv::Entry* ety) {
     // add to cache
     log_cache_->Append(ety);
   }
+}
+
+EStatus Reset(int64_t index, int64_t term) {
+
+    return EStatus::kOk;
 }
 
 /**
@@ -109,7 +134,9 @@ std::vector<eraftkv::Entry*> RocksDBLogStorageImpl::Gets(int64_t start_index,
  *
  * @return int64_t
  */
-int64_t RocksDBLogStorageImpl::FirstIndex() {}
+int64_t RocksDBLogStorageImpl::FirstIndex() {
+
+}
 
 /**
  * @brief

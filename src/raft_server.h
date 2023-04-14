@@ -17,16 +17,33 @@
 
 #include "eraftkv.pb.h"
 #include "estatus.h"
-#include "periodic_caller.h"
 #include "raft_config.h"
 #include "raft_node.h"
 
-/**
- * @brief
- *
- */
-// enum RaftStateEnum { Follower, PreCandidate, Candidate, Leader };
 
+enum NodeRaftRoleEnum { None, Follower, PreCandidate, Candidate, Leader };
+
+static std::string NodeRoleToStr(NodeRaftRoleEnum role) {
+  switch (role) {
+    case NodeRaftRoleEnum::None: {
+      return "None";
+    }
+    case NodeRaftRoleEnum::Follower: {
+      return "Follower";
+    }
+    case NodeRaftRoleEnum::PreCandidate: {
+      return "PreCandidate";
+    }
+    case NodeRaftRoleEnum::Candidate: {
+      return "Candidate";
+    }
+    case NodeRaftRoleEnum::Leader: {
+      return "Leader";
+    }
+    default:
+      break;
+  }
+}
 
 /**
  * @brief
@@ -40,7 +57,7 @@ class RaftServer {
    *
    * @param raft_config
    */
-  RaftServer(RaftConfig* raft_config) {}
+  RaftServer(RaftConfig raft_config);
 
   /**
    * @brief Get the Entries To Be Send object
@@ -52,7 +69,7 @@ class RaftServer {
    */
   std::vector<eraftkv::Entry*> GetEntriesToBeSend(RaftNode* node,
                                                   int64_t   index,
-                                                  int64_t   count) {}
+                                                  int64_t   count);
 
   /**
    * @brief
@@ -61,14 +78,14 @@ class RaftServer {
    * @param vote
    * @return EStatus
    */
-  EStatus SaveMetaData(int64_t term, int64_t vote) {}
+  EStatus SaveMetaData(int64_t term, int64_t vote);
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus ReadMetaData() {}
+  EStatus ReadMetaData();
 
   /**
    * @brief
@@ -77,7 +94,7 @@ class RaftServer {
    * @param is_self
    * @return RaftNode*
    */
-  RaftNode* JoinNode(int64_t id, bool is_self) {}
+  RaftNode* JoinNode(int64_t id, bool is_self);
 
   /**
    * @brief
@@ -85,30 +102,21 @@ class RaftServer {
    * @param node
    * @return EStatus
    */
-  EStatus RemoveNode(RaftNode* node) {}
+  EStatus RemoveNode(RaftNode* node);
 
   /**
    * @brief raft core cycle
    *
    * @return EStatus
    */
-  EStatus RunCycle() {
-    // 1. only one node, to become the leader
-    // call BecomeLeader
-
-    // 2. is leader, send append entries to other node
-    // call net_-> SendAppendEntries
-
-    // 3. if not leader, inter election
-    // call ElectionStart
-  }
+  EStatus RunCycle();
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus ApplyEntries() {}
+  EStatus ApplyEntries();
 
   /**
    * @brief
@@ -120,10 +128,7 @@ class RaftServer {
    */
   EStatus HandleRequestVoteReq(RaftNode*                 from_node,
                                eraftkv::RequestVoteReq*  req,
-                               eraftkv::RequestVoteResp* resp) {
-    // 1.  deal request vote with raft paper description.
-  }
-
+                               eraftkv::RequestVoteResp* resp);
   /**
    * @brief
    *
@@ -132,11 +137,7 @@ class RaftServer {
    * @return EStatus
    */
   EStatus HandleRequestVoteResp(RaftNode*                 from_node,
-                                eraftkv::RequestVoteResp* resp) {
-    // 1.if resp term > this node, call become follower.
-
-    // 2.get majority vote, become candidate or leader.
-  }
+                                eraftkv::RequestVoteResp* resp);
 
   /**
    * @brief
@@ -148,10 +149,7 @@ class RaftServer {
    */
   EStatus HandleAppendEntriesReq(RaftNode*                   from_node,
                                  eraftkv::AppendEntriesReq*  req,
-                                 eraftkv::AppendEntriesResp* resp) {
-    // 1. deal append entries req with raft paper description.
-  }
-
+                                 eraftkv::AppendEntriesResp* resp);
   /**
    * @brief
    *
@@ -160,10 +158,7 @@ class RaftServer {
    * @return EStatus
    */
   EStatus HandleAppendEntriesResp(RaftNode*                   from_node,
-                                  eraftkv::AppendEntriesResp* resp) {
-    // 1.deal append entries resp with raft paper description.
-  }
-
+                                  eraftkv::AppendEntriesResp* resp);
 
   /**
    * @brief
@@ -175,9 +170,7 @@ class RaftServer {
    */
   EStatus HandleSnapshotReq(RaftNode*              from_node,
                             eraftkv::SnapshotReq*  req,
-                            eraftkv::SnapshotResp* resp) {
-    // 1. deal snapshot req with raft paper description.
-  }
+                            eraftkv::SnapshotResp* resp);
 
 
   /**
@@ -187,9 +180,7 @@ class RaftServer {
    * @param resp
    * @return EStatus
    */
-  EStatus HandleSnapshotResp(RaftNode* from_node, eraftkv::SnapshotResp* resp) {
-    // 1. deal snapshot resp with raft paper description.
-  }
+  EStatus HandleSnapshotResp(RaftNode* from_node, eraftkv::SnapshotResp* resp);
 
   /**
    * @brief
@@ -201,7 +192,7 @@ class RaftServer {
    */
   EStatus HandleApplyConfigChange(RaftNode*       from_node,
                                   eraftkv::Entry* ety,
-                                  int64_t         ety_index) {}
+                                  int64_t         ety_index);
 
   /**
    * @brief
@@ -209,9 +200,7 @@ class RaftServer {
    * @param ety
    * @return EStatus
    */
-  EStatus ProposeEntry(eraftkv::Entry* ety) {
-    // 1.append entry to log
-  }
+  EStatus ProposeEntry(eraftkv::Entry* ety);
 
 
   /**
@@ -219,42 +208,27 @@ class RaftServer {
    *
    * @return EStatus
    */
-  EStatus BecomeLeader() {
-    // 1.call net_->SendAppendEntries()
-  }
+  EStatus BecomeLeader();
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus BecomeFollower() {
-    // 1.reset election time out
-  }
+  EStatus BecomeFollower();
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus BecomeCandidate() {
-    // 1. set status canditate
-
-    // 2. incr current node term + 1
-    // call net_->SendRequestVote();
-  }
-
+  EStatus BecomeCandidate();
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus BecomePreCandidate() {
-    // 1. set status pre canditate
-
-    // 2. set request vote without current node term + 1
-    // call net_->SendRequestVote();
-  }
+  EStatus BecomePreCandidate();
 
   /**
    * @brief
@@ -262,59 +236,47 @@ class RaftServer {
    * @param is_prevote
    * @return EStatus
    */
-  EStatus ElectionStart(bool is_prevote) {
-    // 1. set random election timeout
-
-    // 2. if is_prevote = true, BecomePreCandidate else BecomeCandidate
-  }
+  EStatus ElectionStart(bool is_prevote);
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus BeginSnapshot() {
-    // 1. apply all commited log
-    // 2. set up snapshot status
-  }
-
+  EStatus BeginSnapshot();
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus EndSnapshot() {
-    // 1. call net_->SendSnapshot()
-  }
-
+  EStatus EndSnapshot();
   /**
    * @brief
    *
    * @return true
    * @return false
    */
-  bool SnapshotRunning() {}
+  bool SnapshotRunning();
 
   /**
    * @brief Get the Last Applied Entry object
    *
    * @return Entry*
    */
-  eraftkv::Entry* GetLastAppliedEntry() {}
-
+  eraftkv::Entry* GetLastAppliedEntry();
   /**
    * @brief Get the First Entry Idx object
    *
    * @return int64_t
    */
-  int64_t GetFirstEntryIdx() {}
+  int64_t GetFirstEntryIdx();
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus RestoreSnapshotAfterRestart() {}
+  EStatus RestoreSnapshotAfterRestart();
 
   /**
    * @brief
@@ -324,35 +286,37 @@ class RaftServer {
    * @return EStatus
    */
   EStatus BeginLoadSnapshot(int64_t last_included_term,
-                            int64_t last_included_index) {}
+                            int64_t last_included_index);
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus EndLoadSnapshot() {}
+  EStatus EndLoadSnapshot();
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus ProposeReadReq() {}
+  EStatus ProposeReadReq();
 
   /**
    * @brief Get the Logs Count Can Snapshot object
    *
    * @return int64_t
    */
-  int64_t GetLogsCountCanSnapshot() {}
+  int64_t GetLogsCountCanSnapshot();
 
   /**
    * @brief
    *
    * @return EStatus
    */
-  EStatus RestoreLog() {}
+  EStatus RestoreLog();
+
+  static EStatus RunMainLoop(RaftConfig raft_config);
 
  private:
   /**
@@ -371,6 +335,13 @@ class RaftServer {
    *
    */
   int64_t voted_for_;
+
+  /**
+   * @brief
+   *
+   */
+  NodeRaftRoleEnum role_;
+
   /**
    * @brief
    *
@@ -386,16 +357,36 @@ class RaftServer {
    *
    */
   int64_t last_applied_term_;
+
   /**
    * @brief
    *
    */
-  int state_;
+  int64_t request_timeout_tick_count_;
+
   /**
    * @brief
    *
    */
-  int64_t leader_id_;
+  int64_t election_timeout_tick_count_;
+
+  /**
+   * @brief tick interval
+   *
+   */
+  int64_t tick_interval_;
+
+  /**
+   * @brief current tick count
+   *
+   */
+  int64_t tick_count_;
+
+  /**
+   * @brief
+   *
+   */
+  std::string leader_id_;
   /**
    * @brief
    *
@@ -415,7 +406,7 @@ class RaftServer {
    * @brief
    *
    */
-  std::vector<RaftNode> nodes_;
+  std::vector<RaftNode*> nodes_;
   /**
    * @brief
    *

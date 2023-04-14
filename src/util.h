@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <cstring>
+#include <iostream>
 
 namespace fs = std::filesystem;
 class DirectoryTool {
@@ -40,3 +41,11 @@ public:
   }
 
 };
+
+template <typename ...Args>
+void TraceLog(Args&& ...args) {
+  std::ostringstream stream;
+  (stream << ... << std::forward<Args>(args)) << '\n';
+
+  std::cout << stream.str();
+}

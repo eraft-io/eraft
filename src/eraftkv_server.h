@@ -151,12 +151,6 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    *
    */
   RaftServer* raft_context_;
-
-  /**
-   * @brief
-   *
-   */
-  PeriodicCaller* periodic_caller_;
 };
 
 

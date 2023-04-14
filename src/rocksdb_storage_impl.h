@@ -167,6 +167,17 @@ class RocksDBStorageImpl : public Storage {
 };
 
 
+struct LogDBStatus
+{
+  int64_t prev_log_term;
+  int64_t prev_log_index;
+  int64_t entries_count;
+  int64_t last_log_index;
+  std::string db_path;
+  int64_t db_size;
+};
+
+
 /**
  * @brief
  *
@@ -185,6 +196,11 @@ class RocksDBLogStorageImpl : public LogStore {
    *
    */
   ~RocksDBLogStorageImpl();
+
+
+  EStatus Reset(int64_t index, int64_t term);
+
+  EStatus Open(std::string logdb_path, int64_t pre_log_term, int64_t pre_log_index);
 
   /**
    * @brief
@@ -259,6 +275,7 @@ class RocksDBLogStorageImpl : public LogStore {
    *
    */
   std::string node_id_;
+
   /**
    * @brief
    *
@@ -269,7 +286,7 @@ class RocksDBLogStorageImpl : public LogStore {
    * @brief 
    * 
    */
-  int64_t m_logdb_lastindex_;
+  LogDBStatus m_status_;
 
   /**
    * @brief
@@ -281,7 +298,7 @@ class RocksDBLogStorageImpl : public LogStore {
    * @brief 
    * 
    */
-  int64_t s_logdb_lastindex_;
+  LogDBStatus s_status_;
 
   /**
    * @brief cache for log entry

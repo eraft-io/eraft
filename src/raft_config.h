@@ -24,7 +24,7 @@
  *
  */
 struct RaftConfig {
-  int64_t                            id;
+  std::string                        id;
   std::map<std::string, std::string> peer_address_map;
   int64_t                            election_tick;
   int64_t                            heartbeat_tick;
