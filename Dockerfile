@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM eraft/eraftkv:v0.0.3
+FROM eraft/eraftkv:v0.0.4
 
 # ENV TZ=Asia/Kolkata \
 #     DEBIAN_FRONTEND=noninteractive
@@ -49,4 +49,8 @@ FROM eraft/eraftkv:v0.0.3
 # RUN git clone https://github.com/grpc/grpc.git && cd grpc && git checkout v1.28.0 && git submodule update --init && mkdir .build && cd .build && cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && make install -j4 && cd .. && rm -rf .build/CMakeCache.txt && cd .build && cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && make install -j4
 
 # intstall google benchmark
-RUN git clone https://github.com/google/benchmark.git && git clone https://github.com/google/googletest.git benchmark/googletest && cd benchmark && cmake -E make_directory "build" && cmake -E chdir "build" cmake -DCMAKE_BUILD_TYPE=Release ../ && cmake --build "build" --config Release --target install
+# RUN git clone https://github.com/google/benchmark.git && git clone https://github.com/google/googletest.git benchmark/googletest && cd benchmark && cmake -E make_directory "build" && cmake -E chdir "build" cmake -DCMAKE_BUILD_TYPE=Release ../ && cmake --build "build" --config Release --target install
+
+RUN cd /grpc/third_party/protobuf && ./autogen.sh && ./configure && make -j8 && make install
+
+RUN ldconfig

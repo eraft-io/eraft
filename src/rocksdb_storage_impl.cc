@@ -19,7 +19,9 @@
  * @return std::string
  */
 std::string RocksDBStorageImpl::GetNodeAddress(RaftServer* raft,
-                                               std::string id) {}
+                                               std::string id) {
+  return std::string("");
+}
 
 /**
  * @brief
@@ -31,7 +33,9 @@ std::string RocksDBStorageImpl::GetNodeAddress(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
                                             std::string id,
-                                            std::string address) {}
+                                            std::string address) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -43,7 +47,9 @@ EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                      int64_t     snapshot_index,
-                                     int64_t     snapshot_term) {}
+                                     int64_t     snapshot_term) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief Get the Snapshot Block object
@@ -57,7 +63,9 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
 EStatus RocksDBStorageImpl::GetSnapshotBlock(RaftServer*             raft,
                                              RaftNode*               node,
                                              int64_t                 offset,
-                                             eraftkv::SnapshotBlock* block) {}
+                                             eraftkv::SnapshotBlock* block) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -71,7 +79,9 @@ EStatus RocksDBStorageImpl::GetSnapshotBlock(RaftServer*             raft,
 EStatus RocksDBStorageImpl::StoreSnapshotBlock(RaftServer* raft,
                                                int64_t     snapshot_index,
                                                int64_t     offset,
-                                               eraftkv::SnapshotBlock* block) {}
+                                               eraftkv::SnapshotBlock* block) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -79,14 +89,18 @@ EStatus RocksDBStorageImpl::StoreSnapshotBlock(RaftServer* raft,
  * @param raft
  * @return EStatus
  */
-EStatus RocksDBStorageImpl::ClearSnapshot(RaftServer* raft) {}
+EStatus RocksDBStorageImpl::ClearSnapshot(RaftServer* raft) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
  *
  * @return EStatus
  */
-EStatus RocksDBStorageImpl::CreateDBSnapshot() {}
+EStatus RocksDBStorageImpl::CreateDBSnapshot() {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -98,7 +112,9 @@ EStatus RocksDBStorageImpl::CreateDBSnapshot() {}
  */
 EStatus RocksDBStorageImpl::SaveRaftMeta(RaftServer* raft,
                                          int64_t     term,
-                                         int64_t     vote) {}
+                                         int64_t     vote) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -110,7 +126,10 @@ EStatus RocksDBStorageImpl::SaveRaftMeta(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
                                          int64_t*    term,
-                                         int64_t*    vote) {}
+                                         int64_t*    vote) {
+
+  return EStatus::kOk;
+}
 
 
 /**

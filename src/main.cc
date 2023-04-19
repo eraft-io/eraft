@@ -48,9 +48,6 @@ int main(int argc, char** argv) {
   ERaftKvServerOptions options_;
   options_.svr_addr = "0.0.0.0:50051";
   ERaftKvServer server(options_);
-  RaftConfig    config;
-  RaftServer::RunMainLoop(config);
   server.BuildAndRunRpcServer();
-
   return 0;
 }

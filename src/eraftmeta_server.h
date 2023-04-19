@@ -106,7 +106,7 @@ struct ERaftMetaServerOptions {
    *
    */
   int64_t grpc_max_send_msg_size;
-}
+};
 
 /**
  * @brief
@@ -133,7 +133,9 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    *
    * @return grpc::Status
    */
-  grpc::Status RequestVote(RequestVoteReq, RequestVoteResp) {}
+  grpc::Status RequestVote(RequestVoteReq, RequestVoteResp) {
+    return grpc::Status::OK;
+  }
 
   /**
    * @brief  AppendEntries sends an append rpc with new entries and
@@ -141,43 +143,47 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    *
    * @return grpc::Status
    */
-  grpc::Status AppendEntries(AppendEntriesReq, RequestVoteResp) {}
+  grpc::Status AppendEntries(AppendEntriesReq, RequestVoteResp) {
+    return grpc::Status::OK;
+  }
   /**
    * @brief  Snapshot send a snaphost rpc with snapshot
    *
    * @return grpc::Status
    */
-  grpc::Status Snapshot(SnapshotReq, SnapshotResp) {}
+  grpc::Status Snapshot(SnapshotReq, SnapshotResp) {
+    return grpc::Status::OK;
+  }
   /**
    * @brief ProcessRWOperation recv read|write request
    *
    * @return grpc::Status
    */
   grpc::Status ProcessRWOperation(ClientOperationReq, ClientOperationResp) {
-    return EStatus::NotSupport();
+    return grpc::Status::OK;
   }
 
   grpc::Status ClusterConfigChange(ClusterConfigChangeReq,
-                                   ClusterConfigChangeResp) {}
+                                   ClusterConfigChangeResp) {
+    return grpc::Status::OK;
+  }
 
-  /**
-   * @brief InitTicker Initialize timer(heartbeat and election)
-   *
-   * @return EStatus
-   */
-  EStatus InitTicker() {}
   /**
    * @brief BuildAndRunRpcServer make new rpc server and run
    *
    * @return EStatus
    */
-  EStatus BuildAndRunRpcServer() {}
+  EStatus BuildAndRunRpcServer() {
+    return EStatus::kOk;
+  }
   /**
    * @brief RunRaftCycle raft loop
    *
    * @return EStatus
    */
-  EStatus RunRaftCycle() {}
+  EStatus RunRaftCycle() {
+    return EStatus::kOk;
+  }
 
  private:
   /**
@@ -185,12 +191,6 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    *
    */
   RaftServer* raft_context_;
-
-  /**
-   * @brief periodic_caller_ to call a function in periodic
-   *
-   */
-  PeriodicCaller* periodic_caller_;
 
   /**
    * @brief meta server options

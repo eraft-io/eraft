@@ -41,7 +41,7 @@ static std::string NodeRoleToStr(NodeRaftRoleEnum role) {
       return "Leader";
     }
     default:
-      break;
+      return "Unknow";
   }
 }
 
@@ -117,6 +117,13 @@ class RaftServer {
    * @return EStatus
    */
   EStatus ApplyEntries();
+
+  /**
+   * @brief
+   *
+   * @return EStatus
+   */
+  EStatus SendAppendEntries();
 
   /**
    * @brief
@@ -316,6 +323,19 @@ class RaftServer {
    */
   EStatus RestoreLog();
 
+  /**
+   * @brief
+   *
+   * @return EStatus
+   */
+  EStatus ResetRandomElectionTimeout();
+
+  /**
+   * @brief
+   *
+   * @param raft_config
+   * @return EStatus
+   */
   static EStatus RunMainLoop(RaftConfig raft_config);
 
  private:
@@ -323,7 +343,7 @@ class RaftServer {
    * @brief
    *
    */
-  std::string id_;
+  int64_t id_;
 
   /**
    * @brief
@@ -356,19 +376,43 @@ class RaftServer {
    * @brief
    *
    */
-  int64_t last_applied_term_;
+  long last_applied_term_;
 
   /**
    * @brief
    *
    */
-  int64_t request_timeout_tick_count_;
+  int64_t heartbeat_tick_count_;
 
   /**
    * @brief
    *
    */
-  int64_t election_timeout_tick_count_;
+  int64_t election_tick_count_;
+
+  /**
+   * @brief
+   *
+   */
+  int64_t heartbeat_timeout_;
+
+  /**
+   * @brief
+   *
+   */
+  int64_t election_timeout_;
+
+  /**
+   * @brief
+   *
+   */
+  int64_t base_election_timeout_;
+
+  /**
+   * @brief current tick count
+   *
+   */
+  int64_t tick_count_;
 
   /**
    * @brief tick interval
@@ -376,11 +420,6 @@ class RaftServer {
    */
   int64_t tick_interval_;
 
-  /**
-   * @brief current tick count
-   *
-   */
-  int64_t tick_count_;
 
   /**
    * @brief

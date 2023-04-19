@@ -15,8 +15,8 @@
 
 #include <rocksdb/db.h>
 
-#include "raft_server.h"
 #include "log_entry_cache.h"
+#include "raft_server.h"
 
 /**
  * @brief
@@ -167,14 +167,13 @@ class RocksDBStorageImpl : public Storage {
 };
 
 
-struct LogDBStatus
-{
-  int64_t prev_log_term;
-  int64_t prev_log_index;
-  int64_t entries_count;
-  int64_t last_log_index;
+struct LogDBStatus {
+  int64_t     prev_log_term;
+  int64_t     prev_log_index;
+  int64_t     entries_count;
+  int64_t     last_log_index;
   std::string db_path;
-  int64_t db_size;
+  int64_t     db_size;
 };
 
 
@@ -200,7 +199,9 @@ class RocksDBLogStorageImpl : public LogStore {
 
   EStatus Reset(int64_t index, int64_t term);
 
-  EStatus Open(std::string logdb_path, int64_t pre_log_term, int64_t pre_log_index);
+  EStatus Open(std::string logdb_path,
+               int64_t     pre_log_term,
+               int64_t     pre_log_index);
 
   /**
    * @brief
@@ -283,8 +284,8 @@ class RocksDBLogStorageImpl : public LogStore {
   rocksdb::DB* master_log_db_;
 
   /**
-   * @brief 
-   * 
+   * @brief
+   *
    */
   LogDBStatus m_status_;
 
@@ -295,17 +296,16 @@ class RocksDBLogStorageImpl : public LogStore {
   rocksdb::DB* standby_log_db_;
 
   /**
-   * @brief 
-   * 
+   * @brief
+   *
    */
   LogDBStatus s_status_;
 
   /**
    * @brief cache for log entry
-   * 
+   *
    */
   LogEntryCache* log_cache_;
-
 };
 
 #endif

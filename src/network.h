@@ -28,9 +28,10 @@ class Network {
    * @param req
    * @return EStatus
    */
-  virtual EStatus SendRequestVote(RaftServer*              raft,
-                                  RaftNode*                target_node,
-                                  eraftkv::RequestVoteReq* req) = 0;
+  virtual EStatus SendRequestVote(RaftServer*               raft,
+                                  RaftNode*                 target_node,
+                                  eraftkv::RequestVoteReq*  req,
+                                  eraftkv::RequestVoteResp* resp) = 0;
 
   /**
    * @brief
@@ -40,9 +41,10 @@ class Network {
    * @param req
    * @return EStatus
    */
-  virtual EStatus SendAppendEntries(RaftServer*                raft,
-                                    RaftNode*                  target_node,
-                                    eraftkv::AppendEntriesReq* req) = 0;
+  virtual EStatus SendAppendEntries(RaftServer*                 raft,
+                                    RaftNode*                   target_node,
+                                    eraftkv::AppendEntriesReq*  req,
+                                    eraftkv::AppendEntriesResp* resp) = 0;
 
   /**
    * @brief
@@ -52,9 +54,10 @@ class Network {
    * @param req
    * @return EStatus
    */
-  virtual EStatus SendSnapshot(RaftServer*           raft,
-                               RaftNode*             target_node,
-                               eraftkv::SnapshotReq* req) = 0;
+  virtual EStatus SendSnapshot(RaftServer*            raft,
+                               RaftNode*              target_node,
+                               eraftkv::SnapshotReq*  req,
+                               eraftkv::SnapshotResp* resp) = 0;
 };
 
 /**

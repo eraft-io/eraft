@@ -35,7 +35,7 @@ grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
 grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
                                           const eraftkv::AppendEntriesReq* req,
                                           eraftkv::RequestVoteResp* resp) {
-  // 1.call raft_context_->HandleAppendEntriesReq()
+  return grpc::Status::OK;
 }
 
 /**
@@ -48,8 +48,7 @@ grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
 grpc::Status ERaftKvServer::Snapshot(ServerContext*              context,
                                      const eraftkv::SnapshotReq* req,
                                      eraftkv::SnapshotResp*      resp) {
-  //  raftcore
-  // 1.call raft_context_->HandleSnapshotReq();
+  return grpc::Status::OK;
 }
 
 /**
@@ -66,6 +65,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   // 1. req into log entry
   // 2. call raft_context_->ProposeEntry()
   // 3. wait commit
+  return grpc::Status::OK;
 }
 
 /**
@@ -76,7 +76,10 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
 grpc::Status ERaftKvServer::ClusterConfigChange(
     ServerContext*                         context,
     const eraftkv::ClusterConfigChangeReq* req,
-    eraftkv::ClusterConfigChangeResp*      resp) {}
+    eraftkv::ClusterConfigChangeResp*      resp) {
+
+  return grpc::Status::OK;
+}
 
 /**
  * @brief
@@ -86,6 +89,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
  */
 EStatus ERaftKvServer::InitTicker(int interval) {
   // 1.set up raft_context_->RunCycle() run interval with periodic_caller_
+  return EStatus::kOk;
 }
 
 EStatus ERaftKvServer::BuildAndRunRpcServer() {
@@ -98,4 +102,5 @@ EStatus ERaftKvServer::BuildAndRunRpcServer() {
   builder.RegisterService(&service);
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   server->Wait();
+  return EStatus::kOk;
 }

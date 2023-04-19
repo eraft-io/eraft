@@ -25,12 +25,12 @@ enum NodeStateEnum { Init, Voting, Running, Down };
  *
  */
 struct RaftNode {
-  std::string   id;
+  int64_t       id;
   NodeStateEnum node_state;
   int64_t       next_log_index;
   int64_t       match_log_index;
 
-  RaftNode(std::string   id_,
+  RaftNode(int64_t       id_,
            NodeStateEnum node_state_,
            int64_t       next_log_index_,
            int64_t       match_log_index_)

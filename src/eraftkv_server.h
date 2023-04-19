@@ -61,14 +61,10 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    *
    * @param config
    */
-  ERaftKvServer(ERaftKvServerOptions config) {
-    // this.options_ = config;
-    // // init raft lib
-    // RaftConfig raft_config;
-    // raft_config.net_impl = new GRpcNetworkImpl();
-    // raft_config.store_impl = new RocksDBStorageImpl();
-    // raft_config.log_impl = new RocksDBLogStorageImpl();
-    // raft_context_ = new RaftServer(raft_config);
+  ERaftKvServer(ERaftKvServerOptions option) : options_(option) {
+    // init raft lib
+    RaftConfig raft_config;
+    RaftServer::RunMainLoop(raft_config);
   }
 
   ERaftKvServer() {}
