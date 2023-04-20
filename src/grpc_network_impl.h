@@ -8,8 +8,15 @@
  * @copyright Copyright (c) 2023
  *
  */
+#ifndef GRPC_NETWORK_IMPL_H_
+#define GRPC_NETWORK_IMPL_H_
+#include <grpcpp/grpcpp.h>
 
+#include "eraftkv.grpc.pb.h"
+#include "eraftkv.pb.h"
 #include "raft_server.h"
+
+using eraftkv::ERaftKv;
 
 class GRpcNetworkImpl : public Network {
 
@@ -24,12 +31,7 @@ class GRpcNetworkImpl : public Network {
    */
   EStatus SendRequestVote(RaftServer*              raft,
                           RaftNode*                target_node,
-                          eraftkv::RequestVoteReq* req) {
-    // 1.send request vote with grpc message to target_node
-    // 2.call raft->HandleRequestVoteResp();
-    return EStatus::kOk;
-  }
-
+                          eraftkv::RequestVoteReq* req);
 
   /**
    * @brief
@@ -41,9 +43,7 @@ class GRpcNetworkImpl : public Network {
    */
   EStatus SendAppendEntries(RaftServer*                raft,
                             RaftNode*                  target_node,
-                            eraftkv::AppendEntriesReq* req) {
-    return EStatus::kOk;
-  }
+                            eraftkv::AppendEntriesReq* req);
 
   /**
    * @brief
@@ -55,10 +55,7 @@ class GRpcNetworkImpl : public Network {
    */
   EStatus SendSnapshot(RaftServer*           raft,
                        RaftNode*             target_node,
-                       eraftkv::SnapshotReq* req) {
-    return EStatus::kOk;
-  }
-
+                       eraftkv::SnapshotReq* req);
 
   /**
    * @brief
@@ -66,10 +63,7 @@ class GRpcNetworkImpl : public Network {
    * @param peers_address
    * @return EStatus
    */
-  EStatus InitPeerNodeConnections(
-      std::map<std::string, std::string> peers_address) {
-    return EStatus::kOk;
-  }
+  EStatus InitPeerNodeConnections(std::map<int, std::string> peers_address);
 
   /**
    * @brief Get the Peer Node Connection object
@@ -77,14 +71,14 @@ class GRpcNetworkImpl : public Network {
    * @param node_id
    * @return std::unique_ptr<EraftKv::Stub>
    */
-  std::unique_ptr<EraftKv::Stub> GetPeerNodeConnection(std::string node_id) {
-    return nullptr;
-  }
+  ERaftKv::Stub* GetPeerNodeConnection(int node_id);
 
  private:
   /**
    * @brief
    *
    */
-  std::map<std::string, std::unique_ptr<EraftKv::Stub>> peer_node_connections_;
+  std::map<int, std::unique_ptr<ERaftKv::Stub>> peer_node_connections_;
 };
+
+#endif // SRC_GRPC_NETWORK_IMPL_H_

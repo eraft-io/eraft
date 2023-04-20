@@ -157,7 +157,7 @@ message ClientOperationResp {
 
 service ERaftKv {
   rpc RequestVote(RequestVoteReq) returns (RequestVoteResp);
-  rpc AppendEntries(AppendEntriesReq) returns (RequestVoteResp);
+  rpc AppendEntries(AppendEntriesReq) returns (AppendEntriesResp);
   rpc Snapshot(SnapshotReq) returns (SnapshotResp);
 
   rpc ProcessRWOperation(ClientOperationReq) returns (ClientOperationResp);
