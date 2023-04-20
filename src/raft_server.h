@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef RAFT_SERVER_H_
-#define RAFT_SERVER_H_
+#ifndef SRC_RAFT_SERVER_H_
+#define SRC_RAFT_SERVER_H_
 
 #include <cstdint>
 #include <iostream>
@@ -469,4 +469,4 @@ class RaftServer {
 };
 
 
-#endif  // RAFT_SERVER_H_
+#endif // SRC_RAFT_SERVER_H_

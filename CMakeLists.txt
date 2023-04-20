@@ -218,6 +218,7 @@ add_executable(grpc_network_impl_test
     src/eraftkv.pb.cc 
     src/eraftkv.grpc.pb.cc 
     src/raft_server.cc
+    src/eraftkv_server.cc 
 )
 target_link_libraries(grpc_network_impl_test PUBLIC
     ${GTEST_LIBRARIES}
