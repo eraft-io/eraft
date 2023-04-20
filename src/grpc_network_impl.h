@@ -27,6 +27,7 @@ class GRpcNetworkImpl : public Network {
                           eraftkv::RequestVoteReq* req) {
     // 1.send request vote with grpc message to target_node
     // 2.call raft->HandleRequestVoteResp();
+    return EStatus::kOk;
   }
 
 
@@ -40,7 +41,9 @@ class GRpcNetworkImpl : public Network {
    */
   EStatus SendAppendEntries(RaftServer*                raft,
                             RaftNode*                  target_node,
-                            eraftkv::AppendEntriesReq* req) {}
+                            eraftkv::AppendEntriesReq* req) {
+    return EStatus::kOk;
+  }
 
   /**
    * @brief
@@ -52,7 +55,9 @@ class GRpcNetworkImpl : public Network {
    */
   EStatus SendSnapshot(RaftServer*           raft,
                        RaftNode*             target_node,
-                       eraftkv::SnapshotReq* req) {}
+                       eraftkv::SnapshotReq* req) {
+    return EStatus::kOk;
+  }
 
 
   /**
@@ -63,7 +68,7 @@ class GRpcNetworkImpl : public Network {
    */
   EStatus InitPeerNodeConnections(
       std::map<std::string, std::string> peers_address) {
-    // parse peers address build connection stubs to peer
+    return EStatus::kOk;
   }
 
   /**
@@ -73,7 +78,7 @@ class GRpcNetworkImpl : public Network {
    * @return std::unique_ptr<EraftKv::Stub>
    */
   std::unique_ptr<EraftKv::Stub> GetPeerNodeConnection(std::string node_id) {
-    // get peer grpc connection stub form peer node connections map
+    return nullptr;
   }
 
  private:

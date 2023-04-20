@@ -140,6 +140,7 @@ list(APPEND eraftkv_sources src/rocksdb_storage_impl.cc)
 list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftkv_sources src/eraftkv.pb.cc)
 list(APPEND eraftkv_sources src/util.cc)
+list(APPEND eraftkv_sources src/raft_server.cc)
 list(APPEND eraftkv_sources src/log_entry_cache.cc)
 list(APPEND eraftkv_sources src/main.cc)
 

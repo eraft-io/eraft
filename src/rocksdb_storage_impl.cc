@@ -19,7 +19,9 @@
  * @return std::string
  */
 std::string RocksDBStorageImpl::GetNodeAddress(RaftServer* raft,
-                                               std::string id) {}
+                                               std::string id) {
+  return std::string("");
+}
 
 /**
  * @brief
@@ -31,7 +33,9 @@ std::string RocksDBStorageImpl::GetNodeAddress(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
                                             std::string id,
-                                            std::string address) {}
+                                            std::string address) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -43,7 +47,9 @@ EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                      int64_t     snapshot_index,
-                                     int64_t     snapshot_term) {}
+                                     int64_t     snapshot_term) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief Get the Snapshot Block object
@@ -57,7 +63,9 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
 EStatus RocksDBStorageImpl::GetSnapshotBlock(RaftServer*             raft,
                                              RaftNode*               node,
                                              int64_t                 offset,
-                                             eraftkv::SnapshotBlock* block) {}
+                                             eraftkv::SnapshotBlock* block) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -71,7 +79,9 @@ EStatus RocksDBStorageImpl::GetSnapshotBlock(RaftServer*             raft,
 EStatus RocksDBStorageImpl::StoreSnapshotBlock(RaftServer* raft,
                                                int64_t     snapshot_index,
                                                int64_t     offset,
-                                               eraftkv::SnapshotBlock* block) {}
+                                               eraftkv::SnapshotBlock* block) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -79,14 +89,18 @@ EStatus RocksDBStorageImpl::StoreSnapshotBlock(RaftServer* raft,
  * @param raft
  * @return EStatus
  */
-EStatus RocksDBStorageImpl::ClearSnapshot(RaftServer* raft) {}
+EStatus RocksDBStorageImpl::ClearSnapshot(RaftServer* raft) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
  *
  * @return EStatus
  */
-EStatus RocksDBStorageImpl::CreateDBSnapshot() {}
+EStatus RocksDBStorageImpl::CreateDBSnapshot() {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -98,7 +112,9 @@ EStatus RocksDBStorageImpl::CreateDBSnapshot() {}
  */
 EStatus RocksDBStorageImpl::SaveRaftMeta(RaftServer* raft,
                                          int64_t     term,
-                                         int64_t     vote) {}
+                                         int64_t     vote) {
+  return EStatus::kOk;
+}
 
 /**
  * @brief
@@ -110,7 +126,10 @@ EStatus RocksDBStorageImpl::SaveRaftMeta(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
                                          int64_t*    term,
-                                         int64_t*    vote) {}
+                                         int64_t*    vote) {
+
+  return EStatus::kOk;
+}
 
 
 /**
@@ -156,79 +175,3 @@ RocksDBStorageImpl::RocksDBStorageImpl(std::string db_path) {
 RocksDBStorageImpl::~RocksDBStorageImpl() {
   delete kv_db_;
 }
-
-
-/**
- * @brief
- *
- */
-void RocksDBLogStorageImpl::Init() {}
-
-/**
- * @brief
- *
- */
-void RocksDBLogStorageImpl::Free() {}
-
-/**
- * @brief
- *
- * @param ety
- * @return EStatus
- */
-EStatus RocksDBLogStorageImpl::Append(eraftkv::Entry* ety) {}
-
-/**
- * @brief
- *
- * @param first_index
- * @return EStatus
- */
-EStatus RocksDBLogStorageImpl::EraseBefore(int64_t first_index) {}
-
-/**
- * @brief
- *
- * @param from_index
- * @return EStatus
- */
-EStatus RocksDBLogStorageImpl::EraseAfter(int64_t from_index) {}
-
-/**
- * @brief
- *
- * @param index
- * @return eraftkv::Entry*
- */
-eraftkv::Entry* RocksDBLogStorageImpl::Get(int64_t index) {}
-
-/**
- * @brief
- *
- * @param start_index
- * @param end_index
- * @return std::vector<eraftkv::Entry*>
- */
-std::vector<eraftkv::Entry*> RocksDBLogStorageImpl::Gets(int64_t start_index,
-                                                         int64_t end_index) {}
-
-/**
- * @brief
- *
- * @return int64_t
- */
-int64_t RocksDBLogStorageImpl::FirstIndex() {}
-
-/**
- * @brief
- *
- * @return int64_t
- */
-int64_t RocksDBLogStorageImpl::LastIndex() {}
-
-/**
- * @brief
- *
- * @return int64_t
- */
-int64_t RocksDBLogStorageImpl::LogCount() {}

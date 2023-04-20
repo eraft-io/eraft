@@ -28,6 +28,7 @@
 #include <iostream>
 
 #include "eraftkv_server.h"
+#include "raft_server.h"
 /**
  * @brief
  *
@@ -47,6 +48,6 @@ int main(int argc, char** argv) {
   ERaftKvServerOptions options_;
   options_.svr_addr = "0.0.0.0:50051";
   ERaftKvServer server(options_);
-  // server.BuildAndRunRpcServer();
+  server.BuildAndRunRpcServer();
   return 0;
 }

@@ -1,4 +1,4 @@
-# find src -type f \( -name '*.h' -or -name '*.hpp' -or -name '*.cpp' -or -name '*.c' -or -name '*.cc' \) -print | xargs clang-format -style=file --sort-includes -i
+# clang-format -style=file --sort-includes -i [file to format]
 ---
 Language: Cpp
 BasedOnStyle: Google
