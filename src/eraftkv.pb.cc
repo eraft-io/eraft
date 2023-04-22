@@ -564,16 +564,16 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\004Down\020\001*:\n\027ClusterConfigChangeType\022\r\n\tAd"
   "dServer\020\000\022\020\n\014RemoveServer\020\001*3\n\014ClientOpT"
   "ype\022\007\n\003Put\020\000\022\007\n\003Get\020\001\022\007\n\003Del\020\002\022\010\n\004Scan\020\003"
-  "2\365\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv.Re"
-  "questVoteReq\032\030.eraftkv.RequestVoteResp\022D"
+  "2\367\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv.Re"
+  "questVoteReq\032\030.eraftkv.RequestVoteResp\022F"
   "\n\rAppendEntries\022\031.eraftkv.AppendEntriesR"
-  "eq\032\030.eraftkv.RequestVoteResp\0227\n\010Snapshot"
-  "\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Snapsho"
-  "tResp\022O\n\022ProcessRWOperation\022\033.eraftkv.Cl"
-  "ientOperationReq\032\034.eraftkv.ClientOperati"
-  "onResp\022X\n\023ClusterConfigChange\022\037.eraftkv."
-  "ClusterConfigChangeReq\032 .eraftkv.Cluster"
-  "ConfigChangeRespb\006proto3"
+  "eq\032\032.eraftkv.AppendEntriesResp\0227\n\010Snapsh"
+  "ot\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Snaps"
+  "hotResp\022O\n\022ProcessRWOperation\022\033.eraftkv."
+  "ClientOperationReq\032\034.eraftkv.ClientOpera"
+  "tionResp\022X\n\023ClusterConfigChange\022\037.eraftk"
+  "v.ClusterConfigChangeReq\032 .eraftkv.Clust"
+  "erConfigChangeRespb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
@@ -598,7 +598,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2584,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2586,
   &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
   file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,

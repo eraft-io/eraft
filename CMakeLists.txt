@@ -142,6 +142,7 @@ list(APPEND eraftkv_sources src/eraftkv.pb.cc)
 list(APPEND eraftkv_sources src/util.cc)
 list(APPEND eraftkv_sources src/raft_server.cc)
 list(APPEND eraftkv_sources src/log_entry_cache.cc)
+list(APPEND eraftkv_sources src/grpc_network_impl.cc)
 list(APPEND eraftkv_sources src/main.cc)
 
 
@@ -208,5 +209,20 @@ target_link_libraries(log_entry_cache_benchmark PUBLIC
     benchmark::benchmark
     pthread
     gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
+
+add_executable(grpc_network_impl_test 
+    src/grpc_network_impl_test.cc     
+    src/grpc_network_impl.cc 
+    src/eraftkv.pb.cc 
+    src/eraftkv.grpc.pb.cc 
+    src/raft_server.cc
+    src/eraftkv_server.cc 
+)
+target_link_libraries(grpc_network_impl_test PUBLIC
+    ${GTEST_LIBRARIES}
+    gRPC::grpc++
+    pthread
     ${Protobuf_LIBRARY}
 )

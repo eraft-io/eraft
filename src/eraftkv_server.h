@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef ERAFTKV_SERVER_H_
-#define ERAFTKV_SERVER_H_
+#ifndef SRC_ERAFTKV_SERVER_H_
+#define SRC_ERAFTKV_SERVER_H_
 
 #include <grpcpp/grpcpp.h>
 
@@ -68,7 +68,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   }
 
   ERaftKvServer() {}
-
+  
   /**
    * @brief
    *
@@ -150,4 +150,4 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
 };
 
 
-#endif
+#endif  // SRC_ERAFTKV_SERVER_H_
