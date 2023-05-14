@@ -566,6 +566,7 @@ class RequestVoteResp :
   enum : int {
     kRequestTermFieldNumber = 2,
     kTermFieldNumber = 3,
+    kLeaderIdFieldNumber = 5,
     kPrevoteFieldNumber = 1,
     kVoteGrantedFieldNumber = 4,
   };
@@ -585,6 +586,15 @@ class RequestVoteResp :
   private:
   ::PROTOBUF_NAMESPACE_ID::int64 _internal_term() const;
   void _internal_set_term(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 leader_id = 5;
+  void clear_leader_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_id() const;
+  void set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_leader_id() const;
+  void _internal_set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
   // bool prevote = 1;
@@ -612,6 +622,7 @@ class RequestVoteResp :
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::int64 request_term_;
   ::PROTOBUF_NAMESPACE_ID::int64 term_;
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_id_;
   bool prevote_;
   bool vote_granted_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -911,6 +922,7 @@ class AppendEntriesReq :
     kPrevLogIndexFieldNumber = 4,
     kPrevLogTermFieldNumber = 5,
     kLeaderCommitFieldNumber = 6,
+    kIsHeartbeatFieldNumber = 7,
   };
   // repeated .eraftkv.Entry entries = 8;
   int entries_size() const;
@@ -984,6 +996,15 @@ class AppendEntriesReq :
   void _internal_set_leader_commit(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
+  // bool is_heartbeat = 7;
+  void clear_is_heartbeat();
+  bool is_heartbeat() const;
+  void set_is_heartbeat(bool value);
+  private:
+  bool _internal_is_heartbeat() const;
+  void _internal_set_is_heartbeat(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.AppendEntriesReq)
  private:
   class _Internal;
@@ -996,6 +1017,7 @@ class AppendEntriesReq :
   ::PROTOBUF_NAMESPACE_ID::int64 prev_log_index_;
   ::PROTOBUF_NAMESPACE_ID::int64 prev_log_term_;
   ::PROTOBUF_NAMESPACE_ID::int64 leader_commit_;
+  bool is_heartbeat_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -3217,6 +3239,26 @@ inline void RequestVoteResp::set_vote_granted(bool value) {
   // @@protoc_insertion_point(field_set:eraftkv.RequestVoteResp.vote_granted)
 }
 
+// int64 leader_id = 5;
+inline void RequestVoteResp::clear_leader_id() {
+  leader_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 RequestVoteResp::_internal_leader_id() const {
+  return leader_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 RequestVoteResp::leader_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.RequestVoteResp.leader_id)
+  return _internal_leader_id();
+}
+inline void RequestVoteResp::_internal_set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  leader_id_ = value;
+}
+inline void RequestVoteResp::set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_leader_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.RequestVoteResp.leader_id)
+}
+
 // -------------------------------------------------------------------
 
 // Entry
@@ -3483,6 +3525,26 @@ inline void AppendEntriesReq::_internal_set_leader_commit(::PROTOBUF_NAMESPACE_I
 inline void AppendEntriesReq::set_leader_commit(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_leader_commit(value);
   // @@protoc_insertion_point(field_set:eraftkv.AppendEntriesReq.leader_commit)
+}
+
+// bool is_heartbeat = 7;
+inline void AppendEntriesReq::clear_is_heartbeat() {
+  is_heartbeat_ = false;
+}
+inline bool AppendEntriesReq::_internal_is_heartbeat() const {
+  return is_heartbeat_;
+}
+inline bool AppendEntriesReq::is_heartbeat() const {
+  // @@protoc_insertion_point(field_get:eraftkv.AppendEntriesReq.is_heartbeat)
+  return _internal_is_heartbeat();
+}
+inline void AppendEntriesReq::_internal_set_is_heartbeat(bool value) {
+  
+  is_heartbeat_ = value;
+}
+inline void AppendEntriesReq::set_is_heartbeat(bool value) {
+  _internal_set_is_heartbeat(value);
+  // @@protoc_insertion_point(field_set:eraftkv.AppendEntriesReq.is_heartbeat)
 }
 
 // repeated .eraftkv.Entry entries = 8;

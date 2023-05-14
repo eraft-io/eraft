@@ -119,6 +119,7 @@ class Storage {
   virtual EStatus ReadRaftMeta(RaftServer* raft,
                                int64_t*    term,
                                int64_t*    vote) = 0;
+
 };
 
 #endif  // SRC_STORAGE_H_

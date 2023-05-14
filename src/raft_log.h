@@ -80,6 +80,25 @@ class LogStore {
    * @return int64_t
    */
   virtual int64_t LogCount() = 0;
+
+  /**
+   * @brief Get the First Ety object
+   * 
+   * @return eraftkv::Entry* 
+   */
+  virtual eraftkv::Entry* GetFirstEty() = 0;
+
+  /**
+   * @brief Get the Last Ety object
+   * 
+   * @return eraftkv::Entry* 
+   */
+  virtual eraftkv::Entry* GetLastEty() = 0;
+
+  virtual EStatus PersisLogMetaState(int64_t commit_idx, int64_t applied_idx) = 0;
+
+  virtual EStatus ReadMetaState(int64_t* commit_idx, int64_t* applied_idx) = 0;
+
 };
 
 /**

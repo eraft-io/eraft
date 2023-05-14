@@ -121,13 +121,6 @@ class RaftServer {
   /**
    * @brief
    *
-   * @return EStatus
-   */
-  EStatus SendAppendEntries();
-
-  /**
-   * @brief
-   *
    * @param from_node
    * @param req
    * @param resp
@@ -144,6 +137,7 @@ class RaftServer {
    * @return EStatus
    */
   EStatus HandleRequestVoteResp(RaftNode*                 from_node,
+                                eraftkv::RequestVoteReq*  req,
                                 eraftkv::RequestVoteResp* resp);
 
   /**
@@ -165,6 +159,7 @@ class RaftServer {
    * @return EStatus
    */
   EStatus HandleAppendEntriesResp(RaftNode*                   from_node,
+                                  eraftkv::AppendEntriesReq*  req,
                                   eraftkv::AppendEntriesResp* resp);
 
   /**
@@ -338,6 +333,55 @@ class RaftServer {
    */
   static EStatus RunMainLoop(RaftConfig raft_config);
 
+  /**
+   * @brief 
+   * 
+   * @return EStatus 
+   */
+  EStatus SendHeartBeat();
+
+  /**
+   * @brief 
+   * 
+   * @return EStatus 
+   */
+  EStatus SendAppendEntries();
+
+  /**
+   * @brief 
+   * 
+   * @param last_idx 
+   * @param term 
+   * @return true 
+   * @return false 
+   */
+  bool IsUpToDate(int64_t last_idx, int64_t term);
+
+  /**
+   * @brief 
+   * 
+   * @return EStatus 
+   */
+  EStatus AdvanceCommitIndexForLeader();
+
+  /**
+   * @brief 
+   * 
+   * @param leader_commit 
+   * @return EStatus 
+   */
+  EStatus AdvanceCommitIndexForFollower(int64_t leader_commit);
+
+  /**
+   * @brief 
+   * 
+   * @param term 
+   * @param index 
+   * @return true 
+   * @return false 
+   */
+  bool MatchLog(int64_t term, int64_t index);
+
  private:
   /**
    * @brief
@@ -355,6 +399,12 @@ class RaftServer {
    *
    */
   int64_t voted_for_;
+
+  /**
+   * @brief node granted votes count
+   * 
+   */
+  int64_t granted_votes_;
 
   /**
    * @brief
@@ -425,7 +475,7 @@ class RaftServer {
    * @brief
    *
    */
-  std::string leader_id_;
+  int64_t leader_id_;
   /**
    * @brief
    *
@@ -441,6 +491,12 @@ class RaftServer {
    *
    */
   int64_t node_count_;
+
+  /**
+   * @brief 
+   * 
+   */
+  int64_t max_entries_per_append_req_;
   /**
    * @brief
    *

@@ -46,7 +46,7 @@ EStatus GRpcNetworkImpl::SendRequestVote(RaftServer*              raft,
   ClientContext             context;
   auto                      status = stub_->RequestVote(&context, *req, resp);
   // 2.call raft->HandleRequestVoteResp();
-  if (raft->HandleRequestVoteResp(target_node, resp) == EStatus::kOk) {
+  if (raft->HandleRequestVoteResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
     return EStatus::kNotFound;
@@ -75,7 +75,7 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
   ClientContext               context;
   auto status = stub_->AppendEntries(&context, *req, resp);
   // 2.call raft->HandleAppendEntriesResp();
-  if (raft->HandleAppendEntriesResp(target_node, resp) == EStatus::kOk) {
+  if (raft->HandleAppendEntriesResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
     return EStatus::kNotFound;

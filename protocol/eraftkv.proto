@@ -20,6 +20,7 @@ message RequestVoteResp {
   int64 request_term = 2;
   int64 term = 3;
   bool  vote_granted = 4;
+  int64 leader_id = 5;
 }
 
 enum EntryType {
@@ -46,6 +47,7 @@ message AppendEntriesReq {
   int64          prev_log_index = 4;
   int64          prev_log_term = 5;
   int64          leader_commit = 6;
+  bool           is_heartbeat = 7;
   repeated Entry entries = 8;
 }
 

@@ -22,6 +22,7 @@ enum class EStatus {
   kNotFound = 1,
   kNotSupport = 2,
   kPutKeyToRocksDBErr = 3,
+  kError = 4,
 };
 
 #endif

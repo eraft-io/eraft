@@ -27,7 +27,7 @@ TEST(GrpcTest, TestInit) {
     peers_address[1] = "0.0.0.0:50051";
     GRpcNetworkImpl grpcimpl;
     grpcimpl.InitPeerNodeConnections(peers_address);
-    RaftNode raftNode(1, NodeStateEnum::Running, 0, 0);
+    RaftNode raftNode(1, NodeStateEnum::Running, 0, 0, "");
     RaftConfig raftconf;
     RaftServer* raftServer = new RaftServer(raftconf);
     eraftkv::RequestVoteReq        req;
