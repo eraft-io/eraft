@@ -172,9 +172,10 @@ target_include_directories(gtest_example_tests PUBLIC ${eraftkv_INCLUDE_DIR})
 # build eraftkv_server test
 add_executable(eraftkv_server_test 
     src/eraftkv_server_test.cc 
-    src/eraftkv_server.cc 
+    src/eraftkv_server.cc
     src/eraftkv.pb.cc 
     src/eraftkv.grpc.pb.cc
+    src/raft_server.cc
 )
 target_link_libraries(eraftkv_server_test PUBLIC
     ${GTEST_LIBRARIES}

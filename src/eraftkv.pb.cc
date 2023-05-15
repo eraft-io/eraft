@@ -375,6 +375,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftkv_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, term_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, success_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, current_index_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, conflict_index_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, conflict_term_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotBlock, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -478,17 +480,17 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 20, -1, sizeof(::eraftkv::Entry)},
   { 30, -1, sizeof(::eraftkv::AppendEntriesReq)},
   { 43, -1, sizeof(::eraftkv::AppendEntriesResp)},
-  { 52, -1, sizeof(::eraftkv::SnapshotBlock)},
-  { 61, -1, sizeof(::eraftkv::SnapshotReq)},
-  { 72, -1, sizeof(::eraftkv::SnapshotResp)},
-  { 82, -1, sizeof(::eraftkv::KeyRange)},
-  { 92, -1, sizeof(::eraftkv::Server)},
-  { 100, -1, sizeof(::eraftkv::ShardGroup)},
-  { 108, -1, sizeof(::eraftkv::ClusterConfigChangeReq)},
-  { 117, -1, sizeof(::eraftkv::ClusterConfigChangeResp)},
-  { 125, -1, sizeof(::eraftkv::KvOpPair)},
-  { 134, -1, sizeof(::eraftkv::ClientOperationReq)},
-  { 141, -1, sizeof(::eraftkv::ClientOperationResp)},
+  { 54, -1, sizeof(::eraftkv::SnapshotBlock)},
+  { 63, -1, sizeof(::eraftkv::SnapshotReq)},
+  { 74, -1, sizeof(::eraftkv::SnapshotResp)},
+  { 84, -1, sizeof(::eraftkv::KeyRange)},
+  { 94, -1, sizeof(::eraftkv::Server)},
+  { 102, -1, sizeof(::eraftkv::ShardGroup)},
+  { 110, -1, sizeof(::eraftkv::ClusterConfigChangeReq)},
+  { 119, -1, sizeof(::eraftkv::ClusterConfigChangeResp)},
+  { 127, -1, sizeof(::eraftkv::KvOpPair)},
+  { 136, -1, sizeof(::eraftkv::ClientOperationReq)},
+  { 143, -1, sizeof(::eraftkv::ClientOperationResp)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -525,58 +527,59 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "rev_log_index\030\004 \001(\003\022\025\n\rprev_log_term\030\005 \001"
   "(\003\022\025\n\rleader_commit\030\006 \001(\003\022\024\n\014is_heartbea"
   "t\030\007 \001(\010\022\037\n\007entries\030\010 \003(\0132\016.eraftkv.Entry"
-  "\"`\n\021AppendEntriesResp\022\025\n\rmessage_token\030\001"
-  " \001(\t\022\014\n\004term\030\002 \001(\003\022\017\n\007success\030\003 \001(\010\022\025\n\rc"
-  "urrent_index\030\004 \001(\003\"X\n\rSnapshotBlock\022\016\n\006o"
-  "ffset\030\001 \001(\003\022\014\n\004data\030\002 \001(\014\022\022\n\nblock_size\030"
-  "\003 \001(\003\022\025\n\ris_last_chunk\030\004 \001(\010\"\233\001\n\013Snapsho"
-  "tReq\022\014\n\004term\030\001 \001(\003\022\021\n\tleader_id\030\002 \001(\003\022\025\n"
-  "\rmessage_index\030\003 \001(\t\022\026\n\016snapshot_index\030\004"
-  " \001(\003\022\025\n\rsnapshot_term\030\005 \001(\003\022%\n\005block\030\006 \001"
-  "(\0132\026.eraftkv.SnapshotBlock\"k\n\014SnapshotRe"
-  "sp\022\014\n\004term\030\001 \001(\003\022\025\n\rmessage_index\030\002 \001(\t\022"
-  "\016\n\006offset\030\003 \001(\003\022\017\n\007success\030\004 \001(\010\022\025\n\ris_l"
-  "ast_chunk\030\005 \001(\010\"\207\001\n\010KeyRange\0221\n\020key_rang"
-  "e_status\030\001 \001(\0162\027.eraftkv.KeyRangeStatus\022"
-  "\020\n\010shard_id\030\002 \001(\003\022\032\n\022status_modify_time\030"
-  "\003 \001(\003\022\r\n\005start\030\004 \001(\t\022\013\n\003end\030\005 \001(\t\"S\n\006Ser"
-  "ver\022\n\n\002id\030\001 \001(\t\022\017\n\007address\030\002 \001(\t\022,\n\rserv"
-  "er_status\030\003 \001(\0162\025.eraftkv.ServerStatus\"`"
-  "\n\nShardGroup\022\n\n\002id\030\001 \001(\003\022$\n\tkey_range\030\002 "
-  "\001(\0132\021.eraftkv.KeyRange\022 \n\007servers\030\003 \003(\0132"
-  "\017.eraftkv.Server\"\232\001\n\026ClusterConfigChange"
-  "Req\0225\n\013change_type\030\001 \001(\0162 .eraftkv.Clust"
-  "erConfigChangeType\022\020\n\010shard_id\030\002 \001(\003\022\037\n\006"
-  "server\030\003 \001(\0132\017.eraftkv.Server\022\026\n\016config_"
-  "version\030\004 \001(\003\"l\n\027ClusterConfigChangeResp"
-  "\022\017\n\007success\030\001 \001(\010\022(\n\013shard_group\030\002 \003(\0132\023"
-  ".eraftkv.ShardGroup\022\026\n\016config_version\030\003 "
-  "\001(\003\"^\n\010KvOpPair\022&\n\007op_type\030\001 \001(\0162\025.eraft"
-  "kv.ClientOpType\022\013\n\003key\030\002 \001(\t\022\r\n\005value\030\003 "
-  "\001(\t\022\016\n\006cursor\030\004 \001(\004\"J\n\022ClientOperationRe"
-  "q\022\024\n\014op_timestamp\030\001 \001(\004\022\036\n\003kvs\030\002 \003(\0132\021.e"
-  "raftkv.KvOpPair\"F\n\023ClientOperationResp\022\017"
-  "\n\007success\030\001 \001(\010\022\036\n\003ops\030\002 \003(\0132\021.eraftkv.K"
-  "vOpPair*O\n\tErrorCode\022\033\n\027REQUEST_NOT_LEAD"
-  "ER_NODE\020\000\022\020\n\014NODE_IS_DOWN\020\001\022\023\n\017REQUEST_T"
-  "IMEOUT\020\002*]\n\tEntryType\022\n\n\006Normal\020\000\022\014\n\010Joi"
-  "nNode\020\001\022\r\n\tLeaveNode\020\002\022\r\n\tJoinGroup\020\003\022\016\n"
-  "\nLeaveGroup\020\004\022\010\n\004NoOp\020\005*E\n\016KeyRangeStatu"
-  "s\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\tImporti"
-  "ng\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n\002Up\020\000\022\010"
-  "\n\004Down\020\001*:\n\027ClusterConfigChangeType\022\r\n\tA"
-  "ddServer\020\000\022\020\n\014RemoveServer\020\001*3\n\014ClientOp"
-  "Type\022\007\n\003Put\020\000\022\007\n\003Get\020\001\022\007\n\003Del\020\002\022\010\n\004Scan\020"
-  "\0032\367\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv.R"
-  "equestVoteReq\032\030.eraftkv.RequestVoteResp\022"
-  "F\n\rAppendEntries\022\031.eraftkv.AppendEntries"
-  "Req\032\032.eraftkv.AppendEntriesResp\0227\n\010Snaps"
-  "hot\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Snap"
-  "shotResp\022O\n\022ProcessRWOperation\022\033.eraftkv"
-  ".ClientOperationReq\032\034.eraftkv.ClientOper"
-  "ationResp\022X\n\023ClusterConfigChange\022\037.eraft"
-  "kv.ClusterConfigChangeReq\032 .eraftkv.Clus"
-  "terConfigChangeRespb\006proto3"
+  "\"\217\001\n\021AppendEntriesResp\022\025\n\rmessage_token\030"
+  "\001 \001(\t\022\014\n\004term\030\002 \001(\003\022\017\n\007success\030\003 \001(\010\022\025\n\r"
+  "current_index\030\004 \001(\003\022\026\n\016conflict_index\030\005 "
+  "\001(\003\022\025\n\rconflict_term\030\006 \001(\003\"X\n\rSnapshotBl"
+  "ock\022\016\n\006offset\030\001 \001(\003\022\014\n\004data\030\002 \001(\014\022\022\n\nblo"
+  "ck_size\030\003 \001(\003\022\025\n\ris_last_chunk\030\004 \001(\010\"\233\001\n"
+  "\013SnapshotReq\022\014\n\004term\030\001 \001(\003\022\021\n\tleader_id\030"
+  "\002 \001(\003\022\025\n\rmessage_index\030\003 \001(\t\022\026\n\016snapshot"
+  "_index\030\004 \001(\003\022\025\n\rsnapshot_term\030\005 \001(\003\022%\n\005b"
+  "lock\030\006 \001(\0132\026.eraftkv.SnapshotBlock\"k\n\014Sn"
+  "apshotResp\022\014\n\004term\030\001 \001(\003\022\025\n\rmessage_inde"
+  "x\030\002 \001(\t\022\016\n\006offset\030\003 \001(\003\022\017\n\007success\030\004 \001(\010"
+  "\022\025\n\ris_last_chunk\030\005 \001(\010\"\207\001\n\010KeyRange\0221\n\020"
+  "key_range_status\030\001 \001(\0162\027.eraftkv.KeyRang"
+  "eStatus\022\020\n\010shard_id\030\002 \001(\003\022\032\n\022status_modi"
+  "fy_time\030\003 \001(\003\022\r\n\005start\030\004 \001(\t\022\013\n\003end\030\005 \001("
+  "\t\"S\n\006Server\022\n\n\002id\030\001 \001(\t\022\017\n\007address\030\002 \001(\t"
+  "\022,\n\rserver_status\030\003 \001(\0162\025.eraftkv.Server"
+  "Status\"`\n\nShardGroup\022\n\n\002id\030\001 \001(\003\022$\n\tkey_"
+  "range\030\002 \001(\0132\021.eraftkv.KeyRange\022 \n\007server"
+  "s\030\003 \003(\0132\017.eraftkv.Server\"\232\001\n\026ClusterConf"
+  "igChangeReq\0225\n\013change_type\030\001 \001(\0162 .eraft"
+  "kv.ClusterConfigChangeType\022\020\n\010shard_id\030\002"
+  " \001(\003\022\037\n\006server\030\003 \001(\0132\017.eraftkv.Server\022\026\n"
+  "\016config_version\030\004 \001(\003\"l\n\027ClusterConfigCh"
+  "angeResp\022\017\n\007success\030\001 \001(\010\022(\n\013shard_group"
+  "\030\002 \003(\0132\023.eraftkv.ShardGroup\022\026\n\016config_ve"
+  "rsion\030\003 \001(\003\"^\n\010KvOpPair\022&\n\007op_type\030\001 \001(\016"
+  "2\025.eraftkv.ClientOpType\022\013\n\003key\030\002 \001(\t\022\r\n\005"
+  "value\030\003 \001(\t\022\016\n\006cursor\030\004 \001(\004\"J\n\022ClientOpe"
+  "rationReq\022\024\n\014op_timestamp\030\001 \001(\004\022\036\n\003kvs\030\002"
+  " \003(\0132\021.eraftkv.KvOpPair\"F\n\023ClientOperati"
+  "onResp\022\017\n\007success\030\001 \001(\010\022\036\n\003ops\030\002 \003(\0132\021.e"
+  "raftkv.KvOpPair*O\n\tErrorCode\022\033\n\027REQUEST_"
+  "NOT_LEADER_NODE\020\000\022\020\n\014NODE_IS_DOWN\020\001\022\023\n\017R"
+  "EQUEST_TIMEOUT\020\002*]\n\tEntryType\022\n\n\006Normal\020"
+  "\000\022\014\n\010JoinNode\020\001\022\r\n\tLeaveNode\020\002\022\r\n\tJoinGr"
+  "oup\020\003\022\016\n\nLeaveGroup\020\004\022\010\n\004NoOp\020\005*E\n\016KeyRa"
+  "ngeStatus\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n"
+  "\tImporting\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006"
+  "\n\002Up\020\000\022\010\n\004Down\020\001*:\n\027ClusterConfigChangeT"
+  "ype\022\r\n\tAddServer\020\000\022\020\n\014RemoveServer\020\001*3\n\014"
+  "ClientOpType\022\007\n\003Put\020\000\022\007\n\003Get\020\001\022\007\n\003Del\020\002\022"
+  "\010\n\004Scan\020\0032\367\002\n\007ERaftKv\022@\n\013RequestVote\022\027.e"
+  "raftkv.RequestVoteReq\032\030.eraftkv.RequestV"
+  "oteResp\022F\n\rAppendEntries\022\031.eraftkv.Appen"
+  "dEntriesReq\032\032.eraftkv.AppendEntriesResp\022"
+  "7\n\010Snapshot\022\024.eraftkv.SnapshotReq\032\025.eraf"
+  "tkv.SnapshotResp\022O\n\022ProcessRWOperation\022\033"
+  ".eraftkv.ClientOperationReq\032\034.eraftkv.Cl"
+  "ientOperationResp\022X\n\023ClusterConfigChange"
+  "\022\037.eraftkv.ClusterConfigChangeReq\032 .eraf"
+  "tkv.ClusterConfigChangeRespb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
@@ -601,7 +604,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2627,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2675,
   &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
   file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
@@ -2043,6 +2046,20 @@ const char* AppendEntriesResp::_InternalParse(const char* ptr, ::PROTOBUF_NAMESP
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
+      // int64 conflict_index = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          conflict_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int64 conflict_term = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          conflict_term_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
@@ -2097,6 +2114,18 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(4, this->_internal_current_index(), target);
   }
 
+  // int64 conflict_index = 5;
+  if (this->conflict_index() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(5, this->_internal_conflict_index(), target);
+  }
+
+  // int64 conflict_term = 6;
+  if (this->conflict_term() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(6, this->_internal_conflict_term(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
@@ -2132,6 +2161,20 @@ size_t AppendEntriesResp::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
         this->_internal_current_index());
+  }
+
+  // int64 conflict_index = 5;
+  if (this->conflict_index() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_conflict_index());
+  }
+
+  // int64 conflict_term = 6;
+  if (this->conflict_term() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_conflict_term());
   }
 
   // bool success = 3;
@@ -2180,6 +2223,12 @@ void AppendEntriesResp::MergeFrom(const AppendEntriesResp& from) {
   if (from.current_index() != 0) {
     _internal_set_current_index(from._internal_current_index());
   }
+  if (from.conflict_index() != 0) {
+    _internal_set_conflict_index(from._internal_conflict_index());
+  }
+  if (from.conflict_term() != 0) {
+    _internal_set_conflict_term(from._internal_conflict_term());
+  }
   if (from.success() != 0) {
     _internal_set_success(from._internal_success());
   }
@@ -2210,6 +2259,8 @@ void AppendEntriesResp::InternalSwap(AppendEntriesResp* other) {
     GetArenaNoVirtual());
   swap(term_, other->term_);
   swap(current_index_, other->current_index_);
+  swap(conflict_index_, other->conflict_index_);
+  swap(conflict_term_, other->conflict_term_);
   swap(success_, other->success_);
 }
 

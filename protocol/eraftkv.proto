@@ -56,6 +56,8 @@ message AppendEntriesResp {
   int64  term = 2;
   bool   success = 3;
   int64  current_index = 4;
+  int64  conflict_index = 5;
+  int64  conflict_term = 6;
 }
 
 message SnapshotBlock {

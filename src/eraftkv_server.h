@@ -64,11 +64,11 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   ERaftKvServer(ERaftKvServerOptions option) : options_(option) {
     // init raft lib
     RaftConfig raft_config;
-    RaftServer::RunMainLoop(raft_config);
+    this->raft_context_ = RaftServer::RunMainLoop(raft_config);
   }
 
   ERaftKvServer() {}
-  
+
   /**
    * @brief
    *
@@ -89,7 +89,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    */
   Status AppendEntries(ServerContext*                   context,
                        const eraftkv::AppendEntriesReq* req,
-                       eraftkv::RequestVoteResp*        resp);
+                       eraftkv::AppendEntriesResp*      resp);
   /**
    * @brief
    *
@@ -120,14 +120,6 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   Status ClusterConfigChange(ServerContext*                         context,
                              const eraftkv::ClusterConfigChangeReq* req,
                              eraftkv::ClusterConfigChangeResp*      resp);
-  /**
-   * @brief
-   *
-   * @param interval
-   * @return EStatus
-   */
-  EStatus InitTicker(int interval);
-
   /**
    * @brief
    *

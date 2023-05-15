@@ -1132,6 +1132,8 @@ class AppendEntriesResp :
     kMessageTokenFieldNumber = 1,
     kTermFieldNumber = 2,
     kCurrentIndexFieldNumber = 4,
+    kConflictIndexFieldNumber = 5,
+    kConflictTermFieldNumber = 6,
     kSuccessFieldNumber = 3,
   };
   // string message_token = 1;
@@ -1168,6 +1170,24 @@ class AppendEntriesResp :
   void _internal_set_current_index(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
+  // int64 conflict_index = 5;
+  void clear_conflict_index();
+  ::PROTOBUF_NAMESPACE_ID::int64 conflict_index() const;
+  void set_conflict_index(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_conflict_index() const;
+  void _internal_set_conflict_index(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 conflict_term = 6;
+  void clear_conflict_term();
+  ::PROTOBUF_NAMESPACE_ID::int64 conflict_term() const;
+  void set_conflict_term(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_conflict_term() const;
+  void _internal_set_conflict_term(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // bool success = 3;
   void clear_success();
   bool success() const;
@@ -1185,6 +1205,8 @@ class AppendEntriesResp :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr message_token_;
   ::PROTOBUF_NAMESPACE_ID::int64 term_;
   ::PROTOBUF_NAMESPACE_ID::int64 current_index_;
+  ::PROTOBUF_NAMESPACE_ID::int64 conflict_index_;
+  ::PROTOBUF_NAMESPACE_ID::int64 conflict_term_;
   bool success_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
@@ -3708,6 +3730,46 @@ inline void AppendEntriesResp::_internal_set_current_index(::PROTOBUF_NAMESPACE_
 inline void AppendEntriesResp::set_current_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_current_index(value);
   // @@protoc_insertion_point(field_set:eraftkv.AppendEntriesResp.current_index)
+}
+
+// int64 conflict_index = 5;
+inline void AppendEntriesResp::clear_conflict_index() {
+  conflict_index_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 AppendEntriesResp::_internal_conflict_index() const {
+  return conflict_index_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 AppendEntriesResp::conflict_index() const {
+  // @@protoc_insertion_point(field_get:eraftkv.AppendEntriesResp.conflict_index)
+  return _internal_conflict_index();
+}
+inline void AppendEntriesResp::_internal_set_conflict_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  conflict_index_ = value;
+}
+inline void AppendEntriesResp::set_conflict_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_conflict_index(value);
+  // @@protoc_insertion_point(field_set:eraftkv.AppendEntriesResp.conflict_index)
+}
+
+// int64 conflict_term = 6;
+inline void AppendEntriesResp::clear_conflict_term() {
+  conflict_term_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 AppendEntriesResp::_internal_conflict_term() const {
+  return conflict_term_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 AppendEntriesResp::conflict_term() const {
+  // @@protoc_insertion_point(field_get:eraftkv.AppendEntriesResp.conflict_term)
+  return _internal_conflict_term();
+}
+inline void AppendEntriesResp::_internal_set_conflict_term(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  conflict_term_ = value;
+}
+inline void AppendEntriesResp::set_conflict_term(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_conflict_term(value);
+  // @@protoc_insertion_point(field_set:eraftkv.AppendEntriesResp.conflict_term)
 }
 
 // -------------------------------------------------------------------

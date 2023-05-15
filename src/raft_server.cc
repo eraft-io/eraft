@@ -1,9 +1,9 @@
 #include "raft_server.h"
 
-#include <thread>
-#include <algorithm>
 #include <bits/stdc++.h>
 
+#include <algorithm>
+#include <thread>
 
 #include "util.h"
 
@@ -42,45 +42,11 @@ EStatus RaftServer::ResetRandomElectionTimeout() {
   return EStatus::kOk;
 }
 
-EStatus RaftServer::RunMainLoop(RaftConfig raft_config) {
+RaftServer* RaftServer::RunMainLoop(RaftConfig raft_config) {
   RaftServer* svr = new RaftServer(raft_config);
   std::thread th(&RaftServer::RunCycle, svr);
   th.detach();
-  return EStatus::kOk;
-}
-
-/**
- * @brief Get the Entries To Be Send object
- *
- * @param node
- * @param index
- * @param count
- * @return std::vector<eraftkv::Entry*>
- */
-std::vector<eraftkv::Entry*> RaftServer::GetEntriesToBeSend(RaftNode* node,
-                                                            int64_t   index,
-                                                            int64_t   count) {
-  return std::vector<eraftkv::Entry*>{};
-}
-
-/**
- * @brief
- *
- * @param term
- * @param vote
- * @return EStatus
- */
-EStatus RaftServer::SaveMetaData(int64_t term, int64_t vote) {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RaftServer::ReadMetaData() {
-  return EStatus::kOk;
+  return svr;
 }
 
 /**
@@ -115,8 +81,12 @@ EStatus RaftServer::RunCycle() {
     heartbeat_tick_count_ += 1;
     election_tick_count_ += 1;
     if (heartbeat_tick_count_ == heartbeat_timeout_) {
-      TraceLog("DEBUG: ", "heartbeat timeout");
-      heartbeat_tick_count_ = 0;
+      if (this->role_ == NodeRaftRoleEnum::Leader) {
+        TraceLog("DEBUG: ", "heartbeat timeout");
+        this->SendHeartBeat();
+        heartbeat_tick_count_ = 0;
+      }
+      this->ApplyEntries();
     }
     if (election_tick_count_ == election_timeout_) {
       TraceLog("DEBUG: ", "start election in term", current_term_);
@@ -145,7 +115,7 @@ EStatus RaftServer::SendAppendEntries() {
 
   for (auto& node : this->nodes_) {
     if (node->id == this->id_) {
-      return EStatus::kNotSupport;
+      return EStatus::kOk;
     }
 
     auto prev_log_index = node->next_log_index - 1;
@@ -156,16 +126,17 @@ EStatus RaftServer::SendAppendEntries() {
       auto prev_log_entry = this->log_store_->Get(prev_log_index);
       auto copy_cnt = this->log_store_->LastIndex() - prev_log_index;
       if (copy_cnt > this->max_entries_per_append_req_) {
-        copy_cnt =  this->max_entries_per_append_req_;
+        copy_cnt = this->max_entries_per_append_req_;
       }
 
       eraftkv::AppendEntriesReq* append_req = new eraftkv::AppendEntriesReq();
-      append_req->set_is_heartbeat(false);   
+      append_req->set_is_heartbeat(false);
       if (copy_cnt > 0) {
-        auto etys_to_be_send = this->log_store_->Gets(prev_log_index + 1, prev_log_index + copy_cnt);
-        for(auto ety: etys_to_be_send) {
-            eraftkv::Entry* new_ety = append_req->add_entries();   
-            new_ety = ety;
+        auto etys_to_be_send = this->log_store_->Gets(
+            prev_log_index + 1, prev_log_index + copy_cnt);
+        for (auto ety : etys_to_be_send) {
+          eraftkv::Entry* new_ety = append_req->add_entries();
+          new_ety = ety;
         }
       }
       append_req->set_term(this->current_term_);
@@ -175,7 +146,6 @@ EStatus RaftServer::SendAppendEntries() {
       append_req->set_leader_commit(this->commit_idx_);
 
       this->net_->SendAppendEntries(this, node, append_req);
-
     }
   }
 
@@ -188,11 +158,13 @@ EStatus RaftServer::SendAppendEntries() {
  * @return EStatus
  */
 EStatus RaftServer::ApplyEntries() {
+  // TODO: apply commit entries
   return EStatus::kOk;
 }
 
 bool RaftServer::IsUpToDate(int64_t last_idx, int64_t term) {
-  return last_idx >= this->log_store_->LastIndex() && term >= this->log_store_->GetLastEty()->term();
+  return last_idx >= this->log_store_->LastIndex() &&
+         term >= this->log_store_->GetLastEty()->term();
 }
 
 /**
@@ -203,9 +175,9 @@ bool RaftServer::IsUpToDate(int64_t last_idx, int64_t term) {
  * @param resp
  * @return EStatus
  */
-EStatus RaftServer::HandleRequestVoteReq(RaftNode*                 from_node,
-                                         eraftkv::RequestVoteReq*  req,
-                                         eraftkv::RequestVoteResp* resp) {
+EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
+                                         const eraftkv::RequestVoteReq* req,
+                                         eraftkv::RequestVoteResp*      resp) {
   TraceLog("DEBUG: handle vote req ", req->SerializeAsString());
   resp->set_term(this->current_term_);
   resp->set_leader_id(this->leader_id_);
@@ -213,7 +185,7 @@ EStatus RaftServer::HandleRequestVoteReq(RaftNode*                 from_node,
   bool can_vote = (this->voted_for_ == req->candidtate_id()) ||
                   this->voted_for_ == -1 && this->leader_id_ == -1 ||
                   req->term() > this->current_term_;
-  
+
   if (can_vote && this->IsUpToDate(req->last_log_idx(), req->last_log_term())) {
     resp->set_vote_granted(true);
   } else {
@@ -247,7 +219,6 @@ EStatus RaftServer::SendHeartBeat() {
     append_req->set_leader_commit(this->commit_idx_);
 
     this->net_->SendAppendEntries(this, node, append_req);
-
   }
 
   return EStatus::kOk;
@@ -260,9 +231,9 @@ EStatus RaftServer::SendHeartBeat() {
  * @param resp
  * @return EStatus
  */
-EStatus RaftServer::HandleRequestVoteResp(RaftNode*                 from_node,
-                                          eraftkv::RequestVoteReq*  req,
-                                          eraftkv::RequestVoteResp* resp) {
+EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
+                                          const eraftkv::RequestVoteReq* req,
+                                          eraftkv::RequestVoteResp*      resp) {
   if (resp != nullptr) {
     TraceLog("DEBUG: ",
              "send request vote revice resp: ",
@@ -305,6 +276,36 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode*                 from_node,
   return EStatus::kOk;
 }
 
+EStatus RaftServer::Propose(std::string payload,
+                            int64_t*    new_log_index,
+                            int64_t*    new_log_term,
+                            bool*       is_success) {
+  if (this->role_ != NodeRaftRoleEnum::Leader) {
+    *new_log_index = -1;
+    *new_log_term = -1;
+    *is_success = false;
+  }
+  // TODO: reject when snapshoting
+  eraftkv::Entry* new_ety = new eraftkv::Entry();
+  new_ety->set_data(payload);
+  new_ety->set_id(this->log_store_->LastIndex() + 1);
+  new_ety->set_term(this->current_term_);
+
+  this->log_store_->Append(new_ety);
+
+  for (auto node : this->nodes_) {
+    if (node->id == this->id_) {
+      node->match_log_index = new_ety->id();
+      node->next_log_index = node->match_log_index + 1;
+    }
+  }
+  this->SendAppendEntries();
+  *new_log_index = new_ety->id();
+  *new_log_term = new_ety->term();
+  *is_success = true;
+  return EStatus::kOk;
+}
+
 /**
  * @brief
  *
@@ -313,14 +314,13 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode*                 from_node,
  * @param resp
  * @return EStatus
  */
-EStatus RaftServer::HandleAppendEntriesReq(RaftNode*                  from_node,
-                                           eraftkv::AppendEntriesReq* req,
-                                           eraftkv::AppendEntriesResp* resp) 
-{
+EStatus RaftServer::HandleAppendEntriesReq(RaftNode* from_node,
+                                           const eraftkv::AppendEntriesReq* req,
+                                           eraftkv::AppendEntriesResp* resp) {
   ResetRandomElectionTimeout();
   election_tick_count_ = 0;
 
-  if(req->is_heartbeat()) {
+  if (req->is_heartbeat()) {
     TraceLog("DEBUG: recv heart beat");
     this->AdvanceCommitIndexForFollower(req->leader_commit());
     resp->set_success(true);
@@ -330,6 +330,53 @@ EStatus RaftServer::HandleAppendEntriesReq(RaftNode*                  from_node,
     return EStatus::kOk;
   }
 
+  resp->set_term(this->current_term_);
+  if (req->term() < this->current_term_ &&
+      this->log_store_->LastIndex() > req->prev_log_index()) {
+    resp->set_success(false);
+    return EStatus::kOk;
+  }
+
+  if (req->term() > this->current_term_) {
+    this->current_term_ = req->term();
+    this->voted_for_ = -1;
+    this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
+  }
+
+  this->BecomeFollower();
+  this->leader_id_ = req->leader_id();
+
+  if (req->prev_log_index() < this->log_store_->FirstIndex()) {
+    resp->set_conflict_index(this->log_store_->FirstIndex());
+    resp->set_conflict_term(0);
+    resp->set_success(false);
+    return EStatus::kOk;
+  }
+
+  if (!this->MatchLog(req->prev_log_term(), req->prev_log_index())) {
+    resp->set_success(false);
+    if (this->log_store_->LastIndex() < req->prev_log_index()) {
+      resp->set_conflict_index(this->log_store_->LastIndex());
+      resp->set_conflict_term(this->log_store_->GetLastEty()->term());
+    } else {
+      // set term
+      resp->set_conflict_term(
+          this->log_store_->Get(req->prev_log_index())->term());
+      // find conflict index
+      auto index = req->prev_log_index();
+      while (index >= this->commit_idx_ &&
+             this->log_store_->Get(index)->term() == resp->conflict_term()) {
+        index -= 1;
+      }
+      resp->set_conflict_index(index);
+    }
+  } else {
+    for (auto ety : req->entries()) {
+      this->log_store_->Append(&ety);
+    }
+    this->AdvanceCommitIndexForFollower(req->leader_commit());
+    resp->set_success(true);
+  }
 
   return EStatus::kOk;
 }
@@ -344,7 +391,51 @@ EStatus RaftServer::HandleAppendEntriesReq(RaftNode*                  from_node,
 EStatus RaftServer::HandleAppendEntriesResp(RaftNode* from_node,
                                             eraftkv::AppendEntriesReq*  req,
                                             eraftkv::AppendEntriesResp* resp) {
-  
+  if (role_ == NodeRaftRoleEnum::Leader) {
+    if (resp != nullptr) {
+      if (resp->success()) {
+        for (auto node : this->nodes_) {
+          if (from_node->id == node->id) {
+            node->match_log_index =
+                req->prev_log_index() + req->entries().size();
+            node->next_log_index = node->match_log_index + 1;
+            this->AdvanceCommitIndexForLeader();
+          }
+        }
+      } else {
+        if (resp->term() > req->term()) {
+          this->BecomeFollower();
+          this->current_term_ = resp->term();
+          this->voted_for_ = -1;
+          this->store_->SaveRaftMeta(
+              this, this->current_term_, this->voted_for_);
+        } else {
+          if (resp->conflict_term() == 0) {
+            for (auto node : this->nodes_) {
+              if (from_node->id == node->id) {
+                node->next_log_index = resp->conflict_index();
+              }
+            }
+          } else {
+            for (auto node : this->nodes_) {
+              if (from_node->id == node->id) {
+                node->next_log_index = resp->conflict_index();
+                for (int64_t i = resp->conflict_index();
+                     i >= this->log_store_->FirstIndex();
+                     i--) {
+                  if (this->log_store_->Get(i)->term() ==
+                      resp->conflict_term()) {
+                    node->next_log_index = i + 1;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   return EStatus::kOk;
 }
 
@@ -365,23 +456,22 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*              from_node,
 
 /**
  * @brief the log entry with index match term
- * 
- * @param term 
- * @param index 
- * @return true 
- * @return false 
+ *
+ * @param term
+ * @param index
+ * @return true
+ * @return false
  */
 bool RaftServer::MatchLog(int64_t term, int64_t index) {
   return (index <= this->log_store_->LastIndex() &&
-      index >= this->log_store_->FirstIndex()
-      && this->log_store_->Get(index)->term() == term);
+          index >= this->log_store_->FirstIndex() &&
+          this->log_store_->Get(index)->term() == term);
 }
 
 
-EStatus RaftServer::AdvanceCommitIndexForLeader() 
-{
+EStatus RaftServer::AdvanceCommitIndexForLeader() {
   std::vector<int64_t> match_idxs;
-  for (auto node: this->nodes_) {
+  for (auto node : this->nodes_) {
     match_idxs.push_back(node->match_log_index);
   }
   sort(match_idxs.begin(), match_idxs.end());
@@ -389,23 +479,24 @@ EStatus RaftServer::AdvanceCommitIndexForLeader()
   if (new_commit_index > this->commit_idx_) {
     if (this->MatchLog(this->current_term_, new_commit_index)) {
       this->commit_idx_ = new_commit_index;
-      this->log_store_->PersisLogMetaState(this->commit_idx_, this->last_applied_idx_);
+      this->log_store_->PersisLogMetaState(this->commit_idx_,
+                                           this->last_applied_idx_);
     }
   }
   return EStatus::kOk;
 }
 
-EStatus RaftServer::AdvanceCommitIndexForFollower(int64_t leader_commit)
-{
+EStatus RaftServer::AdvanceCommitIndexForFollower(int64_t leader_commit) {
 
-  int64_t new_commit_index = std::min(leader_commit, this->log_store_->GetLastEty()->id());
-  if(new_commit_index > this->commit_idx_) {
+  int64_t new_commit_index =
+      std::min(leader_commit, this->log_store_->GetLastEty()->id());
+  if (new_commit_index > this->commit_idx_) {
     this->commit_idx_ = new_commit_index;
-    this->log_store_->PersisLogMetaState(this->commit_idx_, this->last_applied_idx_);
+    this->log_store_->PersisLogMetaState(this->commit_idx_,
+                                         this->last_applied_idx_);
   }
   return EStatus::kOk;
 }
-
 
 
 /**

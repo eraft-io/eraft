@@ -22,6 +22,7 @@
 grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
                                         const eraftkv::RequestVoteReq* req,
                                         eraftkv::RequestVoteResp*      resp) {
+  this->raft_context_->HandleRequestVoteReq(nullptr, req, resp);
   return grpc::Status::OK;
 }
 
@@ -34,7 +35,8 @@ grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
  */
 grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
                                           const eraftkv::AppendEntriesReq* req,
-                                          eraftkv::RequestVoteResp* resp) {
+                                          eraftkv::AppendEntriesResp* resp) {
+  this->raft_context_->HandleAppendEntriesReq(nullptr, req, resp);
   return grpc::Status::OK;
 }
 
@@ -62,9 +64,11 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
     ServerContext*                     context,
     const eraftkv::ClientOperationReq* req,
     eraftkv::ClientOperationResp*      resp) {
-  // 1. req into log entry
-  // 2. call raft_context_->ProposeEntry()
-  // 3. wait commit
+  int64_t log_index;
+  int64_t log_term;
+  bool    success;
+  this->raft_context_->Propose(
+      req->SerializeAsString(), &log_index, &log_term, &success);
   return grpc::Status::OK;
 }
 
@@ -77,19 +81,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
     ServerContext*                         context,
     const eraftkv::ClusterConfigChangeReq* req,
     eraftkv::ClusterConfigChangeResp*      resp) {
-
   return grpc::Status::OK;
-}
-
-/**
- * @brief
- *
- * @param interval
- * @return EStatus
- */
-EStatus ERaftKvServer::InitTicker(int interval) {
-  // 1.set up raft_context_->RunCycle() run interval with periodic_caller_
-  return EStatus::kOk;
 }
 
 EStatus ERaftKvServer::BuildAndRunRpcServer() {

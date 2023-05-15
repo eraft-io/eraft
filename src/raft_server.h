@@ -60,34 +60,6 @@ class RaftServer {
   RaftServer(RaftConfig raft_config);
 
   /**
-   * @brief Get the Entries To Be Send object
-   *
-   * @param node
-   * @param index
-   * @param count
-   * @return std::vector<eraftkv::Entry*>
-   */
-  std::vector<eraftkv::Entry*> GetEntriesToBeSend(RaftNode* node,
-                                                  int64_t   index,
-                                                  int64_t   count);
-
-  /**
-   * @brief
-   *
-   * @param term
-   * @param vote
-   * @return EStatus
-   */
-  EStatus SaveMetaData(int64_t term, int64_t vote);
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus ReadMetaData();
-
-  /**
    * @brief
    *
    * @param id
@@ -126,9 +98,9 @@ class RaftServer {
    * @param resp
    * @return EStatus
    */
-  EStatus HandleRequestVoteReq(RaftNode*                 from_node,
-                               eraftkv::RequestVoteReq*  req,
-                               eraftkv::RequestVoteResp* resp);
+  EStatus HandleRequestVoteReq(RaftNode*                      from_node,
+                               const eraftkv::RequestVoteReq* req,
+                               eraftkv::RequestVoteResp*      resp);
   /**
    * @brief
    *
@@ -136,9 +108,9 @@ class RaftServer {
    * @param resp
    * @return EStatus
    */
-  EStatus HandleRequestVoteResp(RaftNode*                 from_node,
-                                eraftkv::RequestVoteReq*  req,
-                                eraftkv::RequestVoteResp* resp);
+  EStatus HandleRequestVoteResp(RaftNode*                      from_node,
+                                const eraftkv::RequestVoteReq* req,
+                                eraftkv::RequestVoteResp*      resp);
 
   /**
    * @brief
@@ -148,9 +120,9 @@ class RaftServer {
    * @param resp
    * @return EStatus
    */
-  EStatus HandleAppendEntriesReq(RaftNode*                   from_node,
-                                 eraftkv::AppendEntriesReq*  req,
-                                 eraftkv::AppendEntriesResp* resp);
+  EStatus HandleAppendEntriesReq(RaftNode*                        from_node,
+                                 const eraftkv::AppendEntriesReq* req,
+                                 eraftkv::AppendEntriesResp*      resp);
   /**
    * @brief
    *
@@ -331,56 +303,70 @@ class RaftServer {
    * @param raft_config
    * @return EStatus
    */
-  static EStatus RunMainLoop(RaftConfig raft_config);
+  static RaftServer* RunMainLoop(RaftConfig raft_config);
 
   /**
-   * @brief 
-   * 
-   * @return EStatus 
+   * @brief
+   *
+   * @return EStatus
    */
   EStatus SendHeartBeat();
 
   /**
-   * @brief 
-   * 
-   * @return EStatus 
+   * @brief
+   *
+   * @return EStatus
    */
   EStatus SendAppendEntries();
 
   /**
-   * @brief 
-   * 
-   * @param last_idx 
-   * @param term 
-   * @return true 
-   * @return false 
+   * @brief
+   *
+   * @param last_idx
+   * @param term
+   * @return true
+   * @return false
    */
   bool IsUpToDate(int64_t last_idx, int64_t term);
 
   /**
-   * @brief 
-   * 
-   * @return EStatus 
+   * @brief
+   *
+   * @return EStatus
    */
   EStatus AdvanceCommitIndexForLeader();
 
   /**
-   * @brief 
-   * 
-   * @param leader_commit 
-   * @return EStatus 
+   * @brief
+   *
+   * @param leader_commit
+   * @return EStatus
    */
   EStatus AdvanceCommitIndexForFollower(int64_t leader_commit);
 
   /**
-   * @brief 
-   * 
-   * @param term 
-   * @param index 
-   * @return true 
-   * @return false 
+   * @brief
+   *
+   * @param term
+   * @param index
+   * @return true
+   * @return false
    */
   bool MatchLog(int64_t term, int64_t index);
+
+  /**
+   * @brief
+   *
+   * @param payload
+   * @param new_log_index
+   * @param new_log_term
+   * @param is_success
+   * @return EStatus
+   */
+  EStatus Propose(std::string payload,
+                  int64_t*    new_log_index,
+                  int64_t*    new_log_term,
+                  bool*       is_success);
 
  private:
   /**
@@ -402,7 +388,7 @@ class RaftServer {
 
   /**
    * @brief node granted votes count
-   * 
+   *
    */
   int64_t granted_votes_;
 
@@ -493,8 +479,8 @@ class RaftServer {
   int64_t node_count_;
 
   /**
-   * @brief 
-   * 
+   * @brief
+   *
    */
   int64_t max_entries_per_append_req_;
   /**
@@ -525,4 +511,4 @@ class RaftServer {
 };
 
 
-#endif // SRC_RAFT_SERVER_H_
+#endif  // SRC_RAFT_SERVER_H_
