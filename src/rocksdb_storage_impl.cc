@@ -10,6 +10,7 @@
  */
 
 #include "rocksdb_storage_impl.h"
+#include "util.h"
 
 /**
  * @brief Get the Node Address object
@@ -166,6 +167,7 @@ RocksDBStorageImpl::RocksDBStorageImpl(std::string db_path) {
   options.create_if_missing = true;
   rocksdb::Status status = rocksdb::DB::Open(options, db_path, &kv_db_);
   assert(status.ok());
+  TraceLog("DEBUG: ", "init rocksdb with path ", db_path);
 }
 
 /**

@@ -6,13 +6,14 @@
 #include <thread>
 
 #include "util.h"
+#include "rocksdb_storage_impl.h"
 
 /**
  * @brief Construct a new Raft Server object
  *
  * @param raft_config
  */
-RaftServer::RaftServer(RaftConfig raft_config)
+RaftServer::RaftServer(RaftConfig raft_config, LogStore* log_store, Storage* store, Network* net)
     : id_(raft_config.id)
     , role_(NodeRaftRoleEnum::Follower)
     , current_term_(0)
@@ -27,11 +28,16 @@ RaftServer::RaftServer(RaftConfig raft_config)
     , heartbeat_tick_count_(0)
     , election_tick_count_(0)
     , max_entries_per_append_req_(100)
-    , tick_interval_(1000) {
+    , tick_interval_(1000)
+    , election_running_(true) {
   for (auto n : raft_config.peer_address_map) {
     RaftNode* node = new RaftNode(n.first, NodeStateEnum::Init, 0, 0, n.second);
     this->nodes_.push_back(node);
   }
+  TraceLog("DEBUG: ", " raft server init with current_term_ ", current_term_, " voted_for_ ", voted_for_, " commit_idx_ ", commit_idx_);
+  this->log_store_ = log_store;
+  this->store_ = store;
+  this->net_ = net;
 }
 
 EStatus RaftServer::ResetRandomElectionTimeout() {
@@ -42,8 +48,8 @@ EStatus RaftServer::ResetRandomElectionTimeout() {
   return EStatus::kOk;
 }
 
-RaftServer* RaftServer::RunMainLoop(RaftConfig raft_config) {
-  RaftServer* svr = new RaftServer(raft_config);
+RaftServer* RaftServer::RunMainLoop(RaftConfig raft_config, LogStore* log_store, Storage* store, Network* net) {
+  RaftServer* svr = new RaftServer(raft_config, log_store, store, net);
   std::thread th(&RaftServer::RunCycle, svr);
   th.detach();
   return svr;
@@ -78,6 +84,8 @@ EStatus RaftServer::RemoveNode(RaftNode* node) {
 EStatus RaftServer::RunCycle() {
   ResetRandomElectionTimeout();
   while (true) {
+    TraceLog("DEBUG: ", " election_tick_count_ ", election_tick_count_);
+    TraceLog("DEBUG: ", " heartbeat_tick_count_ ", heartbeat_tick_count_);
     heartbeat_tick_count_ += 1;
     election_tick_count_ += 1;
     if (heartbeat_tick_count_ == heartbeat_timeout_) {
@@ -88,7 +96,7 @@ EStatus RaftServer::RunCycle() {
       }
       this->ApplyEntries();
     }
-    if (election_tick_count_ == election_timeout_) {
+    if (election_tick_count_ == election_timeout_ && election_running_) {
       TraceLog("DEBUG: ", "start election in term", current_term_);
       this->BecomeCandidate();
       this->current_term_ += 1;
@@ -178,9 +186,12 @@ bool RaftServer::IsUpToDate(int64_t last_idx, int64_t term) {
 EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
                                          const eraftkv::RequestVoteReq* req,
                                          eraftkv::RequestVoteResp*      resp) {
-  TraceLog("DEBUG: handle vote req ", req->SerializeAsString());
-  resp->set_term(this->current_term_);
-  resp->set_leader_id(this->leader_id_);
+  TraceLog("DEBUG: handle vote req ", " term ", req->term(), " candidtate_id ", req->candidtate_id(), 
+  " last_log_idx ", req->last_log_idx(), " last_log_term ", req->last_log_term());
+
+  TraceLog("DEBUG:  handle vote req", " current_term_ ", current_term_, " leader_id_ ", leader_id_);
+  resp->set_term(current_term_);
+  resp->set_leader_id(leader_id_);
 
   bool can_vote = (this->voted_for_ == req->candidtate_id()) ||
                   this->voted_for_ == -1 && this->leader_id_ == -1 ||
@@ -236,8 +247,13 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
                                           eraftkv::RequestVoteResp*      resp) {
   if (resp != nullptr) {
     TraceLog("DEBUG: ",
-             "send request vote revice resp: ",
-             resp->SerializeAsString(),
+             " send request vote revice resp: ",
+             " term ",
+             resp->term(),
+             " vote_granted ",
+             resp->vote_granted(),
+             " leader_id",
+             resp->leader_id(),
              " from node ",
              from_node->address);
     if (this->current_term_ == req->term() &&
@@ -542,6 +558,9 @@ EStatus RaftServer::ProposeEntry(eraftkv::Entry* ety) {
  * @return EStatus
  */
 EStatus RaftServer::BecomeLeader() {
+  this->role_ = NodeRaftRoleEnum::Leader;
+  heartbeat_tick_count_ = 0;
+  election_running_ = false;
   return EStatus::kOk;
 }
 
@@ -608,7 +627,7 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
     TraceLog("DEBUG: ",
              "send request vote to ",
              node->address,
-             vote_req->SerializeAsString());
+             " term ", this->current_term_, " candidtate_id ", this->id_, " last_log_idx ", this->log_store_->LastIndex(), " last_log_term ", this->log_store_->GetLastEty()->term());
     this->net_->SendRequestVote(this, node, vote_req);
   }
 

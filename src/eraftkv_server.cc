@@ -12,6 +12,8 @@
 
 #include <grpcpp/grpcpp.h>
 
+RaftServer* ERaftKvServer::raft_context_ = nullptr;
+
 /**
  * @brief
  *
@@ -22,7 +24,7 @@
 grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
                                         const eraftkv::RequestVoteReq* req,
                                         eraftkv::RequestVoteResp*      resp) {
-  this->raft_context_->HandleRequestVoteReq(nullptr, req, resp);
+  raft_context_->HandleRequestVoteReq(nullptr, req, resp);
   return grpc::Status::OK;
 }
 
@@ -36,7 +38,7 @@ grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
 grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
                                           const eraftkv::AppendEntriesReq* req,
                                           eraftkv::AppendEntriesResp* resp) {
-  this->raft_context_->HandleAppendEntriesReq(nullptr, req, resp);
+  raft_context_->HandleAppendEntriesReq(nullptr, req, resp);
   return grpc::Status::OK;
 }
 
@@ -67,7 +69,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   int64_t log_index;
   int64_t log_term;
   bool    success;
-  this->raft_context_->Propose(
+  raft_context_->Propose(
       req->SerializeAsString(), &log_index, &log_term, &success);
   return grpc::Status::OK;
 }

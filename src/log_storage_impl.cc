@@ -354,57 +354,66 @@ EStatus RocksDBSingleLogStorageImpl::PersisLogMetaState(int64_t commit_idx,
 
 EStatus RocksDBSingleLogStorageImpl::ReadMetaState(int64_t* commit_idx,
                                                    int64_t* applied_idx) {
-  std::string commit_idx_str;
-  auto        status =
-      log_db_->Get(rocksdb::ReadOptions(), "M:COMMIT_IDX", &commit_idx_str);
-  *commit_idx = static_cast<int64_t>(stoi(commit_idx_str));
-  if (status.ok()) {
+  try
+  {
+    std::string commit_idx_str;
+    auto        status =
+        log_db_->Get(rocksdb::ReadOptions(), "M:COMMIT_IDX", &commit_idx_str);
+    *commit_idx = static_cast<int64_t>(stoi(commit_idx_str));
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+    std::string applied_idx_str;
+    status =
+        log_db_->Get(rocksdb::ReadOptions(), "M:APPLIED_IDX", &applied_idx_str);
+    *applied_idx = static_cast<int64_t>(stoi(applied_idx_str));
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+    std::string first_idx_str;
+    status = log_db_->Get(rocksdb::ReadOptions(), "M:FIRST_IDX", &first_idx_str);
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+    this->first_idx = static_cast<int64_t>(stoi(first_idx_str));
+    std::string last_idx_str;
+    status = log_db_->Get(rocksdb::ReadOptions(), "M:LAST_IDX", &last_idx_str);
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+    this->last_idx = static_cast<int64_t>(stoi(last_idx_str));
+    std::string snap_idx_str;
+    status = log_db_->Get(rocksdb::ReadOptions(), "M:SNAP_IDX", &snap_idx_str);
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+    this->snapshot_idx = static_cast<int64_t>(stoi(snap_idx_str));
     return EStatus::kOk;
-  } else {
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
     return EStatus::kError;
   }
-  std::string applied_idx_str;
-  status =
-      log_db_->Get(rocksdb::ReadOptions(), "M:APPLIED_IDX", &applied_idx_str);
-  *applied_idx = static_cast<int64_t>(stoi(applied_idx_str));
-  if (status.ok()) {
-    return EStatus::kOk;
-  } else {
-    return EStatus::kError;
-  }
-  std::string first_idx_str;
-  status = log_db_->Get(rocksdb::ReadOptions(), "M:FIRST_IDX", &first_idx_str);
-  if (status.ok()) {
-    return EStatus::kOk;
-  } else {
-    return EStatus::kError;
-  }
-  this->first_idx = static_cast<int64_t>(stoi(first_idx_str));
-  std::string last_idx_str;
-  status = log_db_->Get(rocksdb::ReadOptions(), "M:LAST_IDX", &last_idx_str);
-  if (status.ok()) {
-    return EStatus::kOk;
-  } else {
-    return EStatus::kError;
-  }
-  this->last_idx = static_cast<int64_t>(stoi(last_idx_str));
-  std::string snap_idx_str;
-  status = log_db_->Get(rocksdb::ReadOptions(), "M:SNAP_IDX", &snap_idx_str);
-  if (status.ok()) {
-    return EStatus::kOk;
-  } else {
-    return EStatus::kError;
-  }
-  this->snapshot_idx = static_cast<int64_t>(stoi(snap_idx_str));
   return EStatus::kOk;
 }
 
-RocksDBSingleLogStorageImpl::RocksDBSingleLogStorageImpl()
+RocksDBSingleLogStorageImpl::RocksDBSingleLogStorageImpl(std::string db_path)
     : first_idx(0), last_idx(0), snapshot_idx(0) {
   rocksdb::Options options;
   options.create_if_missing = true;
-  rocksdb::Status status = rocksdb::DB::Open(options, "./log_db", &log_db_);
-  assert(status.ok());
+  rocksdb::Status status = rocksdb::DB::Open(options, db_path, &log_db_);
+  TraceLog("DEBUG: ", "init log db success with path ", db_path);
   // if not log meta, init log
   int64_t commit_idx, applied_idx;
   auto    est = ReadMetaState(&commit_idx, &applied_idx);

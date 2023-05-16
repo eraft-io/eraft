@@ -312,7 +312,7 @@ class RocksDBLogStorageImpl : public LogStore {
 class RocksDBSingleLogStorageImpl : public LogStore {
 
  public:
-  RocksDBSingleLogStorageImpl();
+  RocksDBSingleLogStorageImpl(std::string db_path);
 
   ~RocksDBSingleLogStorageImpl();
 

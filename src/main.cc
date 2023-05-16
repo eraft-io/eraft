@@ -36,17 +36,12 @@
  * @param argv
  * @return int
  */
-int main(int argc, char** argv) {
-  rocksdb::DB*     db;
-  rocksdb::Options options;
-  options.create_if_missing = true;
-  rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/testdb", &db);
-  assert(status.ok());
-  std::cout << "Hi, ERaftGroup!" << std::endl;
-  delete db;
-  std::cout << "Start grpc" << std::endl;
+int main(int argc, char* argv[]) {
   ERaftKvServerOptions options_;
-  options_.svr_addr = "0.0.0.0:50051";
+  options_.svr_id = stoi(std::string(argv[1]));
+  options_.kv_db_path = std::string(argv[2]);
+  options_.log_db_path = std::string(argv[3]);
+  options_.svr_addr = std::string(argv[4]);
   ERaftKvServer server(options_);
   server.BuildAndRunRpcServer();
   return 0;

@@ -22,6 +22,8 @@
 #include "eraftkv.pb.h"
 #include "estatus.h"
 #include "raft_server.h"
+#include "rocksdb_storage_impl.h"
+#include "grpc_network_impl.h"
 
 using eraftkv::ERaftKv;
 using grpc::ServerContext;
@@ -32,6 +34,7 @@ using grpc::Status;
  *
  */
 struct ERaftKvServerOptions {
+  int64_t svr_id;
   std::string svr_version;
   std::string svr_addr;
   std::string kv_db_path;
@@ -64,7 +67,13 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   ERaftKvServer(ERaftKvServerOptions option) : options_(option) {
     // init raft lib
     RaftConfig raft_config;
-    this->raft_context_ = RaftServer::RunMainLoop(raft_config);
+    raft_config.id = options_.svr_id;
+    raft_config.peer_address_map = {{0, "127.0.0.1:8088"}, {1, "127.0.0.1:8089"}, {2, "127.0.0.1:8090"}};
+    GRpcNetworkImpl* net_rpc = new GRpcNetworkImpl();
+    net_rpc->InitPeerNodeConnections(raft_config.peer_address_map);
+    RocksDBSingleLogStorageImpl* log_db = new RocksDBSingleLogStorageImpl(options_.log_db_path);
+    RocksDBStorageImpl* kv_db = new RocksDBStorageImpl(options_.kv_db_path);
+    raft_context_ = RaftServer::RunMainLoop(raft_config, log_db, kv_db, net_rpc);
   }
 
   ERaftKvServer() {}
@@ -138,7 +147,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    * @brief
    *
    */
-  RaftServer* raft_context_;
+  static RaftServer* raft_context_;
 };
 
 

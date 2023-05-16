@@ -23,13 +23,13 @@ TEST(GrpcTest, TestInit) {
   }
   if (fpid == 0) {
     sleep(1);
-    std::map<int, std::string> peers_address;
+    std::map<int64_t, std::string> peers_address;
     peers_address[1] = "0.0.0.0:50051";
     GRpcNetworkImpl grpcimpl;
     grpcimpl.InitPeerNodeConnections(peers_address);
     RaftNode raftNode(1, NodeStateEnum::Running, 0, 0, "");
     RaftConfig raftconf;
-    RaftServer* raftServer = new RaftServer(raftconf);
+    RaftServer* raftServer = new RaftServer(raftconf, nullptr, nullptr, nullptr);
     eraftkv::RequestVoteReq        req;
     auto status = grpcimpl.SendRequestVote(raftServer, &raftNode, &req);
     int  res = 0;

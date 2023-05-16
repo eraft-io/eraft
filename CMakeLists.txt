@@ -176,9 +176,13 @@ add_executable(eraftkv_server_test
     src/eraftkv.pb.cc 
     src/eraftkv.grpc.pb.cc
     src/raft_server.cc
+    src/log_storage_impl.cc
+    src/rocksdb_storage_impl.cc
+    src/log_entry_cache.cc
 )
 target_link_libraries(eraftkv_server_test PUBLIC
     ${GTEST_LIBRARIES}
+    rocksdb
     pthread
     gRPC::grpc++
     ${Protobuf_LIBRARY}
@@ -191,6 +195,7 @@ target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     gRPC::grpc++
     pthread
     stdc++fs
+    rocksdb
 )
 
 add_executable(log_entry_cache_tests src/log_entry_cache_tests.cc src/log_entry_cache.cc src/eraftkv.pb.cc)
@@ -199,6 +204,7 @@ target_link_libraries(log_entry_cache_tests PUBLIC
     pthread
     gRPC::grpc++
     ${Protobuf_LIBRARY}
+    rocksdb
 )
 
 add_executable(google_example_banchmark src/google_example_benchmark.cc)
@@ -211,6 +217,7 @@ target_link_libraries(log_entry_cache_benchmark PUBLIC
     benchmark::benchmark
     pthread
     gRPC::grpc++
+    rocksdb
     ${Protobuf_LIBRARY}
 )
 
@@ -221,10 +228,14 @@ add_executable(grpc_network_impl_test
     src/eraftkv.grpc.pb.cc 
     src/raft_server.cc
     src/eraftkv_server.cc 
+    src/log_storage_impl.cc
+    src/rocksdb_storage_impl.cc
+    src/log_entry_cache.cc
 )
 target_link_libraries(grpc_network_impl_test PUBLIC
     ${GTEST_LIBRARIES}
     gRPC::grpc++
     pthread
+    rocksdb
     ${Protobuf_LIBRARY}
 )

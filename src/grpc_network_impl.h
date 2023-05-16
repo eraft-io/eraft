@@ -63,7 +63,7 @@ class GRpcNetworkImpl : public Network {
    * @param peers_address
    * @return EStatus
    */
-  EStatus InitPeerNodeConnections(std::map<int, std::string> peers_address);
+  EStatus InitPeerNodeConnections(std::map<int64_t, std::string> peers_address);
 
   /**
    * @brief Get the Peer Node Connection object
@@ -71,14 +71,14 @@ class GRpcNetworkImpl : public Network {
    * @param node_id
    * @return std::unique_ptr<EraftKv::Stub>
    */
-  ERaftKv::Stub* GetPeerNodeConnection(int node_id);
+  ERaftKv::Stub* GetPeerNodeConnection(int64_t node_id);
 
  private:
   /**
    * @brief
    *
    */
-  std::map<int, std::unique_ptr<ERaftKv::Stub>> peer_node_connections_;
+  std::map<int64_t, std::unique_ptr<ERaftKv::Stub>> peer_node_connections_;
 };
 
 #endif // SRC_GRPC_NETWORK_IMPL_H_

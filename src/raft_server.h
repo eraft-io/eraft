@@ -57,7 +57,7 @@ class RaftServer {
    *
    * @param raft_config
    */
-  RaftServer(RaftConfig raft_config);
+  RaftServer(RaftConfig raft_config, LogStore* log_store, Storage* store, Network* net);
 
   /**
    * @brief
@@ -303,7 +303,7 @@ class RaftServer {
    * @param raft_config
    * @return EStatus
    */
-  static RaftServer* RunMainLoop(RaftConfig raft_config);
+  static RaftServer* RunMainLoop(RaftConfig raft_config, LogStore* log_store, Storage* store, Network* net);
 
   /**
    * @brief
@@ -488,6 +488,9 @@ class RaftServer {
    *
    */
   std::vector<RaftNode*> nodes_;
+
+  bool election_running_;
+
   /**
    * @brief
    *
