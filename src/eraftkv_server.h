@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <condition_variable>
 
 #include "eraftkv.grpc.pb.h"
 #include "eraftkv.pb.h"
@@ -64,7 +65,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    *
    * @param config
    */
-  ERaftKvServer(ERaftKvServerOptions option) : options_(option) {
+  ERaftKvServer(ERaftKvServerOptions option) : options_(option), op_count_(1) {
     // init raft lib
     RaftConfig raft_config;
     raft_config.id = options_.svr_id;
@@ -142,12 +143,18 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    */
   ERaftKvServerOptions options_;
 
+  static std::map<int, std::condition_variable*> ready_cond_vars_;
+
+  static std::mutex ready_mutex_;
+
  private:
   /**
    * @brief
    *
    */
   static RaftServer* raft_context_;
+
+  int op_count_;
 };
 
 

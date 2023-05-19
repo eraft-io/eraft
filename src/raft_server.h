@@ -51,6 +51,8 @@ static std::string NodeRoleToStr(NodeRaftRoleEnum role) {
  */
 class RaftServer {
 
+ friend class RocksDBStorageImpl;
+
  public:
   /**
    * @brief Construct a new Raft Server object
@@ -490,6 +492,8 @@ class RaftServer {
   std::vector<RaftNode*> nodes_;
 
   bool election_running_;
+
+  bool open_auto_apply_;
 
   /**
    * @brief

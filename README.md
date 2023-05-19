@@ -43,6 +43,37 @@ make image
 
 # Documentation
 
+## Run Demo
+
+- set up demo cluster
+
+```
+./build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 127.0.0.1:8088
+./build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 127.0.0.1:8089
+./build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 127.0.0.1:8090
+
+```
+
+- put kv
+```
+TEST(ERaftKvServerTest, ClientOperationReq) {
+    auto                           chan_ = grpc::CreateChannel("127.0.0.1:8088",
+                                     grpc::InsecureChannelCredentials());
+    std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
+    ClientContext                  context;
+    eraftkv::ClientOperationReq        req;
+    time_t time_in_sec;
+    time(&time_in_sec);
+    req.set_op_timestamp(static_cast<uint64_t>(time_in_sec));
+    auto kv_pair = req.add_kvs();
+    kv_pair->set_key("testkey");
+    kv_pair->set_value("testval");
+    kv_pair->set_op_type(eraftkv::ClientOpType::Put);
+    eraftkv::ClientOperationResp       resp;
+    auto status = stub_->ProcessRWOperation(&context, req, &resp);
+}
+```
+
 # Contributing
 
 You can quickly participate in development by following the instructions in [CONTROLUTING.md](https://github.com/eraft-io/eraft/blob/master/CONTRIBUTING.md)

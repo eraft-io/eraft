@@ -135,17 +135,19 @@ message ClusterConfigChangeResp {
 }
 
 enum ClientOpType {
-  Put = 0;
-  Get = 1;
-  Del = 2;
-  Scan = 3;
+  Noop = 0;
+  Put = 1;
+  Get = 2;
+  Del = 3;
+  Scan = 4;
 }
 
 message KvOpPair {
   ClientOpType op_type = 1;
   string       key = 2;
   string       value = 3;
-  uint64       cursor = 4;
+  bool         success = 4;
+  int64        op_count = 5;
 }
 
 
@@ -155,7 +157,6 @@ message ClientOperationReq {
 }
 
 message ClientOperationResp {
-  bool              success = 1;
   repeated KvOpPair ops = 2;
 }
 

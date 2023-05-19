@@ -29,15 +29,19 @@ RaftServer::RaftServer(RaftConfig raft_config, LogStore* log_store, Storage* sto
     , election_tick_count_(0)
     , max_entries_per_append_req_(100)
     , tick_interval_(1000)
+    , granted_votes_(0)
+    , open_auto_apply_(true)
     , election_running_(true) {
-  for (auto n : raft_config.peer_address_map) {
-    RaftNode* node = new RaftNode(n.first, NodeStateEnum::Init, 0, 0, n.second);
-    this->nodes_.push_back(node);
-  }
+  // store->ReadRaftMeta(this, &this->current_term_, &this->voted_for_);
+  // log_store_->ReadMetaState(&this->commit_idx_, &this->last_applied_idx_);
   TraceLog("DEBUG: ", " raft server init with current_term_ ", current_term_, " voted_for_ ", voted_for_, " commit_idx_ ", commit_idx_);
   this->log_store_ = log_store;
   this->store_ = store;
   this->net_ = net;
+  for (auto n : raft_config.peer_address_map) {
+    RaftNode* node = new RaftNode(n.first, NodeStateEnum::Init, 0, this->log_store_->LastIndex() + 1, n.second);
+    this->nodes_.push_back(node);
+  }
 }
 
 EStatus RaftServer::ResetRandomElectionTimeout() {
@@ -86,6 +90,7 @@ EStatus RaftServer::RunCycle() {
   while (true) {
     TraceLog("DEBUG: ", " election_tick_count_ ", election_tick_count_);
     TraceLog("DEBUG: ", " heartbeat_tick_count_ ", heartbeat_tick_count_);
+    TraceLog("DEBUG: ", " commit idx ", this->commit_idx_, " applied idx ", this->last_applied_idx_);
     heartbeat_tick_count_ += 1;
     election_tick_count_ += 1;
     if (heartbeat_tick_count_ == heartbeat_timeout_) {
@@ -94,7 +99,6 @@ EStatus RaftServer::RunCycle() {
         this->SendHeartBeat();
         heartbeat_tick_count_ = 0;
       }
-      this->ApplyEntries();
     }
     if (election_tick_count_ == election_timeout_ && election_running_) {
       TraceLog("DEBUG: ", "start election in term", current_term_);
@@ -103,6 +107,9 @@ EStatus RaftServer::RunCycle() {
       this->ElectionStart(false);
       ResetRandomElectionTimeout();
       election_tick_count_ = 0;
+    }
+    if(open_auto_apply_) {
+      this->ApplyEntries();
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
@@ -123,7 +130,7 @@ EStatus RaftServer::SendAppendEntries() {
 
   for (auto& node : this->nodes_) {
     if (node->id == this->id_) {
-      return EStatus::kOk;
+      continue;
     }
 
     auto prev_log_index = node->next_log_index - 1;
@@ -144,7 +151,10 @@ EStatus RaftServer::SendAppendEntries() {
             prev_log_index + 1, prev_log_index + copy_cnt);
         for (auto ety : etys_to_be_send) {
           eraftkv::Entry* new_ety = append_req->add_entries();
-          new_ety = ety;
+          new_ety->set_id(ety->id());
+          new_ety->set_e_type(ety->e_type());
+          new_ety->set_term(ety->term());
+          new_ety->set_allocated_data(ety->mutable_data());
         }
       }
       append_req->set_term(this->current_term_);
@@ -154,6 +164,7 @@ EStatus RaftServer::SendAppendEntries() {
       append_req->set_leader_commit(this->commit_idx_);
 
       this->net_->SendAppendEntries(this, node, append_req);
+      delete append_req;
     }
   }
 
@@ -166,7 +177,7 @@ EStatus RaftServer::SendAppendEntries() {
  * @return EStatus
  */
 EStatus RaftServer::ApplyEntries() {
-  // TODO: apply commit entries
+  this->store_->ApplyLog(this, 0, 0);
   return EStatus::kOk;
 }
 
@@ -300,6 +311,7 @@ EStatus RaftServer::Propose(std::string payload,
     *new_log_index = -1;
     *new_log_term = -1;
     *is_success = false;
+    return EStatus::kOk;
   }
   // TODO: reject when snapshoting
   eraftkv::Entry* new_ety = new eraftkv::Entry();
@@ -315,10 +327,11 @@ EStatus RaftServer::Propose(std::string payload,
       node->next_log_index = node->match_log_index + 1;
     }
   }
-  this->SendAppendEntries();
+  SendAppendEntries();
   *new_log_index = new_ety->id();
   *new_log_term = new_ety->term();
   *is_success = true;
+  delete new_ety;
   return EStatus::kOk;
 }
 

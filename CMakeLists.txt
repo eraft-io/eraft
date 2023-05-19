@@ -188,7 +188,18 @@ target_link_libraries(eraftkv_server_test PUBLIC
     ${Protobuf_LIBRARY}
 )
 
-add_executable(rocksdb_storage_impl_tests src/util.cc src/rocksdb_storage_impl.cc src/rocksdb_storage_impl_tests.cc )
+add_executable(rocksdb_storage_impl_tests 
+src/rocksdb_storage_impl_tests.cc 
+src/util.cc 
+src/rocksdb_storage_impl.cc 
+src/eraftkv_server.cc
+src/eraftkv.pb.cc 
+src/eraftkv.grpc.pb.cc
+src/raft_server.cc
+src/log_storage_impl.cc
+src/rocksdb_storage_impl.cc
+src/log_entry_cache.cc
+)
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     ${GTEST_LIBRARIES}
     rocksdb

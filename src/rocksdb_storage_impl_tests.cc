@@ -23,7 +23,7 @@ TEST(RockDBStorageImplTest, PutGet) {
   ASSERT_EQ(kv_store->GetKV(testk), testv);
   ASSERT_EQ(kv_store->GetKV(""), std::string(""));
   delete kv_store;
-  // DirectoryTool::DeleteDir("/tmp/testdb");
+  DirectoryTool::DeleteDir("/tmp/testdb");
 }
 
 int main(int argc, char** argv) {

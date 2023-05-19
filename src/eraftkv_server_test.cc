@@ -19,6 +19,7 @@
 
 #include "eraftkv.grpc.pb.h"
 #include "eraftkv.pb.h"
+#include <time.h>
 
 using eraftkv::ERaftKv;
 using eraftkv::RequestVoteReq;
@@ -27,39 +28,21 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
-TEST(ERaftKvServerTest, voterpc) {
-  pid_t fpid;
-  fpid = fork();
-  if (fpid < 0) {
-    std::cout << "fork error!\n";
-  }
-  if (fpid == 0) {
-    sleep(1);
-    auto                           chan_ = grpc::CreateChannel("0.0.0.0:50051",
+TEST(ERaftKvServerTest, ClientOperationReq) {
+    auto                           chan_ = grpc::CreateChannel("127.0.0.1:8088",
                                      grpc::InsecureChannelCredentials());
     std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
     ClientContext                  context;
-    eraftkv::RequestVoteReq        req;
-    eraftkv::RequestVoteResp       resp;
-    auto status = stub_->RequestVote(&context, req, &resp);
-    int  res = 0;
-    if (status.ok())
-      res = 1;
-    ASSERT_EQ(res, 1);
-  } else {
-    // ERaftKvServerOptions options_;
-    // options_.svr_addr = "0.0.0.0:50051";
-    // ERaftKvServer server(options_);
-    // server.BuildAndRunRpcServer();
-    ERaftKvServer service;
-    grpc::EnableDefaultHealthCheckService(true);
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort("0.0.0.0:50051",
-                             grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    sleep(5);
-  }
+    eraftkv::ClientOperationReq        req;
+    time_t time_in_sec;
+    time(&time_in_sec);
+    req.set_op_timestamp(static_cast<uint64_t>(time_in_sec));
+    auto kv_pair = req.add_kvs();
+    kv_pair->set_key("testkey");
+    kv_pair->set_value("testval");
+    kv_pair->set_op_type(eraftkv::ClientOpType::Put);
+    eraftkv::ClientOperationResp       resp;
+    auto status = stub_->ProcessRWOperation(&context, req, &resp);
 }
 
 int main(int argc, char **argv) {

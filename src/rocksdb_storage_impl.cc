@@ -11,6 +11,8 @@
 
 #include "rocksdb_storage_impl.h"
 #include "util.h"
+#include "eraftkv.pb.h"
+#include "eraftkv_server.h"
 
 /**
  * @brief Get the Node Address object
@@ -49,6 +51,37 @@ EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
 EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                      int64_t     snapshot_index,
                                      int64_t     snapshot_term) {
+  if(raft->commit_idx_ == raft->last_applied_idx_) {
+    return EStatus::kOk;
+  }
+  auto etys = raft->log_store_->Gets(raft->last_applied_idx_, raft->commit_idx_);
+  for (auto ety : etys) {
+    eraftkv::KvOpPair* op_pair = new eraftkv::KvOpPair();
+    op_pair->ParseFromString(ety->data());
+    switch (op_pair->op_type())
+    {
+    case eraftkv::ClientOpType::Put:
+      {
+        if(PutKV(op_pair->key(), op_pair->value()) == EStatus::kOk) {
+          raft->last_applied_idx_ = ety->id();
+          if (raft->role_ == NodeRaftRoleEnum::Leader) {
+            std::mutex map_mutex;
+            {
+              std::lock_guard<std::mutex> lg(map_mutex);
+              ERaftKvServer::ready_cond_vars_[op_pair->op_count()]->notify_one();
+            }
+          }
+        }
+      break;
+      }
+    default:
+      {
+        raft->last_applied_idx_ = ety->id();
+        break;
+      }
+    }
+    delete op_pair;
+  }
   return EStatus::kOk;
 }
 
@@ -114,6 +147,20 @@ EStatus RocksDBStorageImpl::CreateDBSnapshot() {
 EStatus RocksDBStorageImpl::SaveRaftMeta(RaftServer* raft,
                                          int64_t     term,
                                          int64_t     vote) {
+  auto status = kv_db_->Put(
+      rocksdb::WriteOptions(), "M:TERM", std::to_string(term));
+  if (status.ok()) {
+    return EStatus::kOk;
+  } else {
+    return EStatus::kError;
+  }
+  status = kv_db_->Put(
+      rocksdb::WriteOptions(), "M:VOTE", std::to_string(vote));
+  if (status.ok()) {
+    return EStatus::kOk;
+  } else {
+    return EStatus::kError;
+  }
   return EStatus::kOk;
 }
 
@@ -128,6 +175,31 @@ EStatus RocksDBStorageImpl::SaveRaftMeta(RaftServer* raft,
 EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
                                          int64_t*    term,
                                          int64_t*    vote) {
+  try
+  {
+    std::string term_str;
+    auto        status =
+        kv_db_->Get(rocksdb::ReadOptions(), "M:TERM", &term_str);
+    *term = static_cast<int64_t>(stoi(term_str));
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+    std::string vote_str;
+    status =
+        kv_db_->Get(rocksdb::ReadOptions(), "M:VOTE", &vote_str);
+    *vote = static_cast<int64_t>(stoi(vote_str));
+    if (status.ok()) {
+      return EStatus::kOk;
+    } else {
+      return EStatus::kError;
+    }
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+  }
 
   return EStatus::kOk;
 }
@@ -141,7 +213,8 @@ EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
  * @return EStatus
  */
 EStatus RocksDBStorageImpl::PutKV(std::string key, std::string val) {
-  auto status = kv_db_->Put(rocksdb::WriteOptions(), key, val);
+  TraceLog("DEBUG: ", " put key ", key, " value ", val, " to kv db");
+  auto status = kv_db_->Put(rocksdb::WriteOptions(), "U:" + key, val);
   return status.ok() ? EStatus::kOk : EStatus::kPutKeyToRocksDBErr;
 }
 
@@ -153,7 +226,7 @@ EStatus RocksDBStorageImpl::PutKV(std::string key, std::string val) {
  */
 std::string RocksDBStorageImpl::GetKV(std::string key) {
   std::string value;
-  auto        status = kv_db_->Get(rocksdb::ReadOptions(), key, &value);
+  auto        status = kv_db_->Get(rocksdb::ReadOptions(), "U:" + key, &value);
   return status.IsNotFound() ? "" : value;
 }
 

@@ -258,15 +258,16 @@ inline bool ClusterConfigChangeType_Parse(
     ClusterConfigChangeType_descriptor(), name, value);
 }
 enum ClientOpType : int {
-  Put = 0,
-  Get = 1,
-  Del = 2,
-  Scan = 3,
+  Noop = 0,
+  Put = 1,
+  Get = 2,
+  Del = 3,
+  Scan = 4,
   ClientOpType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ClientOpType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ClientOpType_IsValid(int value);
-constexpr ClientOpType ClientOpType_MIN = Put;
+constexpr ClientOpType ClientOpType_MIN = Noop;
 constexpr ClientOpType ClientOpType_MAX = Scan;
 constexpr int ClientOpType_ARRAYSIZE = ClientOpType_MAX + 1;
 
@@ -2705,8 +2706,9 @@ class KvOpPair :
   enum : int {
     kKeyFieldNumber = 2,
     kValueFieldNumber = 3,
-    kCursorFieldNumber = 4,
     kOpTypeFieldNumber = 1,
+    kSuccessFieldNumber = 4,
+    kOpCountFieldNumber = 5,
   };
   // string key = 2;
   void clear_key();
@@ -2740,15 +2742,6 @@ class KvOpPair :
   std::string* _internal_mutable_value();
   public:
 
-  // uint64 cursor = 4;
-  void clear_cursor();
-  ::PROTOBUF_NAMESPACE_ID::uint64 cursor() const;
-  void set_cursor(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_cursor() const;
-  void _internal_set_cursor(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
   // .eraftkv.ClientOpType op_type = 1;
   void clear_op_type();
   ::eraftkv::ClientOpType op_type() const;
@@ -2758,6 +2751,24 @@ class KvOpPair :
   void _internal_set_op_type(::eraftkv::ClientOpType value);
   public:
 
+  // bool success = 4;
+  void clear_success();
+  bool success() const;
+  void set_success(bool value);
+  private:
+  bool _internal_success() const;
+  void _internal_set_success(bool value);
+  public:
+
+  // int64 op_count = 5;
+  void clear_op_count();
+  ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
+  void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_count() const;
+  void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.KvOpPair)
  private:
   class _Internal;
@@ -2765,8 +2776,9 @@ class KvOpPair :
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr key_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 cursor_;
   int op_type_;
+  bool success_;
+  ::PROTOBUF_NAMESPACE_ID::int64 op_count_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -3027,7 +3039,6 @@ class ClientOperationResp :
 
   enum : int {
     kOpsFieldNumber = 2,
-    kSuccessFieldNumber = 1,
   };
   // repeated .eraftkv.KvOpPair ops = 2;
   int ops_size() const;
@@ -3047,22 +3058,12 @@ class ClientOperationResp :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair >&
       ops() const;
 
-  // bool success = 1;
-  void clear_success();
-  bool success() const;
-  void set_success(bool value);
-  private:
-  bool _internal_success() const;
-  void _internal_set_success(bool value);
-  public:
-
   // @@protoc_insertion_point(class_scope:eraftkv.ClientOperationResp)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair > ops_;
-  bool success_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -5046,24 +5047,44 @@ inline void KvOpPair::set_allocated_value(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:eraftkv.KvOpPair.value)
 }
 
-// uint64 cursor = 4;
-inline void KvOpPair::clear_cursor() {
-  cursor_ = PROTOBUF_ULONGLONG(0);
+// bool success = 4;
+inline void KvOpPair::clear_success() {
+  success_ = false;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 KvOpPair::_internal_cursor() const {
-  return cursor_;
+inline bool KvOpPair::_internal_success() const {
+  return success_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 KvOpPair::cursor() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KvOpPair.cursor)
-  return _internal_cursor();
+inline bool KvOpPair::success() const {
+  // @@protoc_insertion_point(field_get:eraftkv.KvOpPair.success)
+  return _internal_success();
 }
-inline void KvOpPair::_internal_set_cursor(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void KvOpPair::_internal_set_success(bool value) {
   
-  cursor_ = value;
+  success_ = value;
 }
-inline void KvOpPair::set_cursor(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_cursor(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.cursor)
+inline void KvOpPair::set_success(bool value) {
+  _internal_set_success(value);
+  // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.success)
+}
+
+// int64 op_count = 5;
+inline void KvOpPair::clear_op_count() {
+  op_count_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 KvOpPair::_internal_op_count() const {
+  return op_count_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 KvOpPair::op_count() const {
+  // @@protoc_insertion_point(field_get:eraftkv.KvOpPair.op_count)
+  return _internal_op_count();
+}
+inline void KvOpPair::_internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  op_count_ = value;
+}
+inline void KvOpPair::set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_op_count(value);
+  // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.op_count)
 }
 
 // -------------------------------------------------------------------
@@ -5132,26 +5153,6 @@ ClientOperationReq::kvs() const {
 // -------------------------------------------------------------------
 
 // ClientOperationResp
-
-// bool success = 1;
-inline void ClientOperationResp::clear_success() {
-  success_ = false;
-}
-inline bool ClientOperationResp::_internal_success() const {
-  return success_;
-}
-inline bool ClientOperationResp::success() const {
-  // @@protoc_insertion_point(field_get:eraftkv.ClientOperationResp.success)
-  return _internal_success();
-}
-inline void ClientOperationResp::_internal_set_success(bool value) {
-  
-  success_ = value;
-}
-inline void ClientOperationResp::set_success(bool value) {
-  _internal_set_success(value);
-  // @@protoc_insertion_point(field_set:eraftkv.ClientOperationResp.success)
-}
 
 // repeated .eraftkv.KvOpPair ops = 2;
 inline int ClientOperationResp::_internal_ops_size() const {

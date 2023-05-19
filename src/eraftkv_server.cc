@@ -9,10 +9,15 @@
  *
  */
 #include "eraftkv_server.h"
+#include "util.h"
 
 #include <grpcpp/grpcpp.h>
 
 RaftServer* ERaftKvServer::raft_context_ = nullptr;
+
+std::map<int, std::condition_variable*> ERaftKvServer::ready_cond_vars_;
+
+std::mutex ERaftKvServer::ready_mutex_;
 
 /**
  * @brief
@@ -24,8 +29,12 @@ RaftServer* ERaftKvServer::raft_context_ = nullptr;
 grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
                                         const eraftkv::RequestVoteReq* req,
                                         eraftkv::RequestVoteResp*      resp) {
-  raft_context_->HandleRequestVoteReq(nullptr, req, resp);
-  return grpc::Status::OK;
+  if(raft_context_->HandleRequestVoteReq(nullptr, req, resp) == EStatus::kOk) {
+    return grpc::Status::OK;
+
+  } else {
+     return grpc::Status::CANCELLED;
+  }
 }
 
 /**
@@ -38,8 +47,12 @@ grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
 grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
                                           const eraftkv::AppendEntriesReq* req,
                                           eraftkv::AppendEntriesResp* resp) {
-  raft_context_->HandleAppendEntriesReq(nullptr, req, resp);
-  return grpc::Status::OK;
+    if(raft_context_->HandleAppendEntriesReq(nullptr, req, resp) == EStatus::kOk) {
+    return grpc::Status::OK;
+
+  } else {
+     return grpc::Status::CANCELLED;
+  }
 }
 
 /**
@@ -69,8 +82,25 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   int64_t log_index;
   int64_t log_term;
   bool    success;
-  raft_context_->Propose(
-      req->SerializeAsString(), &log_index, &log_term, &success);
+  TraceLog("DEBUG: ", " recv rw op with ts ", req->op_timestamp());
+  for(auto kv_op: req->kvs()) {
+    if(kv_op.op_type() == eraftkv::ClientOpType::Put) {
+      std::mutex map_mutex_;
+      {
+        std::condition_variable* new_var = new std::condition_variable();
+        std::lock_guard<std::mutex> lg(map_mutex_);
+        ERaftKvServer::ready_cond_vars_[op_count_] = new_var;
+        kv_op.set_op_count(op_count_);
+      }
+      raft_context_->Propose(
+      kv_op.SerializeAsString(), &log_index, &log_term, &success);
+      {
+        std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
+        ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul, [] { return true; });
+        op_count_ += 1;
+      }
+    }
+  }
   return grpc::Status::OK;
 }
 
