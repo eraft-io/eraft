@@ -120,6 +120,22 @@ class Storage {
                                int64_t*    term,
                                int64_t*    vote) = 0;
 
+  /**
+   * @brief
+   *
+   * @param key
+   * @param val
+   * @return EStatus
+   */
+  virtual EStatus PutKV(std::string key, std::string val) = 0;
+
+  /**
+   * @brief
+   *
+   * @param key
+   * @return std::string
+   */
+  virtual std::string GetKV(std::string key) = 0;
 };
 
 #endif  // SRC_STORAGE_H_

@@ -51,7 +51,7 @@ static std::string NodeRoleToStr(NodeRaftRoleEnum role) {
  */
 class RaftServer {
 
- friend class RocksDBStorageImpl;
+  friend class RocksDBStorageImpl;
 
  public:
   /**
@@ -59,7 +59,10 @@ class RaftServer {
    *
    * @param raft_config
    */
-  RaftServer(RaftConfig raft_config, LogStore* log_store, Storage* store, Network* net);
+  RaftServer(RaftConfig raft_config,
+             LogStore*  log_store,
+             Storage*   store,
+             Network*   net);
 
   /**
    * @brief
@@ -305,7 +308,10 @@ class RaftServer {
    * @param raft_config
    * @return EStatus
    */
-  static RaftServer* RunMainLoop(RaftConfig raft_config, LogStore* log_store, Storage* store, Network* net);
+  static RaftServer* RunMainLoop(RaftConfig raft_config,
+                                 LogStore*  log_store,
+                                 Storage*   store,
+                                 Network*   net);
 
   /**
    * @brief
@@ -369,6 +375,22 @@ class RaftServer {
                   int64_t*    new_log_index,
                   int64_t*    new_log_term,
                   bool*       is_success);
+
+  /**
+   * @brief
+   *
+   */
+  Network* net_;
+  /**
+   * @brief
+   *
+   */
+  Storage* store_;
+  /**
+   * @brief
+   *
+   */
+  LogStore* log_store_;
 
  private:
   /**
@@ -500,21 +522,6 @@ class RaftServer {
    *
    */
   RaftConfig config_;
-  /**
-   * @brief
-   *
-   */
-  Network* net_;
-  /**
-   * @brief
-   *
-   */
-  Storage* store_;
-  /**
-   * @brief
-   *
-   */
-  LogStore* log_store_;
 };
 
 

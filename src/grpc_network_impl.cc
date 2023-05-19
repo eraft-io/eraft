@@ -38,7 +38,7 @@ using grpc::Status;
 EStatus GRpcNetworkImpl::SendRequestVote(RaftServer*              raft,
                                          RaftNode*                target_node,
                                          eraftkv::RequestVoteReq* req) {
-  // 1.send request vote with grpc message to target_node
+  TraceLog("DEBUG: ", " send req vote to ", target_node->address);
   ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
   if (stub_ == nullptr) {
     return EStatus::kNotFound;
@@ -46,16 +46,17 @@ EStatus GRpcNetworkImpl::SendRequestVote(RaftServer*              raft,
   eraftkv::RequestVoteResp* resp = new eraftkv::RequestVoteResp;
   resp->set_request_term(0);
   resp->set_term(0);
-  resp->set_leader_id(0);
-  ClientContext             context;
-  auto                      status = stub_->RequestVote(&context, *req, resp);
+  resp->set_leader_id(-1);
+  ClientContext context;
+  auto          status = stub_->RequestVote(&context, *req, resp);
   // 2.call raft->HandleRequestVoteResp();
   if (raft->HandleRequestVoteResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
     return EStatus::kNotFound;
   }
-  // TO DO delete RequestVoteResp
+  delete resp;
+  return EStatus::kOk;
 }
 
 
@@ -80,15 +81,19 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
   resp->set_current_index(0);
   resp->set_conflict_index(0);
   resp->set_conflict_term(0);
-  ClientContext               context;
-  auto status = stub_->AppendEntries(&context, *req, resp);
+  ClientContext context;
+  auto          status = stub_->AppendEntries(&context, *req, resp);
+  if (!status.ok()) {
+    TraceLog("ERROR: ", " send append req to FAILED! ", target_node->address);
+  }
   // 2.call raft->HandleAppendEntriesResp();
   if (raft->HandleAppendEntriesResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
     return EStatus::kNotFound;
   }
-  // TO DO delete AppendEntriesResp
+  delete resp;
+  return EStatus::kOk;
 }
 
 /**
@@ -102,7 +107,6 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
 EStatus GRpcNetworkImpl::SendSnapshot(RaftServer*           raft,
                                       RaftNode*             target_node,
                                       eraftkv::SnapshotReq* req) {
-  // 1.send snapshot to the target_node
   ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
   if (stub_ == nullptr) {
     return EStatus::kNotFound;
@@ -116,7 +120,8 @@ EStatus GRpcNetworkImpl::SendSnapshot(RaftServer*           raft,
   } else {
     return EStatus::kNotFound;
   }
-  // TO DO delete SnapshotResp
+  delete resp;
+  return EStatus::kOk;
 }
 
 
