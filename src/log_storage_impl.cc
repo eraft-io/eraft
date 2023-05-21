@@ -1,3 +1,36 @@
+// MIT License
+
+// Copyright (c) 2023 ERaftGroup
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+/**
+ * @file log_storage_impl.cc
+ * @author ERaftGroup
+ * @brief
+ * @version 0.1
+ * @date 2023-05-21
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+
 #include <rocksdb/db.h>
 #include <stdint.h>
 
@@ -6,6 +39,10 @@
 #include "rocksdb_storage_impl.h"
 #include "util.h"
 
+/****************************************************************************
+ * RocksDBLogStorageImpl impl a raft log storage with two rocksdb
+ * db instance
+ ****************************************************************************/
 
 /**
  * @brief
@@ -13,9 +50,7 @@
  */
 RocksDBLogStorageImpl::RocksDBLogStorageImpl()
     : log_cache_(new LogEntryCache()) {
-  // read meta data from log storage
-  m_status_.last_log_index = 0;
-  s_status_.last_log_index = 0;
+  // UN_SUPPORT
 }
 
 EStatus RocksDBLogStorageImpl::Reset(int64_t index, int64_t term) {
@@ -31,12 +66,7 @@ EStatus RocksDBLogStorageImpl::Reset(int64_t index, int64_t term) {
 EStatus RocksDBLogStorageImpl::Open(std::string logdb_path,
                                     int64_t     prev_log_term,
                                     int64_t     prev_log_index) {
-  // init master log db status
-  m_status_.last_log_index = prev_log_index;
-  m_status_.prev_log_index = prev_log_index;
-  m_status_.prev_log_term = prev_log_term;
-
-  return EStatus::kOk;
+  return EStatus::kNotSupport;
 }
 
 /**
@@ -92,9 +122,15 @@ EStatus RocksDBLogStorageImpl::Append(eraftkv::Entry* ety) {
   return EStatus::kOk;
 }
 
+/**
+ * @brief
+ *
+ * @param index
+ * @param term
+ * @return EStatus
+ */
 EStatus Reset(int64_t index, int64_t term) {
-
-  return EStatus::kOk;
+  return EStatus::kNotSupport;
 }
 
 /**
@@ -104,7 +140,7 @@ EStatus Reset(int64_t index, int64_t term) {
  * @return EStatus
  */
 EStatus RocksDBLogStorageImpl::EraseBefore(int64_t first_index) {
-  return EStatus::kOk;
+  return EStatus::kNotSupport;
 }
 
 /**
@@ -114,7 +150,7 @@ EStatus RocksDBLogStorageImpl::EraseBefore(int64_t first_index) {
  * @return EStatus
  */
 EStatus RocksDBLogStorageImpl::EraseAfter(int64_t from_index) {
-  return EStatus::kOk;
+  return EStatus::kNotSupport;
 }
 
 /**
@@ -166,6 +202,11 @@ int64_t RocksDBLogStorageImpl::LogCount() {
   return 0;
 }
 
+
+/****************************************************************************
+ * RocksDBSingleLogStorageImpl impl a raft log storage with single rocksdb
+ * db instance
+ ****************************************************************************/
 
 /**
  * @brief Append add new entries

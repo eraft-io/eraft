@@ -1,6 +1,28 @@
+// MIT License
+
+// Copyright (c) 2023 ERaftGroup
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 /**
  * @file eraftkv_server.cc
- * @author your name (you@domain.com)
+ * @author ERaftGroup
  * @brief
  * @version 0.1
  * @date 2023-04-01
@@ -112,6 +134,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
     }
     if (kv_op.op_type() == eraftkv::ClientOpType::Get) {
       auto val = raft_context_->store_->GetKV(kv_op.key());
+      TraceLog("DEBUG: ", " get key ", kv_op.key(), " with value ", val);
       auto res = resp->add_ops();
       res->set_key(kv_op.key());
       res->set_value(val);
@@ -135,8 +158,12 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
   return grpc::Status::OK;
 }
 
+/**
+ * @brief
+ *
+ * @return EStatus
+ */
 EStatus ERaftKvServer::BuildAndRunRpcServer() {
-  // set up rpc
   ERaftKvServer service;
   grpc::EnableDefaultHealthCheckService(true);
   grpc::ServerBuilder builder;

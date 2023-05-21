@@ -158,16 +158,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
-# build gtest demo
-add_executable(gtest_example_tests src/gtest_example_tests.cc src/eraftkv.pb.cc)
-target_link_libraries(gtest_example_tests PUBLIC
-    ${GTEST_LIBRARIES}
-    pthread
-    gRPC::grpc++
-    ${Protobuf_LIBRARY}
-)
-target_include_directories(gtest_example_tests PUBLIC ${eraftkv_INCLUDE_DIR})
-
 
 # build eraftkv_server test
 add_executable(eraftkv_server_test 
@@ -216,11 +206,6 @@ target_link_libraries(log_entry_cache_tests PUBLIC
     gRPC::grpc++
     ${Protobuf_LIBRARY}
     rocksdb
-)
-
-add_executable(google_example_banchmark src/google_example_benchmark.cc)
-target_link_libraries(google_example_banchmark PUBLIC
-    benchmark::benchmark
 )
 
 add_executable(log_entry_cache_benchmark src/log_entry_cache_benchmark.cc src/log_entry_cache.cc src/eraftkv.pb.cc)

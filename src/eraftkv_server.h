@@ -1,3 +1,25 @@
+// MIT License
+
+// Copyright (c) 2023 ERaftGroup
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 /**
  * @file eraftkv_server.h
  * @author ERaftGroup
@@ -14,17 +36,17 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include <condition_variable>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <condition_variable>
 
 #include "eraftkv.grpc.pb.h"
 #include "eraftkv.pb.h"
 #include "estatus.h"
+#include "grpc_network_impl.h"
 #include "raft_server.h"
 #include "rocksdb_storage_impl.h"
-#include "grpc_network_impl.h"
 
 using eraftkv::ERaftKv;
 using grpc::ServerContext;
@@ -35,7 +57,7 @@ using grpc::Status;
  *
  */
 struct ERaftKvServerOptions {
-  int64_t svr_id;
+  int64_t     svr_id;
   std::string svr_version;
   std::string svr_addr;
   std::string kv_db_path;
@@ -69,12 +91,15 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
     // init raft lib
     RaftConfig raft_config;
     raft_config.id = options_.svr_id;
-    raft_config.peer_address_map = {{0, "127.0.0.1:8088"}, {1, "127.0.0.1:8089"}, {2, "127.0.0.1:8090"}};
+    raft_config.peer_address_map = {
+        {0, "127.0.0.1:8088"}, {1, "127.0.0.1:8089"}, {2, "127.0.0.1:8090"}};
     GRpcNetworkImpl* net_rpc = new GRpcNetworkImpl();
     net_rpc->InitPeerNodeConnections(raft_config.peer_address_map);
-    RocksDBSingleLogStorageImpl* log_db = new RocksDBSingleLogStorageImpl(options_.log_db_path);
+    RocksDBSingleLogStorageImpl* log_db =
+        new RocksDBSingleLogStorageImpl(options_.log_db_path);
     RocksDBStorageImpl* kv_db = new RocksDBStorageImpl(options_.kv_db_path);
-    raft_context_ = RaftServer::RunMainLoop(raft_config, log_db, kv_db, net_rpc);
+    raft_context_ =
+        RaftServer::RunMainLoop(raft_config, log_db, kv_db, net_rpc);
   }
 
   ERaftKvServer() {}
