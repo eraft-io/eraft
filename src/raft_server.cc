@@ -140,6 +140,7 @@ EStatus RaftServer::RunCycle() {
   while (true) {
     TraceLog("DEBUG: ", " election_tick_count_ ", election_tick_count_);
     TraceLog("DEBUG: ", " heartbeat_tick_count_ ", heartbeat_tick_count_);
+    TraceLog("DEBUG: ", " node role ", NodeRoleToStr(role_));
     TraceLog("DEBUG: ",
              " commit idx ",
              this->commit_idx_,
@@ -217,6 +218,7 @@ EStatus RaftServer::SendAppendEntries() {
       append_req->set_leader_commit(this->commit_idx_);
 
       this->net_->SendAppendEntries(this, node, append_req);
+      delete prev_log_entry;
       delete append_req;
     }
   }

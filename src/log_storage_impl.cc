@@ -226,7 +226,7 @@ EStatus RocksDBSingleLogStorageImpl::Append(eraftkv::Entry* ety) {
 }
 
 /**
- * @brief EraseBefore erase all entries before the given index
+ * @brief EraseBefore erase all entries before the given index, [old first_index, first_index)
  *
  * @param first_index
  * @return EStatus
@@ -245,7 +245,7 @@ EStatus RocksDBSingleLogStorageImpl::EraseBefore(int64_t first_index) {
 }
 
 /**
- * @brief EraseAfter erase all entries after the given index
+ * @brief EraseAfter erase all entries after the given index, [from_index, last_index]
  *
  * @param from_index
  * @return EStatus
@@ -263,7 +263,7 @@ EStatus RocksDBSingleLogStorageImpl::EraseAfter(int64_t from_index) {
 }
 
 /**
- * @brief
+ * @brief erase log with index in range [start, end)
  *
  * @param start
  * @param end
@@ -445,6 +445,8 @@ RocksDBSingleLogStorageImpl::RocksDBSingleLogStorageImpl(std::string db_path)
     std::string val = ety->SerializeAsString();
     auto        status = log_db_->Put(rocksdb::WriteOptions(), *key, val);
     assert(status.ok());
+    delete key;
+    delete ety;
   }
 }
 

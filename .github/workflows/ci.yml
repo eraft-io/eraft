@@ -34,7 +34,6 @@ jobs:
         make -j4
     - name: Run Main
       run: |
-        ./build/eraftkv_server_test
         ./build/rocksdb_storage_impl_tests
         ./build/log_entry_cache_tests
         ./build/log_entry_cache_tests

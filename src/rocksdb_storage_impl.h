@@ -385,7 +385,7 @@ class RocksDBSingleLogStorageImpl : public LogStore {
   eraftkv::Entry* GetLastEty();
 
   /**
-   * @brief
+   * @brief 
    *
    * @param start
    * @param end
