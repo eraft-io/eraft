@@ -111,6 +111,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
     if (kv_op.op_type() == eraftkv::ClientOpType::Put) {
       std::mutex map_mutex_;
       {
+        op_count_ += 1;
         std::condition_variable*    new_var = new std::condition_variable();
         std::lock_guard<std::mutex> lg(map_mutex_);
         ERaftKvServer::ready_cond_vars_[op_count_] = new_var;
@@ -122,7 +123,6 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
         std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
         ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
                                                          [] { return true; });
-        op_count_ += 1;
         ERaftKvServer::ready_cond_vars_.erase(op_count_);
       }
       auto res = resp->add_ops();

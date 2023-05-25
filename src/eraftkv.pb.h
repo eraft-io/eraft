@@ -233,13 +233,14 @@ inline bool ServerStatus_Parse(
     ServerStatus_descriptor(), name, value);
 }
 enum ClusterConfigChangeType : int {
-  AddServer = 0,
-  RemoveServer = 1,
+  ClusterInit = 0,
+  AddServer = 1,
+  RemoveServer = 2,
   ClusterConfigChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ClusterConfigChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ClusterConfigChangeType_IsValid(int value);
-constexpr ClusterConfigChangeType ClusterConfigChangeType_MIN = AddServer;
+constexpr ClusterConfigChangeType ClusterConfigChangeType_MIN = ClusterInit;
 constexpr ClusterConfigChangeType ClusterConfigChangeType_MAX = RemoveServer;
 constexpr int ClusterConfigChangeType_ARRAYSIZE = ClusterConfigChangeType_MAX + 1;
 

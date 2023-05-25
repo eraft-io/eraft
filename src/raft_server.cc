@@ -385,6 +385,7 @@ EStatus RaftServer::Propose(std::string payload,
   new_ety->set_data(payload);
   new_ety->set_id(this->log_store_->LastIndex() + 1);
   new_ety->set_term(this->current_term_);
+  new_ety->set_e_type(eraftkv::EntryType::Normal);
 
   this->log_store_->Append(new_ety);
 

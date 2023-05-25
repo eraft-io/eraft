@@ -117,8 +117,9 @@ message ShardGroup {
 }
 
 enum ClusterConfigChangeType {
-  AddServer = 0;
-  RemoveServer = 1;
+  ClusterInit = 0;
+  AddServer = 1;
+  RemoveServer = 2;
 }
 
 message ClusterConfigChangeReq {
