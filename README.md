@@ -48,9 +48,9 @@ make image
 - set up demo cluster
 
 ```
-./build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 127.0.0.1:8088
-./build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 127.0.0.1:8089
-./build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 127.0.0.1:8090
+./build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090
+./build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090
+./build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090
 
 ```
 

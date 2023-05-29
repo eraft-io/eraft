@@ -41,7 +41,7 @@
  * @brief
  *
  * @param argc
- * @param argv
+ * @param argv (eg: eraftkv 0 /tmp/kv_db0 /tmp/log_db0 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090)
  * @return int
  */
 int main(int argc, char* argv[]) {
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   options_.svr_id = stoi(std::string(argv[1]));
   options_.kv_db_path = std::string(argv[2]);
   options_.log_db_path = std::string(argv[3]);
-  options_.svr_addr = std::string(argv[4]);
+  options_.peer_addrs = std::string(argv[4]);
   ERaftKvServer server(options_);
   server.BuildAndRunRpcServer();
   return 0;

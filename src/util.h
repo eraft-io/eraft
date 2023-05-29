@@ -109,7 +109,7 @@ class RandomNumber {
 };
 
 
-class RandomString {
+class StringUtil {
 
  public:
   /**
@@ -133,8 +133,21 @@ class RandomString {
     return tmp_s;
   }
 
-  RandomString() = delete;
-  ~RandomString() = delete;
+  static std::vector<std::string> Split(const std::string& str, char delim) {
+    std::stringstream ss(str);
+    std::string item;
+    std::vector<std::string> elems;
+    while (std::getline(ss, item, delim))
+    {
+      if(!item.empty()) {
+        elems.push_back(item);
+      }
+    }
+    return elems;
+  }
+
+  StringUtil() = delete;
+  ~StringUtil() = delete;
 };
 
 #endif  // SRC_UTIL_H_
