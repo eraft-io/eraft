@@ -54,6 +54,13 @@ make image
 
 ```
 
+- join an new node
+
+```
+./build/eraftkv 3 /tmp/kv_db4 /tmp/log_db4 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090,127.0.0.1:8091
+
+```
+
 ## example usage
 
 - put kv

@@ -169,6 +169,7 @@ add_executable(eraftkv_server_test
     src/log_storage_impl.cc
     src/rocksdb_storage_impl.cc
     src/log_entry_cache.cc
+    src/grpc_network_impl.cc
 )
 target_link_libraries(eraftkv_server_test PUBLIC
     ${GTEST_LIBRARIES}

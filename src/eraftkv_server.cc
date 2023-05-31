@@ -155,7 +155,31 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
     ServerContext*                         context,
     const eraftkv::ClusterConfigChangeReq* req,
     eraftkv::ClusterConfigChangeResp*      resp) {
-  return grpc::Status::OK;
+  int64_t log_index;
+  int64_t log_term;
+  bool success;
+  TraceLog("DEBUG: ", " recv config change req with change_type ", req->change_type());
+
+  auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
+
+  std::mutex map_mutex_;
+  {
+    op_count_ += 1;
+    std::condition_variable* new_var = new std::condition_variable();
+    std::lock_guard<std::mutex> lg(map_mutex_);
+    conf_change_req->set_op_count(op_count_);
+  }
+
+  raft_context_->ProposeConfChange(conf_change_req->SerializeAsString(), &log_index, &log_term, &success);
+
+  {
+    std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
+    ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
+                                                      [] { return true; });
+    ERaftKvServer::ready_cond_vars_.erase(op_count_);
+  }
+
+  return success ? grpc::Status::OK : grpc::Status::CANCELLED;
 }
 
 /**

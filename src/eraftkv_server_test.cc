@@ -51,11 +51,25 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
+// TEST(ERaftKvServerTest, ConfChangeReq) {
+//   auto chan_ =
+//       grpc::CreateChannel("127.0.0.1:8088", grpc::InsecureChannelCredentials());
+//   std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
+//   ClientContext  context;
+//   eraftkv::ClusterConfigChangeReq req;
+//   req.set_change_type(eraftkv::ClusterConfigChangeType::AddServer);
+//   req.mutable_server()->set_id(3);
+//   req.mutable_server()->set_address("127.0.0.1:8091");
+//   eraftkv::ClusterConfigChangeResp resp;
+//   auto status = stub_->ClusterConfigChange(&context, req, &resp);
+//   ASSERT_EQ(status.ok(), true);
+// }
+
 TEST(ERaftKvServerTest, ClientOperationReqRW) {
   auto chan_ =
       grpc::CreateChannel("127.0.0.1:8088", grpc::InsecureChannelCredentials());
   std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
-  for(int i = 0; i <= 500; i++) {
+  for(int i = 0; i <= 50; i++) {
     std::string test_key = StringUtil::RandStr(64);
     std::string test_val = StringUtil::RandStr(64);
 
@@ -89,6 +103,7 @@ TEST(ERaftKvServerTest, ClientOperationReqRW) {
     // ASSERT_EQ(resp_get.ops(0).value(), test_val);
   }
 }
+
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

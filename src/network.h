@@ -86,6 +86,24 @@ class Network {
   virtual EStatus SendSnapshot(RaftServer*           raft,
                                RaftNode*             target_node,
                                eraftkv::SnapshotReq* req) = 0;
+
+  /**
+   * @brief
+   *
+   * @param peers_address
+   * @return EStatus
+   */
+  virtual EStatus InitPeerNodeConnections(std::map<int64_t, std::string> peers_address) = 0;
+
+  /**
+   * @brief 
+   * 
+   * @param peer_id 
+   * @param addr 
+   * @return EStatus 
+   */
+  virtual EStatus InsertPeerNodeConnection(int64_t peer_id, std::string addr) = 0;
+
 };
 
 /**
