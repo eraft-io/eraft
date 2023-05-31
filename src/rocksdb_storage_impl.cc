@@ -133,7 +133,19 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
           break;
         }
         default:
+        {
+          raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
+          raft->last_applied_idx_ = ety->id();
           break;
+        }
+      }
+      std::mutex map_mutex;
+      {
+        std::lock_guard<std::mutex> lg(map_mutex);
+        if(ERaftKvServer::ready_cond_vars_[conf_change_req->op_count()] != nullptr) {
+          ERaftKvServer::ready_cond_vars_[conf_change_req->op_count()]
+              ->notify_one();
+        }
       }
       delete conf_change_req;
       break;
