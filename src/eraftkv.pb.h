@@ -153,11 +153,8 @@ inline bool ErrorCode_Parse(
 }
 enum EntryType : int {
   Normal = 0,
-  JoinNode = 1,
-  LeaveNode = 2,
-  JoinGroup = 3,
-  LeaveGroup = 4,
-  NoOp = 5,
+  ConfChange = 1,
+  NoOp = 2,
   EntryType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   EntryType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
@@ -2050,26 +2047,10 @@ class Server :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 1,
     kAddressFieldNumber = 2,
+    kIdFieldNumber = 1,
     kServerStatusFieldNumber = 3,
   };
-  // string id = 1;
-  void clear_id();
-  const std::string& id() const;
-  void set_id(const std::string& value);
-  void set_id(std::string&& value);
-  void set_id(const char* value);
-  void set_id(const char* value, size_t size);
-  std::string* mutable_id();
-  std::string* release_id();
-  void set_allocated_id(std::string* id);
-  private:
-  const std::string& _internal_id() const;
-  void _internal_set_id(const std::string& value);
-  std::string* _internal_mutable_id();
-  public:
-
   // string address = 2;
   void clear_address();
   const std::string& address() const;
@@ -2086,6 +2067,15 @@ class Server :
   std::string* _internal_mutable_address();
   public:
 
+  // int64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // .eraftkv.ServerStatus server_status = 3;
   void clear_server_status();
   ::eraftkv::ServerStatus server_status() const;
@@ -2100,8 +2090,8 @@ class Server :
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr id_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr address_;
+  ::PROTOBUF_NAMESPACE_ID::int64 id_;
   int server_status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
@@ -2382,6 +2372,7 @@ class ClusterConfigChangeReq :
     kServerFieldNumber = 3,
     kShardIdFieldNumber = 2,
     kConfigVersionFieldNumber = 4,
+    kOpCountFieldNumber = 5,
     kChangeTypeFieldNumber = 1,
   };
   // .eraftkv.Server server = 3;
@@ -2417,6 +2408,15 @@ class ClusterConfigChangeReq :
   void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
+  // int64 op_count = 5;
+  void clear_op_count();
+  ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
+  void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_count() const;
+  void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // .eraftkv.ClusterConfigChangeType change_type = 1;
   void clear_change_type();
   ::eraftkv::ClusterConfigChangeType change_type() const;
@@ -2434,6 +2434,7 @@ class ClusterConfigChangeReq :
   ::eraftkv::Server* server_;
   ::PROTOBUF_NAMESPACE_ID::int64 shard_id_;
   ::PROTOBUF_NAMESPACE_ID::int64 config_version_;
+  ::PROTOBUF_NAMESPACE_ID::int64 op_count_;
   int change_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
@@ -4434,64 +4435,24 @@ inline void KeyRange::set_allocated_end(std::string* end) {
 
 // Server
 
-// string id = 1;
+// int64 id = 1;
 inline void Server::clear_id() {
-  id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  id_ = PROTOBUF_LONGLONG(0);
 }
-inline const std::string& Server::id() const {
+inline ::PROTOBUF_NAMESPACE_ID::int64 Server::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Server::id() const {
   // @@protoc_insertion_point(field_get:eraftkv.Server.id)
   return _internal_id();
 }
-inline void Server::set_id(const std::string& value) {
+inline void Server::_internal_set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  id_ = value;
+}
+inline void Server::set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_id(value);
   // @@protoc_insertion_point(field_set:eraftkv.Server.id)
-}
-inline std::string* Server::mutable_id() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.Server.id)
-  return _internal_mutable_id();
-}
-inline const std::string& Server::_internal_id() const {
-  return id_.GetNoArena();
-}
-inline void Server::_internal_set_id(const std::string& value) {
-  
-  id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void Server::set_id(std::string&& value) {
-  
-  id_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftkv.Server.id)
-}
-inline void Server::set_id(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftkv.Server.id)
-}
-inline void Server::set_id(const char* value, size_t size) {
-  
-  id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftkv.Server.id)
-}
-inline std::string* Server::_internal_mutable_id() {
-  
-  return id_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* Server::release_id() {
-  // @@protoc_insertion_point(field_release:eraftkv.Server.id)
-  
-  return id_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void Server::set_allocated_id(std::string* id) {
-  if (id != nullptr) {
-    
-  } else {
-    
-  }
-  id_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.Server.id)
 }
 
 // string address = 2;
@@ -4819,6 +4780,26 @@ inline void ClusterConfigChangeReq::_internal_set_config_version(::PROTOBUF_NAME
 inline void ClusterConfigChangeReq::set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_config_version(value);
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.config_version)
+}
+
+// int64 op_count = 5;
+inline void ClusterConfigChangeReq::clear_op_count() {
+  op_count_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::_internal_op_count() const {
+  return op_count_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::op_count() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.op_count)
+  return _internal_op_count();
+}
+inline void ClusterConfigChangeReq::_internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  op_count_ = value;
+}
+inline void ClusterConfigChangeReq::set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_op_count(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.op_count)
 }
 
 // -------------------------------------------------------------------

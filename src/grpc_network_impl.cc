@@ -166,6 +166,15 @@ EStatus GRpcNetworkImpl::InitPeerNodeConnections(
   return EStatus::kOk;
 }
 
+EStatus GRpcNetworkImpl::InsertPeerNodeConnection(int64_t peer_id, std::string addr) {
+  auto chan_ =
+        grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
+  auto stub_(ERaftKv::NewStub(chan_));
+  this->peer_node_connections_[peer_id] = std::move(stub_);
+  TraceLog("DEBUG: ", "insert peer connection to ", addr);
+  return EStatus::kOk;
+}
+
 /**
  * @brief Get the Peer Node Connection object
  *

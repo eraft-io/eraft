@@ -196,12 +196,18 @@ class RaftServer {
                                   int64_t         ety_index);
 
   /**
-   * @brief
-   *
-   * @param ety
-   * @return EStatus
+   * @brief 
+   * 
+   * @param payload 
+   * @param new_log_index 
+   * @param new_log_term 
+   * @param is_success 
+   * @return EStatus 
    */
-  EStatus ProposeEntry(eraftkv::Entry* ety);
+  EStatus ProposeConfChange(std::string payload,
+                  int64_t*    new_log_index,
+                  int64_t*    new_log_term,
+                  bool*       is_success);
 
 
   /**

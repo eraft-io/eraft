@@ -626,12 +626,47 @@ EStatus RaftServer::HandleApplyConfigChange(RaftNode*       from_node,
 }
 
 /**
- * @brief
- *
- * @param ety
- * @return EStatus
+ * @brief 
+ * 
+ * @param payload 
+ * @param new_log_index 
+ * @param new_log_term 
+ * @param is_success 
+ * @return EStatus 
  */
-EStatus RaftServer::ProposeEntry(eraftkv::Entry* ety) {
+EStatus RaftServer::ProposeConfChange(std::string payload,
+                int64_t*    new_log_index,
+                int64_t*    new_log_term,
+                bool*       is_success) {
+  if (this->role_ != NodeRaftRoleEnum::Leader) {
+    *new_log_index = -1;
+    *new_log_term = -1;
+    *is_success = false;
+    return EStatus::kOk;
+  }
+
+  eraftkv::Entry* new_ety = new eraftkv::Entry();
+  new_ety->set_data(payload);
+  new_ety->set_id(this->log_store_->LastIndex() + 1);
+  new_ety->set_term(this->current_term_);
+  new_ety->set_e_type(eraftkv::EntryType::ConfChange);
+
+  this->log_store_->Append(new_ety);
+
+  for (auto node : this->nodes_) {
+    if (node->id == this->id_) {
+      node->match_log_index = new_ety->id();
+      node->next_log_index = node->match_log_index + 1;
+    }
+  }
+
+  SendAppendEntries();
+
+  *new_log_index = new_ety->id();
+  *new_log_term = new_ety->term();
+  *is_success = true;
+
+  delete new_ety;
   return EStatus::kOk;
 }
 

@@ -25,11 +25,8 @@ message RequestVoteResp {
 
 enum EntryType {
   Normal = 0;
-  JoinNode = 1;
-  LeaveNode = 2;
-  JoinGroup = 3;
-  LeaveGroup = 4;
-  NoOp = 5;
+  ConfChange = 1;
+  NoOp = 2;
 }
 
 message Entry {
@@ -105,7 +102,7 @@ enum ServerStatus {
 }
 
 message Server {
-  string       id = 1;
+  int64        id = 1;
   string       address = 2;
   ServerStatus server_status = 3;
 }
@@ -127,6 +124,7 @@ message ClusterConfigChangeReq {
   int64                   shard_id = 2;
   Server                  server = 3;
   int64                   config_version = 4;
+  int64                   op_count = 5;
 }
 
 message ClusterConfigChangeResp {
