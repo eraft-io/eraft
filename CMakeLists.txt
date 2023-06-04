@@ -236,3 +236,14 @@ target_link_libraries(grpc_network_impl_test PUBLIC
     rocksdb
     ${Protobuf_LIBRARY}
 )
+
+# eraft-ctl
+add_executable(eraft-ctl 
+    src/eraftkv_ctl.cc
+    src/eraftkv.pb.cc 
+    src/eraftkv.grpc.pb.cc
+    )
+target_link_libraries(eraft-ctl PUBLIC
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
