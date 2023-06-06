@@ -45,7 +45,7 @@ make image
 
 ## Run Demo
 
-- set up demo cluster
+- how to set up demo cluster
 
 ```
 ./build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090
@@ -54,53 +54,37 @@ make image
 
 ```
 
-- join an new node
+- how to join an new node?
 
 ```
 ./build/eraftkv 3 /tmp/kv_db4 /tmp/log_db4 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090,127.0.0.1:8091
 
+./build/eraftkv-ctl addnode 3 127.0.0.1:8091
 ```
 
 ## example usage
 
 - put kv
 ```
-TEST(ERaftKvServerTest, ClientOperationReqRW) {
-  auto chan_ =
-      grpc::CreateChannel("127.0.0.1:8088", grpc::InsecureChannelCredentials());
-  std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
-  std::string test_key = RandomString::RandStr(64);
-  std::string test_val = RandomString::RandStr(64);
+./eraftkv-ctl [leader_address] put [key] [value]
+```
+- get kv
+```
+./eraftkv-ctl [leader_address] get [key]
+```
 
-  ClientContext               context;
-  eraftkv::ClientOperationReq req;
-  time_t                      time_in_sec;
-  time(&time_in_sec);
-  req.set_op_timestamp(static_cast<uint64_t>(time_in_sec));
-  auto kv_pair = req.add_kvs();
-  kv_pair->set_key(test_key);
-  kv_pair->set_value(test_val);
-  kv_pair->set_op_type(eraftkv::ClientOpType::Put);
-  eraftkv::ClientOperationResp resp;
-  auto status = stub_->ProcessRWOperation(&context, req, &resp);
-  ASSERT_EQ(status.ok(), true);
-  ASSERT_EQ(resp.ops_size(), 1);
-  ASSERT_EQ(resp.ops(0).success(), true);
+- addnode to raft group
+```
+./eraftkv-ctl [leader_address] addnode [node id] [node address]
+```
+- remove node from raft group
+```
+./eraftkv-ctl [leader_address] removenode [node id]
+```
 
-  ClientContext               context_get;
-  eraftkv::ClientOperationReq req_get;
-  time(&time_in_sec);
-  req_get.set_op_timestamp(static_cast<uint64_t>(time_in_sec));
-  auto kv_pair_ = req_get.add_kvs();
-  kv_pair_->set_key(test_key);
-  kv_pair_->set_op_type(eraftkv::ClientOpType::Get);
-  eraftkv::ClientOperationResp resp_get;
-  auto status_ = stub_->ProcessRWOperation(&context_get, req_get, &resp_get);
-  ASSERT_EQ(status_.ok(), true);
-  ASSERT_EQ(resp_get.ops_size(), 1);
-  ASSERT_EQ(resp_get.ops(0).success(), true);
-  ASSERT_EQ(resp_get.ops(0).value(), test_val);
-}
+- run kv benchmark
+```
+./eraftkv-ctl [leader_address] bench [key size] [value size] [op count]
 ```
 
 # Contributing
