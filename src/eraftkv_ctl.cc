@@ -12,11 +12,24 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
-#define CTL_VERSION "1.0.0"
+#define CTL_VERSION "v1.0.0"
 
 int main(int argc, char* argv[]) {
-  std::cout << "Welcome to eraftkv-ctl, version " << CTL_VERSION << std::endl;
-  std::cout << "Usage: eraftkv-ctl [server_addr] [cmd] [args]..." << std::endl;
+  if (argc < 2) {
+    std::cout << "Welcome to eraftkv-ctl, Copyright (c) 2023 ERaftGroup "
+              << CTL_VERSION << std::endl;
+    std::cout << "putkv: ./eraftkv-ctl [leader_address] put [key] [value]"
+              << std::endl;
+    std::cout << "getkv: ./eraftkv-ctl [leader_address] get [key]" << std::endl;
+    std::cout << "addnode: ./eraftkv-ctl [leader_address] addnode [node id] "
+                 "[node address]"
+              << std::endl;
+    std::cout
+        << "removenode: ./eraftkv-ctl [leader_address] removenode [node id]"
+        << std::endl;
+    return 0;
+  }
+
   std::string svr_addr = std::string(argv[1]);
   std::string cmd = std::string(argv[2]);
   auto        chan_ =
@@ -89,4 +102,5 @@ int main(int argc, char* argv[]) {
     status.ok() ? std::cout << "remove node ok~ " << std::endl
                 : std::cout << " remove node error! " << std::endl;
   }
+  return 0;
 }

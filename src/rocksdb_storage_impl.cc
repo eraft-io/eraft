@@ -125,30 +125,46 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             if (conf_change_req->server().id() != raft->id_) {
               RaftNode* new_node =
                   new RaftNode(conf_change_req->server().id(),
-                               NodeStateEnum::Init,
+                               NodeStateEnum::Running,
                                0,
                                ety->id(),
                                conf_change_req->server().address());
               raft->net_->InsertPeerNodeConnection(
                   conf_change_req->server().id(),
                   conf_change_req->server().address());
-              raft->nodes_.push_back(new_node);
+              bool node_exist = false;
+              for (auto node : raft->nodes_) {
+                if (node->id == new_node->id) {
+                  node_exist = true;
+                  // reinit node
+                  if (node->node_state == NodeStateEnum::Down) {
+                    TraceLog("DEBUG: ",
+                             " reinit node ",
+                             conf_change_req->server().address(),
+                             " to running state");
+                    node->node_state = NodeStateEnum::Running;
+                    node->next_log_index = 0;
+                    node->match_log_index = ety->id();
+                    node->address = conf_change_req->server().address();
+                  }
+                }
+              }
+              if (!node_exist) {
+                raft->nodes_.push_back(new_node);
+              }
             }
             break;
           }
           case eraftkv::ClusterConfigChangeType::RemoveServer: {
             raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
             raft->last_applied_idx_ = ety->id();
-            auto   to_remove_serverid = conf_change_req->server().id();
-            size_t count = 0;
+            auto to_remove_serverid = conf_change_req->server().id();
             for (auto iter = raft->nodes_.begin(); iter != raft->nodes_.end();
                  iter++) {
               if ((*iter)->id == to_remove_serverid &&
                   conf_change_req->server().id() != raft->id_) {
-                raft->nodes_.erase(raft->nodes_.begin() + count);
-                raft->AdvanceCommitIndexForLeader();
+                (*iter)->node_state = NodeStateEnum::Down;
               }
-              count += 1;
             }
             break;
           }
