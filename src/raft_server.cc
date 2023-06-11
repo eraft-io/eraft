@@ -135,25 +135,21 @@ EStatus RaftServer::RunCycle() {
       }
     }
     if (election_tick_count_ >= election_timeout_ && election_running_) {
-      if(this->role_ == NodeRaftRoleEnum::Follower){
+      if (this->role_ == NodeRaftRoleEnum::Follower) {
         TraceLog("DEBUG: ", "start pre election in term", current_term_);
         this->BecomePreCandidate();
         this->ElectionStart(true);
-      }else if (this->role_ == NodeRaftRoleEnum::PreCandidate){
-        if(this->granted_votes_ > (this->nodes_.size() / 2)){
+      } else if (this->role_ == NodeRaftRoleEnum::PreCandidate) {
+        if (this->granted_votes_ > (this->nodes_.size() / 2)) {
           this->BecomeCandidate();
           this->ElectionStart(false);
-        }else{
+        } else {
           this->BecomeFollower();
         }
-        // TraceLog("DEBUG: ", "start election in term", current_term_);
-        // this->BecomeCandidate();
-        // this->current_term_ += 1;
-        // this->ElectionStart(true);
-      }else if(this->role_ == NodeRaftRoleEnum::Candidate){
-        if(this->granted_votes_ > (this->nodes_.size() / 2)){
+      } else if (this->role_ == NodeRaftRoleEnum::Candidate) {
+        if (this->granted_votes_ > (this->nodes_.size() / 2)) {
           this->BecomeLeader();
-        }else{
+        } else {
           this->BecomeFollower();
         }
       }
@@ -266,7 +262,7 @@ EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
            leader_id_);
   resp->set_term(current_term_);
   resp->set_prevote(req->prevote());
-  if(this->current_term_ > req->term()){
+  if (this->current_term_ > req->term()) {
     resp->set_vote_granted(false);
     return EStatus::kOk;
   }
@@ -283,7 +279,7 @@ EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
     this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
     return EStatus::kOk;
   }
-  if(!req->prevote()){
+  if (!req->prevote()) {
     TraceLog("DEBUG: peer ", this->id_, " vote ", req->candidtate_id());
     this->voted_for_ = req->candidtate_id();
 
@@ -337,11 +333,11 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
              resp->leader_id(),
              " from node ",
              from_node->address);
-    if(this->role_ == NodeRaftRoleEnum::PreCandidate && 
-        req->term() == this->current_term_+1 && resp->prevote()){
-      if(resp->vote_granted()){
+    if (this->role_ == NodeRaftRoleEnum::PreCandidate &&
+        req->term() == this->current_term_ + 1 && resp->prevote()) {
+      if (resp->vote_granted()) {
         this->granted_votes_ += 1;
-        if(this->granted_votes_ > (this->nodes_.size() / 2)){
+        if (this->granted_votes_ > (this->nodes_.size() / 2)) {
           TraceLog("DEBUG: ",
                    " node ",
                    this->id_,
@@ -745,7 +741,8 @@ EStatus RaftServer::BecomeCandidate() {
  * @return EStatus
  */
 EStatus RaftServer::BecomePreCandidate() {
-  if(this->role_ == NodeRaftRoleEnum::Leader || this->role_ == NodeRaftRoleEnum::Candidate){
+  if (this->role_ == NodeRaftRoleEnum::Leader ||
+      this->role_ == NodeRaftRoleEnum::Candidate) {
     return EStatus::kError;
   }
   this->role_ = NodeRaftRoleEnum::PreCandidate;
@@ -768,10 +765,10 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
   this->leader_id_ = -1;
   this->voted_for_ = this->id_;
   eraftkv::RequestVoteReq* vote_req = new eraftkv::RequestVoteReq();
-  if(is_prevote){
-    vote_req->set_term(this->current_term_+1);
+  if (is_prevote) {
+    vote_req->set_term(this->current_term_ + 1);
     vote_req->set_prevote(true);
-  }else{
+  } else {
     this->current_term_ += 1;
     vote_req->set_term(this->current_term_);
   }
