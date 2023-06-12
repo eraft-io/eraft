@@ -16,13 +16,18 @@ Vecset is a collection of Vec, You can create a vecset through restful api, and 
 Vec stores a single vector, include vector id, vector data and additional comments:
 
 - vid:
-A unique identifier of your vector
+A unique identifier of your vector.
 
 - vdata:
-
+Vectorized representation of information in the physical world such as sound, video, and pictures.
 
 - vextra:
+The description information of the vector datam which is a json structure.
 
 ### Storage Cluster
+A distributed storage KV storage engine based on multi-raft and rocksdb, which supports the storage of a large amount of KV data.
+
 
 ### RestfulAPI
+
+Provide restful style OpenAPI for create Vecset, add Vec, search Vec with filtering.
