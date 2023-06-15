@@ -141,7 +141,7 @@ if(Boost_FOUND)
 endif()
 
 set(LIBS ${Boost_LIBRARIES} "${CMAKE_THREAD_LIBS_INIT}")
-add_executable(eraft-vdb src/eraft_vdb_server.cc)
+add_executable(eraft-vdb src/eraft_vdb_server.cc src/proto_parser.cc)
 target_link_libraries(eraft-vdb ${LIBS})
 target_include_directories(eraft-vdb PUBLIC ${eraftkv_INCLUDE_DIR})
 

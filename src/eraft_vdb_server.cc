@@ -9,12 +9,12 @@
  *
  */
 
-#include <boost/asio.hpp>
-
 #include <array>
+#include <boost/asio.hpp>
+#include <iostream>
 
+#include "proto_parser.h"
 #include "thread_pool.h"
-
 
 using boost::asio::ip::tcp;
 
@@ -40,11 +40,17 @@ class TCPConnection : public std::enable_shared_from_this<TCPConnection> {
         strand_.wrap([this, self](boost::system::error_code ec,
                                   std::size_t               bytes_transferred) {
           if (!ec) {
-            auto self = shared_from_this();
-
+            auto        self = shared_from_this();
+            std::string req_buf(std::begin(r_buffer_), std::end(r_buffer_));
+            std::cout << "reqest buf len -> " << bytes_transferred << " -> "
+                      << req_buf << std::endl;
+            const char *ptr = req_buf.c_str();
+            auto        parse_result =
+                parser_.ParseRequest(ptr, ptr + bytes_transferred);
+            std::cout << parser_.GetParams()[0] << std::endl;
             boost::asio::async_write(
                 socket_,
-                boost::asio::buffer("+OK"),
+                boost::asio::buffer("+OK\r\n"),
                 strand_.wrap([this, self](boost::system::error_code ec,
                                           std::size_t bytes_transferred) {
                   if (!ec) {
@@ -59,6 +65,7 @@ class TCPConnection : public std::enable_shared_from_this<TCPConnection> {
   tcp::socket                     socket_;
   boost::asio::io_service::strand strand_;
   std::array<char, 8192>          r_buffer_;
+  ProtoParser                     parser_;
 };
 
 class ERaftVdbServer {

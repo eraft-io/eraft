@@ -55,4 +55,4 @@ FROM eraft/eraftkv:v0.0.4
 
 # RUN ldconfig
 
-RUN apt-get install -y libasio-dev
+RUN apt-get install -y libasio-dev telnet

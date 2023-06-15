@@ -42,4 +42,4 @@ build-dev:
 # run all unit test
 tests:
 	chmod +x utils/run-tests.sh
-	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.4 /eraft/utils/run-tests.sh
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-tests.sh
