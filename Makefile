@@ -21,7 +21,7 @@
 # SOFTWARE.
 default: image
 
-IMAGE_VERSION := v0.0.5
+IMAGE_VERSION := v0.0.6
 
 BUILDER_IMAGE := $(or $(BUILDER_IMAGE),eraft/eraftkv:$(IMAGE_VERSION))
 
@@ -37,7 +37,7 @@ gen-protocol-code:
 # build eraftkv on local machine
 build-dev:
 	chmod +x utils/build-dev.sh
-	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.4 /eraft/utils/build-dev.sh
+	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/build-dev.sh
 
 # run all unit test
 tests:

@@ -96,11 +96,11 @@ class GRpcNetworkImpl : public Network {
   ERaftKv::Stub* GetPeerNodeConnection(int64_t node_id);
 
   /**
-   * @brief 
-   * 
-   * @param peer_id 
-   * @param addr 
-   * @return EStatus 
+   * @brief
+   *
+   * @param peer_id
+   * @param addr
+   * @return EStatus
    */
   EStatus InsertPeerNodeConnection(int64_t peer_id, std::string addr);
 

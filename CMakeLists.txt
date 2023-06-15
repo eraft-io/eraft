@@ -132,6 +132,18 @@ find_package(benchmark REQUIRED)
 # google benchmark end
 ################################################
 
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost REQUIRED COMPONENTS)
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+endif()
+
+set(LIBS ${Boost_LIBRARIES} "${CMAKE_THREAD_LIBS_INIT}")
+add_executable(eraft-vdb src/eraft_vdb_server.cc)
+target_link_libraries(eraft-vdb ${LIBS})
+target_include_directories(eraft-vdb PUBLIC ${eraftkv_INCLUDE_DIR})
 
 # build eraftkv
 set(eraftkv_sources)

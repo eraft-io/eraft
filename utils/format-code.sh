@@ -29,3 +29,5 @@ clang-format -style=file --sort-includes -i ${SRCPATH}/src/rocksdb_storage_impl_
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/storage.h
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/util.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/util.h
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraft_vdb_server.cc
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/thread_pool.h
