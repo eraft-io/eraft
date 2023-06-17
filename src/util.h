@@ -31,8 +31,8 @@
  *
  */
 
-#ifndef SRC_UTIL_H_
-#define SRC_UTIL_H_
+#pragma once
+
 #include <stdint.h>
 
 #include <cstring>
@@ -148,5 +148,3 @@ class StringUtil {
   StringUtil() = delete;
   ~StringUtil() = delete;
 };
-
-#endif  // SRC_UTIL_H_

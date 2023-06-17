@@ -30,8 +30,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef SRC_STORAGE_H_
-#define SRC_STORAGE_H_
+#pragma once
+
 #include <string>
 
 #include "estatus.h"
@@ -169,5 +169,3 @@ class Storage {
    */
   virtual std::string GetKV(std::string key) = 0;
 };
-
-#endif  // SRC_STORAGE_H_

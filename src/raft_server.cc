@@ -903,3 +903,7 @@ int64_t RaftServer::GetLogsCountCanSnapshot() {
 EStatus RaftServer::RestoreLog() {
   return EStatus::kOk;
 }
+
+std::vector<RaftNode*> RaftServer::GetNodes() {
+  return nodes_;
+}

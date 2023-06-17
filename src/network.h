@@ -30,8 +30,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef SRC_NETWORK_H_
-#define SRC_NETWORK_H_
+
+#pragma once
 
 #include "estatus.h"
 #include "raft_node.h"
@@ -138,5 +138,3 @@ class Event {
                                               RaftNode*       node,
                                               eraftkv::Entry* ety) = 0;
 };
-
-#endif  // SRC_NETWORK_H_

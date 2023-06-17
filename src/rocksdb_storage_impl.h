@@ -31,9 +31,7 @@
  *
  */
 
-#ifndef ROCKSDB_STORAGE_IMPL_H_
-#define ROCKSDB_STORAGE_IMPL_H_
-
+#pragma once
 
 #include <rocksdb/db.h>
 
@@ -441,5 +439,3 @@ class RocksDBSingleLogStorageImpl : public LogStore {
 
   rocksdb::DB* log_db_;
 };
-
-#endif

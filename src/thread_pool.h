@@ -1,67 +1,85 @@
-// MIT License
-
-// Copyright (c) 2023 ERaftGroup
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 /**
  * @file thread_pool.h
  * @author your name (you@domain.com)
  * @brief
  * @version 0.1
- * @date 2023-06-14
+ * @date 2023-06-17
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#include <boost/asio.hpp>
+#pragma once
+
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <functional>
+#include <future>
 #include <memory>
+#include <mutex>
 #include <thread>
-#include <vector>
 
-class AsioThreadPool {
+class ThreadPool final {
  public:
-  AsioThreadPool(int threadNum = std::thread::hardware_concurrency())
-      : work_(new boost::asio::io_service::work(service_)) {
-    for (int i = 0; i < threadNum; ++i) {
-      threads_.emplace_back([this]() { service_.run(); });
-    }
-  }
+  ~ThreadPool();
 
-  AsioThreadPool(const AsioThreadPool &) = delete;
+  ThreadPool(const ThreadPool&) = delete;
+  void operator=(const ThreadPool&) = delete;
 
-  AsioThreadPool &operator=(const AsioThreadPool &) = delete;
+  static ThreadPool& Instance();
 
-  boost::asio::io_service &GetIOService() {
-    return service_;
-  }
+  template <typename F, typename... Args>
+  auto ExecuteTask(F&& f, Args&&... args)
+      -> std::future<typename std::result_of<F(Args...)>::type>;
 
-  void Stop() {
-    work_.reset();
-    for (auto &t : threads_) {
-      t.join();
-    }
-  }
+  void JoinAll();
+  void SetMaxIdleThread(unsigned int m);
 
  private:
-  boost::asio::io_service                        service_;
-  std::unique_ptr<boost::asio::io_service::work> work_;
-  std::vector<std::thread>                       threads_;
+  ThreadPool();
+
+  void _CreateWorker();
+  void _WorkerRoutine();
+  void _MonitorRoutine();
+
+  std::thread           monitor_;
+  std::atomic<unsigned> maxIdleThread_;
+  std::atomic<unsigned> pendingStopSignal_;
+
+  static __thread bool    working_;
+  std::deque<std::thread> workers_;
+
+  std::mutex                         mutex_;
+  std::condition_variable            cond_;
+  unsigned                           waiters_;
+  bool                               shutdown_;
+  std::deque<std::function<void()> > tasks_;
+
+  static const int kMaxThreads = 256;
 };
+
+template <typename F, typename... Args>
+auto ThreadPool::ExecuteTask(F&& f, Args&&... args)
+    -> std::future<typename std::result_of<F(Args...)>::type> {
+  using resultType = typename std::result_of<F(Args...)>::type;
+
+  auto task = std::make_shared<std::packaged_task<resultType()> >(
+      std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
+  {
+    std::unique_lock<std::mutex> guard(mutex_);
+    if (shutdown_) {
+      return std::future<resultType>();
+    }
+
+    tasks_.emplace_back([=]() { (*task)(); });
+    if (waiters_ == 0) {
+      _CreateWorker();
+    }
+
+    cond_.notify_one();
+  }
+
+  return task->get_future();
+}

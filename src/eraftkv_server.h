@@ -31,8 +31,7 @@
  *
  */
 
-#ifndef SRC_ERAFTKV_SERVER_H_
-#define SRC_ERAFTKV_SERVER_H_
+#pragma once
 
 #include <grpcpp/grpcpp.h>
 
@@ -188,6 +187,3 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
 
   int op_count_;
 };
-
-
-#endif  // SRC_ERAFTKV_SERVER_H_

@@ -567,20 +567,21 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "EntryType\022\n\n\006Normal\020\000\022\016\n\nConfChange\020\001\022\010\n"
   "\004NoOp\020\002*E\n\016KeyRangeStatus\022\013\n\007Running\020\000\022\r"
   "\n\tMigrating\020\001\022\r\n\tImporting\020\002\022\010\n\004Init\020\003* "
-  "\n\014ServerStatus\022\006\n\002Up\020\000\022\010\n\004Down\020\001*K\n\027Clus"
+  "\n\014ServerStatus\022\006\n\002Up\020\000\022\010\n\004Down\020\001*V\n\027Clus"
   "terConfigChangeType\022\017\n\013ClusterInit\020\000\022\r\n\t"
-  "AddServer\020\001\022\020\n\014RemoveServer\020\002*=\n\014ClientO"
-  "pType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003Del"
-  "\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv\022@\n\013RequestVote\022"
-  "\027.eraftkv.RequestVoteReq\032\030.eraftkv.Reque"
-  "stVoteResp\022F\n\rAppendEntries\022\031.eraftkv.Ap"
-  "pendEntriesReq\032\032.eraftkv.AppendEntriesRe"
-  "sp\0227\n\010Snapshot\022\024.eraftkv.SnapshotReq\032\025.e"
-  "raftkv.SnapshotResp\022O\n\022ProcessRWOperatio"
-  "n\022\033.eraftkv.ClientOperationReq\032\034.eraftkv"
-  ".ClientOperationResp\022X\n\023ClusterConfigCha"
-  "nge\022\037.eraftkv.ClusterConfigChangeReq\032 .e"
-  "raftkv.ClusterConfigChangeRespb\006proto3"
+  "AddServer\020\001\022\020\n\014RemoveServer\020\002\022\t\n\005Query\020\003"
+  "*=\n\014ClientOpType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001\022\007\n\003G"
+  "et\020\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv\022@\n\013R"
+  "equestVote\022\027.eraftkv.RequestVoteReq\032\030.er"
+  "aftkv.RequestVoteResp\022F\n\rAppendEntries\022\031"
+  ".eraftkv.AppendEntriesReq\032\032.eraftkv.Appe"
+  "ndEntriesResp\0227\n\010Snapshot\022\024.eraftkv.Snap"
+  "shotReq\032\025.eraftkv.SnapshotResp\022O\n\022Proces"
+  "sRWOperation\022\033.eraftkv.ClientOperationRe"
+  "q\032\034.eraftkv.ClientOperationResp\022X\n\023Clust"
+  "erConfigChange\022\037.eraftkv.ClusterConfigCh"
+  "angeReq\032 .eraftkv.ClusterConfigChangeRes"
+  "pb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
@@ -605,7 +606,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2678,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2689,
   &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
   file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
@@ -683,6 +684,7 @@ bool ClusterConfigChangeType_IsValid(int value) {
     case 0:
     case 1:
     case 2:
+    case 3:
       return true;
     default:
       return false;

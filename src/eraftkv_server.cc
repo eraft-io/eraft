@@ -163,6 +163,18 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
            req->change_type());
 
   auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
+  if (conf_change_req->change_type() ==
+      eraftkv::ClusterConfigChangeType::Query) {
+    resp->set_success(true);
+    auto new_sg = resp->add_shard_group();
+    new_sg->set_id(0);
+    for (auto node : raft_context_->GetNodes()) {
+      auto g_server = new_sg->add_servers();
+      g_server->set_id(node->id);
+      g_server->set_address(node->address);
+    }
+    return grpc::Status::OK;
+  }
 
   std::mutex map_mutex_;
   {
