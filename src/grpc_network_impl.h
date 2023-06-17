@@ -30,8 +30,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef GRPC_NETWORK_IMPL_H_
-#define GRPC_NETWORK_IMPL_H_
+#pragma once
+
 #include <grpcpp/grpcpp.h>
 
 #include "eraftkv.grpc.pb.h"
@@ -96,11 +96,11 @@ class GRpcNetworkImpl : public Network {
   ERaftKv::Stub* GetPeerNodeConnection(int64_t node_id);
 
   /**
-   * @brief 
-   * 
-   * @param peer_id 
-   * @param addr 
-   * @return EStatus 
+   * @brief
+   *
+   * @param peer_id
+   * @param addr
+   * @return EStatus
    */
   EStatus InsertPeerNodeConnection(int64_t peer_id, std::string addr);
 
@@ -111,5 +111,3 @@ class GRpcNetworkImpl : public Network {
    */
   std::map<int64_t, std::unique_ptr<ERaftKv::Stub>> peer_node_connections_;
 };
-
-#endif  // SRC_GRPC_NETWORK_IMPL_H_

@@ -31,8 +31,7 @@
  *
  */
 
-#ifndef SRC_ERAFTKV_SERVER_H_
-#define SRC_ERAFTKV_SERVER_H_
+#pragma once
 
 #include <grpcpp/grpcpp.h>
 
@@ -93,7 +92,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
     // init raft lib
     RaftConfig raft_config;
     raft_config.id = options_.svr_id;
-    auto peers = StringUtil::Split(options_.peer_addrs, ',');
+    auto    peers = StringUtil::Split(options_.peer_addrs, ',');
     int64_t count = 0;
     for (auto peer : peers) {
       raft_config.peer_address_map[count] = peer;
@@ -188,6 +187,3 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
 
   int op_count_;
 };
-
-
-#endif  // SRC_ERAFTKV_SERVER_H_

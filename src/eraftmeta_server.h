@@ -31,8 +31,8 @@
  *
  */
 
-#ifndef SRC_ERAFTMETA_SERVER_H_
-#define SRC_ERAFTMETA_SERVER_H_
+#pragma once
+
 #include <cstdint>
 #include <string>
 
@@ -220,6 +220,3 @@ class ERaftMetaServer : public grpc::EraftKv::Service {
    */
   ERaftMetaServerOptions options_;
 };
-
-
-#endif  // SRC_ERAFTMETA_SERVER_H_

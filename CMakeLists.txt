@@ -132,6 +132,48 @@ find_package(benchmark REQUIRED)
 # google benchmark end
 ################################################
 
+# build eraftvdb
+
+set(eraftvdb_sources)
+list(APPEND eraftvdb_sources src/async_buffer.cc)
+list(APPEND eraftvdb_sources src/async_buffer.h)
+list(APPEND eraftvdb_sources src/buffer.h)
+list(APPEND eraftvdb_sources src/client.cc)
+list(APPEND eraftvdb_sources src/client.h)
+list(APPEND eraftvdb_sources src/epoller.cc)
+list(APPEND eraftvdb_sources src/epoller.h)
+list(APPEND eraftvdb_sources src/eraft_vdb_server.cc)
+list(APPEND eraftvdb_sources src/eraft_vdb_server.h)
+list(APPEND eraftvdb_sources src/listen_socket.cc)
+list(APPEND eraftvdb_sources src/listen_socket.h)
+list(APPEND eraftvdb_sources src/net_thread_pool.cc)
+list(APPEND eraftvdb_sources src/net_thread_pool.h)
+list(APPEND eraftvdb_sources src/proto_parser.cc)
+list(APPEND eraftvdb_sources src/proto_parser.h)
+list(APPEND eraftvdb_sources src/server.cc)
+list(APPEND eraftvdb_sources src/server.h)
+list(APPEND eraftvdb_sources src/socket.cc)
+list(APPEND eraftvdb_sources src/socket.h)
+list(APPEND eraftvdb_sources src/stream_socket.cc)
+list(APPEND eraftvdb_sources src/stream_socket.h)
+list(APPEND eraftvdb_sources src/task_manager.cc)
+list(APPEND eraftvdb_sources src/task_manager.h)
+list(APPEND eraftvdb_sources src/thread_pool.cc)
+list(APPEND eraftvdb_sources src/thread_pool.h)
+list(APPEND eraftvdb_sources src/unbounded_buffer.cc)
+list(APPEND eraftvdb_sources src/unbounded_buffer.h)
+list(APPEND eraftvdb_sources src/eraftkv.grpc.pb.cc)
+list(APPEND eraftvdb_sources src/eraftkv.pb.cc)
+
+add_executable(eraft-vdb ${eraftvdb_sources})
+target_link_libraries(eraft-vdb 
+    pthread
+    rocksdb
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+    stdc++fs
+)
+target_include_directories(eraft-vdb PUBLIC ${eraftkv_INCLUDE_DIR})
 
 # build eraftkv
 set(eraftkv_sources)
@@ -144,8 +186,7 @@ list(APPEND eraftkv_sources src/util.cc)
 list(APPEND eraftkv_sources src/raft_server.cc)
 list(APPEND eraftkv_sources src/log_entry_cache.cc)
 list(APPEND eraftkv_sources src/grpc_network_impl.cc)
-list(APPEND eraftkv_sources src/main.cc)
-
+list(APPEND eraftkv_sources src/eraftkv.cc)
 
 set(eraftkv_INCLUDE_DIR ${eraftkv_sources_SOURCE_DIR})
 
@@ -180,16 +221,16 @@ target_link_libraries(eraftkv_server_test PUBLIC
 )
 
 add_executable(rocksdb_storage_impl_tests 
-src/rocksdb_storage_impl_tests.cc 
-src/util.cc 
-src/rocksdb_storage_impl.cc 
-src/eraftkv_server.cc
-src/eraftkv.pb.cc 
-src/eraftkv.grpc.pb.cc
-src/raft_server.cc
-src/log_storage_impl.cc
-src/rocksdb_storage_impl.cc
-src/log_entry_cache.cc
+    src/rocksdb_storage_impl_tests.cc 
+    src/util.cc 
+    src/rocksdb_storage_impl.cc 
+    src/eraftkv_server.cc
+    src/eraftkv.pb.cc 
+    src/eraftkv.grpc.pb.cc
+    src/raft_server.cc
+    src/log_storage_impl.cc
+    src/rocksdb_storage_impl.cc
+    src/log_entry_cache.cc
 )
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     ${GTEST_LIBRARIES}

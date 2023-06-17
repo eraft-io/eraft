@@ -31,8 +31,7 @@
  *
  */
 
-#ifndef SRC_RAFT_SERVER_H_
-#define SRC_RAFT_SERVER_H_
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -388,6 +387,13 @@ class RaftServer {
                   bool*       is_success);
 
   /**
+   * @brief Get the raft group Nodes
+   *
+   * @return std::vector<RaftNode*>
+   */
+  std::vector<RaftNode*> GetNodes();
+
+  /**
    * @brief
    *
    */
@@ -534,6 +540,3 @@ class RaftServer {
    */
   RaftConfig config_;
 };
-
-
-#endif  // SRC_RAFT_SERVER_H_

@@ -233,12 +233,13 @@ enum ClusterConfigChangeType : int {
   ClusterInit = 0,
   AddServer = 1,
   RemoveServer = 2,
+  Query = 3,
   ClusterConfigChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ClusterConfigChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ClusterConfigChangeType_IsValid(int value);
 constexpr ClusterConfigChangeType ClusterConfigChangeType_MIN = ClusterInit;
-constexpr ClusterConfigChangeType ClusterConfigChangeType_MAX = RemoveServer;
+constexpr ClusterConfigChangeType ClusterConfigChangeType_MAX = Query;
 constexpr int ClusterConfigChangeType_ARRAYSIZE = ClusterConfigChangeType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ClusterConfigChangeType_descriptor();

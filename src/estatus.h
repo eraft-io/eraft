@@ -31,9 +31,7 @@
  *
  */
 
-#ifndef ESTATUS_H_
-#define ESTATUS_H_
-#include <string>
+#pragma once
 
 /**
  * @brief
@@ -46,5 +44,3 @@ enum class EStatus {
   kPutKeyToRocksDBErr = 3,
   kError = 4,
 };
-
-#endif

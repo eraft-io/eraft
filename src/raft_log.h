@@ -31,8 +31,7 @@
  *
  */
 
-#ifndef SRC_RAFT_LOG_H_
-#define SRC_RAFT_LOG_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -165,5 +164,3 @@ class InternalMemLogStorageImpl : public LogStore {
    */
   std::vector<eraftkv::Entry> standby_log_db_;
 };
-
-#endif  // SRC_RAFT_LOG_H_

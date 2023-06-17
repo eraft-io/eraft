@@ -31,8 +31,8 @@
  *
  */
 
-#ifndef SRC_UTIL_H_
-#define SRC_UTIL_H_
+#pragma once
+
 #include <stdint.h>
 
 #include <cstring>
@@ -134,12 +134,11 @@ class StringUtil {
   }
 
   static std::vector<std::string> Split(const std::string& str, char delim) {
-    std::stringstream ss(str);
-    std::string item;
+    std::stringstream        ss(str);
+    std::string              item;
     std::vector<std::string> elems;
-    while (std::getline(ss, item, delim))
-    {
-      if(!item.empty()) {
+    while (std::getline(ss, item, delim)) {
+      if (!item.empty()) {
         elems.push_back(item);
       }
     }
@@ -149,5 +148,3 @@ class StringUtil {
   StringUtil() = delete;
   ~StringUtil() = delete;
 };
-
-#endif  // SRC_UTIL_H_

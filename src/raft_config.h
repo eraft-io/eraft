@@ -30,8 +30,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef RAFT_CONFIG_H_
-#define RAFT_CONFIG_H_
+#pragma once
+
 
 #include <map>
 #include <string>
@@ -56,5 +56,3 @@ struct RaftConfig {
   Storage*                       store_impl;
   LogStore*                      log_impl;
 };
-
-#endif

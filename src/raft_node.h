@@ -30,8 +30,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef RAFT_NODE_H_
-#define RAFT_NODE_H_
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -65,5 +64,3 @@ struct RaftNode {
       , match_log_index(match_log_index_)
       , address(address_) {}
 };
-
-#endif

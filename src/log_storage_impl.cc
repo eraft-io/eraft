@@ -226,7 +226,8 @@ EStatus RocksDBSingleLogStorageImpl::Append(eraftkv::Entry* ety) {
 }
 
 /**
- * @brief EraseBefore erase all entries before the given index, [old first_index, first_index)
+ * @brief EraseBefore erase all entries before the given index, [old
+ * first_index, first_index)
  *
  * @param first_index
  * @return EStatus
@@ -245,7 +246,8 @@ EStatus RocksDBSingleLogStorageImpl::EraseBefore(int64_t first_index) {
 }
 
 /**
- * @brief EraseAfter erase all entries after the given index, [from_index, last_index]
+ * @brief EraseAfter erase all entries after the given index, [from_index,
+ * last_index]
  *
  * @param from_index
  * @return EStatus

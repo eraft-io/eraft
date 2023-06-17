@@ -117,6 +117,7 @@ enum ClusterConfigChangeType {
   ClusterInit = 0;
   AddServer = 1;
   RemoveServer = 2;
+  Query = 3;
 }
 
 message ClusterConfigChangeReq {

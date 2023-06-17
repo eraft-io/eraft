@@ -30,8 +30,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#ifndef LOG_ENTRY_CACHE_H_
-#define LOG_ENTRY_CACHE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -142,5 +141,3 @@ class LogEntryCache {
    */
   uint64_t ent_count_;
 };
-
-#endif
