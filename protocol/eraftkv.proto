@@ -111,6 +111,7 @@ message ShardGroup {
   int64           id = 1;
   KeyRange        key_range = 2;
   repeated Server servers = 3;
+  int64           leader_id = 4;
 }
 
 enum ClusterConfigChangeType {

@@ -31,14 +31,22 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
     eraftkv::ClusterConfigChangeReq req;
     req.set_change_type(eraftkv::ClusterConfigChangeType::Query);
     eraftkv::ClusterConfigChangeResp resp;
-    auto                             status =
-        stubs_["127.0.0.1:8088"]->ClusterConfigChange(&context, req, &resp);
+
+    auto status =
+        stubs_.begin()->second->ClusterConfigChange(&context, req, &resp);
     std::string info_str;
     for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
       info_str += "server_id: ";
       info_str += std::to_string(resp.shard_group(0).servers(i).id());
       info_str += ",server_address: ";
       info_str += resp.shard_group(0).servers(i).address();
+      resp.shard_group(0).servers(i).server_status() ==
+              eraftkv::ServerStatus::Up
+          ? info_str += ",status: Running"
+          : info_str += ",status: Down";
+      resp.shard_group(0).leader_id() == resp.shard_group(0).servers(i).id()
+          ? info_str += ",Role: Leader"
+          : info_str += ",Role: Follower";
       info_str += "\r\n";
     }
     std::string reply_buf;
@@ -47,7 +55,6 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
     reply_buf += "\r\n";
     reply_buf += info_str;
     reply_buf += "\r\n";
-    // std::cout << "reply " << reply_buf << std::endl;
     reply_.PushData(reply_buf.c_str(), reply_buf.size());
     SendPacket(reply_);
 

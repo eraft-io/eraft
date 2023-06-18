@@ -16,7 +16,7 @@
 
 class ERaftVdbServer : public Server {
  public:
-  ERaftVdbServer();
+  ERaftVdbServer(std::string addr, std::string kv_svr_addrs);
   ~ERaftVdbServer();
 
  private:
@@ -27,4 +27,8 @@ class ERaftVdbServer : public Server {
   bool _Recycle() override;
 
   unsigned short port_;
+
+  std::string addr_;
+
+  std::string kv_svr_addrs_;
 };
