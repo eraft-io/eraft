@@ -394,6 +394,13 @@ class RaftServer {
   std::vector<RaftNode*> GetNodes();
 
   /**
+   * @brief Get the Leader Id object
+   *
+   * @return int64_t
+   */
+  int64_t GetLeaderId();
+
+  /**
    * @brief
    *
    */

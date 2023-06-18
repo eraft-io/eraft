@@ -162,6 +162,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
            " recv config change req with change_type ",
            req->change_type());
 
+  // return cluster topology, Currently, only single raft group are supported
   auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
   if (conf_change_req->change_type() ==
       eraftkv::ClusterConfigChangeType::Query) {
@@ -172,7 +173,11 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
       auto g_server = new_sg->add_servers();
       g_server->set_id(node->id);
       g_server->set_address(node->address);
+      node->node_state == NodeStateEnum::Running
+          ? g_server->set_server_status(eraftkv::ServerStatus::Up)
+          : g_server->set_server_status(eraftkv::ServerStatus::Down);
     }
+    new_sg->set_leader_id(raft_context_->GetLeaderId());
     return grpc::Status::OK;
   }
 

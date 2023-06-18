@@ -107,6 +107,9 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
   auto          status = stub_->AppendEntries(&context, *req, resp);
   if (!status.ok()) {
     TraceLog("ERROR: ", " send append req to FAILED! ", target_node->address);
+    target_node->node_state = NodeStateEnum::LostConnection;
+  } else {
+    target_node->node_state = NodeStateEnum::Running;
   }
   // 2.call raft->HandleAppendEntriesResp();
   if (raft->HandleAppendEntriesResp(target_node, req, resp) == EStatus::kOk) {

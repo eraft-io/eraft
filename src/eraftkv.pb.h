@@ -2208,6 +2208,7 @@ class ShardGroup :
     kServersFieldNumber = 3,
     kKeyRangeFieldNumber = 2,
     kIdFieldNumber = 1,
+    kLeaderIdFieldNumber = 4,
   };
   // repeated .eraftkv.Server servers = 3;
   int servers_size() const;
@@ -2251,6 +2252,15 @@ class ShardGroup :
   void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
+  // int64 leader_id = 4;
+  void clear_leader_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_id() const;
+  void set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_leader_id() const;
+  void _internal_set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.ShardGroup)
  private:
   class _Internal;
@@ -2259,6 +2269,7 @@ class ShardGroup :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Server > servers_;
   ::eraftkv::KeyRange* key_range_;
   ::PROTOBUF_NAMESPACE_ID::int64 id_;
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -4657,6 +4668,26 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Server >&
 ShardGroup::servers() const {
   // @@protoc_insertion_point(field_list:eraftkv.ShardGroup.servers)
   return servers_;
+}
+
+// int64 leader_id = 4;
+inline void ShardGroup::clear_leader_id() {
+  leader_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ShardGroup::_internal_leader_id() const {
+  return leader_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ShardGroup::leader_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ShardGroup.leader_id)
+  return _internal_leader_id();
+}
+inline void ShardGroup::_internal_set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  leader_id_ = value;
+}
+inline void ShardGroup::set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_leader_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ShardGroup.leader_id)
 }
 
 // -------------------------------------------------------------------

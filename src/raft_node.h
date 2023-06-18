@@ -40,7 +40,7 @@
  * @brief
  *
  */
-enum NodeStateEnum { Init, Voting, Running, Down };
+enum NodeStateEnum { Init, Voting, Running, Down, LostConnection };
 
 /**
  * @brief

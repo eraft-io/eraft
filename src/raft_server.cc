@@ -706,6 +706,7 @@ EStatus RaftServer::ProposeConfChange(std::string payload,
 EStatus RaftServer::BecomeLeader() {
   this->role_ = NodeRaftRoleEnum::Leader;
   heartbeat_tick_count_ = 0;
+  this->leader_id_ = this->id_;
   election_running_ = false;
   return EStatus::kOk;
 }
@@ -906,4 +907,13 @@ EStatus RaftServer::RestoreLog() {
 
 std::vector<RaftNode*> RaftServer::GetNodes() {
   return nodes_;
+}
+
+/**
+ * @brief Get the Leader Id object
+ *
+ * @return int64_t
+ */
+int64_t RaftServer::GetLeaderId() {
+  return leader_id_;
 }
