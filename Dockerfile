@@ -56,3 +56,7 @@ FROM eraft/eraftkv:v0.0.4
 # RUN ldconfig
 
 RUN apt-get install -y redis-tools telnet
+
+# install faiss
+
+RUN apt-get install libatlas-base-dev libatlas3-base -y && apt-get install swig -y

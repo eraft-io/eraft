@@ -278,6 +278,12 @@ target_link_libraries(grpc_network_impl_test PUBLIC
     ${Protobuf_LIBRARY}
 )
 
+add_subdirectory(faiss)
+add_executable(faisslib_test 
+    src/faiss_tests.cc
+)
+target_link_libraries(faisslib_test PUBLIC faiss)
+
 # eraft-ctl
 add_executable(eraftkv-ctl 
     src/eraftkv_ctl.cc
