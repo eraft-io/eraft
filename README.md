@@ -1,8 +1,8 @@
-# ERaftVDB
+# ERaftKDB
 
-ERaftVDB is a distributed vector database that supports the RESP protocol for vector operations, and uses ERaftKV as the distributed storage layer.
+ERaftKDB is a distributed database that supports the Redis RESP protocol, and uses ERaftKV as the distributed storage layer.
 
-![eraft-vdb](doc/eraft-vdb.png)
+![eraft-kdb](doc/eraft-kdb.jpg)
 
 ## ERaftKV
 
@@ -63,14 +63,18 @@ command output
 chmod +x utils/run-vdb-tests.sh
 docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.8 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-vdb-tests.sh
 + redis-cli -h 172.18.0.6 -p 12306 info
-server_id: 0,server_address: 172.18.0.2:8088,status: Running,Role: Leader
-server_id: 1,server_address: 172.18.0.3:8089,status: Running,Role: Follower
+server_id: 0,server_address: 172.18.0.2:8088,status: Running,Role: Follower
+server_id: 1,server_address: 172.18.0.3:8089,status: Running,Role: Leader
 server_id: 2,server_address: 172.18.0.4:8090,status: Running,Role: Follower
++ redis-cli -h 172.18.0.6 -p 12306 set a testvalue
+OK
++ redis-cli -h 172.18.0.6 -p 12306 get a
+"testvalue"
 ```
 
 - step 4, clean all
 ```
-sudo make run stop-demo
+sudo make stop-demo
 sudo make rm-net
 ```
 

@@ -164,6 +164,10 @@ list(APPEND eraftvdb_sources src/unbounded_buffer.cc)
 list(APPEND eraftvdb_sources src/unbounded_buffer.h)
 list(APPEND eraftvdb_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftvdb_sources src/eraftkv.pb.cc)
+list(APPEND eraftvdb_sources src/info_command_handler.cc)
+list(APPEND eraftvdb_sources src/set_command_handler.cc)
+list(APPEND eraftvdb_sources src/get_command_handler.cc)
+list(APPEND eraftvdb_sources src/unknow_command_handler.cc)
 
 add_executable(eraft-vdb ${eraftvdb_sources})
 target_link_libraries(eraft-vdb 
@@ -277,6 +281,7 @@ target_link_libraries(grpc_network_impl_test PUBLIC
     rocksdb
     ${Protobuf_LIBRARY}
 )
+
 
 # eraft-ctl
 add_executable(eraftkv-ctl 

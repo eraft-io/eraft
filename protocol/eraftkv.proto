@@ -161,6 +161,34 @@ message ClientOperationResp {
   repeated KvOpPair ops = 2;
 }
 
+message SysCatalog {
+  uint64  vecset_count = 1;
+  uint64  max_vecset_id = 2;
+  uint64  mem_used = 3;
+  uint64  disk_used = 4;
+  map<string, uint64> vecset_name2id = 5;
+}
+
+message Vecset {
+  uint64  id = 1;
+  string  name = 2;
+  uint64  vec_count = 3;
+  uint64  max_vec_id = 4;
+  uint64  used_disk_capacity = 5;
+  uint64  used_mem_capacity = 6;
+  uint64  c_time = 7;
+  uint64  m_time = 8;
+}
+
+message Vec {
+  uint64  id = 1;
+  uint64  dim = 2;
+  repeated  double vdata = 3;
+  string  vlabel = 4;
+  uint64  c_time = 5;
+  uint64  m_time = 6;
+}
+
 service ERaftKv {
   rpc RequestVote(RequestVoteReq) returns (RequestVoteResp);
   rpc AppendEntries(AppendEntriesReq) returns (AppendEntriesResp);

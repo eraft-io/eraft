@@ -18,10 +18,10 @@ Vec stores a single vector, include vector id, vector data and additional commen
 - vid:
 A unique identifier of your vector.
 
-- vdata:
+- vdata (vextra):
 Vectorized representation of information in the physical world such as sound, video, and pictures.
 
-- vextra:
+- vlabel:
 The description information of the vector datam which is a json structure.
 
 ### Storage Cluster
