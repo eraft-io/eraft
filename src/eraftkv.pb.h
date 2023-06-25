@@ -31,6 +31,9 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/map.h>  // IWYU pragma: export
+#include <google/protobuf/map_entry.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
@@ -48,7 +51,7 @@ struct TableStruct_eraftkv_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[16]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[20]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -104,6 +107,18 @@ extern SnapshotReqDefaultTypeInternal _SnapshotReq_default_instance_;
 class SnapshotResp;
 class SnapshotRespDefaultTypeInternal;
 extern SnapshotRespDefaultTypeInternal _SnapshotResp_default_instance_;
+class SysCatalog;
+class SysCatalogDefaultTypeInternal;
+extern SysCatalogDefaultTypeInternal _SysCatalog_default_instance_;
+class SysCatalog_VecsetName2idEntry_DoNotUse;
+class SysCatalog_VecsetName2idEntry_DoNotUseDefaultTypeInternal;
+extern SysCatalog_VecsetName2idEntry_DoNotUseDefaultTypeInternal _SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_;
+class Vec;
+class VecDefaultTypeInternal;
+extern VecDefaultTypeInternal _Vec_default_instance_;
+class Vecset;
+class VecsetDefaultTypeInternal;
+extern VecsetDefaultTypeInternal _Vecset_default_instance_;
 }  // namespace eraftkv
 PROTOBUF_NAMESPACE_OPEN
 template<> ::eraftkv::AppendEntriesReq* Arena::CreateMaybeMessage<::eraftkv::AppendEntriesReq>(Arena*);
@@ -122,6 +137,10 @@ template<> ::eraftkv::ShardGroup* Arena::CreateMaybeMessage<::eraftkv::ShardGrou
 template<> ::eraftkv::SnapshotBlock* Arena::CreateMaybeMessage<::eraftkv::SnapshotBlock>(Arena*);
 template<> ::eraftkv::SnapshotReq* Arena::CreateMaybeMessage<::eraftkv::SnapshotReq>(Arena*);
 template<> ::eraftkv::SnapshotResp* Arena::CreateMaybeMessage<::eraftkv::SnapshotResp>(Arena*);
+template<> ::eraftkv::SysCatalog* Arena::CreateMaybeMessage<::eraftkv::SysCatalog>(Arena*);
+template<> ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse* Arena::CreateMaybeMessage<::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse>(Arena*);
+template<> ::eraftkv::Vec* Arena::CreateMaybeMessage<::eraftkv::Vec>(Arena*);
+template<> ::eraftkv::Vecset* Arena::CreateMaybeMessage<::eraftkv::Vecset>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace eraftkv {
 
@@ -3081,6 +3100,640 @@ class ClientOperationResp :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
+// -------------------------------------------------------------------
+
+class SysCatalog_VecsetName2idEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<SysCatalog_VecsetName2idEntry_DoNotUse, 
+    std::string, ::PROTOBUF_NAMESPACE_ID::uint64,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64,
+    0 > {
+public:
+  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<SysCatalog_VecsetName2idEntry_DoNotUse, 
+    std::string, ::PROTOBUF_NAMESPACE_ID::uint64,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64,
+    0 > SuperType;
+  SysCatalog_VecsetName2idEntry_DoNotUse();
+  SysCatalog_VecsetName2idEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void MergeFrom(const SysCatalog_VecsetName2idEntry_DoNotUse& other);
+  static const SysCatalog_VecsetName2idEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const SysCatalog_VecsetName2idEntry_DoNotUse*>(&_SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_); }
+  static bool ValidateKey(std::string* s) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "eraftkv.SysCatalog.VecsetName2idEntry.key");
+ }
+  static bool ValidateValue(void*) { return true; }
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
+    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[16];
+  }
+
+  public:
+};
+
+// -------------------------------------------------------------------
+
+class SysCatalog :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.SysCatalog) */ {
+ public:
+  SysCatalog();
+  virtual ~SysCatalog();
+
+  SysCatalog(const SysCatalog& from);
+  SysCatalog(SysCatalog&& from) noexcept
+    : SysCatalog() {
+    *this = ::std::move(from);
+  }
+
+  inline SysCatalog& operator=(const SysCatalog& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SysCatalog& operator=(SysCatalog&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const SysCatalog& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const SysCatalog* internal_default_instance() {
+    return reinterpret_cast<const SysCatalog*>(
+               &_SysCatalog_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  friend void swap(SysCatalog& a, SysCatalog& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SysCatalog* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SysCatalog* New() const final {
+    return CreateMaybeMessage<SysCatalog>(nullptr);
+  }
+
+  SysCatalog* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<SysCatalog>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const SysCatalog& from);
+  void MergeFrom(const SysCatalog& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SysCatalog* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "eraftkv.SysCatalog";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
+    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kVecsetName2IdFieldNumber = 5,
+    kVecsetCountFieldNumber = 1,
+    kMaxVecsetIdFieldNumber = 2,
+    kMemUsedFieldNumber = 3,
+    kDiskUsedFieldNumber = 4,
+  };
+  // map<string, uint64> vecset_name2id = 5;
+  int vecset_name2id_size() const;
+  private:
+  int _internal_vecset_name2id_size() const;
+  public:
+  void clear_vecset_name2id();
+  private:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_vecset_name2id() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_vecset_name2id();
+  public:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      vecset_name2id() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_vecset_name2id();
+
+  // uint64 vecset_count = 1;
+  void clear_vecset_count();
+  ::PROTOBUF_NAMESPACE_ID::uint64 vecset_count() const;
+  void set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_vecset_count() const;
+  void _internal_set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 max_vecset_id = 2;
+  void clear_max_vecset_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 max_vecset_id() const;
+  void set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_max_vecset_id() const;
+  void _internal_set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 mem_used = 3;
+  void clear_mem_used();
+  ::PROTOBUF_NAMESPACE_ID::uint64 mem_used() const;
+  void set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_mem_used() const;
+  void _internal_set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 disk_used = 4;
+  void clear_disk_used();
+  ::PROTOBUF_NAMESPACE_ID::uint64 disk_used() const;
+  void set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_disk_used() const;
+  void _internal_set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:eraftkv.SysCatalog)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::MapField<
+      SysCatalog_VecsetName2idEntry_DoNotUse,
+      std::string, ::PROTOBUF_NAMESPACE_ID::uint64,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64,
+      0 > vecset_name2id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 vecset_count_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 max_vecset_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 mem_used_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 disk_used_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_eraftkv_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Vecset :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.Vecset) */ {
+ public:
+  Vecset();
+  virtual ~Vecset();
+
+  Vecset(const Vecset& from);
+  Vecset(Vecset&& from) noexcept
+    : Vecset() {
+    *this = ::std::move(from);
+  }
+
+  inline Vecset& operator=(const Vecset& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Vecset& operator=(Vecset&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Vecset& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Vecset* internal_default_instance() {
+    return reinterpret_cast<const Vecset*>(
+               &_Vecset_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    18;
+
+  friend void swap(Vecset& a, Vecset& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Vecset* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Vecset* New() const final {
+    return CreateMaybeMessage<Vecset>(nullptr);
+  }
+
+  Vecset* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Vecset>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Vecset& from);
+  void MergeFrom(const Vecset& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Vecset* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "eraftkv.Vecset";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
+    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 2,
+    kIdFieldNumber = 1,
+    kVecCountFieldNumber = 3,
+    kMaxVecIdFieldNumber = 4,
+    kUsedDiskCapacityFieldNumber = 5,
+    kUsedMemCapacityFieldNumber = 6,
+    kCTimeFieldNumber = 7,
+    kMTimeFieldNumber = 8,
+  };
+  // string name = 2;
+  void clear_name();
+  const std::string& name() const;
+  void set_name(const std::string& value);
+  void set_name(std::string&& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  std::string* mutable_name();
+  std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // uint64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 vec_count = 3;
+  void clear_vec_count();
+  ::PROTOBUF_NAMESPACE_ID::uint64 vec_count() const;
+  void set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_vec_count() const;
+  void _internal_set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 max_vec_id = 4;
+  void clear_max_vec_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 max_vec_id() const;
+  void set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_max_vec_id() const;
+  void _internal_set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 used_disk_capacity = 5;
+  void clear_used_disk_capacity();
+  ::PROTOBUF_NAMESPACE_ID::uint64 used_disk_capacity() const;
+  void set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_used_disk_capacity() const;
+  void _internal_set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 used_mem_capacity = 6;
+  void clear_used_mem_capacity();
+  ::PROTOBUF_NAMESPACE_ID::uint64 used_mem_capacity() const;
+  void set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_used_mem_capacity() const;
+  void _internal_set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 c_time = 7;
+  void clear_c_time();
+  ::PROTOBUF_NAMESPACE_ID::uint64 c_time() const;
+  void set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_c_time() const;
+  void _internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 m_time = 8;
+  void clear_m_time();
+  ::PROTOBUF_NAMESPACE_ID::uint64 m_time() const;
+  void set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_m_time() const;
+  void _internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:eraftkv.Vecset)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 vec_count_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 max_vec_id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 used_disk_capacity_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 used_mem_capacity_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 c_time_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 m_time_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_eraftkv_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Vec :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.Vec) */ {
+ public:
+  Vec();
+  virtual ~Vec();
+
+  Vec(const Vec& from);
+  Vec(Vec&& from) noexcept
+    : Vec() {
+    *this = ::std::move(from);
+  }
+
+  inline Vec& operator=(const Vec& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Vec& operator=(Vec&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Vec& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Vec* internal_default_instance() {
+    return reinterpret_cast<const Vec*>(
+               &_Vec_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    19;
+
+  friend void swap(Vec& a, Vec& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Vec* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Vec* New() const final {
+    return CreateMaybeMessage<Vec>(nullptr);
+  }
+
+  Vec* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Vec>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Vec& from);
+  void MergeFrom(const Vec& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Vec* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "eraftkv.Vec";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
+    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kVdataFieldNumber = 3,
+    kVlabelFieldNumber = 4,
+    kIdFieldNumber = 1,
+    kDimFieldNumber = 2,
+    kCTimeFieldNumber = 5,
+    kMTimeFieldNumber = 6,
+  };
+  // repeated double vdata = 3;
+  int vdata_size() const;
+  private:
+  int _internal_vdata_size() const;
+  public:
+  void clear_vdata();
+  private:
+  double _internal_vdata(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+      _internal_vdata() const;
+  void _internal_add_vdata(double value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+      _internal_mutable_vdata();
+  public:
+  double vdata(int index) const;
+  void set_vdata(int index, double value);
+  void add_vdata(double value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+      vdata() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+      mutable_vdata();
+
+  // string vlabel = 4;
+  void clear_vlabel();
+  const std::string& vlabel() const;
+  void set_vlabel(const std::string& value);
+  void set_vlabel(std::string&& value);
+  void set_vlabel(const char* value);
+  void set_vlabel(const char* value, size_t size);
+  std::string* mutable_vlabel();
+  std::string* release_vlabel();
+  void set_allocated_vlabel(std::string* vlabel);
+  private:
+  const std::string& _internal_vlabel() const;
+  void _internal_set_vlabel(const std::string& value);
+  std::string* _internal_mutable_vlabel();
+  public:
+
+  // uint64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::uint64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 dim = 2;
+  void clear_dim();
+  ::PROTOBUF_NAMESPACE_ID::uint64 dim() const;
+  void set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_dim() const;
+  void _internal_set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 c_time = 5;
+  void clear_c_time();
+  ::PROTOBUF_NAMESPACE_ID::uint64 c_time() const;
+  void set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_c_time() const;
+  void _internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // uint64 m_time = 6;
+  void clear_m_time();
+  ::PROTOBUF_NAMESPACE_ID::uint64 m_time() const;
+  void set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_m_time() const;
+  void _internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:eraftkv.Vec)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double > vdata_;
+  mutable std::atomic<int> _vdata_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr vlabel_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 id_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 dim_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 c_time_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 m_time_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_eraftkv_2eproto;
+};
 // ===================================================================
 
 
@@ -5207,9 +5860,527 @@ ClientOperationResp::ops() const {
   return ops_;
 }
 
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// SysCatalog
+
+// uint64 vecset_count = 1;
+inline void SysCatalog::clear_vecset_count() {
+  vecset_count_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_vecset_count() const {
+  return vecset_count_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::vecset_count() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.vecset_count)
+  return _internal_vecset_count();
+}
+inline void SysCatalog::_internal_set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  vecset_count_ = value;
+}
+inline void SysCatalog::set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_vecset_count(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.vecset_count)
+}
+
+// uint64 max_vecset_id = 2;
+inline void SysCatalog::clear_max_vecset_id() {
+  max_vecset_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_max_vecset_id() const {
+  return max_vecset_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::max_vecset_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.max_vecset_id)
+  return _internal_max_vecset_id();
+}
+inline void SysCatalog::_internal_set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  max_vecset_id_ = value;
+}
+inline void SysCatalog::set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_max_vecset_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.max_vecset_id)
+}
+
+// uint64 mem_used = 3;
+inline void SysCatalog::clear_mem_used() {
+  mem_used_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_mem_used() const {
+  return mem_used_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::mem_used() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.mem_used)
+  return _internal_mem_used();
+}
+inline void SysCatalog::_internal_set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  mem_used_ = value;
+}
+inline void SysCatalog::set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_mem_used(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.mem_used)
+}
+
+// uint64 disk_used = 4;
+inline void SysCatalog::clear_disk_used() {
+  disk_used_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_disk_used() const {
+  return disk_used_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::disk_used() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.disk_used)
+  return _internal_disk_used();
+}
+inline void SysCatalog::_internal_set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  disk_used_ = value;
+}
+inline void SysCatalog::set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_disk_used(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.disk_used)
+}
+
+// map<string, uint64> vecset_name2id = 5;
+inline int SysCatalog::_internal_vecset_name2id_size() const {
+  return vecset_name2id_.size();
+}
+inline int SysCatalog::vecset_name2id_size() const {
+  return _internal_vecset_name2id_size();
+}
+inline void SysCatalog::clear_vecset_name2id() {
+  vecset_name2id_.Clear();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
+SysCatalog::_internal_vecset_name2id() const {
+  return vecset_name2id_.GetMap();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
+SysCatalog::vecset_name2id() const {
+  // @@protoc_insertion_point(field_map:eraftkv.SysCatalog.vecset_name2id)
+  return _internal_vecset_name2id();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
+SysCatalog::_internal_mutable_vecset_name2id() {
+  return vecset_name2id_.MutableMap();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
+SysCatalog::mutable_vecset_name2id() {
+  // @@protoc_insertion_point(field_mutable_map:eraftkv.SysCatalog.vecset_name2id)
+  return _internal_mutable_vecset_name2id();
+}
+
+// -------------------------------------------------------------------
+
+// Vecset
+
+// uint64 id = 1;
+inline void Vecset::clear_id() {
+  id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.id)
+  return _internal_id();
+}
+inline void Vecset::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  id_ = value;
+}
+inline void Vecset::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.id)
+}
+
+// string name = 2;
+inline void Vecset::clear_name() {
+  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Vecset::name() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.name)
+  return _internal_name();
+}
+inline void Vecset::set_name(const std::string& value) {
+  _internal_set_name(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.name)
+}
+inline std::string* Vecset::mutable_name() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.Vecset.name)
+  return _internal_mutable_name();
+}
+inline const std::string& Vecset::_internal_name() const {
+  return name_.GetNoArena();
+}
+inline void Vecset::_internal_set_name(const std::string& value) {
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void Vecset::set_name(std::string&& value) {
+  
+  name_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.Vecset.name)
+}
+inline void Vecset::set_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.Vecset.name)
+}
+inline void Vecset::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.Vecset.name)
+}
+inline std::string* Vecset::_internal_mutable_name() {
+  
+  return name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Vecset::release_name() {
+  // @@protoc_insertion_point(field_release:eraftkv.Vecset.name)
+  
+  return name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Vecset::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.Vecset.name)
+}
+
+// uint64 vec_count = 3;
+inline void Vecset::clear_vec_count() {
+  vec_count_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_vec_count() const {
+  return vec_count_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::vec_count() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.vec_count)
+  return _internal_vec_count();
+}
+inline void Vecset::_internal_set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  vec_count_ = value;
+}
+inline void Vecset::set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_vec_count(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.vec_count)
+}
+
+// uint64 max_vec_id = 4;
+inline void Vecset::clear_max_vec_id() {
+  max_vec_id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_max_vec_id() const {
+  return max_vec_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::max_vec_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.max_vec_id)
+  return _internal_max_vec_id();
+}
+inline void Vecset::_internal_set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  max_vec_id_ = value;
+}
+inline void Vecset::set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_max_vec_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.max_vec_id)
+}
+
+// uint64 used_disk_capacity = 5;
+inline void Vecset::clear_used_disk_capacity() {
+  used_disk_capacity_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_used_disk_capacity() const {
+  return used_disk_capacity_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::used_disk_capacity() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.used_disk_capacity)
+  return _internal_used_disk_capacity();
+}
+inline void Vecset::_internal_set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  used_disk_capacity_ = value;
+}
+inline void Vecset::set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_used_disk_capacity(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.used_disk_capacity)
+}
+
+// uint64 used_mem_capacity = 6;
+inline void Vecset::clear_used_mem_capacity() {
+  used_mem_capacity_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_used_mem_capacity() const {
+  return used_mem_capacity_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::used_mem_capacity() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.used_mem_capacity)
+  return _internal_used_mem_capacity();
+}
+inline void Vecset::_internal_set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  used_mem_capacity_ = value;
+}
+inline void Vecset::set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_used_mem_capacity(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.used_mem_capacity)
+}
+
+// uint64 c_time = 7;
+inline void Vecset::clear_c_time() {
+  c_time_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_c_time() const {
+  return c_time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::c_time() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.c_time)
+  return _internal_c_time();
+}
+inline void Vecset::_internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  c_time_ = value;
+}
+inline void Vecset::set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_c_time(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.c_time)
+}
+
+// uint64 m_time = 8;
+inline void Vecset::clear_m_time() {
+  m_time_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_m_time() const {
+  return m_time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::m_time() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vecset.m_time)
+  return _internal_m_time();
+}
+inline void Vecset::_internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  m_time_ = value;
+}
+inline void Vecset::set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_m_time(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vecset.m_time)
+}
+
+// -------------------------------------------------------------------
+
+// Vec
+
+// uint64 id = 1;
+inline void Vec::clear_id() {
+  id_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vec.id)
+  return _internal_id();
+}
+inline void Vec::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  id_ = value;
+}
+inline void Vec::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vec.id)
+}
+
+// uint64 dim = 2;
+inline void Vec::clear_dim() {
+  dim_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_dim() const {
+  return dim_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::dim() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vec.dim)
+  return _internal_dim();
+}
+inline void Vec::_internal_set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  dim_ = value;
+}
+inline void Vec::set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_dim(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vec.dim)
+}
+
+// repeated double vdata = 3;
+inline int Vec::_internal_vdata_size() const {
+  return vdata_.size();
+}
+inline int Vec::vdata_size() const {
+  return _internal_vdata_size();
+}
+inline void Vec::clear_vdata() {
+  vdata_.Clear();
+}
+inline double Vec::_internal_vdata(int index) const {
+  return vdata_.Get(index);
+}
+inline double Vec::vdata(int index) const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vec.vdata)
+  return _internal_vdata(index);
+}
+inline void Vec::set_vdata(int index, double value) {
+  vdata_.Set(index, value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vec.vdata)
+}
+inline void Vec::_internal_add_vdata(double value) {
+  vdata_.Add(value);
+}
+inline void Vec::add_vdata(double value) {
+  _internal_add_vdata(value);
+  // @@protoc_insertion_point(field_add:eraftkv.Vec.vdata)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+Vec::_internal_vdata() const {
+  return vdata_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
+Vec::vdata() const {
+  // @@protoc_insertion_point(field_list:eraftkv.Vec.vdata)
+  return _internal_vdata();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+Vec::_internal_mutable_vdata() {
+  return &vdata_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
+Vec::mutable_vdata() {
+  // @@protoc_insertion_point(field_mutable_list:eraftkv.Vec.vdata)
+  return _internal_mutable_vdata();
+}
+
+// string vlabel = 4;
+inline void Vec::clear_vlabel() {
+  vlabel_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Vec::vlabel() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vec.vlabel)
+  return _internal_vlabel();
+}
+inline void Vec::set_vlabel(const std::string& value) {
+  _internal_set_vlabel(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vec.vlabel)
+}
+inline std::string* Vec::mutable_vlabel() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.Vec.vlabel)
+  return _internal_mutable_vlabel();
+}
+inline const std::string& Vec::_internal_vlabel() const {
+  return vlabel_.GetNoArena();
+}
+inline void Vec::_internal_set_vlabel(const std::string& value) {
+  
+  vlabel_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void Vec::set_vlabel(std::string&& value) {
+  
+  vlabel_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.Vec.vlabel)
+}
+inline void Vec::set_vlabel(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  vlabel_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.Vec.vlabel)
+}
+inline void Vec::set_vlabel(const char* value, size_t size) {
+  
+  vlabel_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.Vec.vlabel)
+}
+inline std::string* Vec::_internal_mutable_vlabel() {
+  
+  return vlabel_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Vec::release_vlabel() {
+  // @@protoc_insertion_point(field_release:eraftkv.Vec.vlabel)
+  
+  return vlabel_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Vec::set_allocated_vlabel(std::string* vlabel) {
+  if (vlabel != nullptr) {
+    
+  } else {
+    
+  }
+  vlabel_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), vlabel);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.Vec.vlabel)
+}
+
+// uint64 c_time = 5;
+inline void Vec::clear_c_time() {
+  c_time_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_c_time() const {
+  return c_time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::c_time() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vec.c_time)
+  return _internal_c_time();
+}
+inline void Vec::_internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  c_time_ = value;
+}
+inline void Vec::set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_c_time(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vec.c_time)
+}
+
+// uint64 m_time = 6;
+inline void Vec::clear_m_time() {
+  m_time_ = PROTOBUF_ULONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_m_time() const {
+  return m_time_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::m_time() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Vec.m_time)
+  return _internal_m_time();
+}
+inline void Vec::_internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  
+  m_time_ = value;
+}
+inline void Vec::set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_m_time(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Vec.m_time)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

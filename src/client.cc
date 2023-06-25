@@ -26,50 +26,22 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
   const char       *ptr = start;
   parser_.ParseRequest(ptr, end);
 
+  CommandHandler *handler = nullptr;
   if (parser_.GetParams()[0] == "info") {
-    ClientContext                   context;
-    eraftkv::ClusterConfigChangeReq req;
-    req.set_change_type(eraftkv::ClusterConfigChangeType::Query);
-    eraftkv::ClusterConfigChangeResp resp;
-
-    auto status =
-        stubs_.begin()->second->ClusterConfigChange(&context, req, &resp);
-    std::string info_str;
-    for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
-      info_str += "server_id: ";
-      info_str += std::to_string(resp.shard_group(0).servers(i).id());
-      info_str += ",server_address: ";
-      info_str += resp.shard_group(0).servers(i).address();
-      resp.shard_group(0).servers(i).server_status() ==
-              eraftkv::ServerStatus::Up
-          ? info_str += ",status: Running"
-          : info_str += ",status: Down";
-      resp.shard_group(0).leader_id() == resp.shard_group(0).servers(i).id()
-          ? info_str += ",Role: Leader"
-          : info_str += ",Role: Follower";
-      info_str += "\r\n";
-    }
-    std::string reply_buf;
-    reply_buf += "$";
-    reply_buf += std::to_string(info_str.size());
-    reply_buf += "\r\n";
-    reply_buf += info_str;
-    reply_buf += "\r\n";
-    reply_.PushData(reply_buf.c_str(), reply_buf.size());
-    SendPacket(reply_);
-
-    _Reset();
-    return static_cast<PacketLength>(bytes);
+    handler = new InfoCommandHandler();
+  } else if (parser_.GetParams()[0] == "set") {
+    handler = new SetCommandHandler();
+  } else if (parser_.GetParams()[0] == "get") {
+    handler = new GetCommandHandler();
+  } else {
+    handler = new UnKnowCommandHandler();
   }
 
-  reply_.PushData("+OK\r\n", 5);
-  SendPacket(reply_);
-
-  _Reset();
+  handler->Execute(parser_.GetParams(), this);
   return static_cast<PacketLength>(bytes);
 }
 
-Client::Client(std::string kv_addrs) {
+Client::Client(std::string kv_addrs) : leader_addr_("") {
   // init stub to kv server node
   auto kv_node_addrs = StringUtil::Split(kv_addrs, ',');
   for (auto kv_node_addr : kv_node_addrs) {
@@ -87,3 +59,20 @@ void Client::_Reset() {
 }
 
 void Client::OnConnect() {}
+
+std::string Client::GetLeaderAddr() {
+  ClientContext                   context;
+  eraftkv::ClusterConfigChangeReq req;
+  req.set_change_type(eraftkv::ClusterConfigChangeType::Query);
+  eraftkv::ClusterConfigChangeResp resp;
+  auto                             status =
+      this->stubs_.begin()->second->ClusterConfigChange(&context, req, &resp);
+  std::string leader_addr = "";
+  for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
+    if (resp.shard_group(0).leader_id() ==
+        resp.shard_group(0).servers(i).id()) {
+      leader_addr = resp.shard_group(0).servers(i).address();
+    }
+  }
+  return leader_addr;
+}

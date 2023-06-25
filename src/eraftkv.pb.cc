@@ -20,6 +20,7 @@ extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::interna
 extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Server_eraftkv_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_ShardGroup_eraftkv_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SnapshotBlock_eraftkv_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SysCatalog_VecsetName2idEntry_DoNotUse_eraftkv_2eproto;
 namespace eraftkv {
 class RequestVoteReqDefaultTypeInternal {
  public:
@@ -85,6 +86,22 @@ class ClientOperationRespDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ClientOperationResp> _instance;
 } _ClientOperationResp_default_instance_;
+class SysCatalog_VecsetName2idEntry_DoNotUseDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SysCatalog_VecsetName2idEntry_DoNotUse> _instance;
+} _SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_;
+class SysCatalogDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SysCatalog> _instance;
+} _SysCatalog_default_instance_;
+class VecsetDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Vecset> _instance;
+} _Vecset_default_instance_;
+class VecDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Vec> _instance;
+} _Vec_default_instance_;
 }  // namespace eraftkv
 static void InitDefaultsscc_info_AppendEntriesReq_eraftkv_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -318,7 +335,63 @@ static void InitDefaultsscc_info_SnapshotResp_eraftkv_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SnapshotResp_eraftkv_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SnapshotResp_eraftkv_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_eraftkv_2eproto[16];
+static void InitDefaultsscc_info_SysCatalog_eraftkv_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::eraftkv::_SysCatalog_default_instance_;
+    new (ptr) ::eraftkv::SysCatalog();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::eraftkv::SysCatalog::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SysCatalog_eraftkv_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SysCatalog_eraftkv_2eproto}, {
+      &scc_info_SysCatalog_VecsetName2idEntry_DoNotUse_eraftkv_2eproto.base,}};
+
+static void InitDefaultsscc_info_SysCatalog_VecsetName2idEntry_DoNotUse_eraftkv_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::eraftkv::_SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_;
+    new (ptr) ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse();
+  }
+  ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SysCatalog_VecsetName2idEntry_DoNotUse_eraftkv_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SysCatalog_VecsetName2idEntry_DoNotUse_eraftkv_2eproto}, {}};
+
+static void InitDefaultsscc_info_Vec_eraftkv_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::eraftkv::_Vec_default_instance_;
+    new (ptr) ::eraftkv::Vec();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::eraftkv::Vec::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Vec_eraftkv_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Vec_eraftkv_2eproto}, {}};
+
+static void InitDefaultsscc_info_Vecset_eraftkv_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::eraftkv::_Vecset_default_instance_;
+    new (ptr) ::eraftkv::Vecset();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::eraftkv::Vecset::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Vecset_eraftkv_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Vecset_eraftkv_2eproto}, {}};
+
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_eraftkv_2eproto[20];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_eraftkv_2eproto[6];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_eraftkv_2eproto = nullptr;
 
@@ -475,6 +548,49 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftkv_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::eraftkv::ClientOperationResp, ops_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse, key_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse, value_),
+  0,
+  1,
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog, vecset_count_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog, max_vecset_id_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog, mem_used_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog, disk_used_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SysCatalog, vecset_name2id_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, id_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, name_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, vec_count_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, max_vec_id_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, used_disk_capacity_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, used_mem_capacity_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, c_time_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vecset, m_time_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, id_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, dim_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, vdata_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, vlabel_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, c_time_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::Vec, m_time_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::eraftkv::RequestVoteReq)},
@@ -493,6 +609,10 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 129, -1, sizeof(::eraftkv::KvOpPair)},
   { 139, -1, sizeof(::eraftkv::ClientOperationReq)},
   { 146, -1, sizeof(::eraftkv::ClientOperationResp)},
+  { 152, 159, sizeof(::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse)},
+  { 161, -1, sizeof(::eraftkv::SysCatalog)},
+  { 171, -1, sizeof(::eraftkv::Vecset)},
+  { 184, -1, sizeof(::eraftkv::Vec)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -512,6 +632,10 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_KvOpPair_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_ClientOperationReq_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_ClientOperationResp_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_SysCatalog_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_Vecset_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_Vec_default_instance_),
 };
 
 const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -563,30 +687,42 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\001(\003\"J\n\022ClientOperationReq\022\024\n\014op_timestam"
   "p\030\001 \001(\004\022\036\n\003kvs\030\002 \003(\0132\021.eraftkv.KvOpPair\""
   "5\n\023ClientOperationResp\022\036\n\003ops\030\002 \003(\0132\021.er"
-  "aftkv.KvOpPair*O\n\tErrorCode\022\033\n\027REQUEST_N"
-  "OT_LEADER_NODE\020\000\022\020\n\014NODE_IS_DOWN\020\001\022\023\n\017RE"
-  "QUEST_TIMEOUT\020\002*1\n\tEntryType\022\n\n\006Normal\020\000"
-  "\022\016\n\nConfChange\020\001\022\010\n\004NoOp\020\002*E\n\016KeyRangeSt"
-  "atus\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\tImpo"
-  "rting\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n\002Up\020"
-  "\000\022\010\n\004Down\020\001*V\n\027ClusterConfigChangeType\022\017"
-  "\n\013ClusterInit\020\000\022\r\n\tAddServer\020\001\022\020\n\014Remove"
-  "Server\020\002\022\t\n\005Query\020\003*=\n\014ClientOpType\022\010\n\004N"
-  "oop\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003Del\020\003\022\010\n\004Scan"
-  "\020\0042\367\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv."
-  "RequestVoteReq\032\030.eraftkv.RequestVoteResp"
-  "\022F\n\rAppendEntries\022\031.eraftkv.AppendEntrie"
-  "sReq\032\032.eraftkv.AppendEntriesResp\0227\n\010Snap"
-  "shot\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Sna"
-  "pshotResp\022O\n\022ProcessRWOperation\022\033.eraftk"
-  "v.ClientOperationReq\032\034.eraftkv.ClientOpe"
-  "rationResp\022X\n\023ClusterConfigChange\022\037.eraf"
-  "tkv.ClusterConfigChangeReq\032 .eraftkv.Clu"
-  "sterConfigChangeRespb\006proto3"
+  "aftkv.KvOpPair\"\324\001\n\nSysCatalog\022\024\n\014vecset_"
+  "count\030\001 \001(\004\022\025\n\rmax_vecset_id\030\002 \001(\004\022\020\n\010me"
+  "m_used\030\003 \001(\004\022\021\n\tdisk_used\030\004 \001(\004\022>\n\016vecse"
+  "t_name2id\030\005 \003(\0132&.eraftkv.SysCatalog.Vec"
+  "setName2idEntry\0324\n\022VecsetName2idEntry\022\013\n"
+  "\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\004:\0028\001\"\240\001\n\006Vecset"
+  "\022\n\n\002id\030\001 \001(\004\022\014\n\004name\030\002 \001(\t\022\021\n\tvec_count\030"
+  "\003 \001(\004\022\022\n\nmax_vec_id\030\004 \001(\004\022\032\n\022used_disk_c"
+  "apacity\030\005 \001(\004\022\031\n\021used_mem_capacity\030\006 \001(\004"
+  "\022\016\n\006c_time\030\007 \001(\004\022\016\n\006m_time\030\010 \001(\004\"]\n\003Vec\022"
+  "\n\n\002id\030\001 \001(\004\022\013\n\003dim\030\002 \001(\004\022\r\n\005vdata\030\003 \003(\001\022"
+  "\016\n\006vlabel\030\004 \001(\t\022\016\n\006c_time\030\005 \001(\004\022\016\n\006m_tim"
+  "e\030\006 \001(\004*O\n\tErrorCode\022\033\n\027REQUEST_NOT_LEAD"
+  "ER_NODE\020\000\022\020\n\014NODE_IS_DOWN\020\001\022\023\n\017REQUEST_T"
+  "IMEOUT\020\002*1\n\tEntryType\022\n\n\006Normal\020\000\022\016\n\nCon"
+  "fChange\020\001\022\010\n\004NoOp\020\002*E\n\016KeyRangeStatus\022\013\n"
+  "\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\tImporting\020\002"
+  "\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n\002Up\020\000\022\010\n\004Do"
+  "wn\020\001*V\n\027ClusterConfigChangeType\022\017\n\013Clust"
+  "erInit\020\000\022\r\n\tAddServer\020\001\022\020\n\014RemoveServer\020"
+  "\002\022\t\n\005Query\020\003*=\n\014ClientOpType\022\010\n\004Noop\020\000\022\007"
+  "\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042\367\002\n\007"
+  "ERaftKv\022@\n\013RequestVote\022\027.eraftkv.Request"
+  "VoteReq\032\030.eraftkv.RequestVoteResp\022F\n\rApp"
+  "endEntries\022\031.eraftkv.AppendEntriesReq\032\032."
+  "eraftkv.AppendEntriesResp\0227\n\010Snapshot\022\024."
+  "eraftkv.SnapshotReq\032\025.eraftkv.SnapshotRe"
+  "sp\022O\n\022ProcessRWOperation\022\033.eraftkv.Clien"
+  "tOperationReq\032\034.eraftkv.ClientOperationR"
+  "esp\022X\n\023ClusterConfigChange\022\037.eraftkv.Clu"
+  "sterConfigChangeReq\032 .eraftkv.ClusterCon"
+  "figChangeRespb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_eraftkv_2eproto_sccs[16] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_eraftkv_2eproto_sccs[20] = {
   &scc_info_AppendEntriesReq_eraftkv_2eproto.base,
   &scc_info_AppendEntriesResp_eraftkv_2eproto.base,
   &scc_info_ClientOperationReq_eraftkv_2eproto.base,
@@ -603,14 +739,18 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
   &scc_info_SnapshotBlock_eraftkv_2eproto.base,
   &scc_info_SnapshotReq_eraftkv_2eproto.base,
   &scc_info_SnapshotResp_eraftkv_2eproto.base,
+  &scc_info_SysCatalog_eraftkv_2eproto.base,
+  &scc_info_SysCatalog_VecsetName2idEntry_DoNotUse_eraftkv_2eproto.base,
+  &scc_info_Vec_eraftkv_2eproto.base,
+  &scc_info_Vecset_eraftkv_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2708,
-  &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 3181,
+  &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 20, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
-  file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
+  file_level_metadata_eraftkv_2eproto, 20, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -5342,6 +5482,1068 @@ void ClientOperationResp::InternalSwap(ClientOperationResp* other) {
 }
 
 
+// ===================================================================
+
+SysCatalog_VecsetName2idEntry_DoNotUse::SysCatalog_VecsetName2idEntry_DoNotUse() {}
+SysCatalog_VecsetName2idEntry_DoNotUse::SysCatalog_VecsetName2idEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+    : SuperType(arena) {}
+void SysCatalog_VecsetName2idEntry_DoNotUse::MergeFrom(const SysCatalog_VecsetName2idEntry_DoNotUse& other) {
+  MergeFromInternal(other);
+}
+::PROTOBUF_NAMESPACE_ID::Metadata SysCatalog_VecsetName2idEntry_DoNotUse::GetMetadata() const {
+  return GetMetadataStatic();
+}
+void SysCatalog_VecsetName2idEntry_DoNotUse::MergeFrom(
+    const ::PROTOBUF_NAMESPACE_ID::Message& other) {
+  ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom(other);
+}
+
+
+// ===================================================================
+
+void SysCatalog::InitAsDefaultInstance() {
+}
+class SysCatalog::_Internal {
+ public:
+};
+
+SysCatalog::SysCatalog()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:eraftkv.SysCatalog)
+}
+SysCatalog::SysCatalog(const SysCatalog& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  vecset_name2id_.MergeFrom(from.vecset_name2id_);
+  ::memcpy(&vecset_count_, &from.vecset_count_,
+    static_cast<size_t>(reinterpret_cast<char*>(&disk_used_) -
+    reinterpret_cast<char*>(&vecset_count_)) + sizeof(disk_used_));
+  // @@protoc_insertion_point(copy_constructor:eraftkv.SysCatalog)
+}
+
+void SysCatalog::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SysCatalog_eraftkv_2eproto.base);
+  ::memset(&vecset_count_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&disk_used_) -
+      reinterpret_cast<char*>(&vecset_count_)) + sizeof(disk_used_));
+}
+
+SysCatalog::~SysCatalog() {
+  // @@protoc_insertion_point(destructor:eraftkv.SysCatalog)
+  SharedDtor();
+}
+
+void SysCatalog::SharedDtor() {
+}
+
+void SysCatalog::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const SysCatalog& SysCatalog::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SysCatalog_eraftkv_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void SysCatalog::Clear() {
+// @@protoc_insertion_point(message_clear_start:eraftkv.SysCatalog)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  vecset_name2id_.Clear();
+  ::memset(&vecset_count_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&disk_used_) -
+      reinterpret_cast<char*>(&vecset_count_)) + sizeof(disk_used_));
+  _internal_metadata_.Clear();
+}
+
+const char* SysCatalog::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // uint64 vecset_count = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          vecset_count_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 max_vecset_id = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          max_vecset_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 mem_used = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          mem_used_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 disk_used = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          disk_used_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // map<string, uint64> vecset_name2id = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(&vecset_name2id_, ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<42>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* SysCatalog::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:eraftkv.SysCatalog)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 vecset_count = 1;
+  if (this->vecset_count() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(1, this->_internal_vecset_count(), target);
+  }
+
+  // uint64 max_vecset_id = 2;
+  if (this->max_vecset_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->_internal_max_vecset_id(), target);
+  }
+
+  // uint64 mem_used = 3;
+  if (this->mem_used() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(3, this->_internal_mem_used(), target);
+  }
+
+  // uint64 disk_used = 4;
+  if (this->disk_used() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(4, this->_internal_disk_used(), target);
+  }
+
+  // map<string, uint64> vecset_name2id = 5;
+  if (!this->_internal_vecset_name2id().empty()) {
+    typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::PROTOBUF_NAMESPACE_ID::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), static_cast<int>(p->first.length()),
+          ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+          "eraftkv.SysCatalog.VecsetName2idEntry.key");
+      }
+    };
+
+    if (stream->IsSerializationDeterministic() &&
+        this->_internal_vecset_name2id().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->_internal_vecset_name2id().size()]);
+      typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >::size_type size_type;
+      size_type n = 0;
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >::const_iterator
+          it = this->_internal_vecset_name2id().begin();
+          it != this->_internal_vecset_name2id().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      for (size_type i = 0; i < n; i++) {
+        target = SysCatalog_VecsetName2idEntry_DoNotUse::Funcs::InternalSerialize(5, items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second, target, stream);
+        Utf8Check::Check(&(*items[static_cast<ptrdiff_t>(i)]));
+      }
+    } else {
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >::const_iterator
+          it = this->_internal_vecset_name2id().begin();
+          it != this->_internal_vecset_name2id().end(); ++it) {
+        target = SysCatalog_VecsetName2idEntry_DoNotUse::Funcs::InternalSerialize(5, it->first, it->second, target, stream);
+        Utf8Check::Check(&(*it));
+      }
+    }
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:eraftkv.SysCatalog)
+  return target;
+}
+
+size_t SysCatalog::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:eraftkv.SysCatalog)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // map<string, uint64> vecset_name2id = 5;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_vecset_name2id_size());
+  for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >::const_iterator
+      it = this->_internal_vecset_name2id().begin();
+      it != this->_internal_vecset_name2id().end(); ++it) {
+    total_size += SysCatalog_VecsetName2idEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
+  }
+
+  // uint64 vecset_count = 1;
+  if (this->vecset_count() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_vecset_count());
+  }
+
+  // uint64 max_vecset_id = 2;
+  if (this->max_vecset_id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_max_vecset_id());
+  }
+
+  // uint64 mem_used = 3;
+  if (this->mem_used() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_mem_used());
+  }
+
+  // uint64 disk_used = 4;
+  if (this->disk_used() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_disk_used());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void SysCatalog::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:eraftkv.SysCatalog)
+  GOOGLE_DCHECK_NE(&from, this);
+  const SysCatalog* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SysCatalog>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:eraftkv.SysCatalog)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:eraftkv.SysCatalog)
+    MergeFrom(*source);
+  }
+}
+
+void SysCatalog::MergeFrom(const SysCatalog& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:eraftkv.SysCatalog)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  vecset_name2id_.MergeFrom(from.vecset_name2id_);
+  if (from.vecset_count() != 0) {
+    _internal_set_vecset_count(from._internal_vecset_count());
+  }
+  if (from.max_vecset_id() != 0) {
+    _internal_set_max_vecset_id(from._internal_max_vecset_id());
+  }
+  if (from.mem_used() != 0) {
+    _internal_set_mem_used(from._internal_mem_used());
+  }
+  if (from.disk_used() != 0) {
+    _internal_set_disk_used(from._internal_disk_used());
+  }
+}
+
+void SysCatalog::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:eraftkv.SysCatalog)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SysCatalog::CopyFrom(const SysCatalog& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:eraftkv.SysCatalog)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SysCatalog::IsInitialized() const {
+  return true;
+}
+
+void SysCatalog::InternalSwap(SysCatalog* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  vecset_name2id_.Swap(&other->vecset_name2id_);
+  swap(vecset_count_, other->vecset_count_);
+  swap(max_vecset_id_, other->max_vecset_id_);
+  swap(mem_used_, other->mem_used_);
+  swap(disk_used_, other->disk_used_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SysCatalog::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+void Vecset::InitAsDefaultInstance() {
+}
+class Vecset::_Internal {
+ public:
+};
+
+Vecset::Vecset()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:eraftkv.Vecset)
+}
+Vecset::Vecset(const Vecset& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_name().empty()) {
+    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
+  }
+  ::memcpy(&id_, &from.id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&m_time_) -
+    reinterpret_cast<char*>(&id_)) + sizeof(m_time_));
+  // @@protoc_insertion_point(copy_constructor:eraftkv.Vecset)
+}
+
+void Vecset::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Vecset_eraftkv_2eproto.base);
+  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&m_time_) -
+      reinterpret_cast<char*>(&id_)) + sizeof(m_time_));
+}
+
+Vecset::~Vecset() {
+  // @@protoc_insertion_point(destructor:eraftkv.Vecset)
+  SharedDtor();
+}
+
+void Vecset::SharedDtor() {
+  name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void Vecset::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const Vecset& Vecset::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Vecset_eraftkv_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void Vecset::Clear() {
+// @@protoc_insertion_point(message_clear_start:eraftkv.Vecset)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&m_time_) -
+      reinterpret_cast<char*>(&id_)) + sizeof(m_time_));
+  _internal_metadata_.Clear();
+}
+
+const char* Vecset::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // uint64 id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string name = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          auto str = _internal_mutable_name();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "eraftkv.Vecset.name"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 vec_count = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          vec_count_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 max_vec_id = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          max_vec_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 used_disk_capacity = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          used_disk_capacity_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 used_mem_capacity = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          used_mem_capacity_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 c_time = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
+          c_time_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 m_time = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          m_time_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* Vecset::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:eraftkv.Vecset)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 id = 1;
+  if (this->id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(1, this->_internal_id(), target);
+  }
+
+  // string name = 2;
+  if (this->name().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "eraftkv.Vecset.name");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_name(), target);
+  }
+
+  // uint64 vec_count = 3;
+  if (this->vec_count() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(3, this->_internal_vec_count(), target);
+  }
+
+  // uint64 max_vec_id = 4;
+  if (this->max_vec_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(4, this->_internal_max_vec_id(), target);
+  }
+
+  // uint64 used_disk_capacity = 5;
+  if (this->used_disk_capacity() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(5, this->_internal_used_disk_capacity(), target);
+  }
+
+  // uint64 used_mem_capacity = 6;
+  if (this->used_mem_capacity() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(6, this->_internal_used_mem_capacity(), target);
+  }
+
+  // uint64 c_time = 7;
+  if (this->c_time() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(7, this->_internal_c_time(), target);
+  }
+
+  // uint64 m_time = 8;
+  if (this->m_time() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(8, this->_internal_m_time(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:eraftkv.Vecset)
+  return target;
+}
+
+size_t Vecset::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:eraftkv.Vecset)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string name = 2;
+  if (this->name().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
+  }
+
+  // uint64 id = 1;
+  if (this->id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_id());
+  }
+
+  // uint64 vec_count = 3;
+  if (this->vec_count() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_vec_count());
+  }
+
+  // uint64 max_vec_id = 4;
+  if (this->max_vec_id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_max_vec_id());
+  }
+
+  // uint64 used_disk_capacity = 5;
+  if (this->used_disk_capacity() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_used_disk_capacity());
+  }
+
+  // uint64 used_mem_capacity = 6;
+  if (this->used_mem_capacity() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_used_mem_capacity());
+  }
+
+  // uint64 c_time = 7;
+  if (this->c_time() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_c_time());
+  }
+
+  // uint64 m_time = 8;
+  if (this->m_time() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_m_time());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Vecset::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:eraftkv.Vecset)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Vecset* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Vecset>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:eraftkv.Vecset)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:eraftkv.Vecset)
+    MergeFrom(*source);
+  }
+}
+
+void Vecset::MergeFrom(const Vecset& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:eraftkv.Vecset)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.name().size() > 0) {
+
+    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
+  }
+  if (from.id() != 0) {
+    _internal_set_id(from._internal_id());
+  }
+  if (from.vec_count() != 0) {
+    _internal_set_vec_count(from._internal_vec_count());
+  }
+  if (from.max_vec_id() != 0) {
+    _internal_set_max_vec_id(from._internal_max_vec_id());
+  }
+  if (from.used_disk_capacity() != 0) {
+    _internal_set_used_disk_capacity(from._internal_used_disk_capacity());
+  }
+  if (from.used_mem_capacity() != 0) {
+    _internal_set_used_mem_capacity(from._internal_used_mem_capacity());
+  }
+  if (from.c_time() != 0) {
+    _internal_set_c_time(from._internal_c_time());
+  }
+  if (from.m_time() != 0) {
+    _internal_set_m_time(from._internal_m_time());
+  }
+}
+
+void Vecset::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:eraftkv.Vecset)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Vecset::CopyFrom(const Vecset& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:eraftkv.Vecset)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Vecset::IsInitialized() const {
+  return true;
+}
+
+void Vecset::InternalSwap(Vecset* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(id_, other->id_);
+  swap(vec_count_, other->vec_count_);
+  swap(max_vec_id_, other->max_vec_id_);
+  swap(used_disk_capacity_, other->used_disk_capacity_);
+  swap(used_mem_capacity_, other->used_mem_capacity_);
+  swap(c_time_, other->c_time_);
+  swap(m_time_, other->m_time_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata Vecset::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+void Vec::InitAsDefaultInstance() {
+}
+class Vec::_Internal {
+ public:
+};
+
+Vec::Vec()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:eraftkv.Vec)
+}
+Vec::Vec(const Vec& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr),
+      vdata_(from.vdata_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  vlabel_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_vlabel().empty()) {
+    vlabel_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.vlabel_);
+  }
+  ::memcpy(&id_, &from.id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&m_time_) -
+    reinterpret_cast<char*>(&id_)) + sizeof(m_time_));
+  // @@protoc_insertion_point(copy_constructor:eraftkv.Vec)
+}
+
+void Vec::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Vec_eraftkv_2eproto.base);
+  vlabel_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&m_time_) -
+      reinterpret_cast<char*>(&id_)) + sizeof(m_time_));
+}
+
+Vec::~Vec() {
+  // @@protoc_insertion_point(destructor:eraftkv.Vec)
+  SharedDtor();
+}
+
+void Vec::SharedDtor() {
+  vlabel_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void Vec::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const Vec& Vec::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Vec_eraftkv_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void Vec::Clear() {
+// @@protoc_insertion_point(message_clear_start:eraftkv.Vec)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  vdata_.Clear();
+  vlabel_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&m_time_) -
+      reinterpret_cast<char*>(&id_)) + sizeof(m_time_));
+  _internal_metadata_.Clear();
+}
+
+const char* Vec::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // uint64 id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 dim = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          dim_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // repeated double vdata = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_vdata(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 25) {
+          _internal_add_vdata(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // string vlabel = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          auto str = _internal_mutable_vlabel();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "eraftkv.Vec.vlabel"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 c_time = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          c_time_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 m_time = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          m_time_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* Vec::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:eraftkv.Vec)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 id = 1;
+  if (this->id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(1, this->_internal_id(), target);
+  }
+
+  // uint64 dim = 2;
+  if (this->dim() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->_internal_dim(), target);
+  }
+
+  // repeated double vdata = 3;
+  if (this->_internal_vdata_size() > 0) {
+    target = stream->WriteFixedPacked(3, _internal_vdata(), target);
+  }
+
+  // string vlabel = 4;
+  if (this->vlabel().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_vlabel().data(), static_cast<int>(this->_internal_vlabel().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "eraftkv.Vec.vlabel");
+    target = stream->WriteStringMaybeAliased(
+        4, this->_internal_vlabel(), target);
+  }
+
+  // uint64 c_time = 5;
+  if (this->c_time() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(5, this->_internal_c_time(), target);
+  }
+
+  // uint64 m_time = 6;
+  if (this->m_time() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(6, this->_internal_m_time(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:eraftkv.Vec)
+  return target;
+}
+
+size_t Vec::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:eraftkv.Vec)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated double vdata = 3;
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_vdata_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _vdata_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // string vlabel = 4;
+  if (this->vlabel().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_vlabel());
+  }
+
+  // uint64 id = 1;
+  if (this->id() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_id());
+  }
+
+  // uint64 dim = 2;
+  if (this->dim() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_dim());
+  }
+
+  // uint64 c_time = 5;
+  if (this->c_time() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_c_time());
+  }
+
+  // uint64 m_time = 6;
+  if (this->m_time() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_m_time());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void Vec::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:eraftkv.Vec)
+  GOOGLE_DCHECK_NE(&from, this);
+  const Vec* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Vec>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:eraftkv.Vec)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:eraftkv.Vec)
+    MergeFrom(*source);
+  }
+}
+
+void Vec::MergeFrom(const Vec& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:eraftkv.Vec)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  vdata_.MergeFrom(from.vdata_);
+  if (from.vlabel().size() > 0) {
+
+    vlabel_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.vlabel_);
+  }
+  if (from.id() != 0) {
+    _internal_set_id(from._internal_id());
+  }
+  if (from.dim() != 0) {
+    _internal_set_dim(from._internal_dim());
+  }
+  if (from.c_time() != 0) {
+    _internal_set_c_time(from._internal_c_time());
+  }
+  if (from.m_time() != 0) {
+    _internal_set_m_time(from._internal_m_time());
+  }
+}
+
+void Vec::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:eraftkv.Vec)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Vec::CopyFrom(const Vec& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:eraftkv.Vec)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Vec::IsInitialized() const {
+  return true;
+}
+
+void Vec::InternalSwap(Vec* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  vdata_.InternalSwap(&other->vdata_);
+  vlabel_.Swap(&other->vlabel_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(id_, other->id_);
+  swap(dim_, other->dim_);
+  swap(c_time_, other->c_time_);
+  swap(m_time_, other->m_time_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata Vec::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace eraftkv
 PROTOBUF_NAMESPACE_OPEN
@@ -5392,6 +6594,18 @@ template<> PROTOBUF_NOINLINE ::eraftkv::ClientOperationReq* Arena::CreateMaybeMe
 }
 template<> PROTOBUF_NOINLINE ::eraftkv::ClientOperationResp* Arena::CreateMaybeMessage< ::eraftkv::ClientOperationResp >(Arena* arena) {
   return Arena::CreateInternal< ::eraftkv::ClientOperationResp >(arena);
+}
+template<> PROTOBUF_NOINLINE ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse* Arena::CreateMaybeMessage< ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateInternal< ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse >(arena);
+}
+template<> PROTOBUF_NOINLINE ::eraftkv::SysCatalog* Arena::CreateMaybeMessage< ::eraftkv::SysCatalog >(Arena* arena) {
+  return Arena::CreateInternal< ::eraftkv::SysCatalog >(arena);
+}
+template<> PROTOBUF_NOINLINE ::eraftkv::Vecset* Arena::CreateMaybeMessage< ::eraftkv::Vecset >(Arena* arena) {
+  return Arena::CreateInternal< ::eraftkv::Vecset >(arena);
+}
+template<> PROTOBUF_NOINLINE ::eraftkv::Vec* Arena::CreateMaybeMessage< ::eraftkv::Vec >(Arena* arena) {
+  return Arena::CreateInternal< ::eraftkv::Vec >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 
