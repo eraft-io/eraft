@@ -47,6 +47,7 @@
  */
 int main(int argc, char* argv[]) {
   ERaftKvServerOptions options_;
+  options_.svr_role = ServerRoleEnum::DataServer;
   options_.svr_id = stoi(std::string(argv[1]));
   options_.kv_db_path = std::string(argv[2]);
   options_.log_db_path = std::string(argv[3]);

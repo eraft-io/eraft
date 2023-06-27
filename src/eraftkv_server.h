@@ -52,12 +52,16 @@ using eraftkv::ERaftKv;
 using grpc::ServerContext;
 using grpc::Status;
 
+
+enum ServerRoleEnum { DataServer, MetaServer };
+
 /**
  * @brief
  *
  */
 struct ERaftKvServerOptions {
   int64_t     svr_id;
+  uint8_t     svr_role;
   std::string svr_version;
   std::string svr_addr;
   std::string peer_addrs;
