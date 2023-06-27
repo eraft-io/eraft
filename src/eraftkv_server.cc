@@ -34,8 +34,6 @@
 
 #include <grpcpp/grpcpp.h>
 
-#include "util.h"
-
 RaftServer* ERaftKvServer::raft_context_ = nullptr;
 
 std::map<int, std::condition_variable*> ERaftKvServer::ready_cond_vars_;

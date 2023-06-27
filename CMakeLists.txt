@@ -203,6 +203,28 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
+# build eraftmeta
+set(eraftmeta_sources)
+list(APPEND eraftmeta_sources src/eraftkv_server.cc)
+list(APPEND eraftmeta_sources src/rocksdb_storage_impl.cc)
+list(APPEND eraftmeta_sources src/log_storage_impl.cc)
+list(APPEND eraftmeta_sources src/eraftkv.grpc.pb.cc)
+list(APPEND eraftmeta_sources src/eraftkv.pb.cc)
+list(APPEND eraftmeta_sources src/util.cc)
+list(APPEND eraftmeta_sources src/raft_server.cc)
+list(APPEND eraftmeta_sources src/log_entry_cache.cc)
+list(APPEND eraftmeta_sources src/grpc_network_impl.cc)
+list(APPEND eraftmeta_sources src/eraftmeta.cc)
+
+add_executable(eraftmeta ${eraftmeta_sources})
+target_link_libraries(eraftmeta PUBLIC
+    rocksdb
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+    stdc++fs
+)
+target_include_directories(eraftmeta PUBLIC ${eraftkv_INCLUDE_DIR})
+
 
 # build eraftkv_server test
 add_executable(eraftkv_server_test 
