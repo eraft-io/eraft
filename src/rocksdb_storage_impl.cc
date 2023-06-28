@@ -119,7 +119,7 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             new eraftkv::ClusterConfigChangeReq();
         conf_change_req->ParseFromString(ety->data());
         switch (conf_change_req->change_type()) {
-          case eraftkv::ClusterConfigChangeType::AddServer: {
+          case eraftkv::ChangeType::Join: {
             raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
             raft->last_applied_idx_ = ety->id();
             if (conf_change_req->server().id() != raft->id_) {
@@ -155,7 +155,7 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             }
             break;
           }
-          case eraftkv::ClusterConfigChangeType::RemoveServer: {
+          case eraftkv::ChangeType::Leave: {
             raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
             raft->last_applied_idx_ = ety->id();
             auto to_remove_serverid = conf_change_req->server().id();
@@ -165,6 +165,12 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                   conf_change_req->server().id() != raft->id_) {
                 (*iter)->node_state = NodeStateEnum::Down;
               }
+            }
+            case eraftkv::ChangeType::Move: {
+
+            }
+            case eraftkv::ChangeType::Query: {
+              
             }
             break;
           }

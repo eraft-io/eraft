@@ -163,7 +163,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
   // return cluster topology, Currently, only single raft group are supported
   auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
   if (conf_change_req->change_type() ==
-      eraftkv::ClusterConfigChangeType::Query) {
+      eraftkv::ChangeType::Query) {
     resp->set_success(true);
     auto new_sg = resp->add_shard_group();
     new_sg->set_id(0);

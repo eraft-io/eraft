@@ -81,19 +81,17 @@ message SnapshotResp {
   bool   is_last_chunk = 5;
 }
 
-enum KeyRangeStatus {
+enum SlotStatus {
   Running = 0;
   Migrating = 1;
   Importing = 2;
   Init = 3;
 }
 
-message KeyRange {
-  KeyRangeStatus key_range_status = 1;
-  int64          shard_id = 2;
+message Slot {
+  int64          id = 1;
+  SlotStatus     slot_status = 2;
   int64          status_modify_time = 3;
-  string         start = 4;
-  string         end = 5;
 }
 
 enum ServerStatus {
@@ -109,24 +107,26 @@ message Server {
 
 message ShardGroup {
   int64           id = 1;
-  KeyRange        key_range = 2;
+  repeated Slot   slots = 2;
   repeated Server servers = 3;
   int64           leader_id = 4;
 }
 
-enum ClusterConfigChangeType {
+enum ChangeType {
   ClusterInit = 0;
-  AddServer = 1;
-  RemoveServer = 2;
+  Join = 1;
+  Leave = 2;
   Query = 3;
+  Move = 4;
 }
 
 message ClusterConfigChangeReq {
-  ClusterConfigChangeType change_type = 1;
+  ChangeType              change_type = 1;
   int64                   shard_id = 2;
   Server                  server = 3;
   int64                   config_version = 4;
   int64                   op_count = 5;
+  int64                   command_id = 6;
 }
 
 message ClusterConfigChangeResp {
@@ -159,34 +159,6 @@ message ClientOperationReq {
 
 message ClientOperationResp {
   repeated KvOpPair ops = 2;
-}
-
-message SysCatalog {
-  uint64  vecset_count = 1;
-  uint64  max_vecset_id = 2;
-  uint64  mem_used = 3;
-  uint64  disk_used = 4;
-  map<string, uint64> vecset_name2id = 5;
-}
-
-message Vecset {
-  uint64  id = 1;
-  string  name = 2;
-  uint64  vec_count = 3;
-  uint64  max_vec_id = 4;
-  uint64  used_disk_capacity = 5;
-  uint64  used_mem_capacity = 6;
-  uint64  c_time = 7;
-  uint64  m_time = 8;
-}
-
-message Vec {
-  uint64  id = 1;
-  uint64  dim = 2;
-  repeated  double vdata = 3;
-  string  vlabel = 4;
-  uint64  c_time = 5;
-  uint64  m_time = 6;
 }
 
 service ERaftKv {
