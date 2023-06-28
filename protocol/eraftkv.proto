@@ -114,19 +114,27 @@ message ShardGroup {
 
 enum ChangeType {
   ClusterInit = 0;
-  Join = 1;
-  Leave = 2;
-  Query = 3;
-  Move = 4;
+  ShardJoin = 1;
+  ShardLeave = 2;
+  ShardsQuery = 3;
+  SlotMove = 4;
+  ServerJoin = 5;
+  ServerLeave = 6;
+}
+
+enum HandleServerType {
+  MetaServer = 0;
+  DataServer = 1;
 }
 
 message ClusterConfigChangeReq {
   ChangeType              change_type = 1;
-  int64                   shard_id = 2;
-  Server                  server = 3;
-  int64                   config_version = 4;
-  int64                   op_count = 5;
-  int64                   command_id = 6;
+  HandleServerType        handle_server_type = 2;
+  int64                   shard_id = 3;
+  Server                  server = 4;
+  int64                   config_version = 5;
+  int64                   op_count = 6;
+  int64                   command_id = 7;
 }
 
 message ClusterConfigChangeResp {

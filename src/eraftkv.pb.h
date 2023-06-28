@@ -231,16 +231,18 @@ inline bool ServerStatus_Parse(
 }
 enum ChangeType : int {
   ClusterInit = 0,
-  Join = 1,
-  Leave = 2,
-  Query = 3,
-  Move = 4,
+  ShardJoin = 1,
+  ShardLeave = 2,
+  ShardsQuery = 3,
+  SlotMove = 4,
+  ServerJoin = 5,
+  ServerLeave = 6,
   ChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ChangeType_IsValid(int value);
 constexpr ChangeType ChangeType_MIN = ClusterInit;
-constexpr ChangeType ChangeType_MAX = Move;
+constexpr ChangeType ChangeType_MAX = ServerLeave;
 constexpr int ChangeType_ARRAYSIZE = ChangeType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ChangeType_descriptor();
@@ -256,6 +258,31 @@ inline bool ChangeType_Parse(
     const std::string& name, ChangeType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ChangeType>(
     ChangeType_descriptor(), name, value);
+}
+enum HandleServerType : int {
+  MetaServer = 0,
+  DataServer = 1,
+  HandleServerType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  HandleServerType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool HandleServerType_IsValid(int value);
+constexpr HandleServerType HandleServerType_MIN = MetaServer;
+constexpr HandleServerType HandleServerType_MAX = DataServer;
+constexpr int HandleServerType_ARRAYSIZE = HandleServerType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HandleServerType_descriptor();
+template<typename T>
+inline const std::string& HandleServerType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, HandleServerType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function HandleServerType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    HandleServerType_descriptor(), enum_t_value);
+}
+inline bool HandleServerType_Parse(
+    const std::string& name, HandleServerType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<HandleServerType>(
+    HandleServerType_descriptor(), name, value);
 }
 enum ClientOpType : int {
   Noop = 0,
@@ -2349,14 +2376,15 @@ class ClusterConfigChangeReq :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kServerFieldNumber = 3,
-    kShardIdFieldNumber = 2,
-    kConfigVersionFieldNumber = 4,
-    kOpCountFieldNumber = 5,
-    kCommandIdFieldNumber = 6,
+    kServerFieldNumber = 4,
     kChangeTypeFieldNumber = 1,
+    kHandleServerTypeFieldNumber = 2,
+    kShardIdFieldNumber = 3,
+    kConfigVersionFieldNumber = 5,
+    kOpCountFieldNumber = 6,
+    kCommandIdFieldNumber = 7,
   };
-  // .eraftkv.Server server = 3;
+  // .eraftkv.Server server = 4;
   bool has_server() const;
   private:
   bool _internal_has_server() const;
@@ -2371,42 +2399,6 @@ class ClusterConfigChangeReq :
   ::eraftkv::Server* _internal_mutable_server();
   public:
 
-  // int64 shard_id = 2;
-  void clear_shard_id();
-  ::PROTOBUF_NAMESPACE_ID::int64 shard_id() const;
-  void set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_shard_id() const;
-  void _internal_set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
-  // int64 config_version = 4;
-  void clear_config_version();
-  ::PROTOBUF_NAMESPACE_ID::int64 config_version() const;
-  void set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_config_version() const;
-  void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
-  // int64 op_count = 5;
-  void clear_op_count();
-  ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
-  void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_count() const;
-  void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
-  // int64 command_id = 6;
-  void clear_command_id();
-  ::PROTOBUF_NAMESPACE_ID::int64 command_id() const;
-  void set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_command_id() const;
-  void _internal_set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
   // .eraftkv.ChangeType change_type = 1;
   void clear_change_type();
   ::eraftkv::ChangeType change_type() const;
@@ -2416,17 +2408,63 @@ class ClusterConfigChangeReq :
   void _internal_set_change_type(::eraftkv::ChangeType value);
   public:
 
+  // .eraftkv.HandleServerType handle_server_type = 2;
+  void clear_handle_server_type();
+  ::eraftkv::HandleServerType handle_server_type() const;
+  void set_handle_server_type(::eraftkv::HandleServerType value);
+  private:
+  ::eraftkv::HandleServerType _internal_handle_server_type() const;
+  void _internal_set_handle_server_type(::eraftkv::HandleServerType value);
+  public:
+
+  // int64 shard_id = 3;
+  void clear_shard_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 shard_id() const;
+  void set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_shard_id() const;
+  void _internal_set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 config_version = 5;
+  void clear_config_version();
+  ::PROTOBUF_NAMESPACE_ID::int64 config_version() const;
+  void set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_config_version() const;
+  void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 op_count = 6;
+  void clear_op_count();
+  ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
+  void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_count() const;
+  void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 command_id = 7;
+  void clear_command_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 command_id() const;
+  void set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_command_id() const;
+  void _internal_set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.ClusterConfigChangeReq)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::eraftkv::Server* server_;
+  int change_type_;
+  int handle_server_type_;
   ::PROTOBUF_NAMESPACE_ID::int64 shard_id_;
   ::PROTOBUF_NAMESPACE_ID::int64 config_version_;
   ::PROTOBUF_NAMESPACE_ID::int64 op_count_;
   ::PROTOBUF_NAMESPACE_ID::int64 command_id_;
-  int change_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -4552,7 +4590,27 @@ inline void ClusterConfigChangeReq::set_change_type(::eraftkv::ChangeType value)
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.change_type)
 }
 
-// int64 shard_id = 2;
+// .eraftkv.HandleServerType handle_server_type = 2;
+inline void ClusterConfigChangeReq::clear_handle_server_type() {
+  handle_server_type_ = 0;
+}
+inline ::eraftkv::HandleServerType ClusterConfigChangeReq::_internal_handle_server_type() const {
+  return static_cast< ::eraftkv::HandleServerType >(handle_server_type_);
+}
+inline ::eraftkv::HandleServerType ClusterConfigChangeReq::handle_server_type() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.handle_server_type)
+  return _internal_handle_server_type();
+}
+inline void ClusterConfigChangeReq::_internal_set_handle_server_type(::eraftkv::HandleServerType value) {
+  
+  handle_server_type_ = value;
+}
+inline void ClusterConfigChangeReq::set_handle_server_type(::eraftkv::HandleServerType value) {
+  _internal_set_handle_server_type(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.handle_server_type)
+}
+
+// int64 shard_id = 3;
 inline void ClusterConfigChangeReq::clear_shard_id() {
   shard_id_ = PROTOBUF_LONGLONG(0);
 }
@@ -4572,7 +4630,7 @@ inline void ClusterConfigChangeReq::set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.shard_id)
 }
 
-// .eraftkv.Server server = 3;
+// .eraftkv.Server server = 4;
 inline bool ClusterConfigChangeReq::_internal_has_server() const {
   return this != internal_default_instance() && server_ != nullptr;
 }
@@ -4632,7 +4690,7 @@ inline void ClusterConfigChangeReq::set_allocated_server(::eraftkv::Server* serv
   // @@protoc_insertion_point(field_set_allocated:eraftkv.ClusterConfigChangeReq.server)
 }
 
-// int64 config_version = 4;
+// int64 config_version = 5;
 inline void ClusterConfigChangeReq::clear_config_version() {
   config_version_ = PROTOBUF_LONGLONG(0);
 }
@@ -4652,7 +4710,7 @@ inline void ClusterConfigChangeReq::set_config_version(::PROTOBUF_NAMESPACE_ID::
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.config_version)
 }
 
-// int64 op_count = 5;
+// int64 op_count = 6;
 inline void ClusterConfigChangeReq::clear_op_count() {
   op_count_ = PROTOBUF_LONGLONG(0);
 }
@@ -4672,7 +4730,7 @@ inline void ClusterConfigChangeReq::set_op_count(::PROTOBUF_NAMESPACE_ID::int64 
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.op_count)
 }
 
-// int64 command_id = 6;
+// int64 command_id = 7;
 inline void ClusterConfigChangeReq::clear_command_id() {
   command_id_ = PROTOBUF_LONGLONG(0);
 }
@@ -5129,6 +5187,11 @@ template <> struct is_proto_enum< ::eraftkv::ChangeType> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::ChangeType>() {
   return ::eraftkv::ChangeType_descriptor();
+}
+template <> struct is_proto_enum< ::eraftkv::HandleServerType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::HandleServerType>() {
+  return ::eraftkv::HandleServerType_descriptor();
 }
 template <> struct is_proto_enum< ::eraftkv::ClientOpType> : ::std::true_type {};
 template <>

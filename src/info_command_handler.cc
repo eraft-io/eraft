@@ -15,7 +15,7 @@ EStatus InfoCommandHandler::Execute(const std::vector<std::string>& params,
                                     Client*                         cli) {
   ClientContext                   context;
   eraftkv::ClusterConfigChangeReq req;
-  req.set_change_type(eraftkv::ChangeType::Query);
+  req.set_change_type(eraftkv::ChangeType::ShardsQuery);
   eraftkv::ClusterConfigChangeResp resp;
 
   auto status =

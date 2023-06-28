@@ -119,7 +119,7 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             new eraftkv::ClusterConfigChangeReq();
         conf_change_req->ParseFromString(ety->data());
         switch (conf_change_req->change_type()) {
-          case eraftkv::ChangeType::Join: {
+          case eraftkv::ChangeType::ServerJoin: {
             raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
             raft->last_applied_idx_ = ety->id();
             if (conf_change_req->server().id() != raft->id_) {
@@ -155,23 +155,27 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             }
             break;
           }
-          case eraftkv::ChangeType::Leave: {
-            raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
-            raft->last_applied_idx_ = ety->id();
-            auto to_remove_serverid = conf_change_req->server().id();
-            for (auto iter = raft->nodes_.begin(); iter != raft->nodes_.end();
-                 iter++) {
-              if ((*iter)->id == to_remove_serverid &&
-                  conf_change_req->server().id() != raft->id_) {
-                (*iter)->node_state = NodeStateEnum::Down;
+          case eraftkv::ChangeType::ServerLeave: {
+            if (conf_change_req->handle_server_type() ==
+                eraftkv::HandleServerType::DataServer) {
+              raft->log_store_->PersisLogMetaState(raft->commit_idx_,
+                                                   ety->id());
+              raft->last_applied_idx_ = ety->id();
+              auto to_remove_serverid = conf_change_req->server().id();
+              for (auto iter = raft->nodes_.begin(); iter != raft->nodes_.end();
+                   iter++) {
+                if ((*iter)->id == to_remove_serverid &&
+                    conf_change_req->server().id() != raft->id_) {
+                  (*iter)->node_state = NodeStateEnum::Down;
+                }
               }
             }
-            case eraftkv::ChangeType::Move: {
-
-            }
-            case eraftkv::ChangeType::Query: {
-              
-            }
+            break;
+          }
+          case eraftkv::ChangeType::SlotMove: {
+            break;
+          }
+          case eraftkv::ChangeType::ShardsQuery: {
             break;
           }
           default: {
