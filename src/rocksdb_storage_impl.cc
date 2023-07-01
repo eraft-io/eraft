@@ -33,6 +33,7 @@
 
 #include "rocksdb_storage_impl.h"
 
+#include "consts.h"
 #include "eraftkv.pb.h"
 #include "eraftkv_server.h"
 #include "util.h"
@@ -171,6 +172,28 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
               }
             }
             break;
+          }
+          case eraftkv::ChangeType::ShardJoin: {
+            if (conf_change_req->handle_server_type() ==
+                eraftkv::HandleServerType::MetaServer) {
+              std::string key;
+              key.append(SG_META_PREFIX);
+              EncodeDecodeTool::PutFixed64(
+                  &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+              auto        sg = conf_change_req->shard_group();
+              std::string val = sg.SerializeAsString();
+              raft->store_->PutKV(key, val);
+            }
+          }
+          case eraftkv::ChangeType::ShardLeave: {
+            if (conf_change_req->handle_server_type() ==
+                eraftkv::HandleServerType::MetaServer) {
+              std::string key;
+              key.append(SG_META_PREFIX);
+              EncodeDecodeTool::PutFixed64(
+                  &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+              raft->store_->DelKV(key);
+            }
           }
           case eraftkv::ChangeType::SlotMove: {
             break;
@@ -333,6 +356,49 @@ std::string RocksDBStorageImpl::GetKV(std::string key) {
   std::string value;
   auto        status = kv_db_->Get(rocksdb::ReadOptions(), "U:" + key, &value);
   return status.IsNotFound() ? "" : value;
+}
+
+/**
+ * @brief
+ *
+ * @param prefix
+ * @param offset
+ * @param limit
+ * @return std::map<std::string, std::string>
+ */
+std::map<std::string, std::string> RocksDBStorageImpl::PrefixScan(
+    std::string prefix,
+    int64_t     offset,
+    int64_t     limit) {
+  auto iter = kv_db_->NewIterator(rocksdb::ReadOptions());
+  iter->Seek(prefix);
+  while (iter->Valid() && offset > 0) {
+    offset -= 1;
+    iter->Next();
+  }
+  if (!iter->Valid()) {
+    return std::map<std::string, std::string>{};
+  }
+  std::map<std::string, std::string> kvs;
+  int64_t                            res_count = 0;
+  while (iter->Valid() && limit > res_count) {
+    kvs.insert(std::make_pair<std::string, std::string>(
+        iter->key().ToString(), iter->value().ToString()));
+    iter->Next();
+    res_count += 1;
+  }
+  return kvs;
+}
+
+/**
+ * @brief
+ *
+ * @param key
+ * @return EStatus
+ */
+EStatus RocksDBStorageImpl::DelKV(std::string key) {
+  auto status = kv_db_->Delete(rocksdb::WriteOptions(), key);
+  return status.ok() ? EStatus::kOk : EStatus::kDelFromRocksDBErr;
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @file eraftmeta.cc
- * @author your name (you@domain.com)
+ * @author jay_jieliu@outlook.com
  * @brief
  * @version 0.1
  * @date 2023-06-26

@@ -43,4 +43,5 @@ enum class EStatus {
   kNotSupport = 2,
   kPutKeyToRocksDBErr = 3,
   kError = 4,
+  kDelFromRocksDBErr = 5,
 };

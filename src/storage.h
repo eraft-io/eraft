@@ -168,4 +168,24 @@ class Storage {
    * @return std::string
    */
   virtual std::string GetKV(std::string key) = 0;
+
+  /**
+   * @brief
+   *
+   * @param prefix
+   * @param offset
+   * @param limit
+   * @return std::map<std::string, std::string>
+   */
+  virtual std::map<std::string, std::string> PrefixScan(std::string prefix,
+                                                        int64_t     offset,
+                                                        int64_t     limit) = 0;
+
+  /**
+   * @brief
+   *
+   * @param key
+   * @return EStatus
+   */
+  virtual EStatus DelKV(std::string key) = 0;
 };

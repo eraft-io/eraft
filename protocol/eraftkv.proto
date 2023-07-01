@@ -120,6 +120,7 @@ enum ChangeType {
   SlotMove = 4;
   ServerJoin = 5;
   ServerLeave = 6;
+  MetaMembersQuery = 7;
 }
 
 enum HandleServerType {
@@ -135,6 +136,7 @@ message ClusterConfigChangeReq {
   int64                   config_version = 5;
   int64                   op_count = 6;
   int64                   command_id = 7;
+  ShardGroup              shard_group = 8;
 }
 
 message ClusterConfigChangeResp {

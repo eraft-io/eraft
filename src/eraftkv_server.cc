@@ -34,6 +34,8 @@
 
 #include <grpcpp/grpcpp.h>
 
+#include "consts.h"
+
 RaftServer* ERaftKvServer::raft_context_ = nullptr;
 
 std::map<int, std::condition_variable*> ERaftKvServer::ready_cond_vars_;
@@ -163,6 +165,19 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
   // return cluster topology, Currently, only single raft group are supported
   auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
   if (conf_change_req->change_type() == eraftkv::ChangeType::ShardsQuery) {
+    resp->set_success(true);
+    auto kvs = raft_context_->store_->PrefixScan(SG_META_PREFIX, 0, 256);
+    for (auto kv : kvs) {
+      eraftkv::ShardGroup* sg = new eraftkv::ShardGroup();
+      sg->ParseFromString(kv.second);
+      auto new_sg = resp->add_shard_group();
+      new_sg->CopyFrom(*sg);
+      delete sg;
+    }
+    return grpc::Status::OK;
+  }
+
+  if (conf_change_req->change_type() == eraftkv::ChangeType::MetaMembersQuery) {
     resp->set_success(true);
     auto new_sg = resp->add_shard_group();
     new_sg->set_id(0);

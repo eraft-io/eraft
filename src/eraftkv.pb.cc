@@ -156,9 +156,10 @@ static void InitDefaultsscc_info_ClusterConfigChangeReq_eraftkv_2eproto() {
   ::eraftkv::ClusterConfigChangeReq::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ClusterConfigChangeReq_eraftkv_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_ClusterConfigChangeReq_eraftkv_2eproto}, {
-      &scc_info_Server_eraftkv_2eproto.base,}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_ClusterConfigChangeReq_eraftkv_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_ClusterConfigChangeReq_eraftkv_2eproto}, {
+      &scc_info_Server_eraftkv_2eproto.base,
+      &scc_info_ShardGroup_eraftkv_2eproto.base,}};
 
 static void InitDefaultsscc_info_ClusterConfigChangeResp_eraftkv_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -444,6 +445,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftkv_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::eraftkv::ClusterConfigChangeReq, config_version_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::ClusterConfigChangeReq, op_count_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::ClusterConfigChangeReq, command_id_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::ClusterConfigChangeReq, shard_group_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::eraftkv::ClusterConfigChangeResp, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -489,10 +491,10 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 92, -1, sizeof(::eraftkv::Server)},
   { 100, -1, sizeof(::eraftkv::ShardGroup)},
   { 109, -1, sizeof(::eraftkv::ClusterConfigChangeReq)},
-  { 121, -1, sizeof(::eraftkv::ClusterConfigChangeResp)},
-  { 129, -1, sizeof(::eraftkv::KvOpPair)},
-  { 139, -1, sizeof(::eraftkv::ClientOperationReq)},
-  { 146, -1, sizeof(::eraftkv::ClientOperationResp)},
+  { 122, -1, sizeof(::eraftkv::ClusterConfigChangeResp)},
+  { 130, -1, sizeof(::eraftkv::KvOpPair)},
+  { 140, -1, sizeof(::eraftkv::ClientOperationReq)},
+  { 147, -1, sizeof(::eraftkv::ClientOperationResp)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -548,43 +550,45 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "er_status\030\003 \001(\0162\025.eraftkv.ServerStatus\"k"
   "\n\nShardGroup\022\n\n\002id\030\001 \001(\003\022\034\n\005slots\030\002 \003(\0132"
   "\r.eraftkv.Slot\022 \n\007servers\030\003 \003(\0132\017.eraftk"
-  "v.Server\022\021\n\tleader_id\030\004 \001(\003\"\352\001\n\026ClusterC"
+  "v.Server\022\021\n\tleader_id\030\004 \001(\003\"\224\002\n\026ClusterC"
   "onfigChangeReq\022(\n\013change_type\030\001 \001(\0162\023.er"
   "aftkv.ChangeType\0225\n\022handle_server_type\030\002"
   " \001(\0162\031.eraftkv.HandleServerType\022\020\n\010shard"
   "_id\030\003 \001(\003\022\037\n\006server\030\004 \001(\0132\017.eraftkv.Serv"
   "er\022\026\n\016config_version\030\005 \001(\003\022\020\n\010op_count\030\006"
-  " \001(\003\022\022\n\ncommand_id\030\007 \001(\003\"l\n\027ClusterConfi"
-  "gChangeResp\022\017\n\007success\030\001 \001(\010\022(\n\013shard_gr"
-  "oup\030\002 \003(\0132\023.eraftkv.ShardGroup\022\026\n\016config"
-  "_version\030\003 \001(\003\"q\n\010KvOpPair\022&\n\007op_type\030\001 "
-  "\001(\0162\025.eraftkv.ClientOpType\022\013\n\003key\030\002 \001(\t\022"
-  "\r\n\005value\030\003 \001(\t\022\017\n\007success\030\004 \001(\010\022\020\n\010op_co"
-  "unt\030\005 \001(\003\"J\n\022ClientOperationReq\022\024\n\014op_ti"
-  "mestamp\030\001 \001(\004\022\036\n\003kvs\030\002 \003(\0132\021.eraftkv.KvO"
-  "pPair\"5\n\023ClientOperationResp\022\036\n\003ops\030\002 \003("
-  "\0132\021.eraftkv.KvOpPair*O\n\tErrorCode\022\033\n\027REQ"
-  "UEST_NOT_LEADER_NODE\020\000\022\020\n\014NODE_IS_DOWN\020\001"
-  "\022\023\n\017REQUEST_TIMEOUT\020\002*1\n\tEntryType\022\n\n\006No"
-  "rmal\020\000\022\016\n\nConfChange\020\001\022\010\n\004NoOp\020\002*A\n\nSlot"
-  "Status\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\tIm"
-  "porting\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n\002U"
-  "p\020\000\022\010\n\004Down\020\001*|\n\nChangeType\022\017\n\013ClusterIn"
-  "it\020\000\022\r\n\tShardJoin\020\001\022\016\n\nShardLeave\020\002\022\017\n\013S"
-  "hardsQuery\020\003\022\014\n\010SlotMove\020\004\022\016\n\nServerJoin"
-  "\020\005\022\017\n\013ServerLeave\020\006*2\n\020HandleServerType\022"
-  "\016\n\nMetaServer\020\000\022\016\n\nDataServer\020\001*=\n\014Clien"
-  "tOpType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003D"
-  "el\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv\022@\n\013RequestVot"
-  "e\022\027.eraftkv.RequestVoteReq\032\030.eraftkv.Req"
-  "uestVoteResp\022F\n\rAppendEntries\022\031.eraftkv."
-  "AppendEntriesReq\032\032.eraftkv.AppendEntries"
-  "Resp\0227\n\010Snapshot\022\024.eraftkv.SnapshotReq\032\025"
-  ".eraftkv.SnapshotResp\022O\n\022ProcessRWOperat"
-  "ion\022\033.eraftkv.ClientOperationReq\032\034.eraft"
-  "kv.ClientOperationResp\022X\n\023ClusterConfigC"
-  "hange\022\037.eraftkv.ClusterConfigChangeReq\032 "
-  ".eraftkv.ClusterConfigChangeRespb\006proto3"
+  " \001(\003\022\022\n\ncommand_id\030\007 \001(\003\022(\n\013shard_group\030"
+  "\010 \001(\0132\023.eraftkv.ShardGroup\"l\n\027ClusterCon"
+  "figChangeResp\022\017\n\007success\030\001 \001(\010\022(\n\013shard_"
+  "group\030\002 \003(\0132\023.eraftkv.ShardGroup\022\026\n\016conf"
+  "ig_version\030\003 \001(\003\"q\n\010KvOpPair\022&\n\007op_type\030"
+  "\001 \001(\0162\025.eraftkv.ClientOpType\022\013\n\003key\030\002 \001("
+  "\t\022\r\n\005value\030\003 \001(\t\022\017\n\007success\030\004 \001(\010\022\020\n\010op_"
+  "count\030\005 \001(\003\"J\n\022ClientOperationReq\022\024\n\014op_"
+  "timestamp\030\001 \001(\004\022\036\n\003kvs\030\002 \003(\0132\021.eraftkv.K"
+  "vOpPair\"5\n\023ClientOperationResp\022\036\n\003ops\030\002 "
+  "\003(\0132\021.eraftkv.KvOpPair*O\n\tErrorCode\022\033\n\027R"
+  "EQUEST_NOT_LEADER_NODE\020\000\022\020\n\014NODE_IS_DOWN"
+  "\020\001\022\023\n\017REQUEST_TIMEOUT\020\002*1\n\tEntryType\022\n\n\006"
+  "Normal\020\000\022\016\n\nConfChange\020\001\022\010\n\004NoOp\020\002*A\n\nSl"
+  "otStatus\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\t"
+  "Importing\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n"
+  "\002Up\020\000\022\010\n\004Down\020\001*\222\001\n\nChangeType\022\017\n\013Cluste"
+  "rInit\020\000\022\r\n\tShardJoin\020\001\022\016\n\nShardLeave\020\002\022\017"
+  "\n\013ShardsQuery\020\003\022\014\n\010SlotMove\020\004\022\016\n\nServerJ"
+  "oin\020\005\022\017\n\013ServerLeave\020\006\022\024\n\020MetaMembersQue"
+  "ry\020\007*2\n\020HandleServerType\022\016\n\nMetaServer\020\000"
+  "\022\016\n\nDataServer\020\001*=\n\014ClientOpType\022\010\n\004Noop"
+  "\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042"
+  "\367\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv.Req"
+  "uestVoteReq\032\030.eraftkv.RequestVoteResp\022F\n"
+  "\rAppendEntries\022\031.eraftkv.AppendEntriesRe"
+  "q\032\032.eraftkv.AppendEntriesResp\0227\n\010Snapsho"
+  "t\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Snapsh"
+  "otResp\022O\n\022ProcessRWOperation\022\033.eraftkv.C"
+  "lientOperationReq\032\034.eraftkv.ClientOperat"
+  "ionResp\022X\n\023ClusterConfigChange\022\037.eraftkv"
+  ".ClusterConfigChangeReq\032 .eraftkv.Cluste"
+  "rConfigChangeRespb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
@@ -609,7 +613,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2800,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2865,
   &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
   file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
@@ -691,6 +695,7 @@ bool ChangeType_IsValid(int value) {
     case 4:
     case 5:
     case 6:
+    case 7:
       return true;
     default:
       return false;
@@ -3993,15 +3998,22 @@ void ShardGroup::InternalSwap(ShardGroup* other) {
 void ClusterConfigChangeReq::InitAsDefaultInstance() {
   ::eraftkv::_ClusterConfigChangeReq_default_instance_._instance.get_mutable()->server_ = const_cast< ::eraftkv::Server*>(
       ::eraftkv::Server::internal_default_instance());
+  ::eraftkv::_ClusterConfigChangeReq_default_instance_._instance.get_mutable()->shard_group_ = const_cast< ::eraftkv::ShardGroup*>(
+      ::eraftkv::ShardGroup::internal_default_instance());
 }
 class ClusterConfigChangeReq::_Internal {
  public:
   static const ::eraftkv::Server& server(const ClusterConfigChangeReq* msg);
+  static const ::eraftkv::ShardGroup& shard_group(const ClusterConfigChangeReq* msg);
 };
 
 const ::eraftkv::Server&
 ClusterConfigChangeReq::_Internal::server(const ClusterConfigChangeReq* msg) {
   return *msg->server_;
+}
+const ::eraftkv::ShardGroup&
+ClusterConfigChangeReq::_Internal::shard_group(const ClusterConfigChangeReq* msg) {
+  return *msg->shard_group_;
 }
 ClusterConfigChangeReq::ClusterConfigChangeReq()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -4016,6 +4028,11 @@ ClusterConfigChangeReq::ClusterConfigChangeReq(const ClusterConfigChangeReq& fro
     server_ = new ::eraftkv::Server(*from.server_);
   } else {
     server_ = nullptr;
+  }
+  if (from._internal_has_shard_group()) {
+    shard_group_ = new ::eraftkv::ShardGroup(*from.shard_group_);
+  } else {
+    shard_group_ = nullptr;
   }
   ::memcpy(&change_type_, &from.change_type_,
     static_cast<size_t>(reinterpret_cast<char*>(&command_id_) -
@@ -4037,6 +4054,7 @@ ClusterConfigChangeReq::~ClusterConfigChangeReq() {
 
 void ClusterConfigChangeReq::SharedDtor() {
   if (this != internal_default_instance()) delete server_;
+  if (this != internal_default_instance()) delete shard_group_;
 }
 
 void ClusterConfigChangeReq::SetCachedSize(int size) const {
@@ -4058,6 +4076,10 @@ void ClusterConfigChangeReq::Clear() {
     delete server_;
   }
   server_ = nullptr;
+  if (GetArenaNoVirtual() == nullptr && shard_group_ != nullptr) {
+    delete shard_group_;
+  }
+  shard_group_ = nullptr;
   ::memset(&change_type_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&command_id_) -
       reinterpret_cast<char*>(&change_type_)) + sizeof(command_id_));
@@ -4119,6 +4141,13 @@ const char* ClusterConfigChangeReq::_InternalParse(const char* ptr, ::PROTOBUF_N
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
           command_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .eraftkv.ShardGroup shard_group = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ctx->ParseMessage(_internal_mutable_shard_group(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4194,6 +4223,14 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(7, this->_internal_command_id(), target);
   }
 
+  // .eraftkv.ShardGroup shard_group = 8;
+  if (this->has_shard_group()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        8, _Internal::shard_group(this), target, stream);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
@@ -4215,6 +4252,13 @@ size_t ClusterConfigChangeReq::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *server_);
+  }
+
+  // .eraftkv.ShardGroup shard_group = 8;
+  if (this->has_shard_group()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *shard_group_);
   }
 
   // .eraftkv.ChangeType change_type = 1;
@@ -4291,6 +4335,9 @@ void ClusterConfigChangeReq::MergeFrom(const ClusterConfigChangeReq& from) {
   if (from.has_server()) {
     _internal_mutable_server()->::eraftkv::Server::MergeFrom(from._internal_server());
   }
+  if (from.has_shard_group()) {
+    _internal_mutable_shard_group()->::eraftkv::ShardGroup::MergeFrom(from._internal_shard_group());
+  }
   if (from.change_type() != 0) {
     _internal_set_change_type(from._internal_change_type());
   }
@@ -4333,6 +4380,7 @@ void ClusterConfigChangeReq::InternalSwap(ClusterConfigChangeReq* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   swap(server_, other->server_);
+  swap(shard_group_, other->shard_group_);
   swap(change_type_, other->change_type_);
   swap(handle_server_type_, other->handle_server_type_);
   swap(shard_id_, other->shard_id_);

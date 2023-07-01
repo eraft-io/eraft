@@ -237,12 +237,13 @@ enum ChangeType : int {
   SlotMove = 4,
   ServerJoin = 5,
   ServerLeave = 6,
+  MetaMembersQuery = 7,
   ChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ChangeType_IsValid(int value);
 constexpr ChangeType ChangeType_MIN = ClusterInit;
-constexpr ChangeType ChangeType_MAX = ServerLeave;
+constexpr ChangeType ChangeType_MAX = MetaMembersQuery;
 constexpr int ChangeType_ARRAYSIZE = ChangeType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ChangeType_descriptor();
@@ -2377,6 +2378,7 @@ class ClusterConfigChangeReq :
 
   enum : int {
     kServerFieldNumber = 4,
+    kShardGroupFieldNumber = 8,
     kChangeTypeFieldNumber = 1,
     kHandleServerTypeFieldNumber = 2,
     kShardIdFieldNumber = 3,
@@ -2397,6 +2399,21 @@ class ClusterConfigChangeReq :
   private:
   const ::eraftkv::Server& _internal_server() const;
   ::eraftkv::Server* _internal_mutable_server();
+  public:
+
+  // .eraftkv.ShardGroup shard_group = 8;
+  bool has_shard_group() const;
+  private:
+  bool _internal_has_shard_group() const;
+  public:
+  void clear_shard_group();
+  const ::eraftkv::ShardGroup& shard_group() const;
+  ::eraftkv::ShardGroup* release_shard_group();
+  ::eraftkv::ShardGroup* mutable_shard_group();
+  void set_allocated_shard_group(::eraftkv::ShardGroup* shard_group);
+  private:
+  const ::eraftkv::ShardGroup& _internal_shard_group() const;
+  ::eraftkv::ShardGroup* _internal_mutable_shard_group();
   public:
 
   // .eraftkv.ChangeType change_type = 1;
@@ -2459,6 +2476,7 @@ class ClusterConfigChangeReq :
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::eraftkv::Server* server_;
+  ::eraftkv::ShardGroup* shard_group_;
   int change_type_;
   int handle_server_type_;
   ::PROTOBUF_NAMESPACE_ID::int64 shard_id_;
@@ -4748,6 +4766,66 @@ inline void ClusterConfigChangeReq::_internal_set_command_id(::PROTOBUF_NAMESPAC
 inline void ClusterConfigChangeReq::set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_command_id(value);
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.command_id)
+}
+
+// .eraftkv.ShardGroup shard_group = 8;
+inline bool ClusterConfigChangeReq::_internal_has_shard_group() const {
+  return this != internal_default_instance() && shard_group_ != nullptr;
+}
+inline bool ClusterConfigChangeReq::has_shard_group() const {
+  return _internal_has_shard_group();
+}
+inline void ClusterConfigChangeReq::clear_shard_group() {
+  if (GetArenaNoVirtual() == nullptr && shard_group_ != nullptr) {
+    delete shard_group_;
+  }
+  shard_group_ = nullptr;
+}
+inline const ::eraftkv::ShardGroup& ClusterConfigChangeReq::_internal_shard_group() const {
+  const ::eraftkv::ShardGroup* p = shard_group_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::eraftkv::ShardGroup*>(
+      &::eraftkv::_ShardGroup_default_instance_);
+}
+inline const ::eraftkv::ShardGroup& ClusterConfigChangeReq::shard_group() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.shard_group)
+  return _internal_shard_group();
+}
+inline ::eraftkv::ShardGroup* ClusterConfigChangeReq::release_shard_group() {
+  // @@protoc_insertion_point(field_release:eraftkv.ClusterConfigChangeReq.shard_group)
+  
+  ::eraftkv::ShardGroup* temp = shard_group_;
+  shard_group_ = nullptr;
+  return temp;
+}
+inline ::eraftkv::ShardGroup* ClusterConfigChangeReq::_internal_mutable_shard_group() {
+  
+  if (shard_group_ == nullptr) {
+    auto* p = CreateMaybeMessage<::eraftkv::ShardGroup>(GetArenaNoVirtual());
+    shard_group_ = p;
+  }
+  return shard_group_;
+}
+inline ::eraftkv::ShardGroup* ClusterConfigChangeReq::mutable_shard_group() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.ClusterConfigChangeReq.shard_group)
+  return _internal_mutable_shard_group();
+}
+inline void ClusterConfigChangeReq::set_allocated_shard_group(::eraftkv::ShardGroup* shard_group) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete shard_group_;
+  }
+  if (shard_group) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      shard_group = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, shard_group, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  shard_group_ = shard_group;
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.ClusterConfigChangeReq.shard_group)
 }
 
 // -------------------------------------------------------------------
