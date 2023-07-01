@@ -64,3 +64,4 @@ clang-format -style=file --sort-includes -i ${SRCPATH}/src/info_command_handler.
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/set_command_handler.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/get_command_handler.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/unknow_command_handler.cc
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftmetaserver_test.cc

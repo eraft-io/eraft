@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
   } else if (cmd == "addnode") {
     ClientContext                   context;
     eraftkv::ClusterConfigChangeReq req;
-    req.set_change_type(eraftkv::ClusterConfigChangeType::AddServer);
+    req.set_change_type(eraftkv::ChangeType::ServerJoin);
     req.mutable_server()->set_id(stoi(std::string(argv[3])));
     req.mutable_server()->set_address(std::string(argv[4]));
     eraftkv::ClusterConfigChangeResp resp;
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
   } else if (cmd == "removenode") {
     ClientContext                   context;
     eraftkv::ClusterConfigChangeReq req;
-    req.set_change_type(eraftkv::ClusterConfigChangeType::RemoveServer);
+    req.set_change_type(eraftkv::ChangeType::ServerLeave);
     req.mutable_server()->set_id(stoi(std::string(argv[3])));
     eraftkv::ClusterConfigChangeResp resp;
     auto status = stub_->ClusterConfigChange(&context, req, &resp);

@@ -160,6 +160,26 @@ class RocksDBStorageImpl : public Storage {
   std::string GetKV(std::string key);
 
   /**
+   * @brief
+   *
+   * @param prefix
+   * @param offset
+   * @param limit
+   * @return std::map<std::string, std::string>
+   */
+  std::map<std::string, std::string> PrefixScan(std::string prefix,
+                                                int64_t     offset,
+                                                int64_t     limit);
+
+  /**
+   * @brief
+   *
+   * @param key
+   * @return EStatus
+   */
+  EStatus DelKV(std::string key);
+
+  /**
    * @brief Construct a new RocksDB Storage Impl object
    *
    * @param db_path

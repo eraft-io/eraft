@@ -31,9 +31,6 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
-#include <google/protobuf/map.h>  // IWYU pragma: export
-#include <google/protobuf/map_entry.h>
-#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
@@ -51,7 +48,7 @@ struct TableStruct_eraftkv_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[20]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[16]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -80,9 +77,6 @@ extern ClusterConfigChangeRespDefaultTypeInternal _ClusterConfigChangeResp_defau
 class Entry;
 class EntryDefaultTypeInternal;
 extern EntryDefaultTypeInternal _Entry_default_instance_;
-class KeyRange;
-class KeyRangeDefaultTypeInternal;
-extern KeyRangeDefaultTypeInternal _KeyRange_default_instance_;
 class KvOpPair;
 class KvOpPairDefaultTypeInternal;
 extern KvOpPairDefaultTypeInternal _KvOpPair_default_instance_;
@@ -98,6 +92,9 @@ extern ServerDefaultTypeInternal _Server_default_instance_;
 class ShardGroup;
 class ShardGroupDefaultTypeInternal;
 extern ShardGroupDefaultTypeInternal _ShardGroup_default_instance_;
+class Slot;
+class SlotDefaultTypeInternal;
+extern SlotDefaultTypeInternal _Slot_default_instance_;
 class SnapshotBlock;
 class SnapshotBlockDefaultTypeInternal;
 extern SnapshotBlockDefaultTypeInternal _SnapshotBlock_default_instance_;
@@ -107,18 +104,6 @@ extern SnapshotReqDefaultTypeInternal _SnapshotReq_default_instance_;
 class SnapshotResp;
 class SnapshotRespDefaultTypeInternal;
 extern SnapshotRespDefaultTypeInternal _SnapshotResp_default_instance_;
-class SysCatalog;
-class SysCatalogDefaultTypeInternal;
-extern SysCatalogDefaultTypeInternal _SysCatalog_default_instance_;
-class SysCatalog_VecsetName2idEntry_DoNotUse;
-class SysCatalog_VecsetName2idEntry_DoNotUseDefaultTypeInternal;
-extern SysCatalog_VecsetName2idEntry_DoNotUseDefaultTypeInternal _SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_;
-class Vec;
-class VecDefaultTypeInternal;
-extern VecDefaultTypeInternal _Vec_default_instance_;
-class Vecset;
-class VecsetDefaultTypeInternal;
-extern VecsetDefaultTypeInternal _Vecset_default_instance_;
 }  // namespace eraftkv
 PROTOBUF_NAMESPACE_OPEN
 template<> ::eraftkv::AppendEntriesReq* Arena::CreateMaybeMessage<::eraftkv::AppendEntriesReq>(Arena*);
@@ -128,19 +113,15 @@ template<> ::eraftkv::ClientOperationResp* Arena::CreateMaybeMessage<::eraftkv::
 template<> ::eraftkv::ClusterConfigChangeReq* Arena::CreateMaybeMessage<::eraftkv::ClusterConfigChangeReq>(Arena*);
 template<> ::eraftkv::ClusterConfigChangeResp* Arena::CreateMaybeMessage<::eraftkv::ClusterConfigChangeResp>(Arena*);
 template<> ::eraftkv::Entry* Arena::CreateMaybeMessage<::eraftkv::Entry>(Arena*);
-template<> ::eraftkv::KeyRange* Arena::CreateMaybeMessage<::eraftkv::KeyRange>(Arena*);
 template<> ::eraftkv::KvOpPair* Arena::CreateMaybeMessage<::eraftkv::KvOpPair>(Arena*);
 template<> ::eraftkv::RequestVoteReq* Arena::CreateMaybeMessage<::eraftkv::RequestVoteReq>(Arena*);
 template<> ::eraftkv::RequestVoteResp* Arena::CreateMaybeMessage<::eraftkv::RequestVoteResp>(Arena*);
 template<> ::eraftkv::Server* Arena::CreateMaybeMessage<::eraftkv::Server>(Arena*);
 template<> ::eraftkv::ShardGroup* Arena::CreateMaybeMessage<::eraftkv::ShardGroup>(Arena*);
+template<> ::eraftkv::Slot* Arena::CreateMaybeMessage<::eraftkv::Slot>(Arena*);
 template<> ::eraftkv::SnapshotBlock* Arena::CreateMaybeMessage<::eraftkv::SnapshotBlock>(Arena*);
 template<> ::eraftkv::SnapshotReq* Arena::CreateMaybeMessage<::eraftkv::SnapshotReq>(Arena*);
 template<> ::eraftkv::SnapshotResp* Arena::CreateMaybeMessage<::eraftkv::SnapshotResp>(Arena*);
-template<> ::eraftkv::SysCatalog* Arena::CreateMaybeMessage<::eraftkv::SysCatalog>(Arena*);
-template<> ::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse* Arena::CreateMaybeMessage<::eraftkv::SysCatalog_VecsetName2idEntry_DoNotUse>(Arena*);
-template<> ::eraftkv::Vec* Arena::CreateMaybeMessage<::eraftkv::Vec>(Arena*);
-template<> ::eraftkv::Vecset* Arena::CreateMaybeMessage<::eraftkv::Vecset>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace eraftkv {
 
@@ -196,32 +177,32 @@ inline bool EntryType_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<EntryType>(
     EntryType_descriptor(), name, value);
 }
-enum KeyRangeStatus : int {
+enum SlotStatus : int {
   Running = 0,
   Migrating = 1,
   Importing = 2,
   Init = 3,
-  KeyRangeStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-  KeyRangeStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+  SlotStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  SlotStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
-bool KeyRangeStatus_IsValid(int value);
-constexpr KeyRangeStatus KeyRangeStatus_MIN = Running;
-constexpr KeyRangeStatus KeyRangeStatus_MAX = Init;
-constexpr int KeyRangeStatus_ARRAYSIZE = KeyRangeStatus_MAX + 1;
+bool SlotStatus_IsValid(int value);
+constexpr SlotStatus SlotStatus_MIN = Running;
+constexpr SlotStatus SlotStatus_MAX = Init;
+constexpr int SlotStatus_ARRAYSIZE = SlotStatus_MAX + 1;
 
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* KeyRangeStatus_descriptor();
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SlotStatus_descriptor();
 template<typename T>
-inline const std::string& KeyRangeStatus_Name(T enum_t_value) {
-  static_assert(::std::is_same<T, KeyRangeStatus>::value ||
+inline const std::string& SlotStatus_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, SlotStatus>::value ||
     ::std::is_integral<T>::value,
-    "Incorrect type passed to function KeyRangeStatus_Name.");
+    "Incorrect type passed to function SlotStatus_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    KeyRangeStatus_descriptor(), enum_t_value);
+    SlotStatus_descriptor(), enum_t_value);
 }
-inline bool KeyRangeStatus_Parse(
-    const std::string& name, KeyRangeStatus* value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<KeyRangeStatus>(
-    KeyRangeStatus_descriptor(), name, value);
+inline bool SlotStatus_Parse(
+    const std::string& name, SlotStatus* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<SlotStatus>(
+    SlotStatus_descriptor(), name, value);
 }
 enum ServerStatus : int {
   Up = 0,
@@ -248,32 +229,61 @@ inline bool ServerStatus_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ServerStatus>(
     ServerStatus_descriptor(), name, value);
 }
-enum ClusterConfigChangeType : int {
+enum ChangeType : int {
   ClusterInit = 0,
-  AddServer = 1,
-  RemoveServer = 2,
-  Query = 3,
-  ClusterConfigChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-  ClusterConfigChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+  ShardJoin = 1,
+  ShardLeave = 2,
+  ShardsQuery = 3,
+  SlotMove = 4,
+  ServerJoin = 5,
+  ServerLeave = 6,
+  MetaMembersQuery = 7,
+  ChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  ChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
-bool ClusterConfigChangeType_IsValid(int value);
-constexpr ClusterConfigChangeType ClusterConfigChangeType_MIN = ClusterInit;
-constexpr ClusterConfigChangeType ClusterConfigChangeType_MAX = Query;
-constexpr int ClusterConfigChangeType_ARRAYSIZE = ClusterConfigChangeType_MAX + 1;
+bool ChangeType_IsValid(int value);
+constexpr ChangeType ChangeType_MIN = ClusterInit;
+constexpr ChangeType ChangeType_MAX = MetaMembersQuery;
+constexpr int ChangeType_ARRAYSIZE = ChangeType_MAX + 1;
 
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ClusterConfigChangeType_descriptor();
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ChangeType_descriptor();
 template<typename T>
-inline const std::string& ClusterConfigChangeType_Name(T enum_t_value) {
-  static_assert(::std::is_same<T, ClusterConfigChangeType>::value ||
+inline const std::string& ChangeType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, ChangeType>::value ||
     ::std::is_integral<T>::value,
-    "Incorrect type passed to function ClusterConfigChangeType_Name.");
+    "Incorrect type passed to function ChangeType_Name.");
   return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    ClusterConfigChangeType_descriptor(), enum_t_value);
+    ChangeType_descriptor(), enum_t_value);
 }
-inline bool ClusterConfigChangeType_Parse(
-    const std::string& name, ClusterConfigChangeType* value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ClusterConfigChangeType>(
-    ClusterConfigChangeType_descriptor(), name, value);
+inline bool ChangeType_Parse(
+    const std::string& name, ChangeType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ChangeType>(
+    ChangeType_descriptor(), name, value);
+}
+enum HandleServerType : int {
+  MetaServer = 0,
+  DataServer = 1,
+  HandleServerType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  HandleServerType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool HandleServerType_IsValid(int value);
+constexpr HandleServerType HandleServerType_MIN = MetaServer;
+constexpr HandleServerType HandleServerType_MAX = DataServer;
+constexpr int HandleServerType_ARRAYSIZE = HandleServerType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HandleServerType_descriptor();
+template<typename T>
+inline const std::string& HandleServerType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, HandleServerType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function HandleServerType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    HandleServerType_descriptor(), enum_t_value);
+}
+inline bool HandleServerType_Parse(
+    const std::string& name, HandleServerType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<HandleServerType>(
+    HandleServerType_descriptor(), name, value);
 }
 enum ClientOpType : int {
   Noop = 0,
@@ -1775,23 +1785,23 @@ class SnapshotResp :
 };
 // -------------------------------------------------------------------
 
-class KeyRange :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.KeyRange) */ {
+class Slot :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.Slot) */ {
  public:
-  KeyRange();
-  virtual ~KeyRange();
+  Slot();
+  virtual ~Slot();
 
-  KeyRange(const KeyRange& from);
-  KeyRange(KeyRange&& from) noexcept
-    : KeyRange() {
+  Slot(const Slot& from);
+  Slot(Slot&& from) noexcept
+    : Slot() {
     *this = ::std::move(from);
   }
 
-  inline KeyRange& operator=(const KeyRange& from) {
+  inline Slot& operator=(const Slot& from) {
     CopyFrom(from);
     return *this;
   }
-  inline KeyRange& operator=(KeyRange&& from) noexcept {
+  inline Slot& operator=(Slot&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -1809,37 +1819,37 @@ class KeyRange :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const KeyRange& default_instance();
+  static const Slot& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const KeyRange* internal_default_instance() {
-    return reinterpret_cast<const KeyRange*>(
-               &_KeyRange_default_instance_);
+  static inline const Slot* internal_default_instance() {
+    return reinterpret_cast<const Slot*>(
+               &_Slot_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     8;
 
-  friend void swap(KeyRange& a, KeyRange& b) {
+  friend void swap(Slot& a, Slot& b) {
     a.Swap(&b);
   }
-  inline void Swap(KeyRange* other) {
+  inline void Swap(Slot* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline KeyRange* New() const final {
-    return CreateMaybeMessage<KeyRange>(nullptr);
+  inline Slot* New() const final {
+    return CreateMaybeMessage<Slot>(nullptr);
   }
 
-  KeyRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<KeyRange>(arena);
+  Slot* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Slot>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const KeyRange& from);
-  void MergeFrom(const KeyRange& from);
+  void CopyFrom(const Slot& from);
+  void MergeFrom(const Slot& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1853,10 +1863,10 @@ class KeyRange :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(KeyRange* other);
+  void InternalSwap(Slot* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "eraftkv.KeyRange";
+    return "eraftkv.Slot";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -1881,51 +1891,17 @@ class KeyRange :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kStartFieldNumber = 4,
-    kEndFieldNumber = 5,
-    kShardIdFieldNumber = 2,
+    kIdFieldNumber = 1,
     kStatusModifyTimeFieldNumber = 3,
-    kKeyRangeStatusFieldNumber = 1,
+    kSlotStatusFieldNumber = 2,
   };
-  // string start = 4;
-  void clear_start();
-  const std::string& start() const;
-  void set_start(const std::string& value);
-  void set_start(std::string&& value);
-  void set_start(const char* value);
-  void set_start(const char* value, size_t size);
-  std::string* mutable_start();
-  std::string* release_start();
-  void set_allocated_start(std::string* start);
+  // int64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   private:
-  const std::string& _internal_start() const;
-  void _internal_set_start(const std::string& value);
-  std::string* _internal_mutable_start();
-  public:
-
-  // string end = 5;
-  void clear_end();
-  const std::string& end() const;
-  void set_end(const std::string& value);
-  void set_end(std::string&& value);
-  void set_end(const char* value);
-  void set_end(const char* value, size_t size);
-  std::string* mutable_end();
-  std::string* release_end();
-  void set_allocated_end(std::string* end);
-  private:
-  const std::string& _internal_end() const;
-  void _internal_set_end(const std::string& value);
-  std::string* _internal_mutable_end();
-  public:
-
-  // int64 shard_id = 2;
-  void clear_shard_id();
-  ::PROTOBUF_NAMESPACE_ID::int64 shard_id() const;
-  void set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_shard_id() const;
-  void _internal_set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
   // int64 status_modify_time = 3;
@@ -1937,25 +1913,23 @@ class KeyRange :
   void _internal_set_status_modify_time(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // .eraftkv.KeyRangeStatus key_range_status = 1;
-  void clear_key_range_status();
-  ::eraftkv::KeyRangeStatus key_range_status() const;
-  void set_key_range_status(::eraftkv::KeyRangeStatus value);
+  // .eraftkv.SlotStatus slot_status = 2;
+  void clear_slot_status();
+  ::eraftkv::SlotStatus slot_status() const;
+  void set_slot_status(::eraftkv::SlotStatus value);
   private:
-  ::eraftkv::KeyRangeStatus _internal_key_range_status() const;
-  void _internal_set_key_range_status(::eraftkv::KeyRangeStatus value);
+  ::eraftkv::SlotStatus _internal_slot_status() const;
+  void _internal_set_slot_status(::eraftkv::SlotStatus value);
   public:
 
-  // @@protoc_insertion_point(class_scope:eraftkv.KeyRange)
+  // @@protoc_insertion_point(class_scope:eraftkv.Slot)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr start_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr end_;
-  ::PROTOBUF_NAMESPACE_ID::int64 shard_id_;
+  ::PROTOBUF_NAMESPACE_ID::int64 id_;
   ::PROTOBUF_NAMESPACE_ID::int64 status_modify_time_;
-  int key_range_status_;
+  int slot_status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -2224,11 +2198,29 @@ class ShardGroup :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kSlotsFieldNumber = 2,
     kServersFieldNumber = 3,
-    kKeyRangeFieldNumber = 2,
     kIdFieldNumber = 1,
     kLeaderIdFieldNumber = 4,
   };
+  // repeated .eraftkv.Slot slots = 2;
+  int slots_size() const;
+  private:
+  int _internal_slots_size() const;
+  public:
+  void clear_slots();
+  ::eraftkv::Slot* mutable_slots(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Slot >*
+      mutable_slots();
+  private:
+  const ::eraftkv::Slot& _internal_slots(int index) const;
+  ::eraftkv::Slot* _internal_add_slots();
+  public:
+  const ::eraftkv::Slot& slots(int index) const;
+  ::eraftkv::Slot* add_slots();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Slot >&
+      slots() const;
+
   // repeated .eraftkv.Server servers = 3;
   int servers_size() const;
   private:
@@ -2246,21 +2238,6 @@ class ShardGroup :
   ::eraftkv::Server* add_servers();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Server >&
       servers() const;
-
-  // .eraftkv.KeyRange key_range = 2;
-  bool has_key_range() const;
-  private:
-  bool _internal_has_key_range() const;
-  public:
-  void clear_key_range();
-  const ::eraftkv::KeyRange& key_range() const;
-  ::eraftkv::KeyRange* release_key_range();
-  ::eraftkv::KeyRange* mutable_key_range();
-  void set_allocated_key_range(::eraftkv::KeyRange* key_range);
-  private:
-  const ::eraftkv::KeyRange& _internal_key_range() const;
-  ::eraftkv::KeyRange* _internal_mutable_key_range();
-  public:
 
   // int64 id = 1;
   void clear_id();
@@ -2285,8 +2262,8 @@ class ShardGroup :
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Slot > slots_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Server > servers_;
-  ::eraftkv::KeyRange* key_range_;
   ::PROTOBUF_NAMESPACE_ID::int64 id_;
   ::PROTOBUF_NAMESPACE_ID::int64 leader_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -2400,13 +2377,16 @@ class ClusterConfigChangeReq :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kServerFieldNumber = 3,
-    kShardIdFieldNumber = 2,
-    kConfigVersionFieldNumber = 4,
-    kOpCountFieldNumber = 5,
+    kServerFieldNumber = 4,
+    kShardGroupFieldNumber = 8,
     kChangeTypeFieldNumber = 1,
+    kHandleServerTypeFieldNumber = 2,
+    kShardIdFieldNumber = 3,
+    kConfigVersionFieldNumber = 5,
+    kOpCountFieldNumber = 6,
+    kCommandIdFieldNumber = 7,
   };
-  // .eraftkv.Server server = 3;
+  // .eraftkv.Server server = 4;
   bool has_server() const;
   private:
   bool _internal_has_server() const;
@@ -2421,7 +2401,40 @@ class ClusterConfigChangeReq :
   ::eraftkv::Server* _internal_mutable_server();
   public:
 
-  // int64 shard_id = 2;
+  // .eraftkv.ShardGroup shard_group = 8;
+  bool has_shard_group() const;
+  private:
+  bool _internal_has_shard_group() const;
+  public:
+  void clear_shard_group();
+  const ::eraftkv::ShardGroup& shard_group() const;
+  ::eraftkv::ShardGroup* release_shard_group();
+  ::eraftkv::ShardGroup* mutable_shard_group();
+  void set_allocated_shard_group(::eraftkv::ShardGroup* shard_group);
+  private:
+  const ::eraftkv::ShardGroup& _internal_shard_group() const;
+  ::eraftkv::ShardGroup* _internal_mutable_shard_group();
+  public:
+
+  // .eraftkv.ChangeType change_type = 1;
+  void clear_change_type();
+  ::eraftkv::ChangeType change_type() const;
+  void set_change_type(::eraftkv::ChangeType value);
+  private:
+  ::eraftkv::ChangeType _internal_change_type() const;
+  void _internal_set_change_type(::eraftkv::ChangeType value);
+  public:
+
+  // .eraftkv.HandleServerType handle_server_type = 2;
+  void clear_handle_server_type();
+  ::eraftkv::HandleServerType handle_server_type() const;
+  void set_handle_server_type(::eraftkv::HandleServerType value);
+  private:
+  ::eraftkv::HandleServerType _internal_handle_server_type() const;
+  void _internal_set_handle_server_type(::eraftkv::HandleServerType value);
+  public:
+
+  // int64 shard_id = 3;
   void clear_shard_id();
   ::PROTOBUF_NAMESPACE_ID::int64 shard_id() const;
   void set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
@@ -2430,7 +2443,7 @@ class ClusterConfigChangeReq :
   void _internal_set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // int64 config_version = 4;
+  // int64 config_version = 5;
   void clear_config_version();
   ::PROTOBUF_NAMESPACE_ID::int64 config_version() const;
   void set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
@@ -2439,7 +2452,7 @@ class ClusterConfigChangeReq :
   void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // int64 op_count = 5;
+  // int64 op_count = 6;
   void clear_op_count();
   ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
   void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
@@ -2448,13 +2461,13 @@ class ClusterConfigChangeReq :
   void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // .eraftkv.ClusterConfigChangeType change_type = 1;
-  void clear_change_type();
-  ::eraftkv::ClusterConfigChangeType change_type() const;
-  void set_change_type(::eraftkv::ClusterConfigChangeType value);
+  // int64 command_id = 7;
+  void clear_command_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 command_id() const;
+  void set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   private:
-  ::eraftkv::ClusterConfigChangeType _internal_change_type() const;
-  void _internal_set_change_type(::eraftkv::ClusterConfigChangeType value);
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_command_id() const;
+  void _internal_set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
   // @@protoc_insertion_point(class_scope:eraftkv.ClusterConfigChangeReq)
@@ -2463,10 +2476,13 @@ class ClusterConfigChangeReq :
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::eraftkv::Server* server_;
+  ::eraftkv::ShardGroup* shard_group_;
+  int change_type_;
+  int handle_server_type_;
   ::PROTOBUF_NAMESPACE_ID::int64 shard_id_;
   ::PROTOBUF_NAMESPACE_ID::int64 config_version_;
   ::PROTOBUF_NAMESPACE_ID::int64 op_count_;
-  int change_type_;
+  ::PROTOBUF_NAMESPACE_ID::int64 command_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -3097,640 +3113,6 @@ class ClientOperationResp :
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair > ops_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_eraftkv_2eproto;
-};
-// -------------------------------------------------------------------
-
-class SysCatalog_VecsetName2idEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<SysCatalog_VecsetName2idEntry_DoNotUse, 
-    std::string, ::PROTOBUF_NAMESPACE_ID::uint64,
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64,
-    0 > {
-public:
-  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<SysCatalog_VecsetName2idEntry_DoNotUse, 
-    std::string, ::PROTOBUF_NAMESPACE_ID::uint64,
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64,
-    0 > SuperType;
-  SysCatalog_VecsetName2idEntry_DoNotUse();
-  SysCatalog_VecsetName2idEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  void MergeFrom(const SysCatalog_VecsetName2idEntry_DoNotUse& other);
-  static const SysCatalog_VecsetName2idEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const SysCatalog_VecsetName2idEntry_DoNotUse*>(&_SysCatalog_VecsetName2idEntry_DoNotUse_default_instance_); }
-  static bool ValidateKey(std::string* s) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "eraftkv.SysCatalog.VecsetName2idEntry.key");
- }
-  static bool ValidateValue(void*) { return true; }
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
-    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[16];
-  }
-
-  public:
-};
-
-// -------------------------------------------------------------------
-
-class SysCatalog :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.SysCatalog) */ {
- public:
-  SysCatalog();
-  virtual ~SysCatalog();
-
-  SysCatalog(const SysCatalog& from);
-  SysCatalog(SysCatalog&& from) noexcept
-    : SysCatalog() {
-    *this = ::std::move(from);
-  }
-
-  inline SysCatalog& operator=(const SysCatalog& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline SysCatalog& operator=(SysCatalog&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const SysCatalog& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const SysCatalog* internal_default_instance() {
-    return reinterpret_cast<const SysCatalog*>(
-               &_SysCatalog_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    17;
-
-  friend void swap(SysCatalog& a, SysCatalog& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(SysCatalog* other) {
-    if (other == this) return;
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline SysCatalog* New() const final {
-    return CreateMaybeMessage<SysCatalog>(nullptr);
-  }
-
-  SysCatalog* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<SysCatalog>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const SysCatalog& from);
-  void MergeFrom(const SysCatalog& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(SysCatalog* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "eraftkv.SysCatalog";
-  }
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
-    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kVecsetName2IdFieldNumber = 5,
-    kVecsetCountFieldNumber = 1,
-    kMaxVecsetIdFieldNumber = 2,
-    kMemUsedFieldNumber = 3,
-    kDiskUsedFieldNumber = 4,
-  };
-  // map<string, uint64> vecset_name2id = 5;
-  int vecset_name2id_size() const;
-  private:
-  int _internal_vecset_name2id_size() const;
-  public:
-  void clear_vecset_name2id();
-  private:
-  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
-      _internal_vecset_name2id() const;
-  ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
-      _internal_mutable_vecset_name2id();
-  public:
-  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
-      vecset_name2id() const;
-  ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
-      mutable_vecset_name2id();
-
-  // uint64 vecset_count = 1;
-  void clear_vecset_count();
-  ::PROTOBUF_NAMESPACE_ID::uint64 vecset_count() const;
-  void set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_vecset_count() const;
-  void _internal_set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 max_vecset_id = 2;
-  void clear_max_vecset_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 max_vecset_id() const;
-  void set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_max_vecset_id() const;
-  void _internal_set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 mem_used = 3;
-  void clear_mem_used();
-  ::PROTOBUF_NAMESPACE_ID::uint64 mem_used() const;
-  void set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_mem_used() const;
-  void _internal_set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 disk_used = 4;
-  void clear_disk_used();
-  ::PROTOBUF_NAMESPACE_ID::uint64 disk_used() const;
-  void set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_disk_used() const;
-  void _internal_set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:eraftkv.SysCatalog)
- private:
-  class _Internal;
-
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::MapField<
-      SysCatalog_VecsetName2idEntry_DoNotUse,
-      std::string, ::PROTOBUF_NAMESPACE_ID::uint64,
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_UINT64,
-      0 > vecset_name2id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 vecset_count_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 max_vecset_id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 mem_used_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 disk_used_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_eraftkv_2eproto;
-};
-// -------------------------------------------------------------------
-
-class Vecset :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.Vecset) */ {
- public:
-  Vecset();
-  virtual ~Vecset();
-
-  Vecset(const Vecset& from);
-  Vecset(Vecset&& from) noexcept
-    : Vecset() {
-    *this = ::std::move(from);
-  }
-
-  inline Vecset& operator=(const Vecset& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline Vecset& operator=(Vecset&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const Vecset& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Vecset* internal_default_instance() {
-    return reinterpret_cast<const Vecset*>(
-               &_Vecset_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    18;
-
-  friend void swap(Vecset& a, Vecset& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(Vecset* other) {
-    if (other == this) return;
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline Vecset* New() const final {
-    return CreateMaybeMessage<Vecset>(nullptr);
-  }
-
-  Vecset* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Vecset>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Vecset& from);
-  void MergeFrom(const Vecset& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(Vecset* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "eraftkv.Vecset";
-  }
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
-    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kNameFieldNumber = 2,
-    kIdFieldNumber = 1,
-    kVecCountFieldNumber = 3,
-    kMaxVecIdFieldNumber = 4,
-    kUsedDiskCapacityFieldNumber = 5,
-    kUsedMemCapacityFieldNumber = 6,
-    kCTimeFieldNumber = 7,
-    kMTimeFieldNumber = 8,
-  };
-  // string name = 2;
-  void clear_name();
-  const std::string& name() const;
-  void set_name(const std::string& value);
-  void set_name(std::string&& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
-  std::string* mutable_name();
-  std::string* release_name();
-  void set_allocated_name(std::string* name);
-  private:
-  const std::string& _internal_name() const;
-  void _internal_set_name(const std::string& value);
-  std::string* _internal_mutable_name();
-  public:
-
-  // uint64 id = 1;
-  void clear_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 id() const;
-  void set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_id() const;
-  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 vec_count = 3;
-  void clear_vec_count();
-  ::PROTOBUF_NAMESPACE_ID::uint64 vec_count() const;
-  void set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_vec_count() const;
-  void _internal_set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 max_vec_id = 4;
-  void clear_max_vec_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 max_vec_id() const;
-  void set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_max_vec_id() const;
-  void _internal_set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 used_disk_capacity = 5;
-  void clear_used_disk_capacity();
-  ::PROTOBUF_NAMESPACE_ID::uint64 used_disk_capacity() const;
-  void set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_used_disk_capacity() const;
-  void _internal_set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 used_mem_capacity = 6;
-  void clear_used_mem_capacity();
-  ::PROTOBUF_NAMESPACE_ID::uint64 used_mem_capacity() const;
-  void set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_used_mem_capacity() const;
-  void _internal_set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 c_time = 7;
-  void clear_c_time();
-  ::PROTOBUF_NAMESPACE_ID::uint64 c_time() const;
-  void set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_c_time() const;
-  void _internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 m_time = 8;
-  void clear_m_time();
-  ::PROTOBUF_NAMESPACE_ID::uint64 m_time() const;
-  void set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_m_time() const;
-  void _internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:eraftkv.Vecset)
- private:
-  class _Internal;
-
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 vec_count_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 max_vec_id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 used_disk_capacity_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 used_mem_capacity_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 c_time_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 m_time_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_eraftkv_2eproto;
-};
-// -------------------------------------------------------------------
-
-class Vec :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.Vec) */ {
- public:
-  Vec();
-  virtual ~Vec();
-
-  Vec(const Vec& from);
-  Vec(Vec&& from) noexcept
-    : Vec() {
-    *this = ::std::move(from);
-  }
-
-  inline Vec& operator=(const Vec& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline Vec& operator=(Vec&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const Vec& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Vec* internal_default_instance() {
-    return reinterpret_cast<const Vec*>(
-               &_Vec_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    19;
-
-  friend void swap(Vec& a, Vec& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(Vec* other) {
-    if (other == this) return;
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline Vec* New() const final {
-    return CreateMaybeMessage<Vec>(nullptr);
-  }
-
-  Vec* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Vec>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Vec& from);
-  void MergeFrom(const Vec& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(Vec* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "eraftkv.Vec";
-  }
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
-    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kVdataFieldNumber = 3,
-    kVlabelFieldNumber = 4,
-    kIdFieldNumber = 1,
-    kDimFieldNumber = 2,
-    kCTimeFieldNumber = 5,
-    kMTimeFieldNumber = 6,
-  };
-  // repeated double vdata = 3;
-  int vdata_size() const;
-  private:
-  int _internal_vdata_size() const;
-  public:
-  void clear_vdata();
-  private:
-  double _internal_vdata(int index) const;
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
-      _internal_vdata() const;
-  void _internal_add_vdata(double value);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
-      _internal_mutable_vdata();
-  public:
-  double vdata(int index) const;
-  void set_vdata(int index, double value);
-  void add_vdata(double value);
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
-      vdata() const;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
-      mutable_vdata();
-
-  // string vlabel = 4;
-  void clear_vlabel();
-  const std::string& vlabel() const;
-  void set_vlabel(const std::string& value);
-  void set_vlabel(std::string&& value);
-  void set_vlabel(const char* value);
-  void set_vlabel(const char* value, size_t size);
-  std::string* mutable_vlabel();
-  std::string* release_vlabel();
-  void set_allocated_vlabel(std::string* vlabel);
-  private:
-  const std::string& _internal_vlabel() const;
-  void _internal_set_vlabel(const std::string& value);
-  std::string* _internal_mutable_vlabel();
-  public:
-
-  // uint64 id = 1;
-  void clear_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 id() const;
-  void set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_id() const;
-  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 dim = 2;
-  void clear_dim();
-  ::PROTOBUF_NAMESPACE_ID::uint64 dim() const;
-  void set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_dim() const;
-  void _internal_set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 c_time = 5;
-  void clear_c_time();
-  ::PROTOBUF_NAMESPACE_ID::uint64 c_time() const;
-  void set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_c_time() const;
-  void _internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // uint64 m_time = 6;
-  void clear_m_time();
-  ::PROTOBUF_NAMESPACE_ID::uint64 m_time() const;
-  void set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_m_time() const;
-  void _internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:eraftkv.Vec)
- private:
-  class _Internal;
-
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< double > vdata_;
-  mutable std::atomic<int> _vdata_cached_byte_size_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr vlabel_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 id_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 dim_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 c_time_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 m_time_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -4914,186 +4296,66 @@ inline void SnapshotResp::set_is_last_chunk(bool value) {
 
 // -------------------------------------------------------------------
 
-// KeyRange
+// Slot
 
-// .eraftkv.KeyRangeStatus key_range_status = 1;
-inline void KeyRange::clear_key_range_status() {
-  key_range_status_ = 0;
+// int64 id = 1;
+inline void Slot::clear_id() {
+  id_ = PROTOBUF_LONGLONG(0);
 }
-inline ::eraftkv::KeyRangeStatus KeyRange::_internal_key_range_status() const {
-  return static_cast< ::eraftkv::KeyRangeStatus >(key_range_status_);
+inline ::PROTOBUF_NAMESPACE_ID::int64 Slot::_internal_id() const {
+  return id_;
 }
-inline ::eraftkv::KeyRangeStatus KeyRange::key_range_status() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KeyRange.key_range_status)
-  return _internal_key_range_status();
+inline ::PROTOBUF_NAMESPACE_ID::int64 Slot::id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Slot.id)
+  return _internal_id();
 }
-inline void KeyRange::_internal_set_key_range_status(::eraftkv::KeyRangeStatus value) {
+inline void Slot::_internal_set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
-  key_range_status_ = value;
+  id_ = value;
 }
-inline void KeyRange::set_key_range_status(::eraftkv::KeyRangeStatus value) {
-  _internal_set_key_range_status(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KeyRange.key_range_status)
+inline void Slot::set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Slot.id)
 }
 
-// int64 shard_id = 2;
-inline void KeyRange::clear_shard_id() {
-  shard_id_ = PROTOBUF_LONGLONG(0);
+// .eraftkv.SlotStatus slot_status = 2;
+inline void Slot::clear_slot_status() {
+  slot_status_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 KeyRange::_internal_shard_id() const {
-  return shard_id_;
+inline ::eraftkv::SlotStatus Slot::_internal_slot_status() const {
+  return static_cast< ::eraftkv::SlotStatus >(slot_status_);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 KeyRange::shard_id() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KeyRange.shard_id)
-  return _internal_shard_id();
+inline ::eraftkv::SlotStatus Slot::slot_status() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Slot.slot_status)
+  return _internal_slot_status();
 }
-inline void KeyRange::_internal_set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Slot::_internal_set_slot_status(::eraftkv::SlotStatus value) {
   
-  shard_id_ = value;
+  slot_status_ = value;
 }
-inline void KeyRange::set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_shard_id(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KeyRange.shard_id)
+inline void Slot::set_slot_status(::eraftkv::SlotStatus value) {
+  _internal_set_slot_status(value);
+  // @@protoc_insertion_point(field_set:eraftkv.Slot.slot_status)
 }
 
 // int64 status_modify_time = 3;
-inline void KeyRange::clear_status_modify_time() {
+inline void Slot::clear_status_modify_time() {
   status_modify_time_ = PROTOBUF_LONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 KeyRange::_internal_status_modify_time() const {
+inline ::PROTOBUF_NAMESPACE_ID::int64 Slot::_internal_status_modify_time() const {
   return status_modify_time_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 KeyRange::status_modify_time() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KeyRange.status_modify_time)
+inline ::PROTOBUF_NAMESPACE_ID::int64 Slot::status_modify_time() const {
+  // @@protoc_insertion_point(field_get:eraftkv.Slot.status_modify_time)
   return _internal_status_modify_time();
 }
-inline void KeyRange::_internal_set_status_modify_time(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Slot::_internal_set_status_modify_time(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
   status_modify_time_ = value;
 }
-inline void KeyRange::set_status_modify_time(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Slot::set_status_modify_time(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_status_modify_time(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KeyRange.status_modify_time)
-}
-
-// string start = 4;
-inline void KeyRange::clear_start() {
-  start_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& KeyRange::start() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KeyRange.start)
-  return _internal_start();
-}
-inline void KeyRange::set_start(const std::string& value) {
-  _internal_set_start(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KeyRange.start)
-}
-inline std::string* KeyRange::mutable_start() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.KeyRange.start)
-  return _internal_mutable_start();
-}
-inline const std::string& KeyRange::_internal_start() const {
-  return start_.GetNoArena();
-}
-inline void KeyRange::_internal_set_start(const std::string& value) {
-  
-  start_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void KeyRange::set_start(std::string&& value) {
-  
-  start_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftkv.KeyRange.start)
-}
-inline void KeyRange::set_start(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  start_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftkv.KeyRange.start)
-}
-inline void KeyRange::set_start(const char* value, size_t size) {
-  
-  start_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftkv.KeyRange.start)
-}
-inline std::string* KeyRange::_internal_mutable_start() {
-  
-  return start_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* KeyRange::release_start() {
-  // @@protoc_insertion_point(field_release:eraftkv.KeyRange.start)
-  
-  return start_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void KeyRange::set_allocated_start(std::string* start) {
-  if (start != nullptr) {
-    
-  } else {
-    
-  }
-  start_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), start);
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.KeyRange.start)
-}
-
-// string end = 5;
-inline void KeyRange::clear_end() {
-  end_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& KeyRange::end() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KeyRange.end)
-  return _internal_end();
-}
-inline void KeyRange::set_end(const std::string& value) {
-  _internal_set_end(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KeyRange.end)
-}
-inline std::string* KeyRange::mutable_end() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.KeyRange.end)
-  return _internal_mutable_end();
-}
-inline const std::string& KeyRange::_internal_end() const {
-  return end_.GetNoArena();
-}
-inline void KeyRange::_internal_set_end(const std::string& value) {
-  
-  end_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void KeyRange::set_end(std::string&& value) {
-  
-  end_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftkv.KeyRange.end)
-}
-inline void KeyRange::set_end(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  end_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftkv.KeyRange.end)
-}
-inline void KeyRange::set_end(const char* value, size_t size) {
-  
-  end_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftkv.KeyRange.end)
-}
-inline std::string* KeyRange::_internal_mutable_end() {
-  
-  return end_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* KeyRange::release_end() {
-  // @@protoc_insertion_point(field_release:eraftkv.KeyRange.end)
-  
-  return end_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void KeyRange::set_allocated_end(std::string* end) {
-  if (end != nullptr) {
-    
-  } else {
-    
-  }
-  end_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), end);
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.KeyRange.end)
+  // @@protoc_insertion_point(field_set:eraftkv.Slot.status_modify_time)
 }
 
 // -------------------------------------------------------------------
@@ -5224,64 +4486,43 @@ inline void ShardGroup::set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
   // @@protoc_insertion_point(field_set:eraftkv.ShardGroup.id)
 }
 
-// .eraftkv.KeyRange key_range = 2;
-inline bool ShardGroup::_internal_has_key_range() const {
-  return this != internal_default_instance() && key_range_ != nullptr;
+// repeated .eraftkv.Slot slots = 2;
+inline int ShardGroup::_internal_slots_size() const {
+  return slots_.size();
 }
-inline bool ShardGroup::has_key_range() const {
-  return _internal_has_key_range();
+inline int ShardGroup::slots_size() const {
+  return _internal_slots_size();
 }
-inline void ShardGroup::clear_key_range() {
-  if (GetArenaNoVirtual() == nullptr && key_range_ != nullptr) {
-    delete key_range_;
-  }
-  key_range_ = nullptr;
+inline void ShardGroup::clear_slots() {
+  slots_.Clear();
 }
-inline const ::eraftkv::KeyRange& ShardGroup::_internal_key_range() const {
-  const ::eraftkv::KeyRange* p = key_range_;
-  return p != nullptr ? *p : *reinterpret_cast<const ::eraftkv::KeyRange*>(
-      &::eraftkv::_KeyRange_default_instance_);
+inline ::eraftkv::Slot* ShardGroup::mutable_slots(int index) {
+  // @@protoc_insertion_point(field_mutable:eraftkv.ShardGroup.slots)
+  return slots_.Mutable(index);
 }
-inline const ::eraftkv::KeyRange& ShardGroup::key_range() const {
-  // @@protoc_insertion_point(field_get:eraftkv.ShardGroup.key_range)
-  return _internal_key_range();
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Slot >*
+ShardGroup::mutable_slots() {
+  // @@protoc_insertion_point(field_mutable_list:eraftkv.ShardGroup.slots)
+  return &slots_;
 }
-inline ::eraftkv::KeyRange* ShardGroup::release_key_range() {
-  // @@protoc_insertion_point(field_release:eraftkv.ShardGroup.key_range)
-  
-  ::eraftkv::KeyRange* temp = key_range_;
-  key_range_ = nullptr;
-  return temp;
+inline const ::eraftkv::Slot& ShardGroup::_internal_slots(int index) const {
+  return slots_.Get(index);
 }
-inline ::eraftkv::KeyRange* ShardGroup::_internal_mutable_key_range() {
-  
-  if (key_range_ == nullptr) {
-    auto* p = CreateMaybeMessage<::eraftkv::KeyRange>(GetArenaNoVirtual());
-    key_range_ = p;
-  }
-  return key_range_;
+inline const ::eraftkv::Slot& ShardGroup::slots(int index) const {
+  // @@protoc_insertion_point(field_get:eraftkv.ShardGroup.slots)
+  return _internal_slots(index);
 }
-inline ::eraftkv::KeyRange* ShardGroup::mutable_key_range() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.ShardGroup.key_range)
-  return _internal_mutable_key_range();
+inline ::eraftkv::Slot* ShardGroup::_internal_add_slots() {
+  return slots_.Add();
 }
-inline void ShardGroup::set_allocated_key_range(::eraftkv::KeyRange* key_range) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == nullptr) {
-    delete key_range_;
-  }
-  if (key_range) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
-    if (message_arena != submessage_arena) {
-      key_range = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, key_range, submessage_arena);
-    }
-    
-  } else {
-    
-  }
-  key_range_ = key_range;
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.ShardGroup.key_range)
+inline ::eraftkv::Slot* ShardGroup::add_slots() {
+  // @@protoc_insertion_point(field_add:eraftkv.ShardGroup.slots)
+  return _internal_add_slots();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::Slot >&
+ShardGroup::slots() const {
+  // @@protoc_insertion_point(field_list:eraftkv.ShardGroup.slots)
+  return slots_;
 }
 
 // repeated .eraftkv.Server servers = 3;
@@ -5347,27 +4588,47 @@ inline void ShardGroup::set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
 
 // ClusterConfigChangeReq
 
-// .eraftkv.ClusterConfigChangeType change_type = 1;
+// .eraftkv.ChangeType change_type = 1;
 inline void ClusterConfigChangeReq::clear_change_type() {
   change_type_ = 0;
 }
-inline ::eraftkv::ClusterConfigChangeType ClusterConfigChangeReq::_internal_change_type() const {
-  return static_cast< ::eraftkv::ClusterConfigChangeType >(change_type_);
+inline ::eraftkv::ChangeType ClusterConfigChangeReq::_internal_change_type() const {
+  return static_cast< ::eraftkv::ChangeType >(change_type_);
 }
-inline ::eraftkv::ClusterConfigChangeType ClusterConfigChangeReq::change_type() const {
+inline ::eraftkv::ChangeType ClusterConfigChangeReq::change_type() const {
   // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.change_type)
   return _internal_change_type();
 }
-inline void ClusterConfigChangeReq::_internal_set_change_type(::eraftkv::ClusterConfigChangeType value) {
+inline void ClusterConfigChangeReq::_internal_set_change_type(::eraftkv::ChangeType value) {
   
   change_type_ = value;
 }
-inline void ClusterConfigChangeReq::set_change_type(::eraftkv::ClusterConfigChangeType value) {
+inline void ClusterConfigChangeReq::set_change_type(::eraftkv::ChangeType value) {
   _internal_set_change_type(value);
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.change_type)
 }
 
-// int64 shard_id = 2;
+// .eraftkv.HandleServerType handle_server_type = 2;
+inline void ClusterConfigChangeReq::clear_handle_server_type() {
+  handle_server_type_ = 0;
+}
+inline ::eraftkv::HandleServerType ClusterConfigChangeReq::_internal_handle_server_type() const {
+  return static_cast< ::eraftkv::HandleServerType >(handle_server_type_);
+}
+inline ::eraftkv::HandleServerType ClusterConfigChangeReq::handle_server_type() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.handle_server_type)
+  return _internal_handle_server_type();
+}
+inline void ClusterConfigChangeReq::_internal_set_handle_server_type(::eraftkv::HandleServerType value) {
+  
+  handle_server_type_ = value;
+}
+inline void ClusterConfigChangeReq::set_handle_server_type(::eraftkv::HandleServerType value) {
+  _internal_set_handle_server_type(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.handle_server_type)
+}
+
+// int64 shard_id = 3;
 inline void ClusterConfigChangeReq::clear_shard_id() {
   shard_id_ = PROTOBUF_LONGLONG(0);
 }
@@ -5387,7 +4648,7 @@ inline void ClusterConfigChangeReq::set_shard_id(::PROTOBUF_NAMESPACE_ID::int64 
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.shard_id)
 }
 
-// .eraftkv.Server server = 3;
+// .eraftkv.Server server = 4;
 inline bool ClusterConfigChangeReq::_internal_has_server() const {
   return this != internal_default_instance() && server_ != nullptr;
 }
@@ -5447,7 +4708,7 @@ inline void ClusterConfigChangeReq::set_allocated_server(::eraftkv::Server* serv
   // @@protoc_insertion_point(field_set_allocated:eraftkv.ClusterConfigChangeReq.server)
 }
 
-// int64 config_version = 4;
+// int64 config_version = 5;
 inline void ClusterConfigChangeReq::clear_config_version() {
   config_version_ = PROTOBUF_LONGLONG(0);
 }
@@ -5467,7 +4728,7 @@ inline void ClusterConfigChangeReq::set_config_version(::PROTOBUF_NAMESPACE_ID::
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.config_version)
 }
 
-// int64 op_count = 5;
+// int64 op_count = 6;
 inline void ClusterConfigChangeReq::clear_op_count() {
   op_count_ = PROTOBUF_LONGLONG(0);
 }
@@ -5485,6 +4746,86 @@ inline void ClusterConfigChangeReq::_internal_set_op_count(::PROTOBUF_NAMESPACE_
 inline void ClusterConfigChangeReq::set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_op_count(value);
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.op_count)
+}
+
+// int64 command_id = 7;
+inline void ClusterConfigChangeReq::clear_command_id() {
+  command_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::_internal_command_id() const {
+  return command_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::command_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.command_id)
+  return _internal_command_id();
+}
+inline void ClusterConfigChangeReq::_internal_set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  command_id_ = value;
+}
+inline void ClusterConfigChangeReq::set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_command_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.command_id)
+}
+
+// .eraftkv.ShardGroup shard_group = 8;
+inline bool ClusterConfigChangeReq::_internal_has_shard_group() const {
+  return this != internal_default_instance() && shard_group_ != nullptr;
+}
+inline bool ClusterConfigChangeReq::has_shard_group() const {
+  return _internal_has_shard_group();
+}
+inline void ClusterConfigChangeReq::clear_shard_group() {
+  if (GetArenaNoVirtual() == nullptr && shard_group_ != nullptr) {
+    delete shard_group_;
+  }
+  shard_group_ = nullptr;
+}
+inline const ::eraftkv::ShardGroup& ClusterConfigChangeReq::_internal_shard_group() const {
+  const ::eraftkv::ShardGroup* p = shard_group_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::eraftkv::ShardGroup*>(
+      &::eraftkv::_ShardGroup_default_instance_);
+}
+inline const ::eraftkv::ShardGroup& ClusterConfigChangeReq::shard_group() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.shard_group)
+  return _internal_shard_group();
+}
+inline ::eraftkv::ShardGroup* ClusterConfigChangeReq::release_shard_group() {
+  // @@protoc_insertion_point(field_release:eraftkv.ClusterConfigChangeReq.shard_group)
+  
+  ::eraftkv::ShardGroup* temp = shard_group_;
+  shard_group_ = nullptr;
+  return temp;
+}
+inline ::eraftkv::ShardGroup* ClusterConfigChangeReq::_internal_mutable_shard_group() {
+  
+  if (shard_group_ == nullptr) {
+    auto* p = CreateMaybeMessage<::eraftkv::ShardGroup>(GetArenaNoVirtual());
+    shard_group_ = p;
+  }
+  return shard_group_;
+}
+inline ::eraftkv::ShardGroup* ClusterConfigChangeReq::mutable_shard_group() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.ClusterConfigChangeReq.shard_group)
+  return _internal_mutable_shard_group();
+}
+inline void ClusterConfigChangeReq::set_allocated_shard_group(::eraftkv::ShardGroup* shard_group) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete shard_group_;
+  }
+  if (shard_group) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      shard_group = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, shard_group, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  shard_group_ = shard_group;
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.ClusterConfigChangeReq.shard_group)
 }
 
 // -------------------------------------------------------------------
@@ -5860,527 +5201,9 @@ ClientOperationResp::ops() const {
   return ops_;
 }
 
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
-// SysCatalog
-
-// uint64 vecset_count = 1;
-inline void SysCatalog::clear_vecset_count() {
-  vecset_count_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_vecset_count() const {
-  return vecset_count_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::vecset_count() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.vecset_count)
-  return _internal_vecset_count();
-}
-inline void SysCatalog::_internal_set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  vecset_count_ = value;
-}
-inline void SysCatalog::set_vecset_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_vecset_count(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.vecset_count)
-}
-
-// uint64 max_vecset_id = 2;
-inline void SysCatalog::clear_max_vecset_id() {
-  max_vecset_id_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_max_vecset_id() const {
-  return max_vecset_id_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::max_vecset_id() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.max_vecset_id)
-  return _internal_max_vecset_id();
-}
-inline void SysCatalog::_internal_set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  max_vecset_id_ = value;
-}
-inline void SysCatalog::set_max_vecset_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_max_vecset_id(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.max_vecset_id)
-}
-
-// uint64 mem_used = 3;
-inline void SysCatalog::clear_mem_used() {
-  mem_used_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_mem_used() const {
-  return mem_used_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::mem_used() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.mem_used)
-  return _internal_mem_used();
-}
-inline void SysCatalog::_internal_set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  mem_used_ = value;
-}
-inline void SysCatalog::set_mem_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_mem_used(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.mem_used)
-}
-
-// uint64 disk_used = 4;
-inline void SysCatalog::clear_disk_used() {
-  disk_used_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::_internal_disk_used() const {
-  return disk_used_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 SysCatalog::disk_used() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SysCatalog.disk_used)
-  return _internal_disk_used();
-}
-inline void SysCatalog::_internal_set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  disk_used_ = value;
-}
-inline void SysCatalog::set_disk_used(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_disk_used(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SysCatalog.disk_used)
-}
-
-// map<string, uint64> vecset_name2id = 5;
-inline int SysCatalog::_internal_vecset_name2id_size() const {
-  return vecset_name2id_.size();
-}
-inline int SysCatalog::vecset_name2id_size() const {
-  return _internal_vecset_name2id_size();
-}
-inline void SysCatalog::clear_vecset_name2id() {
-  vecset_name2id_.Clear();
-}
-inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
-SysCatalog::_internal_vecset_name2id() const {
-  return vecset_name2id_.GetMap();
-}
-inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >&
-SysCatalog::vecset_name2id() const {
-  // @@protoc_insertion_point(field_map:eraftkv.SysCatalog.vecset_name2id)
-  return _internal_vecset_name2id();
-}
-inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
-SysCatalog::_internal_mutable_vecset_name2id() {
-  return vecset_name2id_.MutableMap();
-}
-inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::uint64 >*
-SysCatalog::mutable_vecset_name2id() {
-  // @@protoc_insertion_point(field_mutable_map:eraftkv.SysCatalog.vecset_name2id)
-  return _internal_mutable_vecset_name2id();
-}
-
-// -------------------------------------------------------------------
-
-// Vecset
-
-// uint64 id = 1;
-inline void Vecset::clear_id() {
-  id_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_id() const {
-  return id_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::id() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.id)
-  return _internal_id();
-}
-inline void Vecset::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  id_ = value;
-}
-inline void Vecset::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.id)
-}
-
-// string name = 2;
-inline void Vecset::clear_name() {
-  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& Vecset::name() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.name)
-  return _internal_name();
-}
-inline void Vecset::set_name(const std::string& value) {
-  _internal_set_name(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.name)
-}
-inline std::string* Vecset::mutable_name() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.Vecset.name)
-  return _internal_mutable_name();
-}
-inline const std::string& Vecset::_internal_name() const {
-  return name_.GetNoArena();
-}
-inline void Vecset::_internal_set_name(const std::string& value) {
-  
-  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void Vecset::set_name(std::string&& value) {
-  
-  name_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftkv.Vecset.name)
-}
-inline void Vecset::set_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftkv.Vecset.name)
-}
-inline void Vecset::set_name(const char* value, size_t size) {
-  
-  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftkv.Vecset.name)
-}
-inline std::string* Vecset::_internal_mutable_name() {
-  
-  return name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* Vecset::release_name() {
-  // @@protoc_insertion_point(field_release:eraftkv.Vecset.name)
-  
-  return name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void Vecset::set_allocated_name(std::string* name) {
-  if (name != nullptr) {
-    
-  } else {
-    
-  }
-  name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name);
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.Vecset.name)
-}
-
-// uint64 vec_count = 3;
-inline void Vecset::clear_vec_count() {
-  vec_count_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_vec_count() const {
-  return vec_count_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::vec_count() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.vec_count)
-  return _internal_vec_count();
-}
-inline void Vecset::_internal_set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  vec_count_ = value;
-}
-inline void Vecset::set_vec_count(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_vec_count(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.vec_count)
-}
-
-// uint64 max_vec_id = 4;
-inline void Vecset::clear_max_vec_id() {
-  max_vec_id_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_max_vec_id() const {
-  return max_vec_id_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::max_vec_id() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.max_vec_id)
-  return _internal_max_vec_id();
-}
-inline void Vecset::_internal_set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  max_vec_id_ = value;
-}
-inline void Vecset::set_max_vec_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_max_vec_id(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.max_vec_id)
-}
-
-// uint64 used_disk_capacity = 5;
-inline void Vecset::clear_used_disk_capacity() {
-  used_disk_capacity_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_used_disk_capacity() const {
-  return used_disk_capacity_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::used_disk_capacity() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.used_disk_capacity)
-  return _internal_used_disk_capacity();
-}
-inline void Vecset::_internal_set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  used_disk_capacity_ = value;
-}
-inline void Vecset::set_used_disk_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_used_disk_capacity(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.used_disk_capacity)
-}
-
-// uint64 used_mem_capacity = 6;
-inline void Vecset::clear_used_mem_capacity() {
-  used_mem_capacity_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_used_mem_capacity() const {
-  return used_mem_capacity_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::used_mem_capacity() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.used_mem_capacity)
-  return _internal_used_mem_capacity();
-}
-inline void Vecset::_internal_set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  used_mem_capacity_ = value;
-}
-inline void Vecset::set_used_mem_capacity(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_used_mem_capacity(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.used_mem_capacity)
-}
-
-// uint64 c_time = 7;
-inline void Vecset::clear_c_time() {
-  c_time_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_c_time() const {
-  return c_time_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::c_time() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.c_time)
-  return _internal_c_time();
-}
-inline void Vecset::_internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  c_time_ = value;
-}
-inline void Vecset::set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_c_time(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.c_time)
-}
-
-// uint64 m_time = 8;
-inline void Vecset::clear_m_time() {
-  m_time_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::_internal_m_time() const {
-  return m_time_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vecset::m_time() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vecset.m_time)
-  return _internal_m_time();
-}
-inline void Vecset::_internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  m_time_ = value;
-}
-inline void Vecset::set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_m_time(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vecset.m_time)
-}
-
-// -------------------------------------------------------------------
-
-// Vec
-
-// uint64 id = 1;
-inline void Vec::clear_id() {
-  id_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_id() const {
-  return id_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::id() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vec.id)
-  return _internal_id();
-}
-inline void Vec::_internal_set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  id_ = value;
-}
-inline void Vec::set_id(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vec.id)
-}
-
-// uint64 dim = 2;
-inline void Vec::clear_dim() {
-  dim_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_dim() const {
-  return dim_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::dim() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vec.dim)
-  return _internal_dim();
-}
-inline void Vec::_internal_set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  dim_ = value;
-}
-inline void Vec::set_dim(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_dim(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vec.dim)
-}
-
-// repeated double vdata = 3;
-inline int Vec::_internal_vdata_size() const {
-  return vdata_.size();
-}
-inline int Vec::vdata_size() const {
-  return _internal_vdata_size();
-}
-inline void Vec::clear_vdata() {
-  vdata_.Clear();
-}
-inline double Vec::_internal_vdata(int index) const {
-  return vdata_.Get(index);
-}
-inline double Vec::vdata(int index) const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vec.vdata)
-  return _internal_vdata(index);
-}
-inline void Vec::set_vdata(int index, double value) {
-  vdata_.Set(index, value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vec.vdata)
-}
-inline void Vec::_internal_add_vdata(double value) {
-  vdata_.Add(value);
-}
-inline void Vec::add_vdata(double value) {
-  _internal_add_vdata(value);
-  // @@protoc_insertion_point(field_add:eraftkv.Vec.vdata)
-}
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
-Vec::_internal_vdata() const {
-  return vdata_;
-}
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >&
-Vec::vdata() const {
-  // @@protoc_insertion_point(field_list:eraftkv.Vec.vdata)
-  return _internal_vdata();
-}
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
-Vec::_internal_mutable_vdata() {
-  return &vdata_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< double >*
-Vec::mutable_vdata() {
-  // @@protoc_insertion_point(field_mutable_list:eraftkv.Vec.vdata)
-  return _internal_mutable_vdata();
-}
-
-// string vlabel = 4;
-inline void Vec::clear_vlabel() {
-  vlabel_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& Vec::vlabel() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vec.vlabel)
-  return _internal_vlabel();
-}
-inline void Vec::set_vlabel(const std::string& value) {
-  _internal_set_vlabel(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vec.vlabel)
-}
-inline std::string* Vec::mutable_vlabel() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.Vec.vlabel)
-  return _internal_mutable_vlabel();
-}
-inline const std::string& Vec::_internal_vlabel() const {
-  return vlabel_.GetNoArena();
-}
-inline void Vec::_internal_set_vlabel(const std::string& value) {
-  
-  vlabel_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void Vec::set_vlabel(std::string&& value) {
-  
-  vlabel_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftkv.Vec.vlabel)
-}
-inline void Vec::set_vlabel(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  vlabel_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftkv.Vec.vlabel)
-}
-inline void Vec::set_vlabel(const char* value, size_t size) {
-  
-  vlabel_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftkv.Vec.vlabel)
-}
-inline std::string* Vec::_internal_mutable_vlabel() {
-  
-  return vlabel_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* Vec::release_vlabel() {
-  // @@protoc_insertion_point(field_release:eraftkv.Vec.vlabel)
-  
-  return vlabel_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void Vec::set_allocated_vlabel(std::string* vlabel) {
-  if (vlabel != nullptr) {
-    
-  } else {
-    
-  }
-  vlabel_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), vlabel);
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.Vec.vlabel)
-}
-
-// uint64 c_time = 5;
-inline void Vec::clear_c_time() {
-  c_time_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_c_time() const {
-  return c_time_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::c_time() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vec.c_time)
-  return _internal_c_time();
-}
-inline void Vec::_internal_set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  c_time_ = value;
-}
-inline void Vec::set_c_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_c_time(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vec.c_time)
-}
-
-// uint64 m_time = 6;
-inline void Vec::clear_m_time() {
-  m_time_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::_internal_m_time() const {
-  return m_time_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 Vec::m_time() const {
-  // @@protoc_insertion_point(field_get:eraftkv.Vec.m_time)
-  return _internal_m_time();
-}
-inline void Vec::_internal_set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  m_time_ = value;
-}
-inline void Vec::set_m_time(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_m_time(value);
-  // @@protoc_insertion_point(field_set:eraftkv.Vec.m_time)
-}
-
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -6428,20 +5251,25 @@ template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::EntryType>() {
   return ::eraftkv::EntryType_descriptor();
 }
-template <> struct is_proto_enum< ::eraftkv::KeyRangeStatus> : ::std::true_type {};
+template <> struct is_proto_enum< ::eraftkv::SlotStatus> : ::std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::KeyRangeStatus>() {
-  return ::eraftkv::KeyRangeStatus_descriptor();
+inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::SlotStatus>() {
+  return ::eraftkv::SlotStatus_descriptor();
 }
 template <> struct is_proto_enum< ::eraftkv::ServerStatus> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::ServerStatus>() {
   return ::eraftkv::ServerStatus_descriptor();
 }
-template <> struct is_proto_enum< ::eraftkv::ClusterConfigChangeType> : ::std::true_type {};
+template <> struct is_proto_enum< ::eraftkv::ChangeType> : ::std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::ClusterConfigChangeType>() {
-  return ::eraftkv::ClusterConfigChangeType_descriptor();
+inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::ChangeType>() {
+  return ::eraftkv::ChangeType_descriptor();
+}
+template <> struct is_proto_enum< ::eraftkv::HandleServerType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::eraftkv::HandleServerType>() {
+  return ::eraftkv::HandleServerType_descriptor();
 }
 template <> struct is_proto_enum< ::eraftkv::ClientOpType> : ::std::true_type {};
 template <>

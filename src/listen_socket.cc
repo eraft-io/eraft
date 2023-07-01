@@ -1,6 +1,6 @@
 /**
  * @file listen_socket.cc
- * @author your name (you@domain.com)
+ * @author https://github.com/loveyacper/Qedis
  * @brief
  * @version 0.1
  * @date 2023-06-17

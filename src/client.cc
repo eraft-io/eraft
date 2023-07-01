@@ -63,7 +63,7 @@ void Client::OnConnect() {}
 std::string Client::GetLeaderAddr() {
   ClientContext                   context;
   eraftkv::ClusterConfigChangeReq req;
-  req.set_change_type(eraftkv::ClusterConfigChangeType::Query);
+  req.set_change_type(eraftkv::ChangeType::ShardsQuery);
   eraftkv::ClusterConfigChangeResp resp;
   auto                             status =
       this->stubs_.begin()->second->ClusterConfigChange(&context, req, &resp);

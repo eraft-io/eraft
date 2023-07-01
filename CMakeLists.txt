@@ -246,6 +246,21 @@ target_link_libraries(eraftkv_server_test PUBLIC
     ${Protobuf_LIBRARY}
 )
 
+# build eraftmeta_server_tests
+add_executable(eraftmeta_server_test 
+    src/eraftmetaserver_test.cc 
+    src/eraftkv.pb.cc 
+    src/eraftkv.grpc.pb.cc
+    src/util.cc
+)
+target_link_libraries(eraftmeta_server_test PUBLIC
+    ${GTEST_LIBRARIES}
+    rocksdb
+    pthread
+    gRPC::grpc++
+    ${Protobuf_LIBRARY}
+)
+
 add_executable(rocksdb_storage_impl_tests 
     src/rocksdb_storage_impl_tests.cc 
     src/util.cc 
