@@ -917,3 +917,7 @@ std::vector<RaftNode*> RaftServer::GetNodes() {
 int64_t RaftServer::GetLeaderId() {
   return leader_id_;
 }
+
+bool RaftServer::IsLeader() {
+  return leader_id_ == id_;
+}

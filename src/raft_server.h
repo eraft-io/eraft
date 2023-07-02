@@ -401,6 +401,14 @@ class RaftServer {
   int64_t GetLeaderId();
 
   /**
+   * @brief return true is node is leader
+   *
+   * @return true
+   * @return false
+   */
+  bool IsLeader();
+
+  /**
    * @brief
    *
    */

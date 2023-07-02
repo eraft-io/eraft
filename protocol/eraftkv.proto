@@ -168,7 +168,9 @@ message ClientOperationReq {
 }
 
 message ClientOperationResp {
-  repeated KvOpPair ops = 2;
+  repeated KvOpPair ops = 1;
+  ErrorCode  error_code = 2;
+  int64     leader_addr = 3;
 }
 
 service ERaftKv {

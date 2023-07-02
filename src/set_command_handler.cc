@@ -12,14 +12,13 @@
 #include <time.h>
 
 #include "command_handler.h"
+#include "util.h"
 
 EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
                                    Client*                         cli) {
-
   std::string leader_addr;
-  if (cli->leader_addr_ == "") {
-    leader_addr = cli->GetLeaderAddr();
-  }
+  leader_addr = cli->GetLeaderAddr(params[1]);
+  TraceLog("DEBUG: send request to leader ", leader_addr);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;

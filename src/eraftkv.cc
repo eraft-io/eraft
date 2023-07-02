@@ -43,6 +43,7 @@
  * @param argc
  * @param argv (eg: eraftkv 0 /tmp/kv_db0 /tmp/log_db0
  * 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090)
+ * eraftkv [node id] [kv data path] [log data path] [meta server addrs]
  * @return int
  */
 int main(int argc, char* argv[]) {
