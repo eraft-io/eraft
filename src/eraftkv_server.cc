@@ -107,6 +107,12 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   int64_t log_term;
   bool    success;
   TraceLog("DEBUG: ", " recv rw op with ts ", req->op_timestamp());
+  // no leader reject
+  if (!raft_context_->IsLeader()) {
+    resp->set_error_code(eraftkv::ErrorCode::REQUEST_NOT_LEADER_NODE);
+    resp->set_leader_addr(raft_context_->GetLeaderId());
+    return grpc::Status::OK;
+  }
   for (auto kv_op : req->kvs()) {
     if (kv_op.op_type() == eraftkv::ClientOpType::Put) {
       std::mutex map_mutex_;

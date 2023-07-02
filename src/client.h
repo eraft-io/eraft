@@ -17,6 +17,7 @@
 #include "command_handler.h"
 #include "eraftkv.grpc.pb.h"
 #include "eraftkv.pb.h"
+#include "estatus.h"
 #include "proto_parser.h"
 #include "stream_socket.h"
 #include "unbounded_buffer.h"
@@ -43,10 +44,14 @@ class Client : public StreamSocket {
 
   std::string leader_addr_;
 
+  eraftkv::ClusterConfigChangeResp cluster_conf_;
+
  public:
   Client(std::string kv_addrs);
 
-  std::string GetLeaderAddr();
+  std::string GetLeaderAddr(std::string partion_key);
+
+  EStatus SyncClusterConfig();
 
   void _Reset();
 

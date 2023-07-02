@@ -3087,9 +3087,11 @@ class ClientOperationResp :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kOpsFieldNumber = 2,
+    kOpsFieldNumber = 1,
+    kLeaderAddrFieldNumber = 3,
+    kErrorCodeFieldNumber = 2,
   };
-  // repeated .eraftkv.KvOpPair ops = 2;
+  // repeated .eraftkv.KvOpPair ops = 1;
   int ops_size() const;
   private:
   int _internal_ops_size() const;
@@ -3107,12 +3109,32 @@ class ClientOperationResp :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair >&
       ops() const;
 
+  // int64 leader_addr = 3;
+  void clear_leader_addr();
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_addr() const;
+  void set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_leader_addr() const;
+  void _internal_set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // .eraftkv.ErrorCode error_code = 2;
+  void clear_error_code();
+  ::eraftkv::ErrorCode error_code() const;
+  void set_error_code(::eraftkv::ErrorCode value);
+  private:
+  ::eraftkv::ErrorCode _internal_error_code() const;
+  void _internal_set_error_code(::eraftkv::ErrorCode value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.ClientOperationResp)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair > ops_;
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_addr_;
+  int error_code_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -5162,7 +5184,7 @@ ClientOperationReq::kvs() const {
 
 // ClientOperationResp
 
-// repeated .eraftkv.KvOpPair ops = 2;
+// repeated .eraftkv.KvOpPair ops = 1;
 inline int ClientOperationResp::_internal_ops_size() const {
   return ops_.size();
 }
@@ -5199,6 +5221,46 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair >&
 ClientOperationResp::ops() const {
   // @@protoc_insertion_point(field_list:eraftkv.ClientOperationResp.ops)
   return ops_;
+}
+
+// .eraftkv.ErrorCode error_code = 2;
+inline void ClientOperationResp::clear_error_code() {
+  error_code_ = 0;
+}
+inline ::eraftkv::ErrorCode ClientOperationResp::_internal_error_code() const {
+  return static_cast< ::eraftkv::ErrorCode >(error_code_);
+}
+inline ::eraftkv::ErrorCode ClientOperationResp::error_code() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClientOperationResp.error_code)
+  return _internal_error_code();
+}
+inline void ClientOperationResp::_internal_set_error_code(::eraftkv::ErrorCode value) {
+  
+  error_code_ = value;
+}
+inline void ClientOperationResp::set_error_code(::eraftkv::ErrorCode value) {
+  _internal_set_error_code(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClientOperationResp.error_code)
+}
+
+// int64 leader_addr = 3;
+inline void ClientOperationResp::clear_leader_addr() {
+  leader_addr_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClientOperationResp::_internal_leader_addr() const {
+  return leader_addr_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClientOperationResp::leader_addr() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClientOperationResp.leader_addr)
+  return _internal_leader_addr();
+}
+inline void ClientOperationResp::_internal_set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  leader_addr_ = value;
+}
+inline void ClientOperationResp::set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_leader_addr(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClientOperationResp.leader_addr)
 }
 
 #ifdef __GNUC__

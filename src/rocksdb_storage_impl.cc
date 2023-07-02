@@ -119,10 +119,10 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
         eraftkv::ClusterConfigChangeReq* conf_change_req =
             new eraftkv::ClusterConfigChangeReq();
         conf_change_req->ParseFromString(ety->data());
+        raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
+        raft->last_applied_idx_ = ety->id();
         switch (conf_change_req->change_type()) {
           case eraftkv::ChangeType::ServerJoin: {
-            raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
-            raft->last_applied_idx_ = ety->id();
             if (conf_change_req->server().id() != raft->id_) {
               RaftNode* new_node =
                   new RaftNode(conf_change_req->server().id(),
@@ -157,53 +157,69 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             break;
           }
           case eraftkv::ChangeType::ServerLeave: {
-            if (conf_change_req->handle_server_type() ==
-                eraftkv::HandleServerType::DataServer) {
-              raft->log_store_->PersisLogMetaState(raft->commit_idx_,
-                                                   ety->id());
-              raft->last_applied_idx_ = ety->id();
-              auto to_remove_serverid = conf_change_req->server().id();
-              for (auto iter = raft->nodes_.begin(); iter != raft->nodes_.end();
-                   iter++) {
-                if ((*iter)->id == to_remove_serverid &&
-                    conf_change_req->server().id() != raft->id_) {
-                  (*iter)->node_state = NodeStateEnum::Down;
-                }
+            auto to_remove_serverid = conf_change_req->server().id();
+            for (auto iter = raft->nodes_.begin(); iter != raft->nodes_.end();
+                 iter++) {
+              if ((*iter)->id == to_remove_serverid &&
+                  conf_change_req->server().id() != raft->id_) {
+                (*iter)->node_state = NodeStateEnum::Down;
               }
             }
             break;
           }
           case eraftkv::ChangeType::ShardJoin: {
-            if (conf_change_req->handle_server_type() ==
-                eraftkv::HandleServerType::MetaServer) {
-              std::string key;
-              key.append(SG_META_PREFIX);
-              EncodeDecodeTool::PutFixed64(
-                  &key, static_cast<uint64_t>(conf_change_req->shard_id()));
-              auto        sg = conf_change_req->shard_group();
-              std::string val = sg.SerializeAsString();
-              raft->store_->PutKV(key, val);
-            }
+            std::string key;
+            key.append(SG_META_PREFIX);
+            EncodeDecodeTool::PutFixed64(
+                &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+            auto        sg = conf_change_req->shard_group();
+            std::string val = sg.SerializeAsString();
+            raft->store_->PutKV(key, val);
           }
           case eraftkv::ChangeType::ShardLeave: {
-            if (conf_change_req->handle_server_type() ==
-                eraftkv::HandleServerType::MetaServer) {
-              std::string key;
-              key.append(SG_META_PREFIX);
-              EncodeDecodeTool::PutFixed64(
-                  &key, static_cast<uint64_t>(conf_change_req->shard_id()));
-              raft->store_->DelKV(key);
-            }
+            std::string key;
+            key.append(SG_META_PREFIX);
+            EncodeDecodeTool::PutFixed64(
+                &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+            raft->store_->DelKV(key);
           }
           case eraftkv::ChangeType::SlotMove: {
+            auto        sg = conf_change_req->shard_group();
+            std::string key = SG_META_PREFIX;
+            EncodeDecodeTool::PutFixed64(
+                &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+            auto value = raft->store_->GetKV(key);
+            if (!value.empty()) {
+              eraftkv::ShardGroup* old_sg = new eraftkv::ShardGroup();
+              old_sg->ParseFromString(value);
+              // move slot to new sg
+              if (sg.id() == old_sg->id()) {
+                for (auto new_slot : sg.slots()) {
+                  // check if slot already exists
+                  bool slot_already_exists = false;
+                  for (auto old_slot : old_sg->slots()) {
+                    if (old_slot.id() == new_slot.id()) {
+                      slot_already_exists = true;
+                    }
+                  }
+                  // add slot to sg
+                  if (!slot_already_exists) {
+                    auto add_slot = old_sg->add_slots();
+                    add_slot->CopyFrom(new_slot);
+                  }
+                }
+                // write back to db
+                EStatus st =
+                    raft->store_->PutKV(key, old_sg->SerializeAsString());
+                assert(st == EStatus::kOk);
+              }
+            }
             break;
           }
           case eraftkv::ChangeType::ShardsQuery: {
             break;
           }
           default: {
-            raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
-            raft->last_applied_idx_ = ety->id();
             break;
           }
         }

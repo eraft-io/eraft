@@ -41,15 +41,18 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
   return static_cast<PacketLength>(bytes);
 }
 
-Client::Client(std::string kv_addrs) : leader_addr_("") {
-  // init stub to kv server node
-  auto kv_node_addrs = StringUtil::Split(kv_addrs, ',');
-  for (auto kv_node_addr : kv_node_addrs) {
+Client::Client(std::string meta_addrs) : leader_addr_("") {
+  // init stub to meta server node
+  auto meta_node_addrs = StringUtil::Split(meta_addrs, ',');
+  for (auto meta_node_addr : meta_node_addrs) {
+    TraceLog("DEBUG: init rpc link to ", meta_node_addr);
     auto chan_ =
-        grpc::CreateChannel(kv_node_addr, grpc::InsecureChannelCredentials());
+        grpc::CreateChannel(meta_node_addr, grpc::InsecureChannelCredentials());
     std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
-    this->stubs_[kv_node_addr] = std::move(stub_);
+    this->stubs_[meta_node_addr] = std::move(stub_);
   }
+  // sync config
+  SyncClusterConfig();
   _Reset();
 }
 
@@ -60,19 +63,52 @@ void Client::_Reset() {
 
 void Client::OnConnect() {}
 
-std::string Client::GetLeaderAddr() {
+std::string Client::GetLeaderAddr(std::string partion_key) {
+  std::string leader_address;
+  int64_t     key_slot = -1;
+  key_slot = HashUtil::CRC64(0, partion_key.c_str(), partion_key.size()) % 1024;
+  TraceLog("DEBUG: partion key " + partion_key + " with slot ", key_slot);
+  for (auto sg : cluster_conf_.shard_group()) {
+    for (auto sl : sg.slots()) {
+      if (key_slot == sl.id()) {
+        // find sg leader addr
+        for (auto server : sg.servers()) {
+          if (server.id() == sg.leader_id()) {
+            ClientContext                   context;
+            eraftkv::ClusterConfigChangeReq req;
+            req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
+            eraftkv::ClusterConfigChangeResp resp;
+            auto status = stubs_[server.address()]->ClusterConfigChange(
+                &context, req, &resp);
+            for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
+              if (resp.shard_group(0).leader_id() ==
+                  resp.shard_group(0).servers(i).id()) {
+                leader_address = resp.shard_group(0).servers(i).address();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return leader_address;
+}
+
+EStatus Client::SyncClusterConfig() {
   ClientContext                   context;
   eraftkv::ClusterConfigChangeReq req;
   req.set_change_type(eraftkv::ChangeType::ShardsQuery);
-  eraftkv::ClusterConfigChangeResp resp;
-  auto                             status =
-      this->stubs_.begin()->second->ClusterConfigChange(&context, req, &resp);
-  std::string leader_addr = "";
-  for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
-    if (resp.shard_group(0).leader_id() ==
-        resp.shard_group(0).servers(i).id()) {
-      leader_addr = resp.shard_group(0).servers(i).address();
+  auto status_ = this->stubs_.begin()->second->ClusterConfigChange(
+      &context, req, &cluster_conf_);
+  for (auto sg : cluster_conf_.shard_group()) {
+    for (auto server : sg.servers()) {
+      auto chan_ = grpc::CreateChannel(server.address(),
+                                       grpc::InsecureChannelCredentials());
+      std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
+      this->stubs_[server.address()] = std::move(stub_);
     }
   }
-  return leader_addr;
+
+  return status_.ok() ? EStatus::kOk : EStatus::kError;
 }

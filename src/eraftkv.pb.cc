@@ -477,6 +477,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftkv_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::eraftkv::ClientOperationResp, ops_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::ClientOperationResp, error_code_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::ClientOperationResp, leader_addr_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::eraftkv::RequestVoteReq)},
@@ -565,30 +567,32 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\t\022\r\n\005value\030\003 \001(\t\022\017\n\007success\030\004 \001(\010\022\020\n\010op_"
   "count\030\005 \001(\003\"J\n\022ClientOperationReq\022\024\n\014op_"
   "timestamp\030\001 \001(\004\022\036\n\003kvs\030\002 \003(\0132\021.eraftkv.K"
-  "vOpPair\"5\n\023ClientOperationResp\022\036\n\003ops\030\002 "
-  "\003(\0132\021.eraftkv.KvOpPair*O\n\tErrorCode\022\033\n\027R"
-  "EQUEST_NOT_LEADER_NODE\020\000\022\020\n\014NODE_IS_DOWN"
-  "\020\001\022\023\n\017REQUEST_TIMEOUT\020\002*1\n\tEntryType\022\n\n\006"
-  "Normal\020\000\022\016\n\nConfChange\020\001\022\010\n\004NoOp\020\002*A\n\nSl"
-  "otStatus\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\t"
-  "Importing\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n"
-  "\002Up\020\000\022\010\n\004Down\020\001*\222\001\n\nChangeType\022\017\n\013Cluste"
-  "rInit\020\000\022\r\n\tShardJoin\020\001\022\016\n\nShardLeave\020\002\022\017"
-  "\n\013ShardsQuery\020\003\022\014\n\010SlotMove\020\004\022\016\n\nServerJ"
-  "oin\020\005\022\017\n\013ServerLeave\020\006\022\024\n\020MetaMembersQue"
-  "ry\020\007*2\n\020HandleServerType\022\016\n\nMetaServer\020\000"
-  "\022\016\n\nDataServer\020\001*=\n\014ClientOpType\022\010\n\004Noop"
-  "\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042"
-  "\367\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv.Req"
-  "uestVoteReq\032\030.eraftkv.RequestVoteResp\022F\n"
-  "\rAppendEntries\022\031.eraftkv.AppendEntriesRe"
-  "q\032\032.eraftkv.AppendEntriesResp\0227\n\010Snapsho"
-  "t\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Snapsh"
-  "otResp\022O\n\022ProcessRWOperation\022\033.eraftkv.C"
-  "lientOperationReq\032\034.eraftkv.ClientOperat"
-  "ionResp\022X\n\023ClusterConfigChange\022\037.eraftkv"
-  ".ClusterConfigChangeReq\032 .eraftkv.Cluste"
-  "rConfigChangeRespb\006proto3"
+  "vOpPair\"r\n\023ClientOperationResp\022\036\n\003ops\030\001 "
+  "\003(\0132\021.eraftkv.KvOpPair\022&\n\nerror_code\030\002 \001"
+  "(\0162\022.eraftkv.ErrorCode\022\023\n\013leader_addr\030\003 "
+  "\001(\003*O\n\tErrorCode\022\033\n\027REQUEST_NOT_LEADER_N"
+  "ODE\020\000\022\020\n\014NODE_IS_DOWN\020\001\022\023\n\017REQUEST_TIMEO"
+  "UT\020\002*1\n\tEntryType\022\n\n\006Normal\020\000\022\016\n\nConfCha"
+  "nge\020\001\022\010\n\004NoOp\020\002*A\n\nSlotStatus\022\013\n\007Running"
+  "\020\000\022\r\n\tMigrating\020\001\022\r\n\tImporting\020\002\022\010\n\004Init"
+  "\020\003* \n\014ServerStatus\022\006\n\002Up\020\000\022\010\n\004Down\020\001*\222\001\n"
+  "\nChangeType\022\017\n\013ClusterInit\020\000\022\r\n\tShardJoi"
+  "n\020\001\022\016\n\nShardLeave\020\002\022\017\n\013ShardsQuery\020\003\022\014\n\010"
+  "SlotMove\020\004\022\016\n\nServerJoin\020\005\022\017\n\013ServerLeav"
+  "e\020\006\022\024\n\020MetaMembersQuery\020\007*2\n\020HandleServe"
+  "rType\022\016\n\nMetaServer\020\000\022\016\n\nDataServer\020\001*=\n"
+  "\014ClientOpType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020"
+  "\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv\022@\n\013Requ"
+  "estVote\022\027.eraftkv.RequestVoteReq\032\030.eraft"
+  "kv.RequestVoteResp\022F\n\rAppendEntries\022\031.er"
+  "aftkv.AppendEntriesReq\032\032.eraftkv.AppendE"
+  "ntriesResp\0227\n\010Snapshot\022\024.eraftkv.Snapsho"
+  "tReq\032\025.eraftkv.SnapshotResp\022O\n\022ProcessRW"
+  "Operation\022\033.eraftkv.ClientOperationReq\032\034"
+  ".eraftkv.ClientOperationResp\022X\n\023ClusterC"
+  "onfigChange\022\037.eraftkv.ClusterConfigChang"
+  "eReq\032 .eraftkv.ClusterConfigChangeRespb\006"
+  "proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
@@ -613,7 +617,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2865,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2926,
   &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
   file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
@@ -5194,11 +5198,17 @@ ClientOperationResp::ClientOperationResp(const ClientOperationResp& from)
       _internal_metadata_(nullptr),
       ops_(from.ops_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&leader_addr_, &from.leader_addr_,
+    static_cast<size_t>(reinterpret_cast<char*>(&error_code_) -
+    reinterpret_cast<char*>(&leader_addr_)) + sizeof(error_code_));
   // @@protoc_insertion_point(copy_constructor:eraftkv.ClientOperationResp)
 }
 
 void ClientOperationResp::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ClientOperationResp_eraftkv_2eproto.base);
+  ::memset(&leader_addr_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&error_code_) -
+      reinterpret_cast<char*>(&leader_addr_)) + sizeof(error_code_));
 }
 
 ClientOperationResp::~ClientOperationResp() {
@@ -5225,6 +5235,9 @@ void ClientOperationResp::Clear() {
   (void) cached_has_bits;
 
   ops_.Clear();
+  ::memset(&leader_addr_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&error_code_) -
+      reinterpret_cast<char*>(&leader_addr_)) + sizeof(error_code_));
   _internal_metadata_.Clear();
 }
 
@@ -5235,16 +5248,31 @@ const char* ClientOperationResp::_InternalParse(const char* ptr, ::PROTOBUF_NAME
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // repeated .eraftkv.KvOpPair ops = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+      // repeated .eraftkv.KvOpPair ops = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           ptr -= 1;
           do {
             ptr += 1;
             ptr = ctx->ParseMessage(_internal_add_ops(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      // .eraftkv.ErrorCode error_code = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_error_code(static_cast<::eraftkv::ErrorCode>(val));
+        } else goto handle_unusual;
+        continue;
+      // int64 leader_addr = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          leader_addr_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
         } else goto handle_unusual;
         continue;
       default: {
@@ -5273,12 +5301,25 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated .eraftkv.KvOpPair ops = 2;
+  // repeated .eraftkv.KvOpPair ops = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->_internal_ops_size()); i < n; i++) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(2, this->_internal_ops(i), target, stream);
+      InternalWriteMessage(1, this->_internal_ops(i), target, stream);
+  }
+
+  // .eraftkv.ErrorCode error_code = 2;
+  if (this->error_code() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      2, this->_internal_error_code(), target);
+  }
+
+  // int64 leader_addr = 3;
+  if (this->leader_addr() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(3, this->_internal_leader_addr(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -5297,11 +5338,24 @@ size_t ClientOperationResp::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated .eraftkv.KvOpPair ops = 2;
+  // repeated .eraftkv.KvOpPair ops = 1;
   total_size += 1UL * this->_internal_ops_size();
   for (const auto& msg : this->ops_) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
+  // int64 leader_addr = 3;
+  if (this->leader_addr() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_leader_addr());
+  }
+
+  // .eraftkv.ErrorCode error_code = 2;
+  if (this->error_code() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_error_code());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -5336,6 +5390,12 @@ void ClientOperationResp::MergeFrom(const ClientOperationResp& from) {
   (void) cached_has_bits;
 
   ops_.MergeFrom(from.ops_);
+  if (from.leader_addr() != 0) {
+    _internal_set_leader_addr(from._internal_leader_addr());
+  }
+  if (from.error_code() != 0) {
+    _internal_set_error_code(from._internal_error_code());
+  }
 }
 
 void ClientOperationResp::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -5360,6 +5420,8 @@ void ClientOperationResp::InternalSwap(ClientOperationResp* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   ops_.InternalSwap(&other->ops_);
+  swap(leader_addr_, other->leader_addr_);
+  swap(error_code_, other->error_code_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ClientOperationResp::GetMetadata() const {

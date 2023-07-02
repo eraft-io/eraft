@@ -144,7 +144,9 @@ class StringUtil {
     }
     return elems;
   }
+};
 
-  StringUtil() = delete;
-  ~StringUtil() = delete;
+class HashUtil {
+ public:
+  static uint64_t CRC64(uint64_t crc, const char* s, uint64_t l);
 };
