@@ -46,8 +46,10 @@ class Client : public StreamSocket {
 
   eraftkv::ClusterConfigChangeResp cluster_conf_;
 
+  std::string meta_addrs_;
+
  public:
-  Client(std::string kv_addrs);
+  Client(std::string meta_addrs);
 
   std::string GetLeaderAddr(std::string partion_key);
 

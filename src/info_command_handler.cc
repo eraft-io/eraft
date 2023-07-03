@@ -10,6 +10,7 @@
  */
 
 #include "command_handler.h"
+#include "util.h"
 
 EStatus InfoCommandHandler::Execute(const std::vector<std::string>& params,
                                     Client*                         cli) {
@@ -17,11 +18,11 @@ EStatus InfoCommandHandler::Execute(const std::vector<std::string>& params,
   eraftkv::ClusterConfigChangeReq req;
   req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
   eraftkv::ClusterConfigChangeResp resp;
-
-  auto status =
-      cli->stubs_.begin()->second->ClusterConfigChange(&context, req, &resp);
+  auto status = cli->stubs_[StringUtil::Split(cli->meta_addrs_, ',')[0]]
+                    ->ClusterConfigChange(&context, req, &resp);
   std::string info_str;
   for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
+    info_str += "meta server: \r\n";
     info_str += "server_id: ";
     info_str += std::to_string(resp.shard_group(0).servers(i).id());
     info_str += ",server_address: ";
