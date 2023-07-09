@@ -50,7 +50,7 @@ Client::Client(std::string meta_addrs)
     auto chan_ =
         grpc::CreateChannel(meta_node_addr, grpc::InsecureChannelCredentials());
     std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
-    this->stubs_[meta_node_addr] = std::move(stub_);
+    this->meta_stubs_[meta_node_addr] = std::move(stub_);
   }
   // sync config
   SyncClusterConfig();
@@ -74,42 +74,50 @@ std::string Client::GetLeaderAddr(std::string partion_key) {
       if (key_slot == sl.id()) {
         // find sg leader addr
         for (auto server : sg.servers()) {
-          if (server.id() == sg.leader_id()) {
-            ClientContext                   context;
-            eraftkv::ClusterConfigChangeReq req;
-            req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
-            eraftkv::ClusterConfigChangeResp resp;
-            auto status = stubs_[server.address()]->ClusterConfigChange(
-                &context, req, &resp);
-            for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
-              if (resp.shard_group(0).leader_id() ==
-                  resp.shard_group(0).servers(i).id()) {
-                leader_address = resp.shard_group(0).servers(i).address();
-              }
+          ClientContext                         context;
+          std::chrono::system_clock::time_point deadline =
+              std::chrono::system_clock::now() + std::chrono::seconds(1);
+          context.set_deadline(deadline);
+          eraftkv::ClusterConfigChangeReq req;
+          req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
+          eraftkv::ClusterConfigChangeResp resp;
+          auto status = stubs_[server.address()]->ClusterConfigChange(
+              &context, req, &resp);
+          if (!status.ok()) {
+            continue;
+          }
+          for (int i = 0; i < resp.shard_group(0).servers_size(); i++) {
+            if (resp.shard_group(0).leader_id() ==
+                resp.shard_group(0).servers(i).id()) {
+              leader_address = resp.shard_group(0).servers(i).address();
             }
           }
         }
       }
     }
   }
-
   return leader_address;
 }
 
 EStatus Client::SyncClusterConfig() {
-  ClientContext                   context;
-  eraftkv::ClusterConfigChangeReq req;
-  req.set_change_type(eraftkv::ChangeType::ShardsQuery);
-  auto status_ = this->stubs_.begin()->second->ClusterConfigChange(
-      &context, req, &cluster_conf_);
-  for (auto sg : cluster_conf_.shard_group()) {
-    for (auto server : sg.servers()) {
-      auto chan_ = grpc::CreateChannel(server.address(),
-                                       grpc::InsecureChannelCredentials());
-      std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
-      this->stubs_[server.address()] = std::move(stub_);
+  for (auto it = this->meta_stubs_.begin(); it != this->meta_stubs_.end();
+       it++) {
+    ClientContext                   context;
+    eraftkv::ClusterConfigChangeReq req;
+    req.set_change_type(eraftkv::ChangeType::ShardsQuery);
+    auto status_ =
+        it->second->ClusterConfigChange(&context, req, &cluster_conf_);
+    if (!status_.ok()) {
+      continue;
+    }
+    for (auto sg : cluster_conf_.shard_group()) {
+      for (auto server : sg.servers()) {
+        auto chan_ = grpc::CreateChannel(server.address(),
+                                         grpc::InsecureChannelCredentials());
+        std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
+        this->stubs_[server.address()] = std::move(stub_);
+      }
     }
   }
-
-  return status_.ok() ? EStatus::kOk : EStatus::kError;
+  return EStatus::kOk;
 }
