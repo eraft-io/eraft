@@ -76,7 +76,7 @@ std::string Client::GetLeaderAddr(std::string partion_key) {
         for (auto server : sg.servers()) {
           ClientContext                         context;
           std::chrono::system_clock::time_point deadline =
-              std::chrono::system_clock::now() + std::chrono::seconds(1);
+              std::chrono::system_clock::now() + std::chrono::milliseconds(50);
           context.set_deadline(deadline);
           eraftkv::ClusterConfigChangeReq req;
           req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
@@ -103,6 +103,9 @@ EStatus Client::SyncClusterConfig() {
   for (auto it = this->meta_stubs_.begin(); it != this->meta_stubs_.end();
        it++) {
     ClientContext                   context;
+          std::chrono::system_clock::time_point deadline =
+              std::chrono::system_clock::now() + std::chrono::milliseconds(50);
+          context.set_deadline(deadline);
     eraftkv::ClusterConfigChangeReq req;
     req.set_change_type(eraftkv::ChangeType::ShardsQuery);
     auto status_ =
@@ -117,6 +120,9 @@ EStatus Client::SyncClusterConfig() {
         std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
         this->stubs_[server.address()] = std::move(stub_);
       }
+    }
+    if (status_.ok()) {
+      return EStatus::kOk;
     }
   }
   return EStatus::kOk;
