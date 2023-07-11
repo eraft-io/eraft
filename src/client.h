@@ -42,12 +42,16 @@ class Client : public StreamSocket {
 
   std::map<std::string, std::unique_ptr<ERaftKv::Stub> > stubs_;
 
+  std::map<std::string, std::unique_ptr<ERaftKv::Stub> > meta_stubs_;
+
   std::string leader_addr_;
 
   eraftkv::ClusterConfigChangeResp cluster_conf_;
 
+  std::string meta_addrs_;
+
  public:
-  Client(std::string kv_addrs);
+  Client(std::string meta_addrs);
 
   std::string GetLeaderAddr(std::string partion_key);
 
