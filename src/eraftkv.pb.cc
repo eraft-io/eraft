@@ -575,24 +575,24 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "UT\020\002*1\n\tEntryType\022\n\n\006Normal\020\000\022\016\n\nConfCha"
   "nge\020\001\022\010\n\004NoOp\020\002*A\n\nSlotStatus\022\013\n\007Running"
   "\020\000\022\r\n\tMigrating\020\001\022\r\n\tImporting\020\002\022\010\n\004Init"
-  "\020\003* \n\014ServerStatus\022\006\n\002Up\020\000\022\010\n\004Down\020\001*\222\001\n"
+  "\020\003* \n\014ServerStatus\022\006\n\002Up\020\000\022\010\n\004Down\020\001*\216\001\n"
   "\nChangeType\022\017\n\013ClusterInit\020\000\022\r\n\tShardJoi"
   "n\020\001\022\016\n\nShardLeave\020\002\022\017\n\013ShardsQuery\020\003\022\014\n\010"
   "SlotMove\020\004\022\016\n\nServerJoin\020\005\022\017\n\013ServerLeav"
-  "e\020\006\022\024\n\020MetaMembersQuery\020\007*2\n\020HandleServe"
-  "rType\022\016\n\nMetaServer\020\000\022\016\n\nDataServer\020\001*=\n"
-  "\014ClientOpType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020"
-  "\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv\022@\n\013Requ"
-  "estVote\022\027.eraftkv.RequestVoteReq\032\030.eraft"
-  "kv.RequestVoteResp\022F\n\rAppendEntries\022\031.er"
-  "aftkv.AppendEntriesReq\032\032.eraftkv.AppendE"
-  "ntriesResp\0227\n\010Snapshot\022\024.eraftkv.Snapsho"
-  "tReq\032\025.eraftkv.SnapshotResp\022O\n\022ProcessRW"
-  "Operation\022\033.eraftkv.ClientOperationReq\032\034"
-  ".eraftkv.ClientOperationResp\022X\n\023ClusterC"
-  "onfigChange\022\037.eraftkv.ClusterConfigChang"
-  "eReq\032 .eraftkv.ClusterConfigChangeRespb\006"
-  "proto3"
+  "e\020\006\022\020\n\014MembersQuery\020\007*2\n\020HandleServerTyp"
+  "e\022\016\n\nMetaServer\020\000\022\016\n\nDataServer\020\001*=\n\014Cli"
+  "entOpType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n"
+  "\003Del\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv\022@\n\013RequestV"
+  "ote\022\027.eraftkv.RequestVoteReq\032\030.eraftkv.R"
+  "equestVoteResp\022F\n\rAppendEntries\022\031.eraftk"
+  "v.AppendEntriesReq\032\032.eraftkv.AppendEntri"
+  "esResp\0227\n\010Snapshot\022\024.eraftkv.SnapshotReq"
+  "\032\025.eraftkv.SnapshotResp\022O\n\022ProcessRWOper"
+  "ation\022\033.eraftkv.ClientOperationReq\032\034.era"
+  "ftkv.ClientOperationResp\022X\n\023ClusterConfi"
+  "gChange\022\037.eraftkv.ClusterConfigChangeReq"
+  "\032 .eraftkv.ClusterConfigChangeRespb\006prot"
+  "o3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
@@ -617,7 +617,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2926,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2922,
   &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
   file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,

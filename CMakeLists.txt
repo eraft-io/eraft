@@ -167,6 +167,7 @@ list(APPEND eraftvdb_sources src/eraftkv.pb.cc)
 list(APPEND eraftvdb_sources src/info_command_handler.cc)
 list(APPEND eraftvdb_sources src/set_command_handler.cc)
 list(APPEND eraftvdb_sources src/get_command_handler.cc)
+list(APPEND eraftvdb_sources src/shardgroup_command_handler.cc)
 list(APPEND eraftvdb_sources src/unknow_command_handler.cc)
 list(APPEND eraftvdb_sources src/util.cc)
 

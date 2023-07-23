@@ -120,7 +120,7 @@ enum ChangeType {
   SlotMove = 4;
   ServerJoin = 5;
   ServerLeave = 6;
-  MetaMembersQuery = 7;
+  MembersQuery = 7;
 }
 
 enum HandleServerType {

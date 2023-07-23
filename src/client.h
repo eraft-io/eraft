@@ -32,6 +32,7 @@ class Client : public StreamSocket {
   friend class SetCommandHandler;
   friend class GetCommandHandler;
   friend class UnKnowCommandHandler;
+  friend class ShardGroupCommandHandler;
 
  private:
   PacketLength _HandlePacket(const char *msg, std::size_t len) override;
@@ -40,7 +41,7 @@ class Client : public StreamSocket {
 
   ProtoParser parser_;
 
-  std::map<std::string, std::unique_ptr<ERaftKv::Stub> > stubs_;
+  std::map<std::string, std::unique_ptr<ERaftKv::Stub> > kv_stubs_;
 
   std::map<std::string, std::unique_ptr<ERaftKv::Stub> > meta_stubs_;
 
@@ -53,7 +54,20 @@ class Client : public StreamSocket {
  public:
   Client(std::string meta_addrs);
 
-  std::string GetLeaderAddr(std::string partion_key);
+  /**
+   * @brief Get the kv shard group leader address
+   *
+   * @param partion_key
+   * @return std::string
+   */
+  std::string GetShardLeaderAddr(std::string partion_key);
+
+  /**
+   * @brief Get the meta server leader address
+   *
+   * @return std::string
+   */
+  std::string GetMetaLeaderAddr();
 
   EStatus SyncClusterConfig();
 

@@ -17,10 +17,10 @@ EStatus InfoCommandHandler::Execute(const std::vector<std::string>& params,
   for (auto it = cli->meta_stubs_.begin(); it != cli->meta_stubs_.end(); it++) {
     ClientContext                         context;
     std::chrono::system_clock::time_point deadline =
-        std::chrono::system_clock::now() + std::chrono::seconds(1);
+        std::chrono::system_clock::now() + std::chrono::milliseconds(50);
     context.set_deadline(deadline);
     eraftkv::ClusterConfigChangeReq req;
-    req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
+    req.set_change_type(eraftkv::ChangeType::MembersQuery);
     eraftkv::ClusterConfigChangeResp resp;
     auto status = it->second->ClusterConfigChange(&context, req, &resp);
     if (!status.ok()) {
