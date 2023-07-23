@@ -237,13 +237,13 @@ enum ChangeType : int {
   SlotMove = 4,
   ServerJoin = 5,
   ServerLeave = 6,
-  MetaMembersQuery = 7,
+  MembersQuery = 7,
   ChangeType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ChangeType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ChangeType_IsValid(int value);
 constexpr ChangeType ChangeType_MIN = ClusterInit;
-constexpr ChangeType ChangeType_MAX = MetaMembersQuery;
+constexpr ChangeType ChangeType_MAX = MembersQuery;
 constexpr int ChangeType_ARRAYSIZE = ChangeType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ChangeType_descriptor();

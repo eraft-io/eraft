@@ -17,7 +17,7 @@
 EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
                                    Client*                         cli) {
   std::string leader_addr;
-  leader_addr = cli->GetLeaderAddr(params[1]);
+  leader_addr = cli->GetShardLeaderAddr(params[1]);
   TraceLog("DEBUG: send request to leader ", leader_addr);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
@@ -27,8 +27,8 @@ EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
   kv_pair_->set_value(params[2]);
   kv_pair_->set_op_type(eraftkv::ClientOpType::Put);
   std::string reply_buf;
-  if (cli->stubs_[leader_addr] != nullptr) {
-    auto status_ = cli->stubs_[leader_addr]->ProcessRWOperation(
+  if (cli->kv_stubs_[leader_addr] != nullptr) {
+    auto status_ = cli->kv_stubs_[leader_addr]->ProcessRWOperation(
         &op_context, op_req, &op_resp);
     if (status_.ok()) {
       reply_buf += "+OK\r\n";

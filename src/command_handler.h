@@ -57,4 +57,11 @@ class UnKnowCommandHandler : public CommandHandler {
   ~UnKnowCommandHandler();
 };
 
+class ShardGroupCommandHandler : public CommandHandler {
+ public:
+  EStatus Execute(const std::vector<std::string>& params, Client* cli);
+  ShardGroupCommandHandler();
+  ~ShardGroupCommandHandler();
+};
+
 #endif

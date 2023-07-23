@@ -2,7 +2,7 @@
 
 ERaftKDB is a distributed database that supports the Redis RESP protocol, and uses ERaftKV as the distributed storage layer.
 
-![eraft-kdb](doc/eraft-kdb.png)
+![eraft-kdb](eraft-kdb.png)
 
 ## ERaftKV
 
@@ -165,10 +165,3 @@ If you want to build image youtself
 ```
 make image
 ```
-
-# Documentation
-[ERaftKV Documentation](doc/eraft-kdb.md)
-
-# Contributing
-
-You can quickly participate in development by following the instructions in [CONTROLUTING.md](https://github.com/eraft-io/eraft/blob/master/CONTRIBUTING.md)

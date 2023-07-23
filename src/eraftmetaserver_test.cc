@@ -56,7 +56,7 @@ TEST(EraftMetaServerTests, TestMetaBasicOp) {
   std::unique_ptr<ERaftKv::Stub>  stub_(ERaftKv::NewStub(chan_));
   ClientContext                   qm_conext;
   eraftkv::ClusterConfigChangeReq qm_req;
-  qm_req.set_change_type(eraftkv::ChangeType::MetaMembersQuery);
+  qm_req.set_change_type(eraftkv::ChangeType::MembersQuery);
   eraftkv::ClusterConfigChangeResp qm_resp;
   auto        status = stub_->ClusterConfigChange(&qm_conext, qm_req, &qm_resp);
   std::string leader_address = "";

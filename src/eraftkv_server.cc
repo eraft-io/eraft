@@ -183,7 +183,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
     return grpc::Status::OK;
   }
 
-  if (conf_change_req->change_type() == eraftkv::ChangeType::MetaMembersQuery) {
+  if (conf_change_req->change_type() == eraftkv::ChangeType::MembersQuery) {
     resp->set_success(true);
     auto new_sg = resp->add_shard_group();
     new_sg->set_id(0);
