@@ -35,7 +35,7 @@ class Client : public StreamSocket {
   friend class ShardGroupCommandHandler;
 
  private:
-  PacketLength _HandlePacket(const char *msg, std::size_t len) override;
+  PacketLength _HandlePacket(const char* msg, std::size_t len) override;
 
   UnboundedBuffer reply_;
 
@@ -60,7 +60,8 @@ class Client : public StreamSocket {
    * @param partion_key
    * @return std::string
    */
-  std::string GetShardLeaderAddr(std::string partion_key);
+  std::string GetShardLeaderAddrAndSlot(std::string partion_key,
+                                        uint16_t*   slot);
 
   /**
    * @brief Get the meta server leader address

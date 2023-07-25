@@ -93,7 +93,8 @@ std::string Client::GetMetaLeaderAddr() {
   return leader_address;
 }
 
-std::string Client::GetShardLeaderAddr(std::string partion_key) {
+std::string Client::GetShardLeaderAddrAndSlot(std::string partion_key,
+                                              uint16_t   *slot) {
   std::string leader_address;
   int64_t     key_slot = -1;
   key_slot = HashUtil::CRC64(0, partion_key.c_str(), partion_key.size()) % 1024;

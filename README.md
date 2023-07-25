@@ -50,49 +50,21 @@ sudo make run-demo
 command output
 ```
 docker run --name kvserver-node1 --network mytestnetwork --ip 172.18.0.10 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-eca081a545a9eb8dbf9b05c2a307f38c74b4fea2910776e85c806c1b70cedf20
+bef74b85fcf9c0a2dedb15399b1f53010791e329f0c60d69fcd097e0843cbb86
 sleep 2
 docker run --name kvserver-node2 --network mytestnetwork --ip 172.18.0.11 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-74d14edf114f47889b50f0ed20ea810af7cd383de26ebdd3d1e36078290674e7
+333c02093fcb8c974cc1dc491fc7d2e19f474e3fda354fc130cf6be6d8920c85
 docker run --name kvserver-node3 --network mytestnetwork --ip 172.18.0.12 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-36bd437e67d00f019732e95e31b7f7ab9c19739a0f10676f31e9c0a7fad98a6c
+9856291dd34776cea94ab957780f7a244cb387bd0d74388b5a9d440175d6d28e
 sleep 1
 docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /tmp/meta_db0 /tmp/log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-f8a1382542f41d14e645ddeb285e8b93afc4367b8537e5bc4030487116d8f5cd
+09f9f12bc74212d1ae09a89bfecbc5a991f1b46cd9e8ba43fc278f775dd6176d
 sleep 3
 docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 1 /tmp/meta_db1 /tmp/log_db1 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-7f5385341bc1f990f50020bd09526eaba3eeec56ab3c67fab325d313ab4ceaea
+3b98b3f317e834263ddb81c0bc5b245ac31b69cd47f495415a3d70e951c13900
 docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /tmp/meta_db2 /tmp/log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-666732b5a9b10cd828e9c0829bd97159b3ac9a7d39d1d3f2dcbbc2e5af654373
+10269f84d95e9f82f75d3c60f0d7b0dc0efe5efe643366e615b7644fb8851f04
 sleep 16
-docker run --name metaserver-tests --network mytestnetwork --ip 172.18.0.8 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta_server_test
-[==========] Running 1 test from 1 test suite.
-[----------] Global test environment set-up.
-[----------] 1 test from EraftMetaServerTests
-[ RUN      ] EraftMetaServerTests.TestMetaBasicOp
-DEBUG: cluster config resp -> success: true
-shard_group {
-  id: 1
-  servers {
-    address: "172.18.0.10:8088"
-  }
-  servers {
-    id: 1
-    address: "172.18.0.11:8089"
-  }
-  servers {
-    id: 2
-    address: "172.18.0.12:8090"
-  }
-}
-
-[       OK ] EraftMetaServerTests.TestMetaBasicOp (4028 ms)
-[----------] 1 test from EraftMetaServerTests (4028 ms total)
-
-[----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (4028 ms total)
-[  PASSED  ] 1 test.
-sleep 2
 docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-vdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 run server success!
 ```
@@ -106,6 +78,9 @@ command output
 ```
 chmod +x utils/run-vdb-tests.sh
 docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-vdb-tests.sh
+
+... (config change log)
+
 + redis-cli -h 172.18.0.6 -p 12306 info
 server_id: 0,server_address: 172.18.0.10:8088,status: Running,Role: Leader
 server_id: 1,server_address: 172.18.0.11:8089,status: Running,Role: Follower
