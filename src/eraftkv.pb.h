@@ -2759,13 +2759,13 @@ class KvOpPair :
     kSuccessFieldNumber = 4,
     kOpCountFieldNumber = 5,
   };
-  // string key = 2;
+  // bytes key = 2;
   void clear_key();
   const std::string& key() const;
   void set_key(const std::string& value);
   void set_key(std::string&& value);
   void set_key(const char* value);
-  void set_key(const char* value, size_t size);
+  void set_key(const void* value, size_t size);
   std::string* mutable_key();
   std::string* release_key();
   void set_allocated_key(std::string* key);
@@ -2775,13 +2775,13 @@ class KvOpPair :
   std::string* _internal_mutable_key();
   public:
 
-  // string value = 3;
+  // bytes value = 3;
   void clear_value();
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);
   void set_value(const char* value);
-  void set_value(const char* value, size_t size);
+  void set_value(const void* value, size_t size);
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
@@ -4957,7 +4957,7 @@ inline void KvOpPair::set_op_type(::eraftkv::ClientOpType value) {
   // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.op_type)
 }
 
-// string key = 2;
+// bytes key = 2;
 inline void KvOpPair::clear_key() {
   key_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -4992,7 +4992,7 @@ inline void KvOpPair::set_key(const char* value) {
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftkv.KvOpPair.key)
 }
-inline void KvOpPair::set_key(const char* value, size_t size) {
+inline void KvOpPair::set_key(const void* value, size_t size) {
   
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
@@ -5017,7 +5017,7 @@ inline void KvOpPair::set_allocated_key(std::string* key) {
   // @@protoc_insertion_point(field_set_allocated:eraftkv.KvOpPair.key)
 }
 
-// string value = 3;
+// bytes value = 3;
 inline void KvOpPair::clear_value() {
   value_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -5052,7 +5052,7 @@ inline void KvOpPair::set_value(const char* value) {
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftkv.KvOpPair.value)
 }
-inline void KvOpPair::set_value(const char* value, size_t size) {
+inline void KvOpPair::set_value(const void* value, size_t size) {
   
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

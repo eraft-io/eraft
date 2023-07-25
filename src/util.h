@@ -74,6 +74,40 @@ class EncodeDecodeTool {
     std::memcpy(&result, buffer, sizeof(uint64_t));
     return result;
   }
+
+  static void EncodeFixed16(char* dst, uint16_t value) {
+    uint8_t* const buffer = reinterpret_cast<uint8_t*>(dst);
+    std::memcpy(buffer, &value, sizeof(uint16_t));
+  }
+
+  static void PutFixed16(std::string* dst, uint16_t value) {
+    char buf[sizeof(value)];
+    EncodeFixed16(buf, value);
+    dst->append(buf, sizeof(buf));
+  }
+
+  static uint16_t DecodeFixed16(const uint8_t* buffer) {
+    uint16_t result;
+    std::memcpy(&result, buffer, sizeof(uint16_t));
+    return result;
+  }
+
+  static void EncodeFixed32(char* dst, uint32_t value) {
+    uint8_t* const buffer = reinterpret_cast<uint8_t*>(dst);
+    std::memcpy(buffer, &value, sizeof(uint32_t));
+  }
+
+  static void PutFixed32(std::string* dst, uint32_t value) {
+    char buf[sizeof(value)];
+    EncodeFixed32(buf, value);
+    dst->append(buf, sizeof(buf));
+  }
+
+  static uint32_t DecodeFixed32(const uint8_t* buffer) {
+    uint32_t result;
+    std::memcpy(&result, buffer, sizeof(uint32_t));
+    return result;
+  }
 };
 
 template <typename... Args>

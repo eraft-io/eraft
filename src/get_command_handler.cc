@@ -10,26 +10,34 @@
  */
 
 #include "command_handler.h"
+#include "key_encode.h"
 
 EStatus GetCommandHandler::Execute(const std::vector<std::string>& params,
                                    Client*                         cli) {
   std::string leader_addr;
-  leader_addr = cli->GetShardLeaderAddr(params[1]);
+  uint16_t    slot;
+  leader_addr = cli->GetShardLeaderAddrAndSlot(params[1], &slot);
   ClientContext               op_context;
   eraftkv::ClientOperationReq op_req;
   auto                        kv_pair_ = op_req.add_kvs();
-  kv_pair_->set_key(params[1]);
+  kv_pair_->set_key(EncodeStringKey(slot, params[1]));
   kv_pair_->set_op_type(eraftkv::ClientOpType::Get);
   eraftkv::ClientOperationResp op_resp;
   std::string                  reply_buf;
+  std::string*                 user_val = new std::string();
   if (cli->kv_stubs_[leader_addr] != nullptr) {
     auto status_ = cli->kv_stubs_[leader_addr]->ProcessRWOperation(
         &op_context, op_req, &op_resp);
     if (status_.ok()) {
       reply_buf += "$";
-      reply_buf += std::to_string(op_resp.ops(0).value().size());
+      // decode string val
+      uint8_t     flag;
+      uint32_t    expire;
+      std::string enc_val = op_resp.ops(0).value();
+      DecodeStringVal(enc_val, &flag, &expire, user_val);
+      reply_buf += std::to_string(user_val->size());
       reply_buf += "\r\n";
-      reply_buf += op_resp.ops(0).value();
+      reply_buf += *user_val;
       reply_buf += "\r\n";
     } else {
       reply_buf += "-ERR Server error\r\n";
@@ -40,6 +48,7 @@ EStatus GetCommandHandler::Execute(const std::vector<std::string>& params,
   cli->reply_.PushData(reply_buf.c_str(), reply_buf.size());
   cli->SendPacket(cli->reply_);
   cli->_Reset();
+  delete user_val;
   return EStatus::kOk;
 }
 

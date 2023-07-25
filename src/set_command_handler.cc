@@ -12,19 +12,21 @@
 #include <time.h>
 
 #include "command_handler.h"
+#include "key_encode.h"
 #include "util.h"
 
 EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
                                    Client*                         cli) {
   std::string leader_addr;
-  leader_addr = cli->GetShardLeaderAddr(params[1]);
+  uint16_t    slot;
+  leader_addr = cli->GetShardLeaderAddrAndSlot(params[1], &slot);
   TraceLog("DEBUG: send request to leader ", leader_addr);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;
   auto                         kv_pair_ = op_req.add_kvs();
-  kv_pair_->set_key(params[1]);
-  kv_pair_->set_value(params[2]);
+  kv_pair_->set_key(EncodeStringKey(slot, params[1]));
+  kv_pair_->set_value(EncodeStringVal(0, params[2]));
   kv_pair_->set_op_type(eraftkv::ClientOpType::Put);
   std::string reply_buf;
   if (cli->kv_stubs_[leader_addr] != nullptr) {

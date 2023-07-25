@@ -564,7 +564,7 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "group\030\002 \003(\0132\023.eraftkv.ShardGroup\022\026\n\016conf"
   "ig_version\030\003 \001(\003\"q\n\010KvOpPair\022&\n\007op_type\030"
   "\001 \001(\0162\025.eraftkv.ClientOpType\022\013\n\003key\030\002 \001("
-  "\t\022\r\n\005value\030\003 \001(\t\022\017\n\007success\030\004 \001(\010\022\020\n\010op_"
+  "\014\022\r\n\005value\030\003 \001(\014\022\017\n\007success\030\004 \001(\010\022\020\n\010op_"
   "count\030\005 \001(\003\"J\n\022ClientOperationReq\022\024\n\014op_"
   "timestamp\030\001 \001(\004\022\036\n\003kvs\030\002 \003(\0132\021.eraftkv.K"
   "vOpPair\"r\n\023ClientOperationResp\022\036\n\003ops\030\001 "
@@ -4732,21 +4732,19 @@ const char* KvOpPair::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::i
           _internal_set_op_type(static_cast<::eraftkv::ClientOpType>(val));
         } else goto handle_unusual;
         continue;
-      // string key = 2;
+      // bytes key = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
           auto str = _internal_mutable_key();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "eraftkv.KvOpPair.key"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string value = 3;
+      // bytes value = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
           auto str = _internal_mutable_value();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "eraftkv.KvOpPair.value"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4797,23 +4795,15 @@ failure:
       1, this->_internal_op_type(), target);
   }
 
-  // string key = 2;
+  // bytes key = 2;
   if (this->key().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_key().data(), static_cast<int>(this->_internal_key().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "eraftkv.KvOpPair.key");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         2, this->_internal_key(), target);
   }
 
-  // string value = 3;
+  // bytes value = 3;
   if (this->value().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_value().data(), static_cast<int>(this->_internal_value().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "eraftkv.KvOpPair.value");
-    target = stream->WriteStringMaybeAliased(
+    target = stream->WriteBytesMaybeAliased(
         3, this->_internal_value(), target);
   }
 
@@ -4845,17 +4835,17 @@ size_t KvOpPair::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string key = 2;
+  // bytes key = 2;
   if (this->key().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_key());
   }
 
-  // string value = 3;
+  // bytes value = 3;
   if (this->value().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
   }
 
