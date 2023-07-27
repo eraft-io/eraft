@@ -30,11 +30,9 @@ EStatus GetCommandHandler::Execute(const std::vector<std::string>& params,
         &op_context, op_req, &op_resp);
     if (status_.ok()) {
       reply_buf += "$";
-      // decode string val
-      uint8_t     flag;
+      char        flag;
       uint32_t    expire;
-      std::string enc_val = op_resp.ops(0).value();
-      DecodeStringVal(enc_val, &flag, &expire, user_val);
+      DecodeStringVal(op_resp.mutable_ops(0)->mutable_value(), &flag, &expire, user_val);
       reply_buf += std::to_string(user_val->size());
       reply_buf += "\r\n";
       reply_buf += *user_val;

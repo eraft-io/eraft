@@ -13,25 +13,29 @@
 #include <vector>
 
 #include "util.h"
-
-enum Flag {
-  TYPE_STRING = 0x01,
-  TYPE_HASH = 0x02,
-  TYPE_LIST = 0x03,
-  TYPE_SET = 0x04,
-  TYPE_ZSET = 0x05,
-};
+#include "proto_parser.h"
 
 /**
  * @brief
  *
- * | slot (2B) | user_key (n B) |
+ * | slot | user_key |
  * @return std::string
  */
 static std::string EncodeStringKey(uint16_t key_slot, std::string user_key) {
   std::string dst;
-  EncodeDecodeTool::PutFixed16(&dst, key_slot);
+  dst.push_back('*');
+  dst.push_back('2');
+  dst.append("\r\n");
+  dst.push_back('$');
+  dst.append(std::to_string(std::to_string(key_slot).size()));
+  dst.append("\r\n");
+  dst.append(std::to_string(key_slot));
+  dst.append("\r\n");
+  dst.push_back('$');
+  dst.append(std::to_string(user_key.size()));
+  dst.append("\r\n");
   dst.append(user_key);
+  dst.append("\r\n");
   return dst;
 }
 
@@ -45,22 +49,41 @@ static std::string EncodeStringKey(uint16_t key_slot, std::string user_key) {
 static void DecodeStringKey(std::string  enc_key,
                             uint16_t*    key_slot,
                             std::string* user_key) {
-  std::vector<uint8_t> enc_key_seq = {enc_key.begin(), enc_key.end()};
-  *key_slot = EncodeDecodeTool::DecodeFixed16(&enc_key_seq[0]);
-  *user_key = std::string(enc_key_seq.begin() + 2, enc_key_seq.end());
+  ProtoParser parser_;
+  const char *const end = enc_key.c_str() + enc_key.size();
+  const char       *ptr = enc_key.c_str();
+  parser_.ParseRequest(ptr, end);
+  auto params = parser_.GetParams();
+  *key_slot = static_cast<uint16_t>(std::stoi(params[0]));
+  *user_key = params[1];
 }
 
 /**
  * @brief
- *
- * | flags (1B) | expire (4B) | user_value (nB) |
+ * | flag | expire | user val |
+ * *3\r\n$[flags len]\r\n[flags]$[expire len]\r\n[expire]$[user val len]\r\n[user val]
  * @return std::string
  */
 static std::string EncodeStringVal(uint32_t expire, std::string user_val) {
   std::string dst;
-  dst.append(Flag::TYPE_STRING, 1);
-  EncodeDecodeTool::PutFixed32(&dst, expire);
+  dst.push_back('*');
+  dst.push_back('3');
+  dst.append("\r\n");
+  dst.push_back('$');
+  dst.push_back('1');
+  dst.append("\r\n");
+  dst.push_back('s');
+  dst.append("\r\n");
+  dst.push_back('$');
+  dst.append(std::to_string(std::to_string(expire).size()));
+  dst.append("\r\n");
+  dst.append(std::to_string(expire));
+  dst.append("\r\n");
+  dst.push_back('$');
+  dst.append(std::to_string(user_val.size()));
+  dst.append("\r\n");
   dst.append(user_val);
+  dst.append("\r\n");
   return dst;
 }
 
@@ -72,12 +95,16 @@ static std::string EncodeStringVal(uint32_t expire, std::string user_val) {
  * @param expire
  * @param user_val
  */
-static void DecodeStringVal(std::string  enc_val,
-                            uint8_t*     flag,
+static void DecodeStringVal(std::string*  enc_val,
+                            char*        flag,
                             uint32_t*    expire,
                             std::string* user_val) {
-  std::vector<uint8_t> enc_val_seq = {enc_val.begin(), enc_val.end()};
-  *flag = enc_val_seq[0];
-  *expire = EncodeDecodeTool::DecodeFixed32(&enc_val_seq[1]);
-  *user_val = std::string(enc_val_seq.begin() + 5, enc_val_seq.end());
+  ProtoParser parser_;
+  const char *const end = enc_val->c_str() + enc_val->size();
+  const char       *ptr = enc_val->c_str();
+  parser_.ParseRequest(ptr, end);
+  auto params = parser_.GetParams();
+  *flag = params[0].at(0);
+  *expire = static_cast<uint32_t>(std::stoi(params[1]));
+  *user_val = params[2];
 }
