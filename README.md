@@ -8,10 +8,10 @@ ERaftKDB is a distributed database that supports the Redis RESP protocol, and us
 
 | Command    | Status |
 | -------- | ------- |
-| get  |  [x] |
-| set  | [x]   |
-| del  | [x]   |
-| scan  | [ ]   |
+| get  |  DONE |
+| set  | DONE   |
+| del  | DONE   |
+| scan  | TODO   |
 
 
 ## ERaftKV
