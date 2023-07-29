@@ -31,6 +31,7 @@ class Client : public StreamSocket {
   friend class InfoCommandHandler;
   friend class SetCommandHandler;
   friend class GetCommandHandler;
+  friend class DelCommandHandler;
   friend class UnKnowCommandHandler;
   friend class ShardGroupCommandHandler;
 

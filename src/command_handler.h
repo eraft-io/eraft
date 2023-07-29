@@ -50,6 +50,14 @@ class GetCommandHandler : public CommandHandler {
   ~GetCommandHandler();
 };
 
+class DelCommandHandler : public CommandHandler {
+ public:
+  EStatus Execute(const std::vector<std::string>& params, Client* cli);
+
+  DelCommandHandler();
+  ~DelCommandHandler();
+};
+
 class UnKnowCommandHandler : public CommandHandler {
  public:
   EStatus Execute(const std::vector<std::string>& params, Client* cli);

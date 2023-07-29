@@ -61,7 +61,7 @@ run-demo:
 	docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 1 /tmp/meta_db1 /tmp/log_db1 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 	docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /tmp/meta_db2 /tmp/log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 	sleep 16
-	docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-vdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
+	docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-kdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 
 stop-demo:
 	docker stop kvserver-node1 kvserver-node2 kvserver-node3 vdbserver-node metaserver-node1 metaserver-node2 metaserver-node3
@@ -69,9 +69,13 @@ stop-demo:
 run-demo-bench:
 	docker run --name kvserver-bench --network mytestnetwork --ip 172.18.0.5 --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv-ctl 172.18.0.2:8088 bench 64 64 10
 
-run-vdb-tests:
-	chmod +x utils/run-vdb-tests.sh
-	docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-vdb-tests.sh
+init-kdb-meta:
+	chmod +x utils/init-kdb-meta.sh
+	docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/init-kdb-meta.sh
+
+run-kdb-tests:
+	chmod +x utils/run-kdb-tests.sh
+	docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-kdb-tests.sh
 
 run-metaserver-tests:
 	docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /tmp/meta_db0 /tmp/log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090

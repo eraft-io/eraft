@@ -54,7 +54,6 @@ grpc::Status ERaftKvServer::RequestVote(ServerContext*                 context,
                                         eraftkv::RequestVoteResp*      resp) {
   if (raft_context_->HandleRequestVoteReq(nullptr, req, resp) == EStatus::kOk) {
     return grpc::Status::OK;
-
   } else {
     return grpc::Status::CANCELLED;
   }
@@ -73,7 +72,6 @@ grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
   if (raft_context_->HandleAppendEntriesReq(nullptr, req, resp) ==
       EStatus::kOk) {
     return grpc::Status::OK;
-
   } else {
     return grpc::Status::CANCELLED;
   }
@@ -114,39 +112,48 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
     return grpc::Status::OK;
   }
   for (auto kv_op : req->kvs()) {
-    if (kv_op.op_type() == eraftkv::ClientOpType::Put) {
-      std::mutex map_mutex_;
-      {
-        op_count_ += 1;
-        std::condition_variable*    new_var = new std::condition_variable();
-        std::lock_guard<std::mutex> lg(map_mutex_);
-        ERaftKvServer::ready_cond_vars_[op_count_] = new_var;
-        kv_op.set_op_count(op_count_);
+    TraceLog("DEBUG: ", " recv rw op type  ", kv_op.op_type());
+    switch (kv_op.op_type()) {
+      case eraftkv::ClientOpType::Get: {
+        auto val = raft_context_->store_->GetKV(kv_op.key());
+        TraceLog(
+            "DEBUG: ", " get key ", kv_op.key(), " with value ", val.first);
+        auto res = resp->add_ops();
+        res->set_key(kv_op.key());
+        res->set_value(val.first);
+        res->set_success(val.second);
+        res->set_op_type(eraftkv::ClientOpType::Get);
+        res->set_op_count(op_count_);
+        break;
       }
-      raft_context_->Propose(
-          kv_op.SerializeAsString(), &log_index, &log_term, &success);
-      {
-        std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
-        ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
-                                                         [] { return true; });
-        ERaftKvServer::ready_cond_vars_.erase(op_count_);
+      case eraftkv::ClientOpType::Put:
+      case eraftkv::ClientOpType::Del: {
+        std::mutex map_mutex_;
+        {
+          op_count_ += 1;
+          std::condition_variable*    new_var = new std::condition_variable();
+          std::lock_guard<std::mutex> lg(map_mutex_);
+          ERaftKvServer::ready_cond_vars_[op_count_] = new_var;
+          kv_op.set_op_count(op_count_);
+        }
+        raft_context_->Propose(
+            kv_op.SerializeAsString(), &log_index, &log_term, &success);
+        {
+          std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
+          ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
+                                                           [] { return true; });
+          ERaftKvServer::ready_cond_vars_.erase(op_count_);
+        }
+        auto res = resp->add_ops();
+        res->set_key(kv_op.key());
+        res->set_value(kv_op.value());
+        res->set_success(true);
+        res->set_op_type(kv_op.op_type());
+        res->set_op_count(op_count_);
+        break;
       }
-      auto res = resp->add_ops();
-      res->set_key(kv_op.key());
-      res->set_value(kv_op.value());
-      res->set_success(true);
-      res->set_op_type(eraftkv::ClientOpType::Put);
-      res->set_op_count(op_count_);
-    }
-    if (kv_op.op_type() == eraftkv::ClientOpType::Get) {
-      auto val = raft_context_->store_->GetKV(kv_op.key());
-      TraceLog("DEBUG: ", " get key ", kv_op.key(), " with value ", val);
-      auto res = resp->add_ops();
-      res->set_key(kv_op.key());
-      res->set_value(val);
-      res->set_success(true);
-      res->set_op_type(eraftkv::ClientOpType::Get);
-      res->set_op_count(op_count_);
+      default:
+        break;
     }
   }
   return grpc::Status::OK;
@@ -163,60 +170,69 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
     eraftkv::ClusterConfigChangeResp*      resp) {
   int64_t log_index;
   int64_t log_term;
-  bool    success;
   TraceLog("DEBUG: ",
            " recv config change req with change_type ",
            req->change_type());
-
   // return cluster topology, Currently, only single raft group are supported
   auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
-  if (conf_change_req->change_type() == eraftkv::ChangeType::ShardsQuery) {
-    resp->set_success(true);
-    auto kvs = raft_context_->store_->PrefixScan(SG_META_PREFIX, 0, 256);
-    for (auto kv : kvs) {
-      eraftkv::ShardGroup* sg = new eraftkv::ShardGroup();
-      sg->ParseFromString(kv.second);
+  switch (conf_change_req->change_type()) {
+    case eraftkv::ChangeType::ShardsQuery: {
+      resp->set_success(true);
+      auto kvs = raft_context_->store_->PrefixScan(SG_META_PREFIX, 0, 256);
+      for (auto kv : kvs) {
+        eraftkv::ShardGroup* sg = new eraftkv::ShardGroup();
+        sg->ParseFromString(kv.second);
+        auto new_sg = resp->add_shard_group();
+        new_sg->CopyFrom(*sg);
+        delete sg;
+      }
+      break;
+    }
+    case eraftkv::ChangeType::MembersQuery: {
+      resp->set_success(true);
       auto new_sg = resp->add_shard_group();
-      new_sg->CopyFrom(*sg);
-      delete sg;
+      new_sg->set_id(0);
+      for (auto node : raft_context_->GetNodes()) {
+        auto g_server = new_sg->add_servers();
+        g_server->set_id(node->id);
+        g_server->set_address(node->address);
+        node->node_state == NodeStateEnum::Running
+            ? g_server->set_server_status(eraftkv::ServerStatus::Up)
+            : g_server->set_server_status(eraftkv::ServerStatus::Down);
+      }
+      new_sg->set_leader_id(raft_context_->GetLeaderId());
+      break;
     }
-    return grpc::Status::OK;
-  }
+    default: {
+      // no leader reject
+      if (!raft_context_->IsLeader()) {
+        resp->set_error_code(eraftkv::ErrorCode::REQUEST_NOT_LEADER_NODE);
+        resp->set_leader_addr(raft_context_->GetLeaderId());
+        return grpc::Status::OK;
+      }
+      std::mutex map_mutex_;
+      {
+        op_count_ += 1;
+        std::condition_variable*    new_var = new std::condition_variable();
+        std::lock_guard<std::mutex> lg(map_mutex_);
+        conf_change_req->set_op_count(op_count_);
+      }
+      bool success;
+      raft_context_->ProposeConfChange(conf_change_req->SerializeAsString(),
+                                       &log_index,
+                                       &log_term,
+                                       &success);
 
-  if (conf_change_req->change_type() == eraftkv::ChangeType::MembersQuery) {
-    resp->set_success(true);
-    auto new_sg = resp->add_shard_group();
-    new_sg->set_id(0);
-    for (auto node : raft_context_->GetNodes()) {
-      auto g_server = new_sg->add_servers();
-      g_server->set_id(node->id);
-      g_server->set_address(node->address);
-      node->node_state == NodeStateEnum::Running
-          ? g_server->set_server_status(eraftkv::ServerStatus::Up)
-          : g_server->set_server_status(eraftkv::ServerStatus::Down);
+      {
+        std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
+        ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
+                                                         [] { return true; });
+        ERaftKvServer::ready_cond_vars_.erase(op_count_);
+      }
+      break;
     }
-    new_sg->set_leader_id(raft_context_->GetLeaderId());
-    return grpc::Status::OK;
   }
-
-  std::mutex map_mutex_;
-  {
-    op_count_ += 1;
-    std::condition_variable*    new_var = new std::condition_variable();
-    std::lock_guard<std::mutex> lg(map_mutex_);
-    conf_change_req->set_op_count(op_count_);
-  }
-
-  raft_context_->ProposeConfChange(
-      conf_change_req->SerializeAsString(), &log_index, &log_term, &success);
-
-  {
-    std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
-    ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul, [] { return true; });
-    ERaftKvServer::ready_cond_vars_.erase(op_count_);
-  }
-
-  return success ? grpc::Status::OK : grpc::Status::CANCELLED;
+  return grpc::Status::OK;
 }
 
 /**
