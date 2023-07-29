@@ -33,6 +33,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include "estatus.h"
 #include "raft_server.h"
@@ -167,7 +168,7 @@ class Storage {
    * @param key
    * @return std::string
    */
-  virtual std::string GetKV(std::string key) = 0;
+  virtual std::pair<std::string, bool> GetKV(std::string key) = 0;
 
   /**
    * @brief

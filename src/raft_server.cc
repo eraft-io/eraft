@@ -63,11 +63,10 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , heartbeat_tick_count_(0)
     , election_tick_count_(0)
     , max_entries_per_append_req_(100)
-    , tick_interval_(1000)
+    , tick_interval_(50)
     , granted_votes_(0)
     , open_auto_apply_(true)
     , election_running_(true) {
-
   this->log_store_ = log_store;
   this->store_ = store;
   this->net_ = net;
@@ -158,7 +157,7 @@ EStatus RaftServer::RunCycle() {
     if (open_auto_apply_) {
       this->ApplyEntries();
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(tick_interval_));
   }
   return EStatus::kOk;
 }

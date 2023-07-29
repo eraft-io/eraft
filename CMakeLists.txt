@@ -167,19 +167,20 @@ list(APPEND eraftvdb_sources src/eraftkv.pb.cc)
 list(APPEND eraftvdb_sources src/info_command_handler.cc)
 list(APPEND eraftvdb_sources src/set_command_handler.cc)
 list(APPEND eraftvdb_sources src/get_command_handler.cc)
+list(APPEND eraftvdb_sources src/del_command_handler.cc)
 list(APPEND eraftvdb_sources src/shardgroup_command_handler.cc)
 list(APPEND eraftvdb_sources src/unknow_command_handler.cc)
 list(APPEND eraftvdb_sources src/util.cc)
 
-add_executable(eraft-vdb ${eraftvdb_sources})
-target_link_libraries(eraft-vdb 
+add_executable(eraft-kdb ${eraftvdb_sources})
+target_link_libraries(eraft-kdb 
     pthread
     rocksdb
     gRPC::grpc++
     ${Protobuf_LIBRARY}
     stdc++fs
 )
-target_include_directories(eraft-vdb PUBLIC ${eraftkv_INCLUDE_DIR})
+target_include_directories(eraft-kdb PUBLIC ${eraftkv_INCLUDE_DIR})
 
 # build eraftkv
 set(eraftkv_sources)

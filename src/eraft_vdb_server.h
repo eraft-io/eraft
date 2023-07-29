@@ -12,8 +12,6 @@
 
 #include "server.h"
 
-#define KV_SERVER_ADDRS "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090"
-
 class ERaftVdbServer : public Server {
  public:
   ERaftVdbServer(std::string addr, std::string kv_svr_addrs);

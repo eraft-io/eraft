@@ -4,6 +4,16 @@ ERaftKDB is a distributed database that supports the Redis RESP protocol, and us
 
 ![eraft-kdb](doc/eraft-kdb.png)
 
+## Redis Command Support Plan
+
+| Command    | Status |
+| -------- | ------- |
+| get  |  [x] |
+| set  | [x]   |
+| del  | [x]   |
+| scan  | [ ]   |
+
+
 ## ERaftKV
 
 ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding to form multi shard large-scale data storage clusters.
@@ -65,26 +75,43 @@ docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --
 docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /tmp/meta_db2 /tmp/log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 10269f84d95e9f82f75d3c60f0d7b0dc0efe5efe643366e615b7644fb8851f04
 sleep 16
-docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-vdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
+docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-kdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 run server success!
 ```
 
-- step 3, run eraft vdb tests
+- step 3, run eraft kdb tests
 
 ```
-sudo make run-vdb-tests
+sudo make init-kdb-meta
+sudo make run-kdb-tests
 ```
 command output
+
 ```
-chmod +x utils/run-vdb-tests.sh
-docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-vdb-tests.sh
-
-... (config change log)
-
+chmod +x utils/run-kdb-tests.sh
+docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v /Users/colin/Documents/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-kdb-tests.sh
++ redis-cli -h 172.18.0.6 -p 12306 shardgroup query
+1) "shardgroup"
+2) "1"
+3) "servers"
+4) "0"
+5) "172.18.0.10:8088"
+6) "1"
+7) "172.18.0.11:8089"
+8) "2"
+9) "172.18.0.12:8090"
++ redis-cli -h 172.18.0.6 -p 12306 shardgroup join 1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
+OK
++ redis-cli -h 172.18.0.6 -p 12306 shardgroup move 1 0-1023
+OK
++ sleep 1
 + redis-cli -h 172.18.0.6 -p 12306 info
-server_id: 0,server_address: 172.18.0.10:8088,status: Running,Role: Leader
-server_id: 1,server_address: 172.18.0.11:8089,status: Running,Role: Follower
-server_id: 2,server_address: 172.18.0.12:8090,status: Running,Role: Follower
+meta server:
+server_id: 0,server_address: 172.18.0.2:8088,status: Running,Role: Leader
+meta server:
+server_id: 1,server_address: 172.18.0.3:8089,status: Running,Role: Follower
+meta server:
+server_id: 2,server_address: 172.18.0.4:8090,status: Running,Role: Follower
 + redis-cli -h 172.18.0.6 -p 12306 set a h
 OK
 + redis-cli -h 172.18.0.6 -p 12306 set b e
@@ -106,6 +133,8 @@ OK
 "l"
 + redis-cli -h 172.18.0.6 -p 12306 get e
 "o"
++ redis-cli -h 172.18.0.6 -p 12306 get nil_test
+(nil)
 ```
 
 - step 4, clean all

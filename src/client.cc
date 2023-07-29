@@ -33,6 +33,8 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
     handler = new SetCommandHandler();
   } else if (parser_.GetParams()[0] == "get") {
     handler = new GetCommandHandler();
+  } else if (parser_.GetParams()[0] == "del") {
+    handler = new DelCommandHandler();
   } else if (parser_.GetParams()[0] == "shardgroup") {
     handler = new ShardGroupCommandHandler();
   } else {

@@ -109,7 +109,9 @@ EStatus ShardGroupCommandHandler::Execute(
     cli->SendPacket(cli->reply_);
     cli->_Reset();
   } else if (params[1] == "move") {
-    ClientContext                   context;
+    auto          slot_range_args = StringUtil::Split(params[3], '-');
+    ClientContext context;
+    std::string   reply_buf;
     eraftkv::ClusterConfigChangeReq req;
     int                             shard_id = stoi(params[2]);
     int                             slot_id = stoi(params[3]);
@@ -117,16 +119,41 @@ EStatus ShardGroupCommandHandler::Execute(
     req.set_shard_id(shard_id);
     auto to_move_sg = req.mutable_shard_group();
     to_move_sg->set_id(shard_id);
-    auto new_slot = to_move_sg->add_slots();
-    new_slot->set_id(slot_id);
-    new_slot->set_slot_status(eraftkv::SlotStatus::Running);
+    // support move range slot shardgroup move 1 [startslot-endslot]
+    if (slot_range_args.size() == 2) {
+      try {
+        int64_t start_slot =
+            static_cast<int64_t>(std::stoi(slot_range_args[0]));
+        int64_t end_slot = static_cast<int64_t>(std::stoi(slot_range_args[1]));
+        for (int64_t i = start_slot; i <= end_slot; i++) {
+          auto new_slot = to_move_sg->add_slots();
+          new_slot->set_id(i);
+          new_slot->set_slot_status(eraftkv::SlotStatus::Running);
+        }
+      } catch (const std::invalid_argument& e) {
+        reply_buf += "-ERR slot invalid_argument\r\n";
+        cli->reply_.PushData(reply_buf.c_str(), reply_buf.size());
+        cli->SendPacket(cli->reply_);
+        cli->_Reset();
+        return EStatus::kOk;
+      } catch (const std::out_of_range& e) {
+        reply_buf += "-ERR slot out_of_range\r\n";
+        cli->reply_.PushData(reply_buf.c_str(), reply_buf.size());
+        cli->SendPacket(cli->reply_);
+        cli->_Reset();
+        return EStatus::kOk;
+      }
+    } else {
+      auto new_slot = to_move_sg->add_slots();
+      new_slot->set_id(slot_id);
+      new_slot->set_slot_status(eraftkv::SlotStatus::Running);
+    }
     eraftkv::ClusterConfigChangeResp resp;
-    auto        st = leader_stub->ClusterConfigChange(&context, req, &resp);
-    std::string reply_buf;
+    auto st = leader_stub->ClusterConfigChange(&context, req, &resp);
     if (st.ok()) {
       reply_buf += "+OK\r\n";
     } else {
-      reply_buf += "-ERR Server error\r\n";
+      reply_buf += "-ERR server error\r\n";
     }
     cli->reply_.PushData(reply_buf.c_str(), reply_buf.size());
     cli->SendPacket(cli->reply_);

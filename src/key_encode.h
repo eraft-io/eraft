@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "util.h"
 #include "proto_parser.h"
+#include "util.h"
 
 /**
  * @brief
@@ -49,9 +49,9 @@ static std::string EncodeStringKey(uint16_t key_slot, std::string user_key) {
 static void DecodeStringKey(std::string  enc_key,
                             uint16_t*    key_slot,
                             std::string* user_key) {
-  ProtoParser parser_;
-  const char *const end = enc_key.c_str() + enc_key.size();
-  const char       *ptr = enc_key.c_str();
+  ProtoParser       parser_;
+  const char* const end = enc_key.c_str() + enc_key.size();
+  const char*       ptr = enc_key.c_str();
   parser_.ParseRequest(ptr, end);
   auto params = parser_.GetParams();
   *key_slot = static_cast<uint16_t>(std::stoi(params[0]));
@@ -61,7 +61,6 @@ static void DecodeStringKey(std::string  enc_key,
 /**
  * @brief
  * | flag | expire | user val |
- * *3\r\n$[flags len]\r\n[flags]$[expire len]\r\n[expire]$[user val len]\r\n[user val]
  * @return std::string
  */
 static std::string EncodeStringVal(uint32_t expire, std::string user_val) {
@@ -95,13 +94,13 @@ static std::string EncodeStringVal(uint32_t expire, std::string user_val) {
  * @param expire
  * @param user_val
  */
-static void DecodeStringVal(std::string*  enc_val,
+static void DecodeStringVal(std::string* enc_val,
                             char*        flag,
                             uint32_t*    expire,
                             std::string* user_val) {
-  ProtoParser parser_;
-  const char *const end = enc_val->c_str() + enc_val->size();
-  const char       *ptr = enc_val->c_str();
+  ProtoParser       parser_;
+  const char* const end = enc_val->c_str() + enc_val->size();
+  const char*       ptr = enc_val->c_str();
   parser_.ParseRequest(ptr, end);
   auto params = parser_.GetParams();
   *flag = params[0].at(0);

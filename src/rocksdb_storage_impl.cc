@@ -105,6 +105,25 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
             }
             break;
           }
+          case eraftkv::ClientOpType::Del: {
+            if (DelKV(op_pair->key()) == EStatus::kOk) {
+              raft->log_store_->PersisLogMetaState(raft->commit_idx_,
+                                                   ety->id());
+              raft->last_applied_idx_ = ety->id();
+              if (raft->role_ == NodeRaftRoleEnum::Leader) {
+                std::mutex map_mutex;
+                {
+                  std::lock_guard<std::mutex> lg(map_mutex);
+                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
+                      nullptr) {
+                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                        ->notify_one();
+                  }
+                }
+              }
+            }
+            break;
+          }
           default: {
             raft->log_store_->PersisLogMetaState(raft->commit_idx_, ety->id());
             raft->last_applied_idx_ = ety->id();
@@ -114,7 +133,6 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
         delete op_pair;
         break;
       }
-
       case eraftkv::EntryType::ConfChange: {
         eraftkv::ClusterConfigChangeReq* conf_change_req =
             new eraftkv::ClusterConfigChangeReq();
@@ -170,28 +188,27 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
           case eraftkv::ChangeType::ShardJoin: {
             std::string key;
             key.append(SG_META_PREFIX);
-            EncodeDecodeTool::PutFixed64(
-                &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+            key.append(std::to_string(conf_change_req->shard_id()));
             auto        sg = conf_change_req->shard_group();
             std::string val = sg.SerializeAsString();
             raft->store_->PutKV(key, val);
+            break;
           }
           case eraftkv::ChangeType::ShardLeave: {
             std::string key;
             key.append(SG_META_PREFIX);
-            EncodeDecodeTool::PutFixed64(
-                &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+            key.append(std::to_string(conf_change_req->shard_id()));
             raft->store_->DelKV(key);
+            break;
           }
           case eraftkv::ChangeType::SlotMove: {
             auto        sg = conf_change_req->shard_group();
             std::string key = SG_META_PREFIX;
-            EncodeDecodeTool::PutFixed64(
-                &key, static_cast<uint64_t>(conf_change_req->shard_id()));
+            key.append(std::to_string(conf_change_req->shard_id()));
             auto value = raft->store_->GetKV(key);
-            if (!value.empty()) {
+            if (!value.first.empty()) {
               eraftkv::ShardGroup* old_sg = new eraftkv::ShardGroup();
-              old_sg->ParseFromString(value);
+              old_sg->ParseFromString(value.first);
               // move slot to new sg
               if (sg.id() == old_sg->id()) {
                 for (auto new_slot : sg.slots()) {
@@ -368,10 +385,11 @@ EStatus RocksDBStorageImpl::PutKV(std::string key, std::string val) {
  * @param key
  * @return std::string
  */
-std::string RocksDBStorageImpl::GetKV(std::string key) {
+std::pair<std::string, bool> RocksDBStorageImpl::GetKV(std::string key) {
   std::string value;
   auto        status = kv_db_->Get(rocksdb::ReadOptions(), "U:" + key, &value);
-  return status.IsNotFound() ? "" : value;
+  return std::make_pair<std::string, bool>(std::move(value),
+                                           !status.IsNotFound());
 }
 
 /**
@@ -387,7 +405,7 @@ std::map<std::string, std::string> RocksDBStorageImpl::PrefixScan(
     int64_t     offset,
     int64_t     limit) {
   auto iter = kv_db_->NewIterator(rocksdb::ReadOptions());
-  iter->Seek(prefix);
+  iter->Seek("U:" + prefix);
   while (iter->Valid() && offset > 0) {
     offset -= 1;
     iter->Next();
@@ -413,7 +431,8 @@ std::map<std::string, std::string> RocksDBStorageImpl::PrefixScan(
  * @return EStatus
  */
 EStatus RocksDBStorageImpl::DelKV(std::string key) {
-  auto status = kv_db_->Delete(rocksdb::WriteOptions(), key);
+  TraceLog("DEBUG: ", " del key ", key);
+  auto status = kv_db_->Delete(rocksdb::WriteOptions(), "U:" + key);
   return status.ok() ? EStatus::kOk : EStatus::kDelFromRocksDBErr;
 }
 
@@ -431,7 +450,7 @@ RocksDBStorageImpl::RocksDBStorageImpl(std::string db_path) {
 }
 
 /**
- * @brief Destroy the Rocks D B Storage Impl:: RocksDB Storage Impl object
+ * @brief Destroy the Rocks DB Storage Impl:: RocksDB Storage Impl object
  *
  */
 RocksDBStorageImpl::~RocksDBStorageImpl() {

@@ -25,8 +25,8 @@ EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;
   auto                         kv_pair_ = op_req.add_kvs();
-  std::string encode_key = EncodeStringKey(slot, params[1]);
-  std::string encode_val = EncodeStringVal(0, params[2]);
+  std::string                  encode_key = EncodeStringKey(slot, params[1]);
+  std::string                  encode_val = EncodeStringVal(0, params[2]);
   kv_pair_->set_key(encode_key);
   kv_pair_->set_value(encode_val);
   kv_pair_->set_op_type(eraftkv::ClientOpType::Put);

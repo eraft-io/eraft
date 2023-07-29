@@ -2595,8 +2595,10 @@ class ClusterConfigChangeResp :
 
   enum : int {
     kShardGroupFieldNumber = 2,
-    kConfigVersionFieldNumber = 3,
     kSuccessFieldNumber = 1,
+    kErrorCodeFieldNumber = 4,
+    kConfigVersionFieldNumber = 3,
+    kLeaderAddrFieldNumber = 5,
   };
   // repeated .eraftkv.ShardGroup shard_group = 2;
   int shard_group_size() const;
@@ -2616,15 +2618,6 @@ class ClusterConfigChangeResp :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::ShardGroup >&
       shard_group() const;
 
-  // int64 config_version = 3;
-  void clear_config_version();
-  ::PROTOBUF_NAMESPACE_ID::int64 config_version() const;
-  void set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_config_version() const;
-  void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
   // bool success = 1;
   void clear_success();
   bool success() const;
@@ -2634,14 +2627,43 @@ class ClusterConfigChangeResp :
   void _internal_set_success(bool value);
   public:
 
+  // .eraftkv.ErrorCode error_code = 4;
+  void clear_error_code();
+  ::eraftkv::ErrorCode error_code() const;
+  void set_error_code(::eraftkv::ErrorCode value);
+  private:
+  ::eraftkv::ErrorCode _internal_error_code() const;
+  void _internal_set_error_code(::eraftkv::ErrorCode value);
+  public:
+
+  // int64 config_version = 3;
+  void clear_config_version();
+  ::PROTOBUF_NAMESPACE_ID::int64 config_version() const;
+  void set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_config_version() const;
+  void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 leader_addr = 5;
+  void clear_leader_addr();
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_addr() const;
+  void set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_leader_addr() const;
+  void _internal_set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.ClusterConfigChangeResp)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::ShardGroup > shard_group_;
-  ::PROTOBUF_NAMESPACE_ID::int64 config_version_;
   bool success_;
+  int error_code_;
+  ::PROTOBUF_NAMESPACE_ID::int64 config_version_;
+  ::PROTOBUF_NAMESPACE_ID::int64 leader_addr_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -2759,13 +2781,13 @@ class KvOpPair :
     kSuccessFieldNumber = 4,
     kOpCountFieldNumber = 5,
   };
-  // bytes key = 2;
+  // string key = 2;
   void clear_key();
   const std::string& key() const;
   void set_key(const std::string& value);
   void set_key(std::string&& value);
   void set_key(const char* value);
-  void set_key(const void* value, size_t size);
+  void set_key(const char* value, size_t size);
   std::string* mutable_key();
   std::string* release_key();
   void set_allocated_key(std::string* key);
@@ -2775,13 +2797,13 @@ class KvOpPair :
   std::string* _internal_mutable_key();
   public:
 
-  // bytes value = 3;
+  // string value = 3;
   void clear_value();
   const std::string& value() const;
   void set_value(const std::string& value);
   void set_value(std::string&& value);
   void set_value(const char* value);
-  void set_value(const void* value, size_t size);
+  void set_value(const char* value, size_t size);
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
@@ -4933,6 +4955,46 @@ inline void ClusterConfigChangeResp::set_config_version(::PROTOBUF_NAMESPACE_ID:
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeResp.config_version)
 }
 
+// .eraftkv.ErrorCode error_code = 4;
+inline void ClusterConfigChangeResp::clear_error_code() {
+  error_code_ = 0;
+}
+inline ::eraftkv::ErrorCode ClusterConfigChangeResp::_internal_error_code() const {
+  return static_cast< ::eraftkv::ErrorCode >(error_code_);
+}
+inline ::eraftkv::ErrorCode ClusterConfigChangeResp::error_code() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeResp.error_code)
+  return _internal_error_code();
+}
+inline void ClusterConfigChangeResp::_internal_set_error_code(::eraftkv::ErrorCode value) {
+  
+  error_code_ = value;
+}
+inline void ClusterConfigChangeResp::set_error_code(::eraftkv::ErrorCode value) {
+  _internal_set_error_code(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeResp.error_code)
+}
+
+// int64 leader_addr = 5;
+inline void ClusterConfigChangeResp::clear_leader_addr() {
+  leader_addr_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeResp::_internal_leader_addr() const {
+  return leader_addr_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeResp::leader_addr() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeResp.leader_addr)
+  return _internal_leader_addr();
+}
+inline void ClusterConfigChangeResp::_internal_set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  leader_addr_ = value;
+}
+inline void ClusterConfigChangeResp::set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_leader_addr(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeResp.leader_addr)
+}
+
 // -------------------------------------------------------------------
 
 // KvOpPair
@@ -4957,7 +5019,7 @@ inline void KvOpPair::set_op_type(::eraftkv::ClientOpType value) {
   // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.op_type)
 }
 
-// bytes key = 2;
+// string key = 2;
 inline void KvOpPair::clear_key() {
   key_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -4992,7 +5054,7 @@ inline void KvOpPair::set_key(const char* value) {
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftkv.KvOpPair.key)
 }
-inline void KvOpPair::set_key(const void* value, size_t size) {
+inline void KvOpPair::set_key(const char* value, size_t size) {
   
   key_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
@@ -5017,7 +5079,7 @@ inline void KvOpPair::set_allocated_key(std::string* key) {
   // @@protoc_insertion_point(field_set_allocated:eraftkv.KvOpPair.key)
 }
 
-// bytes value = 3;
+// string value = 3;
 inline void KvOpPair::clear_value() {
   value_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -5052,7 +5114,7 @@ inline void KvOpPair::set_value(const char* value) {
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:eraftkv.KvOpPair.value)
 }
-inline void KvOpPair::set_value(const void* value, size_t size) {
+inline void KvOpPair::set_value(const char* value, size_t size) {
   
   value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

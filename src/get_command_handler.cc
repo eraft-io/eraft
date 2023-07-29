@@ -29,14 +29,19 @@ EStatus GetCommandHandler::Execute(const std::vector<std::string>& params,
     auto status_ = cli->kv_stubs_[leader_addr]->ProcessRWOperation(
         &op_context, op_req, &op_resp);
     if (status_.ok()) {
-      reply_buf += "$";
-      char        flag;
-      uint32_t    expire;
-      DecodeStringVal(op_resp.mutable_ops(0)->mutable_value(), &flag, &expire, user_val);
-      reply_buf += std::to_string(user_val->size());
-      reply_buf += "\r\n";
-      reply_buf += *user_val;
-      reply_buf += "\r\n";
+      if (op_resp.ops(0).success()) {
+        reply_buf += "$";
+        char     flag;
+        uint32_t expire;
+        DecodeStringVal(
+            op_resp.mutable_ops(0)->mutable_value(), &flag, &expire, user_val);
+        reply_buf += std::to_string(user_val->size());
+        reply_buf += "\r\n";
+        reply_buf += *user_val;
+        reply_buf += "\r\n";
+      } else {
+        reply_buf += "$-1\r\n";
+      }
     } else {
       reply_buf += "-ERR Server error\r\n";
     }

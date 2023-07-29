@@ -157,7 +157,7 @@ class RocksDBStorageImpl : public Storage {
    * @param key
    * @return std::string
    */
-  std::string GetKV(std::string key);
+  std::pair<std::string, bool> GetKV(std::string key);
 
   /**
    * @brief
