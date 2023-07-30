@@ -16,7 +16,7 @@ ERaftKDB is a distributed database that supports the Redis RESP protocol, and us
 
 ## ERaftKV
 
-ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding to form multi shard large-scale data storage clusters.
+ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding for large-scale data storage.
 
 ## ERaftKV Features
 - Strong and consistent data storage ensures secure and reliable data persistence in distributed systems.
@@ -32,7 +32,7 @@ ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to
 
 ## Build 
 
-Execute follower build command on the machine with docker installed.
+Execute follow build command on the machine with docker installed.
 
 ```
 sudo make build-dev
