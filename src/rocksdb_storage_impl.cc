@@ -75,9 +75,9 @@ EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
 EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                      int64_t     snapshot_index,
                                      int64_t     snapshot_term) {
-  if (raft->commit_idx_ == raft->last_applied_idx_) {
-    return EStatus::kOk;
-  }
+  // if (raft->commit_idx_ == raft->last_applied_idx_) {
+  //   return EStatus::kOk;
+  // }
   auto etys =
       raft->log_store_->Gets(raft->last_applied_idx_, raft->commit_idx_);
   for (auto ety : etys) {
@@ -92,14 +92,11 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                                    ety->id());
               raft->last_applied_idx_ = ety->id();
               if (raft->role_ == NodeRaftRoleEnum::Leader) {
-                std::mutex map_mutex;
                 {
-                  std::lock_guard<std::mutex> lg(map_mutex);
-                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
-                      nullptr) {
-                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
-                        ->notify_one();
-                  }
+                  std::lock_guard<std::mutex> lg(ERaftKvServer::ready_mutex_);
+                  ERaftKvServer::is_ok_ = true;
+                  ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                      ->notify_one();
                 }
               }
             }
@@ -111,14 +108,11 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                                    ety->id());
               raft->last_applied_idx_ = ety->id();
               if (raft->role_ == NodeRaftRoleEnum::Leader) {
-                std::mutex map_mutex;
                 {
-                  std::lock_guard<std::mutex> lg(map_mutex);
-                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
-                      nullptr) {
-                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
-                        ->notify_one();
-                  }
+                  std::lock_guard<std::mutex> lg(ERaftKvServer::ready_mutex_);
+                  ERaftKvServer::is_ok_ = true;
+                  ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                      ->notify_one();
                 }
               }
             }

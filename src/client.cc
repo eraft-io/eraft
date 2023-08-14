@@ -46,7 +46,7 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
 }
 
 Client::Client(std::string meta_addrs)
-    : leader_addr_(""), meta_addrs_(meta_addrs) {
+    : leader_addr_(""), meta_addrs_(meta_addrs), op_count_(0) {
   // init stub to meta server node
   auto meta_node_addrs = StringUtil::Split(meta_addrs, ',');
   for (auto meta_node_addr : meta_node_addrs) {

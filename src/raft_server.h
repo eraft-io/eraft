@@ -85,12 +85,16 @@ class RaftServer {
              Storage*   store,
              Network*   net);
 
+  ~RaftServer();
+
   /**
    * @brief raft core cycle
    *
    * @return EStatus
    */
   EStatus RunCycle();
+
+  EStatus RunApply();
 
   /**
    * @brief
@@ -259,51 +263,6 @@ class RaftServer {
    * @return int64_t
    */
   int64_t GetFirstEntryIdx();
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus RestoreSnapshotAfterRestart();
-
-  /**
-   * @brief
-   *
-   * @param last_included_term
-   * @param last_included_index
-   * @return EStatus
-   */
-  EStatus BeginLoadSnapshot(int64_t last_included_term,
-                            int64_t last_included_index);
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus EndLoadSnapshot();
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus ProposeReadReq();
-
-  /**
-   * @brief Get the Logs Count Can Snapshot object
-   *
-   * @return int64_t
-   */
-  int64_t GetLogsCountCanSnapshot();
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus RestoreLog();
 
   /**
    * @brief

@@ -25,6 +25,7 @@ EStatus DelCommandHandler::Execute(const std::vector<std::string>& params,
   std::string                  encode_key = EncodeStringKey(slot, params[1]);
   kv_pair_->set_key(encode_key);
   kv_pair_->set_op_type(eraftkv::ClientOpType::Del);
+  kv_pair_->set_op_count(RandomNumber::Between(1,10000));
   std::string reply_buf;
   if (cli->kv_stubs_[leader_addr] != nullptr) {
     auto status_ = cli->kv_stubs_[leader_addr]->ProcessRWOperation(

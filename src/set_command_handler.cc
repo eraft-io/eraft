@@ -11,6 +11,8 @@
 
 #include <time.h>
 
+#include <chrono>
+
 #include "command_handler.h"
 #include "key_encode.h"
 #include "util.h"
@@ -20,7 +22,7 @@ EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
   std::string leader_addr;
   uint16_t    slot;
   leader_addr = cli->GetShardLeaderAddrAndSlot(params[1], &slot);
-  TraceLog("DEBUG: send request to leader ", leader_addr);
+  TraceLog("DEBUG: send set request to leader ", leader_addr);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;
@@ -30,6 +32,7 @@ EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
   kv_pair_->set_key(encode_key);
   kv_pair_->set_value(encode_val);
   kv_pair_->set_op_type(eraftkv::ClientOpType::Put);
+  kv_pair_->set_op_count(RandomNumber::Between(1, 10000));
   std::string reply_buf;
   if (cli->kv_stubs_[leader_addr] != nullptr) {
     auto status_ = cli->kv_stubs_[leader_addr]->ProcessRWOperation(
