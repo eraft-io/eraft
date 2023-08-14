@@ -182,12 +182,15 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
 
   static std::mutex ready_mutex_;
 
+  static bool is_ok_;
+
  private:
   /**
    * @brief
    *
    */
   static RaftServer* raft_context_;
+
 
   int op_count_;
 };

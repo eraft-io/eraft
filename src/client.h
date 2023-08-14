@@ -73,6 +73,8 @@ class Client : public StreamSocket {
 
   EStatus SyncClusterConfig();
 
+  std::atomic<int> op_count_;
+
   void _Reset();
 
   void OnConnect() override;

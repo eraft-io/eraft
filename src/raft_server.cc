@@ -89,6 +89,12 @@ RaftServer::RaftServer(RaftConfig raft_config,
   }
 }
 
+RaftServer::~RaftServer() {
+  delete this->log_store_;
+  delete this->net_;
+  delete this->store_;
+}
+
 EStatus RaftServer::ResetRandomElectionTimeout() {
   // make rand election timeout in (election_timeout, 2 * election_timout)
   auto rand_tick =
@@ -105,7 +111,20 @@ RaftServer* RaftServer::RunMainLoop(RaftConfig raft_config,
   RaftServer* svr = new RaftServer(raft_config, log_store, store, net);
   std::thread th(&RaftServer::RunCycle, svr);
   th.detach();
+  std::thread th1(&RaftServer::RunApply, svr);
+  th1.detach();
   return svr;
+}
+
+
+EStatus RaftServer::RunApply() {
+  while (true) {
+    if (open_auto_apply_) {
+      this->ApplyEntries();
+    }
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+  }
+  return EStatus::kOk;
 }
 
 /**
@@ -153,9 +172,6 @@ EStatus RaftServer::RunCycle() {
         }
       }
       ResetRandomElectionTimeout();
-    }
-    if (open_auto_apply_) {
-      this->ApplyEntries();
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(tick_interval_));
   }
@@ -845,63 +861,6 @@ eraftkv::Entry* RaftServer::GetLastAppliedEntry() {
  */
 int64_t RaftServer::GetFirstEntryIdx() {
   return 0;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RaftServer::RestoreSnapshotAfterRestart() {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @param last_included_term
- * @param last_included_index
- * @return EStatus
- */
-EStatus RaftServer::BeginLoadSnapshot(int64_t last_included_term,
-                                      int64_t last_included_index) {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RaftServer::EndLoadSnapshot() {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RaftServer::ProposeReadReq() {
-  return EStatus::kOk;
-}
-
-/**
- * @brief Get the Logs Count Can Snapshot object
- *
- * @return int64_t
- */
-int64_t RaftServer::GetLogsCountCanSnapshot() {
-  return 0;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RaftServer::RestoreLog() {
-  return EStatus::kOk;
 }
 
 std::vector<RaftNode*> RaftServer::GetNodes() {

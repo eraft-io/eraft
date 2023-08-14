@@ -42,6 +42,8 @@ std::map<int, std::condition_variable*> ERaftKvServer::ready_cond_vars_;
 
 std::mutex ERaftKvServer::ready_mutex_;
 
+bool ERaftKvServer::is_ok_ = false;
+
 /**
  * @brief
  *
@@ -112,7 +114,12 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
     return grpc::Status::OK;
   }
   for (auto kv_op : req->kvs()) {
-    TraceLog("DEBUG: ", " recv rw op type  ", kv_op.op_type());
+    int rand_seq = static_cast<int>(RandomNumber::Between(1, 100000));
+    TraceLog("DEBUG: ",
+             " recv rw op type  ",
+             kv_op.op_type(),
+             " op count ",
+             rand_seq);
     switch (kv_op.op_type()) {
       case eraftkv::ClientOpType::Get: {
         auto val = raft_context_->store_->GetKV(kv_op.key());
@@ -123,34 +130,35 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
         res->set_value(val.first);
         res->set_success(val.second);
         res->set_op_type(eraftkv::ClientOpType::Get);
-        res->set_op_count(op_count_);
+        res->set_op_count(kv_op.op_count());
         break;
       }
       case eraftkv::ClientOpType::Put:
       case eraftkv::ClientOpType::Del: {
         std::mutex map_mutex_;
         {
-          op_count_ += 1;
           std::condition_variable*    new_var = new std::condition_variable();
           std::lock_guard<std::mutex> lg(map_mutex_);
-          ERaftKvServer::ready_cond_vars_[op_count_] = new_var;
-          kv_op.set_op_count(op_count_);
+          ERaftKvServer::ready_cond_vars_[rand_seq] = new_var;
+          kv_op.set_op_count(rand_seq);
         }
         raft_context_->Propose(
             kv_op.SerializeAsString(), &log_index, &log_term, &success);
         {
           std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
-          ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
-                                                           [] { return true; });
-          ERaftKvServer::ready_cond_vars_.erase(op_count_);
+          ERaftKvServer::ready_cond_vars_[rand_seq]->wait(
+              ul, []() { return ERaftKvServer::is_ok_; });
+          // ERaftKvServer::ready_cond_vars_.erase(rand_seq);
+          ERaftKvServer::is_ok_ = false;
+          TraceLog("DEBUG: ", " send resp ");
+          auto res = resp->add_ops();
+          res->set_key(kv_op.key());
+          res->set_value(kv_op.value());
+          res->set_success(true);
+          res->set_op_type(kv_op.op_type());
+          res->set_op_count(rand_seq);
+          break;
         }
-        auto res = resp->add_ops();
-        res->set_key(kv_op.key());
-        res->set_value(kv_op.value());
-        res->set_success(true);
-        res->set_op_type(kv_op.op_type());
-        res->set_op_count(op_count_);
-        break;
       }
       default:
         break;
@@ -186,7 +194,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
         new_sg->CopyFrom(*sg);
         delete sg;
       }
-      break;
+      return grpc::Status::OK;
     }
     case eraftkv::ChangeType::MembersQuery: {
       resp->set_success(true);
@@ -201,7 +209,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
             : g_server->set_server_status(eraftkv::ServerStatus::Down);
       }
       new_sg->set_leader_id(raft_context_->GetLeaderId());
-      break;
+      return grpc::Status::OK;
     }
     default: {
       // no leader reject
@@ -210,12 +218,12 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
         resp->set_leader_addr(raft_context_->GetLeaderId());
         return grpc::Status::OK;
       }
+      int        rand_seq = static_cast<int>(RandomNumber::Between(1, 10000));
       std::mutex map_mutex_;
       {
-        op_count_ += 1;
-        std::condition_variable*    new_var = new std::condition_variable();
         std::lock_guard<std::mutex> lg(map_mutex_);
-        conf_change_req->set_op_count(op_count_);
+        std::condition_variable*    new_var = new std::condition_variable();
+        conf_change_req->set_op_count(rand_seq);
       }
       bool success;
       raft_context_->ProposeConfChange(conf_change_req->SerializeAsString(),
@@ -225,9 +233,9 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
 
       {
         std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
-        ERaftKvServer::ready_cond_vars_[op_count_]->wait(ul,
-                                                         [] { return true; });
-        ERaftKvServer::ready_cond_vars_.erase(op_count_);
+        ERaftKvServer::ready_cond_vars_[rand_seq]->wait(ul,
+                                                        [] { return true; });
+        ERaftKvServer::ready_cond_vars_.erase(rand_seq);
       }
       break;
     }
