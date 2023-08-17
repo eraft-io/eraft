@@ -155,10 +155,9 @@ class RaftServer {
    * @param resp
    * @return EStatus
    */
-  EStatus HandleSnapshotReq(RaftNode*              from_node,
-                            eraftkv::SnapshotReq*  req,
-                            eraftkv::SnapshotResp* resp);
-
+  EStatus HandleSnapshotReq(RaftNode*                   from_node,
+                            const eraftkv::SnapshotReq* req,
+                            eraftkv::SnapshotResp*      resp);
 
   /**
    * @brief
@@ -167,7 +166,9 @@ class RaftServer {
    * @param resp
    * @return EStatus
    */
-  EStatus HandleSnapshotResp(RaftNode* from_node, eraftkv::SnapshotResp* resp);
+  EStatus HandleSnapshotResp(RaftNode*              from_node,
+                             eraftkv::SnapshotReq*  req,
+                             eraftkv::SnapshotResp* resp);
 
   /**
    * @brief
@@ -231,25 +232,6 @@ class RaftServer {
    */
   EStatus ElectionStart(bool is_prevote);
 
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus BeginSnapshot();
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus EndSnapshot();
-  /**
-   * @brief
-   *
-   * @return true
-   * @return false
-   */
-  bool SnapshotRunning();
 
   /**
    * @brief Get the Last Applied Entry object
@@ -366,6 +348,23 @@ class RaftServer {
    * @return false
    */
   bool IsLeader();
+
+  /**
+   * @brief
+   *
+   * @return true
+   * @return false
+   */
+  bool IsSnapshoting();
+
+  /**
+   * @brief
+   *
+   * @param ety_idx
+   * @param snapdir
+   * @return EStatus
+   */
+  EStatus SnaoshotingStart(int64_t ety_idx, std::string snapdir);
 
   /**
    * @brief
@@ -497,16 +496,43 @@ class RaftServer {
    * @brief
    *
    */
+  int64_t snap_threshold_log_count_;
+
+  /**
+   * @brief
+   *
+   */
+  std::string snap_db_path_;
+
+  /**
+   * @brief
+   *
+   */
   int64_t max_entries_per_append_req_;
+
   /**
    * @brief
    *
    */
   std::vector<RaftNode*> nodes_;
 
+  /**
+   * @brief
+   *
+   */
   bool election_running_;
 
+  /**
+   * @brief
+   *
+   */
   bool open_auto_apply_;
+
+  /**
+   * @brief
+   *
+   */
+  bool is_snapshoting_;
 
   /**
    * @brief

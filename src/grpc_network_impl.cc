@@ -139,8 +139,7 @@ EStatus GRpcNetworkImpl::SendSnapshot(RaftServer*           raft,
   eraftkv::SnapshotResp* resp = new eraftkv::SnapshotResp;
   ClientContext          context;
   auto                   status = stub_->Snapshot(&context, *req, resp);
-  // 2.call raft->HandleSnapshotResp();
-  if (raft->HandleSnapshotResp(target_node, resp) == EStatus::kOk) {
+  if (raft->HandleSnapshotResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
     return EStatus::kNotFound;

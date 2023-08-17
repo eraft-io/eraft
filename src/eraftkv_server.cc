@@ -89,7 +89,11 @@ grpc::Status ERaftKvServer::AppendEntries(ServerContext* context,
 grpc::Status ERaftKvServer::Snapshot(ServerContext*              context,
                                      const eraftkv::SnapshotReq* req,
                                      eraftkv::SnapshotResp*      resp) {
-  return grpc::Status::OK;
+  if (raft_context_->HandleSnapshotReq(nullptr, req, resp) == EStatus::kOk) {
+    return grpc::Status::OK;
+  } else {
+    return grpc::Status::CANCELLED;
+  }
 }
 
 /**
@@ -218,6 +222,13 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
         resp->set_leader_addr(raft_context_->GetLeaderId());
         return grpc::Status::OK;
       }
+
+      if (raft_context_->IsSnapshoting()) {
+        resp->set_error_code(eraftkv::ErrorCode::NODE_IS_SNAPSHOTING);
+        resp->set_leader_addr(raft_context_->GetLeaderId());
+        return grpc::Status::OK;
+      }
+
       int        rand_seq = static_cast<int>(RandomNumber::Between(1, 10000));
       std::mutex map_mutex_;
       {
@@ -241,6 +252,10 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
     }
   }
   return grpc::Status::OK;
+}
+
+EStatus ERaftKvServer::TakeSnapshot(int64_t log_idx) {
+  return raft_context_->SnaoshotingStart(log_idx, options_.kv_db_path);
 }
 
 /**

@@ -67,6 +67,7 @@ struct ERaftKvServerOptions {
   std::string peer_addrs;
   std::string kv_db_path;
   std::string log_db_path;
+  std::string snap_db_path;
 
   int64_t tick_interval;
   int64_t request_timeout;
@@ -102,6 +103,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
       raft_config.peer_address_map[count] = peer;
       count++;
     }
+    raft_config.snap_path = option.snap_db_path;
     options_.svr_addr = raft_config.peer_address_map[options_.svr_id];
     GRpcNetworkImpl* net_rpc = new GRpcNetworkImpl();
     net_rpc->InitPeerNodeConnections(raft_config.peer_address_map);
@@ -171,6 +173,14 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    * @return EStatus
    */
   EStatus BuildAndRunRpcServer();
+
+  /**
+   * @brief
+   *
+   * @param log_idx
+   * @return EStatus
+   */
+  EStatus TakeSnapshot(int64_t log_idx);
 
   /**
    * @brief

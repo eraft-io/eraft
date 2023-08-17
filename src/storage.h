@@ -87,49 +87,6 @@ class Storage {
                            int64_t     snapshot_term) = 0;
 
   /**
-   * @brief Get the Snapshot Block object
-   *
-   * @param raft
-   * @param node
-   * @param offset
-   * @param block
-   * @return EStatus
-   */
-  virtual EStatus GetSnapshotBlock(RaftServer*             raft,
-                                   RaftNode*               node,
-                                   int64_t                 offset,
-                                   eraftkv::SnapshotBlock* block) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param snapshot_index
-   * @param offset
-   * @param block
-   * @return EStatus
-   */
-  virtual EStatus StoreSnapshotBlock(RaftServer*             raft,
-                                     int64_t                 snapshot_index,
-                                     int64_t                 offset,
-                                     eraftkv::SnapshotBlock* block) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @return EStatus
-   */
-  virtual EStatus ClearSnapshot(RaftServer* raft) = 0;
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  virtual EStatus CreateDBSnapshot() = 0;
-
-  /**
    * @brief
    *
    * @param raft
@@ -189,4 +146,7 @@ class Storage {
    * @return EStatus
    */
   virtual EStatus DelKV(std::string key) = 0;
+
+
+  virtual EStatus CreateCheckpoint(std::string snap_path) = 0;
 };

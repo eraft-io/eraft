@@ -65,7 +65,10 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , max_entries_per_append_req_(100)
     , tick_interval_(50)
     , granted_votes_(0)
+    , snap_threshold_log_count_(20)
     , open_auto_apply_(true)
+    , is_snapshoting_(false)
+    , snap_db_path_(raft_config.snap_path)
     , election_running_(true) {
   this->log_store_ = log_store;
   this->store_ = store;
@@ -198,7 +201,23 @@ EStatus RaftServer::SendAppendEntries() {
     auto prev_log_index = node->next_log_index - 1;
 
     if (prev_log_index < this->log_store_->FirstIndex()) {
-      TraceLog("send snapshot to node: ", node->id);
+      auto                  new_first_log_ent = this->log_store_->GetFirstEty();
+      eraftkv::SnapshotReq* snap_req = new eraftkv::SnapshotReq();
+      snap_req->set_term(this->current_term_);
+      snap_req->set_leader_id(this->id_);
+      snap_req->set_last_included_index(new_first_log_ent->id());
+      snap_req->set_last_included_term(new_first_log_ent->term());
+      snap_req->set_data("snaptestdata");
+
+      TraceLog("send snapshot to node: ",
+               node->id,
+               " req ",
+               snap_req->DebugString());
+
+      this->net_->SendSnapshot(this, node, snap_req);
+
+      delete snap_req;
+
     } else {
       auto prev_log_entry = this->log_store_->Get(prev_log_index);
       auto copy_cnt = this->log_store_->LastIndex() - prev_log_index;
@@ -584,9 +603,35 @@ EStatus RaftServer::HandleAppendEntriesResp(RaftNode* from_node,
  * @param resp
  * @return EStatus
  */
-EStatus RaftServer::HandleSnapshotReq(RaftNode*              from_node,
-                                      eraftkv::SnapshotReq*  req,
-                                      eraftkv::SnapshotResp* resp) {
+EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
+                                      const eraftkv::SnapshotReq* req,
+                                      eraftkv::SnapshotResp*      resp) {
+
+  resp->set_term(this->current_term_);
+  resp->set_success(false);
+
+  if (req->term() < this->current_term_) {
+    return EStatus::kOk;
+  }
+
+  if (req->term() > this->current_term_) {
+    this->current_term_ = req->term();
+    this->voted_for_ = -1;
+    this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
+  }
+
+  this->BecomeFollower();
+  ResetRandomElectionTimeout();
+
+  resp->set_success(true);
+
+  if (req->last_included_index() <= this->commit_idx_) {
+    return EStatus::kOk;
+  }
+
+  // Install snapshot
+
+
   return EStatus::kOk;
 }
 
@@ -646,7 +691,26 @@ EStatus RaftServer::AdvanceCommitIndexForFollower(int64_t leader_commit) {
  * @return EStatus
  */
 EStatus RaftServer::HandleSnapshotResp(RaftNode*              from_node,
+                                       eraftkv::SnapshotReq*  req,
                                        eraftkv::SnapshotResp* resp) {
+  if (resp != nullptr) {
+    if (this->role_ == NodeRaftRoleEnum::Leader &&
+        this->current_term_ == req->term()) {
+      if (resp->term() > this->current_term_) {
+        this->BecomeFollower();
+        this->current_term_ = resp->term();
+        this->voted_for_ = -1;
+        this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
+      } else {
+        for (auto node : this->nodes_) {
+          if (from_node->id == node->id) {
+            node->match_log_index = req->last_included_index();
+            node->next_log_index = req->last_included_index() + 1;
+          }
+        }
+      }
+    }
+  }
   return EStatus::kOk;
 }
 
@@ -820,29 +884,29 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
 /**
  * @brief
  *
+ * @param ety_idx
+ * @param snapdir
  * @return EStatus
  */
-EStatus RaftServer::BeginSnapshot() {
-  return EStatus::kOk;
-}
+EStatus RaftServer::SnaoshotingStart(int64_t ety_idx, std::string snapdir) {
+  auto snap_index = this->log_store_->FirstIndex();
 
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RaftServer::EndSnapshot() {
-  return EStatus::kOk;
-}
+  this->is_snapshoting_ = true;
 
-/**
- * @brief
- *
- * @return true
- * @return false
- */
-bool RaftServer::SnapshotRunning() {
-  return false;
+  if (ety_idx <= snap_index) {
+    TraceLog("WARN: ", " ety index is larger than the first log index");
+    this->is_snapshoting_ = false;
+    return EStatus::kError;
+  }
+
+  // TODO: async erase
+  // this->log_store_->EraseBefore(ety_idx);
+
+  this->store_->CreateCheckpoint(snapdir);
+
+  this->is_snapshoting_ = false;
+
+  return EStatus::kOk;
 }
 
 /**
@@ -878,4 +942,8 @@ int64_t RaftServer::GetLeaderId() {
 
 bool RaftServer::IsLeader() {
   return leader_id_ == id_;
+}
+
+bool RaftServer::IsSnapshoting() {
+  return is_snapshoting_;
 }

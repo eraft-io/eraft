@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
   options_.svr_id = stoi(std::string(argv[1]));
   options_.kv_db_path = std::string(argv[2]);
   options_.log_db_path = std::string(argv[3]);
-  options_.peer_addrs = std::string(argv[4]);
+  options_.snap_db_path = std::string(argv[4]);
+  options_.peer_addrs = std::string(argv[5]);
   ERaftKvServer server(options_);
   server.BuildAndRunRpcServer();
   return 0;

@@ -24,13 +24,13 @@ class UnboundedBuffer {
   std::size_t PushData(const void* pData, std::size_t nSize);
   std::size_t Write(const void* pData, std::size_t nSize);
   void        AdjustWritePtr(std::size_t nBytes) {
-           writePos_ += nBytes;
+    writePos_ += nBytes;
   }
 
   std::size_t PeekDataAt(void* pBuf, std::size_t nSize, std::size_t offset = 0);
   std::size_t PeekData(void* pBuf, std::size_t nSize);
   void        AdjustReadPtr(std::size_t nBytes) {
-           readPos_ += nBytes;
+    readPos_ += nBytes;
   }
 
   char* ReadAddr() {

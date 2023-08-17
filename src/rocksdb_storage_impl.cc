@@ -33,6 +33,8 @@
 
 #include "rocksdb_storage_impl.h"
 
+#include <rocksdb/utilities/checkpoint.h>
+
 #include "consts.h"
 #include "eraftkv.pb.h"
 #include "eraftkv_server.h"
@@ -75,9 +77,9 @@ EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
 EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                      int64_t     snapshot_index,
                                      int64_t     snapshot_term) {
-  // if (raft->commit_idx_ == raft->last_applied_idx_) {
-  //   return EStatus::kOk;
-  // }
+  if (raft->commit_idx_ == raft->last_applied_idx_) {
+    return EStatus::kOk;
+  }
   auto etys =
       raft->log_store_->Gets(raft->last_applied_idx_, raft->commit_idx_);
   for (auto ety : etys) {
@@ -125,6 +127,10 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
           }
         }
         delete op_pair;
+        if (raft->log_store_->LogCount() > raft->snap_threshold_log_count_) {
+          // to snapshot
+          raft->SnaoshotingStart(ety->id(), raft->snap_db_path_);
+        }
         break;
       }
       case eraftkv::EntryType::ConfChange: {
@@ -254,55 +260,24 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
 }
 
 /**
- * @brief Get the Snapshot Block object
+ * @brief
  *
- * @param raft
- * @param node
- * @param offset
- * @param block
+ * @param snap_path
  * @return EStatus
  */
-EStatus RocksDBStorageImpl::GetSnapshotBlock(RaftServer*             raft,
-                                             RaftNode*               node,
-                                             int64_t                 offset,
-                                             eraftkv::SnapshotBlock* block) {
+EStatus RocksDBStorageImpl::CreateCheckpoint(std::string snap_path) {
+  rocksdb::Checkpoint* checkpoint;
+  auto st = rocksdb::Checkpoint::Create(this->kv_db_, &checkpoint);
+  if (!st.ok()) {
+    return EStatus::kError;
+  }
+  auto st_ = checkpoint->CreateCheckpoint(snap_path);
+  if (!st_.ok()) {
+    return EStatus::kError;
+  }
   return EStatus::kOk;
 }
 
-/**
- * @brief
- *
- * @param raft
- * @param snapshot_index
- * @param offset
- * @param block
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::StoreSnapshotBlock(RaftServer* raft,
-                                               int64_t     snapshot_index,
-                                               int64_t     offset,
-                                               eraftkv::SnapshotBlock* block) {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @param raft
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::ClearSnapshot(RaftServer* raft) {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::CreateDBSnapshot() {
-  return EStatus::kOk;
-}
 
 /**
  * @brief

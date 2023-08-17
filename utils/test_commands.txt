@@ -3,6 +3,22 @@ set b e
 set c l
 set d l
 set e o
+set ab h
+set bb e
+set cb l
+set db l
+set eb o
+set ac h
+set bc e
+set cc l
+set dc l
+set ec o
+set ad h
+set bd e
+set cd l
+set dd l
+set ed o
+
 get a 
 get b
 get c 

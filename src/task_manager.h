@@ -48,7 +48,7 @@ class TaskManager {
 
  private:
   bool                      _AddTask(PTCPSOCKET task);
-  void                      _RemoveTask(std::map<int, PTCPSOCKET>::iterator&);
+  void                      _RemoveTask(std::map<int, PTCPSOCKET>::iterator &);
   std::map<int, PTCPSOCKET> tcpSockets_;
 
   std::mutex       lock_;

@@ -48,7 +48,7 @@ struct TableStruct_eraftkv_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[16]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[15]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -95,9 +95,6 @@ extern ShardGroupDefaultTypeInternal _ShardGroup_default_instance_;
 class Slot;
 class SlotDefaultTypeInternal;
 extern SlotDefaultTypeInternal _Slot_default_instance_;
-class SnapshotBlock;
-class SnapshotBlockDefaultTypeInternal;
-extern SnapshotBlockDefaultTypeInternal _SnapshotBlock_default_instance_;
 class SnapshotReq;
 class SnapshotReqDefaultTypeInternal;
 extern SnapshotReqDefaultTypeInternal _SnapshotReq_default_instance_;
@@ -119,7 +116,6 @@ template<> ::eraftkv::RequestVoteResp* Arena::CreateMaybeMessage<::eraftkv::Requ
 template<> ::eraftkv::Server* Arena::CreateMaybeMessage<::eraftkv::Server>(Arena*);
 template<> ::eraftkv::ShardGroup* Arena::CreateMaybeMessage<::eraftkv::ShardGroup>(Arena*);
 template<> ::eraftkv::Slot* Arena::CreateMaybeMessage<::eraftkv::Slot>(Arena*);
-template<> ::eraftkv::SnapshotBlock* Arena::CreateMaybeMessage<::eraftkv::SnapshotBlock>(Arena*);
 template<> ::eraftkv::SnapshotReq* Arena::CreateMaybeMessage<::eraftkv::SnapshotReq>(Arena*);
 template<> ::eraftkv::SnapshotResp* Arena::CreateMaybeMessage<::eraftkv::SnapshotResp>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -129,12 +125,13 @@ enum ErrorCode : int {
   REQUEST_NOT_LEADER_NODE = 0,
   NODE_IS_DOWN = 1,
   REQUEST_TIMEOUT = 2,
+  NODE_IS_SNAPSHOTING = 3,
   ErrorCode_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ErrorCode_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ErrorCode_IsValid(int value);
 constexpr ErrorCode ErrorCode_MIN = REQUEST_NOT_LEADER_NODE;
-constexpr ErrorCode ErrorCode_MAX = REQUEST_TIMEOUT;
+constexpr ErrorCode ErrorCode_MAX = NODE_IS_SNAPSHOTING;
 constexpr int ErrorCode_ARRAYSIZE = ErrorCode_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ErrorCode_descriptor();
@@ -1242,174 +1239,6 @@ class AppendEntriesResp :
 };
 // -------------------------------------------------------------------
 
-class SnapshotBlock :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotBlock) */ {
- public:
-  SnapshotBlock();
-  virtual ~SnapshotBlock();
-
-  SnapshotBlock(const SnapshotBlock& from);
-  SnapshotBlock(SnapshotBlock&& from) noexcept
-    : SnapshotBlock() {
-    *this = ::std::move(from);
-  }
-
-  inline SnapshotBlock& operator=(const SnapshotBlock& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline SnapshotBlock& operator=(SnapshotBlock&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const SnapshotBlock& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const SnapshotBlock* internal_default_instance() {
-    return reinterpret_cast<const SnapshotBlock*>(
-               &_SnapshotBlock_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    5;
-
-  friend void swap(SnapshotBlock& a, SnapshotBlock& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(SnapshotBlock* other) {
-    if (other == this) return;
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline SnapshotBlock* New() const final {
-    return CreateMaybeMessage<SnapshotBlock>(nullptr);
-  }
-
-  SnapshotBlock* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<SnapshotBlock>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const SnapshotBlock& from);
-  void MergeFrom(const SnapshotBlock& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(SnapshotBlock* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "eraftkv.SnapshotBlock";
-  }
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
-    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kDataFieldNumber = 2,
-    kOffsetFieldNumber = 1,
-    kBlockSizeFieldNumber = 3,
-    kIsLastChunkFieldNumber = 4,
-  };
-  // bytes data = 2;
-  void clear_data();
-  const std::string& data() const;
-  void set_data(const std::string& value);
-  void set_data(std::string&& value);
-  void set_data(const char* value);
-  void set_data(const void* value, size_t size);
-  std::string* mutable_data();
-  std::string* release_data();
-  void set_allocated_data(std::string* data);
-  private:
-  const std::string& _internal_data() const;
-  void _internal_set_data(const std::string& value);
-  std::string* _internal_mutable_data();
-  public:
-
-  // int64 offset = 1;
-  void clear_offset();
-  ::PROTOBUF_NAMESPACE_ID::int64 offset() const;
-  void set_offset(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_offset() const;
-  void _internal_set_offset(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
-  // int64 block_size = 3;
-  void clear_block_size();
-  ::PROTOBUF_NAMESPACE_ID::int64 block_size() const;
-  void set_block_size(::PROTOBUF_NAMESPACE_ID::int64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_block_size() const;
-  void _internal_set_block_size(::PROTOBUF_NAMESPACE_ID::int64 value);
-  public:
-
-  // bool is_last_chunk = 4;
-  void clear_is_last_chunk();
-  bool is_last_chunk() const;
-  void set_is_last_chunk(bool value);
-  private:
-  bool _internal_is_last_chunk() const;
-  void _internal_set_is_last_chunk(bool value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:eraftkv.SnapshotBlock)
- private:
-  class _Internal;
-
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
-  ::PROTOBUF_NAMESPACE_ID::int64 offset_;
-  ::PROTOBUF_NAMESPACE_ID::int64 block_size_;
-  bool is_last_chunk_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_eraftkv_2eproto;
-};
-// -------------------------------------------------------------------
-
 class SnapshotReq :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.SnapshotReq) */ {
  public:
@@ -1452,7 +1281,7 @@ class SnapshotReq :
                &_SnapshotReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    5;
 
   friend void swap(SnapshotReq& a, SnapshotReq& b) {
     a.Swap(&b);
@@ -1517,11 +1346,13 @@ class SnapshotReq :
 
   enum : int {
     kMessageIndexFieldNumber = 3,
-    kBlockFieldNumber = 6,
+    kDataFieldNumber = 7,
     kTermFieldNumber = 1,
     kLeaderIdFieldNumber = 2,
-    kSnapshotIndexFieldNumber = 4,
-    kSnapshotTermFieldNumber = 5,
+    kLastIncludedIndexFieldNumber = 4,
+    kLastIncludedTermFieldNumber = 5,
+    kOffsetFieldNumber = 6,
+    kDoneFieldNumber = 8,
   };
   // string message_index = 3;
   void clear_message_index();
@@ -1539,19 +1370,20 @@ class SnapshotReq :
   std::string* _internal_mutable_message_index();
   public:
 
-  // .eraftkv.SnapshotBlock block = 6;
-  bool has_block() const;
+  // bytes data = 7;
+  void clear_data();
+  const std::string& data() const;
+  void set_data(const std::string& value);
+  void set_data(std::string&& value);
+  void set_data(const char* value);
+  void set_data(const void* value, size_t size);
+  std::string* mutable_data();
+  std::string* release_data();
+  void set_allocated_data(std::string* data);
   private:
-  bool _internal_has_block() const;
-  public:
-  void clear_block();
-  const ::eraftkv::SnapshotBlock& block() const;
-  ::eraftkv::SnapshotBlock* release_block();
-  ::eraftkv::SnapshotBlock* mutable_block();
-  void set_allocated_block(::eraftkv::SnapshotBlock* block);
-  private:
-  const ::eraftkv::SnapshotBlock& _internal_block() const;
-  ::eraftkv::SnapshotBlock* _internal_mutable_block();
+  const std::string& _internal_data() const;
+  void _internal_set_data(const std::string& value);
+  std::string* _internal_mutable_data();
   public:
 
   // int64 term = 1;
@@ -1572,22 +1404,40 @@ class SnapshotReq :
   void _internal_set_leader_id(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // int64 snapshot_index = 4;
-  void clear_snapshot_index();
-  ::PROTOBUF_NAMESPACE_ID::int64 snapshot_index() const;
-  void set_snapshot_index(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // int64 last_included_index = 4;
+  void clear_last_included_index();
+  ::PROTOBUF_NAMESPACE_ID::int64 last_included_index() const;
+  void set_last_included_index(::PROTOBUF_NAMESPACE_ID::int64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_snapshot_index() const;
-  void _internal_set_snapshot_index(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_last_included_index() const;
+  void _internal_set_last_included_index(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // int64 snapshot_term = 5;
-  void clear_snapshot_term();
-  ::PROTOBUF_NAMESPACE_ID::int64 snapshot_term() const;
-  void set_snapshot_term(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // int64 last_included_term = 5;
+  void clear_last_included_term();
+  ::PROTOBUF_NAMESPACE_ID::int64 last_included_term() const;
+  void set_last_included_term(::PROTOBUF_NAMESPACE_ID::int64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_snapshot_term() const;
-  void _internal_set_snapshot_term(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_last_included_term() const;
+  void _internal_set_last_included_term(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 offset = 6;
+  void clear_offset();
+  ::PROTOBUF_NAMESPACE_ID::int64 offset() const;
+  void set_offset(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_offset() const;
+  void _internal_set_offset(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // bool done = 8;
+  void clear_done();
+  bool done() const;
+  void set_done(bool value);
+  private:
+  bool _internal_done() const;
+  void _internal_set_done(bool value);
   public:
 
   // @@protoc_insertion_point(class_scope:eraftkv.SnapshotReq)
@@ -1596,11 +1446,13 @@ class SnapshotReq :
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr message_index_;
-  ::eraftkv::SnapshotBlock* block_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
   ::PROTOBUF_NAMESPACE_ID::int64 term_;
   ::PROTOBUF_NAMESPACE_ID::int64 leader_id_;
-  ::PROTOBUF_NAMESPACE_ID::int64 snapshot_index_;
-  ::PROTOBUF_NAMESPACE_ID::int64 snapshot_term_;
+  ::PROTOBUF_NAMESPACE_ID::int64 last_included_index_;
+  ::PROTOBUF_NAMESPACE_ID::int64 last_included_term_;
+  ::PROTOBUF_NAMESPACE_ID::int64 offset_;
+  bool done_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -1648,7 +1500,7 @@ class SnapshotResp :
                &_SnapshotResp_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    6;
 
   friend void swap(SnapshotResp& a, SnapshotResp& b) {
     a.Swap(&b);
@@ -1827,7 +1679,7 @@ class Slot :
                &_Slot_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    7;
 
   friend void swap(Slot& a, Slot& b) {
     a.Swap(&b);
@@ -1977,7 +1829,7 @@ class Server :
                &_Server_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    8;
 
   friend void swap(Server& a, Server& b) {
     a.Swap(&b);
@@ -2134,7 +1986,7 @@ class ShardGroup :
                &_ShardGroup_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    9;
 
   friend void swap(ShardGroup& a, ShardGroup& b) {
     a.Swap(&b);
@@ -2313,7 +2165,7 @@ class ClusterConfigChangeReq :
                &_ClusterConfigChangeReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    10;
 
   friend void swap(ClusterConfigChangeReq& a, ClusterConfigChangeReq& b) {
     a.Swap(&b);
@@ -2530,7 +2382,7 @@ class ClusterConfigChangeResp :
                &_ClusterConfigChangeResp_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    11;
 
   friend void swap(ClusterConfigChangeResp& a, ClusterConfigChangeResp& b) {
     a.Swap(&b);
@@ -2711,7 +2563,7 @@ class KvOpPair :
                &_KvOpPair_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    12;
 
   friend void swap(KvOpPair& a, KvOpPair& b) {
     a.Swap(&b);
@@ -2897,7 +2749,7 @@ class ClientOperationReq :
                &_ClientOperationReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    13;
 
   friend void swap(ClientOperationReq& a, ClientOperationReq& b) {
     a.Swap(&b);
@@ -3045,7 +2897,7 @@ class ClientOperationResp :
                &_ClientOperationResp_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    14;
 
   friend void swap(ClientOperationResp& a, ClientOperationResp& b) {
     a.Swap(&b);
@@ -3868,130 +3720,6 @@ inline void AppendEntriesResp::set_conflict_term(::PROTOBUF_NAMESPACE_ID::int64 
 
 // -------------------------------------------------------------------
 
-// SnapshotBlock
-
-// int64 offset = 1;
-inline void SnapshotBlock::clear_offset() {
-  offset_ = PROTOBUF_LONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotBlock::_internal_offset() const {
-  return offset_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotBlock::offset() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotBlock.offset)
-  return _internal_offset();
-}
-inline void SnapshotBlock::_internal_set_offset(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  
-  offset_ = value;
-}
-inline void SnapshotBlock::set_offset(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_offset(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SnapshotBlock.offset)
-}
-
-// bytes data = 2;
-inline void SnapshotBlock::clear_data() {
-  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& SnapshotBlock::data() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotBlock.data)
-  return _internal_data();
-}
-inline void SnapshotBlock::set_data(const std::string& value) {
-  _internal_set_data(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SnapshotBlock.data)
-}
-inline std::string* SnapshotBlock::mutable_data() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.SnapshotBlock.data)
-  return _internal_mutable_data();
-}
-inline const std::string& SnapshotBlock::_internal_data() const {
-  return data_.GetNoArena();
-}
-inline void SnapshotBlock::_internal_set_data(const std::string& value) {
-  
-  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void SnapshotBlock::set_data(std::string&& value) {
-  
-  data_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:eraftkv.SnapshotBlock.data)
-}
-inline void SnapshotBlock::set_data(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:eraftkv.SnapshotBlock.data)
-}
-inline void SnapshotBlock::set_data(const void* value, size_t size) {
-  
-  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:eraftkv.SnapshotBlock.data)
-}
-inline std::string* SnapshotBlock::_internal_mutable_data() {
-  
-  return data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* SnapshotBlock::release_data() {
-  // @@protoc_insertion_point(field_release:eraftkv.SnapshotBlock.data)
-  
-  return data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void SnapshotBlock::set_allocated_data(std::string* data) {
-  if (data != nullptr) {
-    
-  } else {
-    
-  }
-  data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data);
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.SnapshotBlock.data)
-}
-
-// int64 block_size = 3;
-inline void SnapshotBlock::clear_block_size() {
-  block_size_ = PROTOBUF_LONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotBlock::_internal_block_size() const {
-  return block_size_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotBlock::block_size() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotBlock.block_size)
-  return _internal_block_size();
-}
-inline void SnapshotBlock::_internal_set_block_size(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  
-  block_size_ = value;
-}
-inline void SnapshotBlock::set_block_size(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_block_size(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SnapshotBlock.block_size)
-}
-
-// bool is_last_chunk = 4;
-inline void SnapshotBlock::clear_is_last_chunk() {
-  is_last_chunk_ = false;
-}
-inline bool SnapshotBlock::_internal_is_last_chunk() const {
-  return is_last_chunk_;
-}
-inline bool SnapshotBlock::is_last_chunk() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotBlock.is_last_chunk)
-  return _internal_is_last_chunk();
-}
-inline void SnapshotBlock::_internal_set_is_last_chunk(bool value) {
-  
-  is_last_chunk_ = value;
-}
-inline void SnapshotBlock::set_is_last_chunk(bool value) {
-  _internal_set_is_last_chunk(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SnapshotBlock.is_last_chunk)
-}
-
-// -------------------------------------------------------------------
-
 // SnapshotReq
 
 // int64 term = 1;
@@ -4094,104 +3822,144 @@ inline void SnapshotReq::set_allocated_message_index(std::string* message_index)
   // @@protoc_insertion_point(field_set_allocated:eraftkv.SnapshotReq.message_index)
 }
 
-// int64 snapshot_index = 4;
-inline void SnapshotReq::clear_snapshot_index() {
-  snapshot_index_ = PROTOBUF_LONGLONG(0);
+// int64 last_included_index = 4;
+inline void SnapshotReq::clear_last_included_index() {
+  last_included_index_ = PROTOBUF_LONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::_internal_snapshot_index() const {
-  return snapshot_index_;
+inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::_internal_last_included_index() const {
+  return last_included_index_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::snapshot_index() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.snapshot_index)
-  return _internal_snapshot_index();
+inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::last_included_index() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.last_included_index)
+  return _internal_last_included_index();
 }
-inline void SnapshotReq::_internal_set_snapshot_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void SnapshotReq::_internal_set_last_included_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
-  snapshot_index_ = value;
+  last_included_index_ = value;
 }
-inline void SnapshotReq::set_snapshot_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_snapshot_index(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.snapshot_index)
+inline void SnapshotReq::set_last_included_index(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_last_included_index(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.last_included_index)
 }
 
-// int64 snapshot_term = 5;
-inline void SnapshotReq::clear_snapshot_term() {
-  snapshot_term_ = PROTOBUF_LONGLONG(0);
+// int64 last_included_term = 5;
+inline void SnapshotReq::clear_last_included_term() {
+  last_included_term_ = PROTOBUF_LONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::_internal_snapshot_term() const {
-  return snapshot_term_;
+inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::_internal_last_included_term() const {
+  return last_included_term_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::snapshot_term() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.snapshot_term)
-  return _internal_snapshot_term();
+inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::last_included_term() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.last_included_term)
+  return _internal_last_included_term();
 }
-inline void SnapshotReq::_internal_set_snapshot_term(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void SnapshotReq::_internal_set_last_included_term(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
-  snapshot_term_ = value;
+  last_included_term_ = value;
 }
-inline void SnapshotReq::set_snapshot_term(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_snapshot_term(value);
-  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.snapshot_term)
+inline void SnapshotReq::set_last_included_term(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_last_included_term(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.last_included_term)
 }
 
-// .eraftkv.SnapshotBlock block = 6;
-inline bool SnapshotReq::_internal_has_block() const {
-  return this != internal_default_instance() && block_ != nullptr;
+// int64 offset = 6;
+inline void SnapshotReq::clear_offset() {
+  offset_ = PROTOBUF_LONGLONG(0);
 }
-inline bool SnapshotReq::has_block() const {
-  return _internal_has_block();
+inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::_internal_offset() const {
+  return offset_;
 }
-inline void SnapshotReq::clear_block() {
-  if (GetArenaNoVirtual() == nullptr && block_ != nullptr) {
-    delete block_;
-  }
-  block_ = nullptr;
+inline ::PROTOBUF_NAMESPACE_ID::int64 SnapshotReq::offset() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.offset)
+  return _internal_offset();
 }
-inline const ::eraftkv::SnapshotBlock& SnapshotReq::_internal_block() const {
-  const ::eraftkv::SnapshotBlock* p = block_;
-  return p != nullptr ? *p : *reinterpret_cast<const ::eraftkv::SnapshotBlock*>(
-      &::eraftkv::_SnapshotBlock_default_instance_);
-}
-inline const ::eraftkv::SnapshotBlock& SnapshotReq::block() const {
-  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.block)
-  return _internal_block();
-}
-inline ::eraftkv::SnapshotBlock* SnapshotReq::release_block() {
-  // @@protoc_insertion_point(field_release:eraftkv.SnapshotReq.block)
+inline void SnapshotReq::_internal_set_offset(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
-  ::eraftkv::SnapshotBlock* temp = block_;
-  block_ = nullptr;
-  return temp;
+  offset_ = value;
 }
-inline ::eraftkv::SnapshotBlock* SnapshotReq::_internal_mutable_block() {
+inline void SnapshotReq::set_offset(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_offset(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.offset)
+}
+
+// bytes data = 7;
+inline void SnapshotReq::clear_data() {
+  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& SnapshotReq::data() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.data)
+  return _internal_data();
+}
+inline void SnapshotReq::set_data(const std::string& value) {
+  _internal_set_data(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.data)
+}
+inline std::string* SnapshotReq::mutable_data() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.SnapshotReq.data)
+  return _internal_mutable_data();
+}
+inline const std::string& SnapshotReq::_internal_data() const {
+  return data_.GetNoArena();
+}
+inline void SnapshotReq::_internal_set_data(const std::string& value) {
   
-  if (block_ == nullptr) {
-    auto* p = CreateMaybeMessage<::eraftkv::SnapshotBlock>(GetArenaNoVirtual());
-    block_ = p;
-  }
-  return block_;
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
 }
-inline ::eraftkv::SnapshotBlock* SnapshotReq::mutable_block() {
-  // @@protoc_insertion_point(field_mutable:eraftkv.SnapshotReq.block)
-  return _internal_mutable_block();
+inline void SnapshotReq::set_data(std::string&& value) {
+  
+  data_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.SnapshotReq.data)
 }
-inline void SnapshotReq::set_allocated_block(::eraftkv::SnapshotBlock* block) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == nullptr) {
-    delete block_;
-  }
-  if (block) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
-    if (message_arena != submessage_arena) {
-      block = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, block, submessage_arena);
-    }
+inline void SnapshotReq::set_data(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.SnapshotReq.data)
+}
+inline void SnapshotReq::set_data(const void* value, size_t size) {
+  
+  data_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.SnapshotReq.data)
+}
+inline std::string* SnapshotReq::_internal_mutable_data() {
+  
+  return data_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* SnapshotReq::release_data() {
+  // @@protoc_insertion_point(field_release:eraftkv.SnapshotReq.data)
+  
+  return data_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void SnapshotReq::set_allocated_data(std::string* data) {
+  if (data != nullptr) {
     
   } else {
     
   }
-  block_ = block;
-  // @@protoc_insertion_point(field_set_allocated:eraftkv.SnapshotReq.block)
+  data_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.SnapshotReq.data)
+}
+
+// bool done = 8;
+inline void SnapshotReq::clear_done() {
+  done_ = false;
+}
+inline bool SnapshotReq::_internal_done() const {
+  return done_;
+}
+inline bool SnapshotReq::done() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SnapshotReq.done)
+  return _internal_done();
+}
+inline void SnapshotReq::_internal_set_done(bool value) {
+  
+  done_ = value;
+}
+inline void SnapshotReq::set_done(bool value) {
+  _internal_set_done(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SnapshotReq.done)
 }
 
 // -------------------------------------------------------------------
@@ -5328,8 +5096,6 @@ inline void ClientOperationResp::set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

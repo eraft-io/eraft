@@ -234,7 +234,6 @@ EStatus RocksDBSingleLogStorageImpl::Append(eraftkv::Entry* ety) {
  */
 EStatus RocksDBSingleLogStorageImpl::EraseBefore(int64_t first_index) {
   int64_t old_fir_idx = this->first_idx;
-  this->first_idx = first_index;
   for (int64_t i = old_fir_idx; i < first_index; i++) {
     std::string key;
     key.append("E:");
@@ -242,6 +241,7 @@ EStatus RocksDBSingleLogStorageImpl::EraseBefore(int64_t first_index) {
     auto st = log_db_->Delete(rocksdb::WriteOptions(), key);
     assert(st.ok());
   }
+  this->first_idx = first_index;
   return EStatus::kOk;
 }
 

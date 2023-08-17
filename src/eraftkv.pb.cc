@@ -19,7 +19,6 @@ extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::interna
 extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Server_eraftkv_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_ShardGroup_eraftkv_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Slot_eraftkv_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_eraftkv_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SnapshotBlock_eraftkv_2eproto;
 namespace eraftkv {
 class RequestVoteReqDefaultTypeInternal {
  public:
@@ -41,10 +40,6 @@ class AppendEntriesRespDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<AppendEntriesResp> _instance;
 } _AppendEntriesResp_default_instance_;
-class SnapshotBlockDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SnapshotBlock> _instance;
-} _SnapshotBlock_default_instance_;
 class SnapshotReqDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SnapshotReq> _instance;
@@ -276,20 +271,6 @@ static void InitDefaultsscc_info_Slot_eraftkv_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Slot_eraftkv_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Slot_eraftkv_2eproto}, {}};
 
-static void InitDefaultsscc_info_SnapshotBlock_eraftkv_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::eraftkv::_SnapshotBlock_default_instance_;
-    new (ptr) ::eraftkv::SnapshotBlock();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::eraftkv::SnapshotBlock::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SnapshotBlock_eraftkv_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SnapshotBlock_eraftkv_2eproto}, {}};
-
 static void InitDefaultsscc_info_SnapshotReq_eraftkv_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -301,9 +282,8 @@ static void InitDefaultsscc_info_SnapshotReq_eraftkv_2eproto() {
   ::eraftkv::SnapshotReq::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SnapshotReq_eraftkv_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SnapshotReq_eraftkv_2eproto}, {
-      &scc_info_SnapshotBlock_eraftkv_2eproto.base,}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SnapshotReq_eraftkv_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SnapshotReq_eraftkv_2eproto}, {}};
 
 static void InitDefaultsscc_info_SnapshotResp_eraftkv_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -319,7 +299,7 @@ static void InitDefaultsscc_info_SnapshotResp_eraftkv_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SnapshotResp_eraftkv_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SnapshotResp_eraftkv_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_eraftkv_2eproto[16];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_eraftkv_2eproto[15];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_eraftkv_2eproto[7];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_eraftkv_2eproto = nullptr;
 
@@ -379,15 +359,6 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftkv_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, conflict_index_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::AppendEntriesResp, conflict_term_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotBlock, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotBlock, offset_),
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotBlock, data_),
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotBlock, block_size_),
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotBlock, is_last_chunk_),
-  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -395,9 +366,11 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_eraftkv_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, term_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, leader_id_),
   PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, message_index_),
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, snapshot_index_),
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, snapshot_term_),
-  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, block_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, last_included_index_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, last_included_term_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, offset_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, data_),
+  PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotReq, done_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::eraftkv::SnapshotResp, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -488,17 +461,16 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 20, -1, sizeof(::eraftkv::Entry)},
   { 30, -1, sizeof(::eraftkv::AppendEntriesReq)},
   { 43, -1, sizeof(::eraftkv::AppendEntriesResp)},
-  { 54, -1, sizeof(::eraftkv::SnapshotBlock)},
-  { 63, -1, sizeof(::eraftkv::SnapshotReq)},
-  { 74, -1, sizeof(::eraftkv::SnapshotResp)},
-  { 84, -1, sizeof(::eraftkv::Slot)},
-  { 92, -1, sizeof(::eraftkv::Server)},
-  { 100, -1, sizeof(::eraftkv::ShardGroup)},
-  { 109, -1, sizeof(::eraftkv::ClusterConfigChangeReq)},
-  { 122, -1, sizeof(::eraftkv::ClusterConfigChangeResp)},
-  { 132, -1, sizeof(::eraftkv::KvOpPair)},
-  { 142, -1, sizeof(::eraftkv::ClientOperationReq)},
-  { 149, -1, sizeof(::eraftkv::ClientOperationResp)},
+  { 54, -1, sizeof(::eraftkv::SnapshotReq)},
+  { 67, -1, sizeof(::eraftkv::SnapshotResp)},
+  { 77, -1, sizeof(::eraftkv::Slot)},
+  { 85, -1, sizeof(::eraftkv::Server)},
+  { 93, -1, sizeof(::eraftkv::ShardGroup)},
+  { 102, -1, sizeof(::eraftkv::ClusterConfigChangeReq)},
+  { 115, -1, sizeof(::eraftkv::ClusterConfigChangeResp)},
+  { 125, -1, sizeof(::eraftkv::KvOpPair)},
+  { 135, -1, sizeof(::eraftkv::ClientOperationReq)},
+  { 142, -1, sizeof(::eraftkv::ClientOperationResp)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -507,7 +479,6 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_Entry_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_AppendEntriesReq_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_AppendEntriesResp_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_SnapshotBlock_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_SnapshotReq_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_SnapshotResp_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::eraftkv::_Slot_default_instance_),
@@ -538,68 +509,67 @@ const char descriptor_table_protodef_eraftkv_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\"\217\001\n\021AppendEntriesResp\022\025\n\rmessage_token\030"
   "\001 \001(\t\022\014\n\004term\030\002 \001(\003\022\017\n\007success\030\003 \001(\010\022\025\n\r"
   "current_index\030\004 \001(\003\022\026\n\016conflict_index\030\005 "
-  "\001(\003\022\025\n\rconflict_term\030\006 \001(\003\"X\n\rSnapshotBl"
-  "ock\022\016\n\006offset\030\001 \001(\003\022\014\n\004data\030\002 \001(\014\022\022\n\nblo"
-  "ck_size\030\003 \001(\003\022\025\n\ris_last_chunk\030\004 \001(\010\"\233\001\n"
-  "\013SnapshotReq\022\014\n\004term\030\001 \001(\003\022\021\n\tleader_id\030"
-  "\002 \001(\003\022\025\n\rmessage_index\030\003 \001(\t\022\026\n\016snapshot"
-  "_index\030\004 \001(\003\022\025\n\rsnapshot_term\030\005 \001(\003\022%\n\005b"
-  "lock\030\006 \001(\0132\026.eraftkv.SnapshotBlock\"k\n\014Sn"
-  "apshotResp\022\014\n\004term\030\001 \001(\003\022\025\n\rmessage_inde"
-  "x\030\002 \001(\t\022\016\n\006offset\030\003 \001(\003\022\017\n\007success\030\004 \001(\010"
-  "\022\025\n\ris_last_chunk\030\005 \001(\010\"X\n\004Slot\022\n\n\002id\030\001 "
-  "\001(\003\022(\n\013slot_status\030\002 \001(\0162\023.eraftkv.SlotS"
-  "tatus\022\032\n\022status_modify_time\030\003 \001(\003\"S\n\006Ser"
-  "ver\022\n\n\002id\030\001 \001(\003\022\017\n\007address\030\002 \001(\t\022,\n\rserv"
-  "er_status\030\003 \001(\0162\025.eraftkv.ServerStatus\"k"
-  "\n\nShardGroup\022\n\n\002id\030\001 \001(\003\022\034\n\005slots\030\002 \003(\0132"
-  "\r.eraftkv.Slot\022 \n\007servers\030\003 \003(\0132\017.eraftk"
-  "v.Server\022\021\n\tleader_id\030\004 \001(\003\"\224\002\n\026ClusterC"
-  "onfigChangeReq\022(\n\013change_type\030\001 \001(\0162\023.er"
-  "aftkv.ChangeType\0225\n\022handle_server_type\030\002"
-  " \001(\0162\031.eraftkv.HandleServerType\022\020\n\010shard"
-  "_id\030\003 \001(\003\022\037\n\006server\030\004 \001(\0132\017.eraftkv.Serv"
-  "er\022\026\n\016config_version\030\005 \001(\003\022\020\n\010op_count\030\006"
-  " \001(\003\022\022\n\ncommand_id\030\007 \001(\003\022(\n\013shard_group\030"
-  "\010 \001(\0132\023.eraftkv.ShardGroup\"\251\001\n\027ClusterCo"
-  "nfigChangeResp\022\017\n\007success\030\001 \001(\010\022(\n\013shard"
-  "_group\030\002 \003(\0132\023.eraftkv.ShardGroup\022\026\n\016con"
-  "fig_version\030\003 \001(\003\022&\n\nerror_code\030\004 \001(\0162\022."
-  "eraftkv.ErrorCode\022\023\n\013leader_addr\030\005 \001(\003\"q"
-  "\n\010KvOpPair\022&\n\007op_type\030\001 \001(\0162\025.eraftkv.Cl"
-  "ientOpType\022\013\n\003key\030\002 \001(\t\022\r\n\005value\030\003 \001(\t\022\017"
-  "\n\007success\030\004 \001(\010\022\020\n\010op_count\030\005 \001(\003\"J\n\022Cli"
-  "entOperationReq\022\024\n\014op_timestamp\030\001 \001(\004\022\036\n"
-  "\003kvs\030\002 \003(\0132\021.eraftkv.KvOpPair\"r\n\023ClientO"
-  "perationResp\022\036\n\003ops\030\001 \003(\0132\021.eraftkv.KvOp"
-  "Pair\022&\n\nerror_code\030\002 \001(\0162\022.eraftkv.Error"
-  "Code\022\023\n\013leader_addr\030\003 \001(\003*O\n\tErrorCode\022\033"
-  "\n\027REQUEST_NOT_LEADER_NODE\020\000\022\020\n\014NODE_IS_D"
-  "OWN\020\001\022\023\n\017REQUEST_TIMEOUT\020\002*1\n\tEntryType\022"
-  "\n\n\006Normal\020\000\022\016\n\nConfChange\020\001\022\010\n\004NoOp\020\002*A\n"
-  "\nSlotStatus\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022"
-  "\r\n\tImporting\020\002\022\010\n\004Init\020\003* \n\014ServerStatus"
-  "\022\006\n\002Up\020\000\022\010\n\004Down\020\001*\216\001\n\nChangeType\022\017\n\013Clu"
-  "sterInit\020\000\022\r\n\tShardJoin\020\001\022\016\n\nShardLeave\020"
-  "\002\022\017\n\013ShardsQuery\020\003\022\014\n\010SlotMove\020\004\022\016\n\nServ"
-  "erJoin\020\005\022\017\n\013ServerLeave\020\006\022\020\n\014MembersQuer"
-  "y\020\007*2\n\020HandleServerType\022\016\n\nMetaServer\020\000\022"
-  "\016\n\nDataServer\020\001*=\n\014ClientOpType\022\010\n\004Noop\020"
-  "\000\022\007\n\003Put\020\001\022\007\n\003Get\020\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042\367"
-  "\002\n\007ERaftKv\022@\n\013RequestVote\022\027.eraftkv.Requ"
-  "estVoteReq\032\030.eraftkv.RequestVoteResp\022F\n\r"
-  "AppendEntries\022\031.eraftkv.AppendEntriesReq"
-  "\032\032.eraftkv.AppendEntriesResp\0227\n\010Snapshot"
-  "\022\024.eraftkv.SnapshotReq\032\025.eraftkv.Snapsho"
-  "tResp\022O\n\022ProcessRWOperation\022\033.eraftkv.Cl"
-  "ientOperationReq\032\034.eraftkv.ClientOperati"
-  "onResp\022X\n\023ClusterConfigChange\022\037.eraftkv."
-  "ClusterConfigChangeReq\032 .eraftkv.Cluster"
-  "ConfigChangeRespb\006proto3"
+  "\001(\003\022\025\n\rconflict_term\030\006 \001(\003\"\252\001\n\013SnapshotR"
+  "eq\022\014\n\004term\030\001 \001(\003\022\021\n\tleader_id\030\002 \001(\003\022\025\n\rm"
+  "essage_index\030\003 \001(\t\022\033\n\023last_included_inde"
+  "x\030\004 \001(\003\022\032\n\022last_included_term\030\005 \001(\003\022\016\n\006o"
+  "ffset\030\006 \001(\003\022\014\n\004data\030\007 \001(\014\022\014\n\004done\030\010 \001(\010\""
+  "k\n\014SnapshotResp\022\014\n\004term\030\001 \001(\003\022\025\n\rmessage"
+  "_index\030\002 \001(\t\022\016\n\006offset\030\003 \001(\003\022\017\n\007success\030"
+  "\004 \001(\010\022\025\n\ris_last_chunk\030\005 \001(\010\"X\n\004Slot\022\n\n\002"
+  "id\030\001 \001(\003\022(\n\013slot_status\030\002 \001(\0162\023.eraftkv."
+  "SlotStatus\022\032\n\022status_modify_time\030\003 \001(\003\"S"
+  "\n\006Server\022\n\n\002id\030\001 \001(\003\022\017\n\007address\030\002 \001(\t\022,\n"
+  "\rserver_status\030\003 \001(\0162\025.eraftkv.ServerSta"
+  "tus\"k\n\nShardGroup\022\n\n\002id\030\001 \001(\003\022\034\n\005slots\030\002"
+  " \003(\0132\r.eraftkv.Slot\022 \n\007servers\030\003 \003(\0132\017.e"
+  "raftkv.Server\022\021\n\tleader_id\030\004 \001(\003\"\224\002\n\026Clu"
+  "sterConfigChangeReq\022(\n\013change_type\030\001 \001(\016"
+  "2\023.eraftkv.ChangeType\0225\n\022handle_server_t"
+  "ype\030\002 \001(\0162\031.eraftkv.HandleServerType\022\020\n\010"
+  "shard_id\030\003 \001(\003\022\037\n\006server\030\004 \001(\0132\017.eraftkv"
+  ".Server\022\026\n\016config_version\030\005 \001(\003\022\020\n\010op_co"
+  "unt\030\006 \001(\003\022\022\n\ncommand_id\030\007 \001(\003\022(\n\013shard_g"
+  "roup\030\010 \001(\0132\023.eraftkv.ShardGroup\"\251\001\n\027Clus"
+  "terConfigChangeResp\022\017\n\007success\030\001 \001(\010\022(\n\013"
+  "shard_group\030\002 \003(\0132\023.eraftkv.ShardGroup\022\026"
+  "\n\016config_version\030\003 \001(\003\022&\n\nerror_code\030\004 \001"
+  "(\0162\022.eraftkv.ErrorCode\022\023\n\013leader_addr\030\005 "
+  "\001(\003\"q\n\010KvOpPair\022&\n\007op_type\030\001 \001(\0162\025.eraft"
+  "kv.ClientOpType\022\013\n\003key\030\002 \001(\t\022\r\n\005value\030\003 "
+  "\001(\t\022\017\n\007success\030\004 \001(\010\022\020\n\010op_count\030\005 \001(\003\"J"
+  "\n\022ClientOperationReq\022\024\n\014op_timestamp\030\001 \001"
+  "(\004\022\036\n\003kvs\030\002 \003(\0132\021.eraftkv.KvOpPair\"r\n\023Cl"
+  "ientOperationResp\022\036\n\003ops\030\001 \003(\0132\021.eraftkv"
+  ".KvOpPair\022&\n\nerror_code\030\002 \001(\0162\022.eraftkv."
+  "ErrorCode\022\023\n\013leader_addr\030\003 \001(\003*h\n\tErrorC"
+  "ode\022\033\n\027REQUEST_NOT_LEADER_NODE\020\000\022\020\n\014NODE"
+  "_IS_DOWN\020\001\022\023\n\017REQUEST_TIMEOUT\020\002\022\027\n\023NODE_"
+  "IS_SNAPSHOTING\020\003*1\n\tEntryType\022\n\n\006Normal\020"
+  "\000\022\016\n\nConfChange\020\001\022\010\n\004NoOp\020\002*A\n\nSlotStatu"
+  "s\022\013\n\007Running\020\000\022\r\n\tMigrating\020\001\022\r\n\tImporti"
+  "ng\020\002\022\010\n\004Init\020\003* \n\014ServerStatus\022\006\n\002Up\020\000\022\010"
+  "\n\004Down\020\001*\216\001\n\nChangeType\022\017\n\013ClusterInit\020\000"
+  "\022\r\n\tShardJoin\020\001\022\016\n\nShardLeave\020\002\022\017\n\013Shard"
+  "sQuery\020\003\022\014\n\010SlotMove\020\004\022\016\n\nServerJoin\020\005\022\017"
+  "\n\013ServerLeave\020\006\022\020\n\014MembersQuery\020\007*2\n\020Han"
+  "dleServerType\022\016\n\nMetaServer\020\000\022\016\n\nDataSer"
+  "ver\020\001*=\n\014ClientOpType\022\010\n\004Noop\020\000\022\007\n\003Put\020\001"
+  "\022\007\n\003Get\020\002\022\007\n\003Del\020\003\022\010\n\004Scan\020\0042\367\002\n\007ERaftKv"
+  "\022@\n\013RequestVote\022\027.eraftkv.RequestVoteReq"
+  "\032\030.eraftkv.RequestVoteResp\022F\n\rAppendEntr"
+  "ies\022\031.eraftkv.AppendEntriesReq\032\032.eraftkv"
+  ".AppendEntriesResp\0227\n\010Snapshot\022\024.eraftkv"
+  ".SnapshotReq\032\025.eraftkv.SnapshotResp\022O\n\022P"
+  "rocessRWOperation\022\033.eraftkv.ClientOperat"
+  "ionReq\032\034.eraftkv.ClientOperationResp\022X\n\023"
+  "ClusterConfigChange\022\037.eraftkv.ClusterCon"
+  "figChangeReq\032 .eraftkv.ClusterConfigChan"
+  "geRespb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_eraftkv_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_eraftkv_2eproto_sccs[16] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_eraftkv_2eproto_sccs[15] = {
   &scc_info_AppendEntriesReq_eraftkv_2eproto.base,
   &scc_info_AppendEntriesResp_eraftkv_2eproto.base,
   &scc_info_ClientOperationReq_eraftkv_2eproto.base,
@@ -613,17 +583,16 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_era
   &scc_info_Server_eraftkv_2eproto.base,
   &scc_info_ShardGroup_eraftkv_2eproto.base,
   &scc_info_Slot_eraftkv_2eproto.base,
-  &scc_info_SnapshotBlock_eraftkv_2eproto.base,
   &scc_info_SnapshotReq_eraftkv_2eproto.base,
   &scc_info_SnapshotResp_eraftkv_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_eraftkv_2eproto_once;
 static bool descriptor_table_eraftkv_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_eraftkv_2eproto = {
-  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2984,
-  &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 16, 0,
+  &descriptor_table_eraftkv_2eproto_initialized, descriptor_table_protodef_eraftkv_2eproto, "eraftkv.proto", 2934,
+  &descriptor_table_eraftkv_2eproto_once, descriptor_table_eraftkv_2eproto_sccs, descriptor_table_eraftkv_2eproto_deps, 15, 0,
   schemas, file_default_instances, TableStruct_eraftkv_2eproto::offsets,
-  file_level_metadata_eraftkv_2eproto, 16, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
+  file_level_metadata_eraftkv_2eproto, 15, file_level_enum_descriptors_eraftkv_2eproto, file_level_service_descriptors_eraftkv_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -638,6 +607,7 @@ bool ErrorCode_IsValid(int value) {
     case 0:
     case 1:
     case 2:
+    case 3:
       return true;
     default:
       return false;
@@ -2305,292 +2275,12 @@ void AppendEntriesResp::InternalSwap(AppendEntriesResp* other) {
 
 // ===================================================================
 
-void SnapshotBlock::InitAsDefaultInstance() {
-}
-class SnapshotBlock::_Internal {
- public:
-};
-
-SnapshotBlock::SnapshotBlock()
-  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:eraftkv.SnapshotBlock)
-}
-SnapshotBlock::SnapshotBlock(const SnapshotBlock& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _internal_metadata_(nullptr) {
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
-  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_data().empty()) {
-    data_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.data_);
-  }
-  ::memcpy(&offset_, &from.offset_,
-    static_cast<size_t>(reinterpret_cast<char*>(&is_last_chunk_) -
-    reinterpret_cast<char*>(&offset_)) + sizeof(is_last_chunk_));
-  // @@protoc_insertion_point(copy_constructor:eraftkv.SnapshotBlock)
-}
-
-void SnapshotBlock::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SnapshotBlock_eraftkv_2eproto.base);
-  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&offset_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&is_last_chunk_) -
-      reinterpret_cast<char*>(&offset_)) + sizeof(is_last_chunk_));
-}
-
-SnapshotBlock::~SnapshotBlock() {
-  // @@protoc_insertion_point(destructor:eraftkv.SnapshotBlock)
-  SharedDtor();
-}
-
-void SnapshotBlock::SharedDtor() {
-  data_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-
-void SnapshotBlock::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
-}
-const SnapshotBlock& SnapshotBlock::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SnapshotBlock_eraftkv_2eproto.base);
-  return *internal_default_instance();
-}
-
-
-void SnapshotBlock::Clear() {
-// @@protoc_insertion_point(message_clear_start:eraftkv.SnapshotBlock)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&offset_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&is_last_chunk_) -
-      reinterpret_cast<char*>(&offset_)) + sizeof(is_last_chunk_));
-  _internal_metadata_.Clear();
-}
-
-const char* SnapshotBlock::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  while (!ctx->Done(&ptr)) {
-    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
-    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
-    switch (tag >> 3) {
-      // int64 offset = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          offset_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // bytes data = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          auto str = _internal_mutable_data();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // int64 block_size = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          block_size_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // bool is_last_chunk = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
-          is_last_chunk_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      default: {
-      handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
-          ctx->SetLastTag(tag);
-          goto success;
-        }
-        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
-        CHK_(ptr != nullptr);
-        continue;
-      }
-    }  // switch
-  }  // while
-success:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto success;
-#undef CHK_
-}
-
-::PROTOBUF_NAMESPACE_ID::uint8* SnapshotBlock::_InternalSerialize(
-    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:eraftkv.SnapshotBlock)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // int64 offset = 1;
-  if (this->offset() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(1, this->_internal_offset(), target);
-  }
-
-  // bytes data = 2;
-  if (this->data().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        2, this->_internal_data(), target);
-  }
-
-  // int64 block_size = 3;
-  if (this->block_size() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(3, this->_internal_block_size(), target);
-  }
-
-  // bool is_last_chunk = 4;
-  if (this->is_last_chunk() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(4, this->_internal_is_last_chunk(), target);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:eraftkv.SnapshotBlock)
-  return target;
-}
-
-size_t SnapshotBlock::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:eraftkv.SnapshotBlock)
-  size_t total_size = 0;
-
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // bytes data = 2;
-  if (this->data().size() > 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_data());
-  }
-
-  // int64 offset = 1;
-  if (this->offset() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
-        this->_internal_offset());
-  }
-
-  // int64 block_size = 3;
-  if (this->block_size() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
-        this->_internal_block_size());
-  }
-
-  // bool is_last_chunk = 4;
-  if (this->is_last_chunk() != 0) {
-    total_size += 1 + 1;
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
-        _internal_metadata_, total_size, &_cached_size_);
-  }
-  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
-  SetCachedSize(cached_size);
-  return total_size;
-}
-
-void SnapshotBlock::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:eraftkv.SnapshotBlock)
-  GOOGLE_DCHECK_NE(&from, this);
-  const SnapshotBlock* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SnapshotBlock>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:eraftkv.SnapshotBlock)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:eraftkv.SnapshotBlock)
-    MergeFrom(*source);
-  }
-}
-
-void SnapshotBlock::MergeFrom(const SnapshotBlock& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:eraftkv.SnapshotBlock)
-  GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (from.data().size() > 0) {
-
-    data_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.data_);
-  }
-  if (from.offset() != 0) {
-    _internal_set_offset(from._internal_offset());
-  }
-  if (from.block_size() != 0) {
-    _internal_set_block_size(from._internal_block_size());
-  }
-  if (from.is_last_chunk() != 0) {
-    _internal_set_is_last_chunk(from._internal_is_last_chunk());
-  }
-}
-
-void SnapshotBlock::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:eraftkv.SnapshotBlock)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void SnapshotBlock::CopyFrom(const SnapshotBlock& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:eraftkv.SnapshotBlock)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool SnapshotBlock::IsInitialized() const {
-  return true;
-}
-
-void SnapshotBlock::InternalSwap(SnapshotBlock* other) {
-  using std::swap;
-  _internal_metadata_.Swap(&other->_internal_metadata_);
-  data_.Swap(&other->data_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  swap(offset_, other->offset_);
-  swap(block_size_, other->block_size_);
-  swap(is_last_chunk_, other->is_last_chunk_);
-}
-
-::PROTOBUF_NAMESPACE_ID::Metadata SnapshotBlock::GetMetadata() const {
-  return GetMetadataStatic();
-}
-
-
-// ===================================================================
-
 void SnapshotReq::InitAsDefaultInstance() {
-  ::eraftkv::_SnapshotReq_default_instance_._instance.get_mutable()->block_ = const_cast< ::eraftkv::SnapshotBlock*>(
-      ::eraftkv::SnapshotBlock::internal_default_instance());
 }
 class SnapshotReq::_Internal {
  public:
-  static const ::eraftkv::SnapshotBlock& block(const SnapshotReq* msg);
 };
 
-const ::eraftkv::SnapshotBlock&
-SnapshotReq::_Internal::block(const SnapshotReq* msg) {
-  return *msg->block_;
-}
 SnapshotReq::SnapshotReq()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
@@ -2604,23 +2294,23 @@ SnapshotReq::SnapshotReq(const SnapshotReq& from)
   if (!from._internal_message_index().empty()) {
     message_index_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.message_index_);
   }
-  if (from._internal_has_block()) {
-    block_ = new ::eraftkv::SnapshotBlock(*from.block_);
-  } else {
-    block_ = nullptr;
+  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_data().empty()) {
+    data_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.data_);
   }
   ::memcpy(&term_, &from.term_,
-    static_cast<size_t>(reinterpret_cast<char*>(&snapshot_term_) -
-    reinterpret_cast<char*>(&term_)) + sizeof(snapshot_term_));
+    static_cast<size_t>(reinterpret_cast<char*>(&done_) -
+    reinterpret_cast<char*>(&term_)) + sizeof(done_));
   // @@protoc_insertion_point(copy_constructor:eraftkv.SnapshotReq)
 }
 
 void SnapshotReq::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SnapshotReq_eraftkv_2eproto.base);
   message_index_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&block_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&snapshot_term_) -
-      reinterpret_cast<char*>(&block_)) + sizeof(snapshot_term_));
+  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&term_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&done_) -
+      reinterpret_cast<char*>(&term_)) + sizeof(done_));
 }
 
 SnapshotReq::~SnapshotReq() {
@@ -2630,7 +2320,7 @@ SnapshotReq::~SnapshotReq() {
 
 void SnapshotReq::SharedDtor() {
   message_index_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (this != internal_default_instance()) delete block_;
+  data_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void SnapshotReq::SetCachedSize(int size) const {
@@ -2649,13 +2339,10 @@ void SnapshotReq::Clear() {
   (void) cached_has_bits;
 
   message_index_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (GetArenaNoVirtual() == nullptr && block_ != nullptr) {
-    delete block_;
-  }
-  block_ = nullptr;
+  data_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&term_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&snapshot_term_) -
-      reinterpret_cast<char*>(&term_)) + sizeof(snapshot_term_));
+      reinterpret_cast<char*>(&done_) -
+      reinterpret_cast<char*>(&term_)) + sizeof(done_));
   _internal_metadata_.Clear();
 }
 
@@ -2689,24 +2376,39 @@ const char* SnapshotReq::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // int64 snapshot_index = 4;
+      // int64 last_included_index = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
-          snapshot_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          last_included_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // int64 snapshot_term = 5;
+      // int64 last_included_term = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          snapshot_term_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          last_included_term_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // .eraftkv.SnapshotBlock block = 6;
+      // int64 offset = 6;
       case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
-          ptr = ctx->ParseMessage(_internal_mutable_block(), ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          offset_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bytes data = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          auto str = _internal_mutable_data();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool done = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          done_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2758,24 +2460,34 @@ failure:
         3, this->_internal_message_index(), target);
   }
 
-  // int64 snapshot_index = 4;
-  if (this->snapshot_index() != 0) {
+  // int64 last_included_index = 4;
+  if (this->last_included_index() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(4, this->_internal_snapshot_index(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(4, this->_internal_last_included_index(), target);
   }
 
-  // int64 snapshot_term = 5;
-  if (this->snapshot_term() != 0) {
+  // int64 last_included_term = 5;
+  if (this->last_included_term() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(5, this->_internal_snapshot_term(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(5, this->_internal_last_included_term(), target);
   }
 
-  // .eraftkv.SnapshotBlock block = 6;
-  if (this->has_block()) {
+  // int64 offset = 6;
+  if (this->offset() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(
-        6, _Internal::block(this), target, stream);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(6, this->_internal_offset(), target);
+  }
+
+  // bytes data = 7;
+  if (this->data().size() > 0) {
+    target = stream->WriteBytesMaybeAliased(
+        7, this->_internal_data(), target);
+  }
+
+  // bool done = 8;
+  if (this->done() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(8, this->_internal_done(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2801,11 +2513,11 @@ size_t SnapshotReq::ByteSizeLong() const {
         this->_internal_message_index());
   }
 
-  // .eraftkv.SnapshotBlock block = 6;
-  if (this->has_block()) {
+  // bytes data = 7;
+  if (this->data().size() > 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-        *block_);
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+        this->_internal_data());
   }
 
   // int64 term = 1;
@@ -2822,18 +2534,30 @@ size_t SnapshotReq::ByteSizeLong() const {
         this->_internal_leader_id());
   }
 
-  // int64 snapshot_index = 4;
-  if (this->snapshot_index() != 0) {
+  // int64 last_included_index = 4;
+  if (this->last_included_index() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
-        this->_internal_snapshot_index());
+        this->_internal_last_included_index());
   }
 
-  // int64 snapshot_term = 5;
-  if (this->snapshot_term() != 0) {
+  // int64 last_included_term = 5;
+  if (this->last_included_term() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
-        this->_internal_snapshot_term());
+        this->_internal_last_included_term());
+  }
+
+  // int64 offset = 6;
+  if (this->offset() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_offset());
+  }
+
+  // bool done = 8;
+  if (this->done() != 0) {
+    total_size += 1 + 1;
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2871,8 +2595,9 @@ void SnapshotReq::MergeFrom(const SnapshotReq& from) {
 
     message_index_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.message_index_);
   }
-  if (from.has_block()) {
-    _internal_mutable_block()->::eraftkv::SnapshotBlock::MergeFrom(from._internal_block());
+  if (from.data().size() > 0) {
+
+    data_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.data_);
   }
   if (from.term() != 0) {
     _internal_set_term(from._internal_term());
@@ -2880,11 +2605,17 @@ void SnapshotReq::MergeFrom(const SnapshotReq& from) {
   if (from.leader_id() != 0) {
     _internal_set_leader_id(from._internal_leader_id());
   }
-  if (from.snapshot_index() != 0) {
-    _internal_set_snapshot_index(from._internal_snapshot_index());
+  if (from.last_included_index() != 0) {
+    _internal_set_last_included_index(from._internal_last_included_index());
   }
-  if (from.snapshot_term() != 0) {
-    _internal_set_snapshot_term(from._internal_snapshot_term());
+  if (from.last_included_term() != 0) {
+    _internal_set_last_included_term(from._internal_last_included_term());
+  }
+  if (from.offset() != 0) {
+    _internal_set_offset(from._internal_offset());
+  }
+  if (from.done() != 0) {
+    _internal_set_done(from._internal_done());
   }
 }
 
@@ -2911,11 +2642,14 @@ void SnapshotReq::InternalSwap(SnapshotReq* other) {
   _internal_metadata_.Swap(&other->_internal_metadata_);
   message_index_.Swap(&other->message_index_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  swap(block_, other->block_);
+  data_.Swap(&other->data_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(term_, other->term_);
   swap(leader_id_, other->leader_id_);
-  swap(snapshot_index_, other->snapshot_index_);
-  swap(snapshot_term_, other->snapshot_term_);
+  swap(last_included_index_, other->last_included_index_);
+  swap(last_included_term_, other->last_included_term_);
+  swap(offset_, other->offset_);
+  swap(done_, other->done_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SnapshotReq::GetMetadata() const {
@@ -5498,9 +5232,6 @@ template<> PROTOBUF_NOINLINE ::eraftkv::AppendEntriesReq* Arena::CreateMaybeMess
 }
 template<> PROTOBUF_NOINLINE ::eraftkv::AppendEntriesResp* Arena::CreateMaybeMessage< ::eraftkv::AppendEntriesResp >(Arena* arena) {
   return Arena::CreateInternal< ::eraftkv::AppendEntriesResp >(arena);
-}
-template<> PROTOBUF_NOINLINE ::eraftkv::SnapshotBlock* Arena::CreateMaybeMessage< ::eraftkv::SnapshotBlock >(Arena* arena) {
-  return Arena::CreateInternal< ::eraftkv::SnapshotBlock >(arena);
 }
 template<> PROTOBUF_NOINLINE ::eraftkv::SnapshotReq* Arena::CreateMaybeMessage< ::eraftkv::SnapshotReq >(Arena* arena) {
   return Arena::CreateInternal< ::eraftkv::SnapshotReq >(arena);
