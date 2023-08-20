@@ -1,5 +1,10 @@
 set a h
-set d d
-set f f
-set b f
-set u u
+set b e
+set c l
+set d l
+set e o
+set a h
+set b e
+set c l
+set d l
+set e o

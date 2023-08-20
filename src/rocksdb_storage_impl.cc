@@ -130,9 +130,7 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
         delete op_pair;
         if (raft->log_store_->LogCount() > raft->snap_threshold_log_count_) {
           // to snapshot
-          if (raft->IsLeader()) {
-            // raft->SnapshotingStart(ety->id(), raft->snap_db_path_);
-          }
+          raft->SnapshotingStart(ety->id(), raft->snap_db_path_);
         }
         break;
       }
