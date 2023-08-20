@@ -192,8 +192,7 @@ EStatus RaftServer::SendAppendEntries() {
   }
 
   for (auto node : this->nodes_) {
-    if (node->id == this->id_ || node->node_state == NodeStateEnum::Down ||
-        this->is_snapshoting_) {
+    if (node->id == this->id_ || node->node_state == NodeStateEnum::Down) {
       continue;
     }
 
@@ -538,9 +537,9 @@ EStatus RaftServer::HandleAppendEntriesResp(RaftNode* from_node,
       SPDLOG_INFO("send append entry resp {}", resp->DebugString());
       if (resp->success()) {
         for (auto node : this->nodes_) {
-          // if (node->node_state == NodeStateEnum::Down) {
-          //   continue;
-          // }
+          if (node->node_state == NodeStateEnum::Down) {
+            continue;
+          }
           if (from_node->id == node->id) {
             node->match_log_index =
                 req->prev_log_index() + req->entries().size();

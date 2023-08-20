@@ -352,19 +352,18 @@ void RocksDBSingleLogStorageImpl::ResetFirstLogEntry(int64_t term,
     auto st = log_db_->Delete(rocksdb::WriteOptions(), key);
     assert(st.ok());
   }
+  this->first_idx = index;
 
   eraftkv::Entry* ety = new eraftkv::Entry();
   // write init log with index 0 to rocksdb
-  ety->set_e_type(eraftkv::EntryType::Normal);
+  ety->set_e_type(eraftkv::EntryType::NoOp);
   std::string* key = new std::string();
   key->append("E:");
-  EncodeDecodeTool::PutFixed64(key, static_cast<uint64_t>(index));
+  EncodeDecodeTool::PutFixed64(key, static_cast<uint64_t>(this->FirstIndex()));
   std::string val = ety->SerializeAsString();
   auto        status = log_db_->Put(rocksdb::WriteOptions(), *key, val);
   assert(status.ok());
-  this->first_idx = index;
   this->snapshot_idx = index;
-  this->last_idx = index;
 }
 
 /**
