@@ -23,10 +23,10 @@ jobs:
         sudo rm /tmp/cmake-install.sh && sudo ln -sf /opt/cmake-3.26.3/bin/* /usr/local/bin
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+    - name: Install 
+      run: sudo git clone https://github.com/gabime/spdlog.git && cd spdlog && git checkout v1.9.2 && mkdir build && cd build && sudo cmake .. && sudo make -j4 && sudo make install
     - name: Install grpc
       run: sudo git clone https://github.com/grpc/grpc.git && cd grpc && sudo git checkout v1.28.0 && sudo git submodule update --init && sudo mkdir .build && cd .build && sudo cmake .. -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release && sudo make install -j4 && cd .. && sudo rm -rf .build/CMakeCache.txt && cd .build && sudo cmake .. -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DCMAKE_BUILD_TYPE=Release && sudo make install -j4
-    - name: Install 
-      run: sudo git clone --branch v1.9.2 https://github.com/gabime/spdlog.git && cd spdlog && mkdir build && cd build && sudo cmake .. && sudo make -j4 && sudo make install
     - name: Install Google benchmark
       run: sudo git clone https://github.com/google/benchmark.git && sudo git clone https://github.com/google/googletest.git benchmark/googletest && cd benchmark && sudo cmake -E make_directory "build" && sudo cmake -E chdir "build" cmake -DCMAKE_BUILD_TYPE=Release ../ && sudo cmake --build "build" --config Release --target install
     - name: Build
