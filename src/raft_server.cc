@@ -76,7 +76,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
   this->net_ = net;
   this->store_->ReadRaftMeta(this, &this->current_term_, &this->voted_for_);
   this->log_store_->ReadMetaState(&this->commit_idx_, &this->last_applied_idx_);
-  SPDLOG_DEBUG(
+  SPDLOG_INFO(
       " raft server init with current_term {}  voted_for {}  commit_idx {}",
       current_term_,
       voted_for_,
@@ -192,7 +192,8 @@ EStatus RaftServer::SendAppendEntries() {
   }
 
   for (auto& node : this->nodes_) {
-    if (node->id == this->id_ || node->node_state == NodeStateEnum::Down) {
+    if (node->id == this->id_ || node->node_state == NodeStateEnum::Down ||
+        this->is_snapshoting_) {
       continue;
     }
 
@@ -211,9 +212,9 @@ EStatus RaftServer::SendAppendEntries() {
       snap_req->set_last_included_term(new_first_log_ent->term());
       snap_req->set_data("snaptestdata");
 
-      SPDLOG_DEBUG("send snapshot to node {} with req {}",
-                   node->id,
-                   snap_req->DebugString());
+      SPDLOG_INFO("send snapshot to node {} with req {}",
+                  node->id,
+                  snap_req->DebugString());
 
       this->net_->SendSnapshot(this, node, snap_req);
 
@@ -260,6 +261,7 @@ EStatus RaftServer::SendAppendEntries() {
  * @return EStatus
  */
 EStatus RaftServer::ApplyEntries() {
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
   this->store_->ApplyLog(this, 0, 0);
   return EStatus::kOk;
 }
@@ -280,6 +282,7 @@ bool RaftServer::IsUpToDate(int64_t last_idx, int64_t term) {
 EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
                                          const eraftkv::RequestVoteReq* req,
                                          eraftkv::RequestVoteResp*      resp) {
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
   resp->set_term(current_term_);
   resp->set_prevote(req->prevote());
   SPDLOG_INFO("handle vote req " + req->DebugString());
@@ -347,9 +350,9 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
                                           eraftkv::RequestVoteResp*      resp) {
   if (resp != nullptr) {
 
-    SPDLOG_DEBUG("send request vote revice resp {}, from node {}",
-                 resp->DebugString(),
-                 from_node->address);
+    SPDLOG_INFO("send request vote revice resp {}, from node {}",
+                resp->DebugString(),
+                from_node->address);
 
     if (this->role_ == NodeRaftRoleEnum::PreCandidate &&
         req->term() == this->current_term_ + 1 && resp->prevote()) {
@@ -403,6 +406,7 @@ EStatus RaftServer::Propose(std::string payload,
                             int64_t*    new_log_index,
                             int64_t*    new_log_term,
                             bool*       is_success) {
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
   if (this->role_ != NodeRaftRoleEnum::Leader) {
     *new_log_index = -1;
     *new_log_term = -1;
@@ -443,6 +447,8 @@ EStatus RaftServer::Propose(std::string payload,
 EStatus RaftServer::HandleAppendEntriesReq(RaftNode* from_node,
                                            const eraftkv::AppendEntriesReq* req,
                                            eraftkv::AppendEntriesResp* resp) {
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
+
   ResetRandomElectionTimeout();
   election_tick_count_ = 0;
 
@@ -734,6 +740,7 @@ EStatus RaftServer::ProposeConfChange(std::string payload,
                                       int64_t*    new_log_index,
                                       int64_t*    new_log_term,
                                       bool*       is_success) {
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
   if (this->role_ != NodeRaftRoleEnum::Leader) {
     *new_log_index = -1;
     *new_log_term = -1;
@@ -872,6 +879,8 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
  * @return EStatus
  */
 EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
+
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
 
   this->is_snapshoting_ = true;
   auto snap_index = this->log_store_->FirstIndex();

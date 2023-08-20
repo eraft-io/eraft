@@ -35,6 +35,8 @@
 #include <grpcpp/grpcpp.h>
 #include <spdlog/spdlog.h>
 
+#include <chrono>
+
 #include "consts.h"
 
 RaftServer* ERaftKvServer::raft_context_ = nullptr;
@@ -111,7 +113,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   int64_t log_index;
   int64_t log_term;
   bool    success;
-  SPDLOG_DEBUG("recv rw op with ts {} ", req->op_timestamp());
+  SPDLOG_INFO("recv rw op with ts {} ", req->op_timestamp());
   // no leader reject
   if (!raft_context_->IsLeader()) {
     resp->set_error_code(eraftkv::ErrorCode::REQUEST_NOT_LEADER_NODE);
@@ -126,11 +128,11 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   }
   for (auto kv_op : req->kvs()) {
     int rand_seq = static_cast<int>(RandomNumber::Between(1, 100000));
-    SPDLOG_DEBUG("recv rw op type {} op count {}", kv_op.op_type(), rand_seq);
+    SPDLOG_INFO("recv rw op type {} op count {}", kv_op.op_type(), rand_seq);
     switch (kv_op.op_type()) {
       case eraftkv::ClientOpType::Get: {
         auto val = raft_context_->store_->GetKV(kv_op.key());
-        SPDLOG_DEBUG(" get key {}  with value {}", kv_op.key(), val.first);
+        SPDLOG_INFO(" get key {}  with value {}", kv_op.key(), val.first);
         auto res = resp->add_ops();
         res->set_key(kv_op.key());
         res->set_value(val.first);
@@ -151,9 +153,13 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
         raft_context_->Propose(
             kv_op.SerializeAsString(), &log_index, &log_term, &success);
         {
+          auto endTime =
+              std::chrono::system_clock::now() + std::chrono::seconds(5);
           std::unique_lock<std::mutex> ul(ERaftKvServer::ready_mutex_);
-          ERaftKvServer::ready_cond_vars_[rand_seq]->wait(
-              ul, []() { return ERaftKvServer::is_ok_; });
+          // ERaftKvServer::ready_cond_vars_[rand_seq]->wait(
+          //     ul, []() { return ERaftKvServer::is_ok_; });
+          ERaftKvServer::ready_cond_vars_[rand_seq]->wait_until(
+              ul, endTime, []() { return ERaftKvServer::is_ok_; });
           // ERaftKvServer::ready_cond_vars_.erase(rand_seq);
           ERaftKvServer::is_ok_ = false;
           auto res = resp->add_ops();
@@ -162,8 +168,8 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
           res->set_success(true);
           res->set_op_type(kv_op.op_type());
           res->set_op_count(rand_seq);
-          break;
         }
+        break;
       }
       default:
         break;

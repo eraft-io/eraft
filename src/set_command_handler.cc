@@ -23,7 +23,7 @@ EStatus SetCommandHandler::Execute(const std::vector<std::string>& params,
   std::string leader_addr;
   uint16_t    slot;
   leader_addr = cli->GetShardLeaderAddrAndSlot(params[1], &slot);
-  SPDLOG_DEBUG("send set request to leader {}", leader_addr);
+  SPDLOG_INFO("send set request to leader {}", leader_addr);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;

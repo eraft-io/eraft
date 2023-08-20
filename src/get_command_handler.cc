@@ -19,7 +19,7 @@ EStatus GetCommandHandler::Execute(const std::vector<std::string>& params,
   std::string leader_addr;
   uint16_t    slot;
   leader_addr = cli->GetShardLeaderAddrAndSlot(params[1], &slot);
-  SPDLOG_DEBUG("send get request to leader {}", leader_addr);
+  SPDLOG_INFO("send get request to leader {}", leader_addr);
   ClientContext               op_context;
   eraftkv::ClientOperationReq op_req;
   auto                        kv_pair_ = op_req.add_kvs();

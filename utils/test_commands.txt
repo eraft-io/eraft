@@ -1,27 +1,5 @@
 set a h
-set b e
-set c l
-set d l
-set e o
-set ab h
-set bb e
-set cb l
-set db l
-set eb o
-set ac h
-set bc e
-set cc l
-set dc l
-set ec o
-set ad h
-set bd e
-del bd
-get bd
-
-get a 
-get b
-get c 
-get d
-get e
-del e 
-get e
+set d d
+set f f
+set b f
+set u u

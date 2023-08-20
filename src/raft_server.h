@@ -534,6 +534,8 @@ class RaftServer {
    */
   bool is_snapshoting_;
 
+  std::mutex raft_op_mutex_;
+
   /**
    * @brief
    *

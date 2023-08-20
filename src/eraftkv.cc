@@ -64,18 +64,18 @@ int main(int argc, char* argv[]) {
   ERaftKvServer server(options_);
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-  console_sink->set_level(spdlog::level::trace);
+  console_sink->set_level(spdlog::level::debug);
   console_sink->set_pattern("[%H:%M:%S %z] [%@] %v");
 
   auto file_sink = std::make_shared<spdlog::sinks::daily_file_sink_st>(
       log_file_path, 23, 59);
-  file_sink->set_level(spdlog::level::trace);
+  file_sink->set_level(spdlog::level::debug);
   file_sink->set_pattern("[%H:%M:%S %z] [%@] %v");
 
   spdlog::sinks_init_list sink_list = {file_sink, console_sink};
 
   spdlog::logger logger("multi_sink", sink_list.begin(), sink_list.end());
-  logger.set_level(spdlog::level::trace);
+  logger.set_level(spdlog::level::debug);
   logger.warn("this should appear in both console and file");
   logger.info(
       "this message should not appear in the console, only in the file");
