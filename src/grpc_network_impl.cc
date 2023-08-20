@@ -35,6 +35,7 @@
 
 #include <grpcpp/grpcpp.h>
 #include <gtest/gtest.h>
+#include <spdlog/spdlog.h>
 #include <unistd.h>
 
 #include <iostream>
@@ -60,7 +61,7 @@ using grpc::Status;
 EStatus GRpcNetworkImpl::SendRequestVote(RaftServer*              raft,
                                          RaftNode*                target_node,
                                          eraftkv::RequestVoteReq* req) {
-  TraceLog("DEBUG: ", " send req vote to ", target_node->address);
+  SPDLOG_DEBUG("send req vote to {}", target_node->address);
   ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
   if (stub_ == nullptr) {
     return EStatus::kNotFound;
@@ -93,6 +94,9 @@ EStatus GRpcNetworkImpl::SendRequestVote(RaftServer*              raft,
 EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
                                            RaftNode*   target_node,
                                            eraftkv::AppendEntriesReq* req) {
+  SPDLOG_INFO("send append entries request to {} req {}",
+              target_node->address,
+              req->DebugString());
   // 1.send entries with grpc message to target_node
   ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
   if (stub_ == nullptr) {
@@ -106,7 +110,7 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
   ClientContext context;
   auto          status = stub_->AppendEntries(&context, *req, resp);
   if (!status.ok()) {
-    TraceLog("ERROR: ", " send append req to FAILED! ", target_node->address);
+    SPDLOG_DEBUG(" send append req to {} failed! ", target_node->address);
     target_node->node_state = NodeStateEnum::LostConnection;
   } else {
     target_node->node_state = NodeStateEnum::Running;
@@ -132,13 +136,18 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
 EStatus GRpcNetworkImpl::SendSnapshot(RaftServer*           raft,
                                       RaftNode*             target_node,
                                       eraftkv::SnapshotReq* req) {
+  SPDLOG_INFO("send snapshot request to {} req {}",
+              target_node->address,
+              req->DebugString());
   ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
   if (stub_ == nullptr) {
     return EStatus::kNotFound;
   }
   eraftkv::SnapshotResp* resp = new eraftkv::SnapshotResp;
-  ClientContext          context;
-  auto                   status = stub_->Snapshot(&context, *req, resp);
+  resp->set_term(0);
+  resp->set_offset(0);
+  ClientContext context;
+  auto          status = stub_->Snapshot(&context, *req, resp);
   if (raft->HandleSnapshotResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
@@ -163,7 +172,7 @@ EStatus GRpcNetworkImpl::InitPeerNodeConnections(
         grpc::CreateChannel(itr.second, grpc::InsecureChannelCredentials());
     auto stub_(ERaftKv::NewStub(chan_));
     this->peer_node_connections_[itr.first] = std::move(stub_);
-    TraceLog("DEBUG: ", "init peer connection ", itr.second);
+    SPDLOG_DEBUG("init peer connection {} ", itr.second);
   }
   return EStatus::kOk;
 }
@@ -173,7 +182,7 @@ EStatus GRpcNetworkImpl::InsertPeerNodeConnection(int64_t     peer_id,
   auto chan_ = grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
   auto stub_(ERaftKv::NewStub(chan_));
   this->peer_node_connections_[peer_id] = std::move(stub_);
-  TraceLog("DEBUG: ", "insert peer connection to ", addr);
+  SPDLOG_DEBUG("insert peer connection to {}", addr);
   return EStatus::kOk;
 }
 

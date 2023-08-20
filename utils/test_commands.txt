@@ -15,9 +15,8 @@ set dc l
 set ec o
 set ad h
 set bd e
-set cd l
-set dd l
-set ed o
+del bd
+get bd
 
 get a 
 get b

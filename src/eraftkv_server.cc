@@ -33,6 +33,7 @@
 #include "eraftkv_server.h"
 
 #include <grpcpp/grpcpp.h>
+#include <spdlog/spdlog.h>
 
 #include "consts.h"
 
@@ -110,25 +111,26 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   int64_t log_index;
   int64_t log_term;
   bool    success;
-  TraceLog("DEBUG: ", " recv rw op with ts ", req->op_timestamp());
+  SPDLOG_DEBUG("recv rw op with ts {} ", req->op_timestamp());
   // no leader reject
   if (!raft_context_->IsLeader()) {
     resp->set_error_code(eraftkv::ErrorCode::REQUEST_NOT_LEADER_NODE);
     resp->set_leader_addr(raft_context_->GetLeaderId());
     return grpc::Status::OK;
   }
+  // snapshot reject
+  if (raft_context_->IsSnapshoting()) {
+    SPDLOG_WARN("node is snapshoting, reject request");
+    resp->set_error_code(eraftkv::ErrorCode::NODE_IS_SNAPSHOTING);
+    return grpc::Status::OK;
+  }
   for (auto kv_op : req->kvs()) {
     int rand_seq = static_cast<int>(RandomNumber::Between(1, 100000));
-    TraceLog("DEBUG: ",
-             " recv rw op type  ",
-             kv_op.op_type(),
-             " op count ",
-             rand_seq);
+    SPDLOG_DEBUG("recv rw op type {} op count {}", kv_op.op_type(), rand_seq);
     switch (kv_op.op_type()) {
       case eraftkv::ClientOpType::Get: {
         auto val = raft_context_->store_->GetKV(kv_op.key());
-        TraceLog(
-            "DEBUG: ", " get key ", kv_op.key(), " with value ", val.first);
+        SPDLOG_DEBUG(" get key {}  with value {}", kv_op.key(), val.first);
         auto res = resp->add_ops();
         res->set_key(kv_op.key());
         res->set_value(val.first);
@@ -154,7 +156,6 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
               ul, []() { return ERaftKvServer::is_ok_; });
           // ERaftKvServer::ready_cond_vars_.erase(rand_seq);
           ERaftKvServer::is_ok_ = false;
-          TraceLog("DEBUG: ", " send resp ");
           auto res = resp->add_ops();
           res->set_key(kv_op.key());
           res->set_value(kv_op.value());
@@ -182,9 +183,8 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
     eraftkv::ClusterConfigChangeResp*      resp) {
   int64_t log_index;
   int64_t log_term;
-  TraceLog("DEBUG: ",
-           " recv config change req with change_type ",
-           req->change_type());
+  SPDLOG_INFO("recv config change req with change_type {} ",
+              req->change_type());
   // return cluster topology, Currently, only single raft group are supported
   auto conf_change_req = const_cast<eraftkv::ClusterConfigChangeReq*>(req);
   switch (conf_change_req->change_type()) {
@@ -255,7 +255,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
 }
 
 EStatus ERaftKvServer::TakeSnapshot(int64_t log_idx) {
-  return raft_context_->SnaoshotingStart(log_idx, options_.kv_db_path);
+  return raft_context_->SnapshotingStart(log_idx, options_.kv_db_path);
 }
 
 /**

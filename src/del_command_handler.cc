@@ -12,12 +12,14 @@
 #include "command_handler.h"
 #include "key_encode.h"
 
+#include <spdlog/spdlog.h>
+
 EStatus DelCommandHandler::Execute(const std::vector<std::string>& params,
                                    Client*                         cli) {
   std::string leader_addr;
   uint16_t    slot;
   leader_addr = cli->GetShardLeaderAddrAndSlot(params[1], &slot);
-  TraceLog("DEBUG: send del request to leader ", leader_addr);
+  SPDLOG_DEBUG("send del request to leader {} ", leader_addr);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;

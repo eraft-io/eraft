@@ -107,6 +107,23 @@ class LogStore {
   virtual int64_t LastIndex() = 0;
 
   /**
+   * @brief
+   *
+   * @param new_idx
+   * @return true
+   * @return false
+   */
+  virtual void ResetFirstIndex(int64_t new_idx) = 0;
+
+  /**
+   * @brief
+   *
+   * @param term
+   * @param index
+   */
+  virtual void ResetFirstLogEntry(int64_t term, int64_t index) = 0;
+
+  /**
    * @brief LogCount get the number of entries
    *
    * @return int64_t

@@ -107,7 +107,6 @@ TEST(EraftMetaServerTests, TestMetaBasicOp) {
   ASSERT_EQ(query_resp.shard_group_size(), 1);
   ASSERT_EQ(query_resp.shard_group(0).servers_size(), 3);
   ASSERT_EQ(query_resp.shard_group(0).id(), 1);
-  TraceLog("DEBUG: cluster config resp -> ", query_resp.DebugString());
 
   ClientContext                   move_context;
   eraftkv::ClusterConfigChangeReq move_req;
@@ -131,8 +130,6 @@ TEST(EraftMetaServerTests, TestMetaBasicOp) {
   ClientContext query_context_;
   auto          status4 =
       leader_stub->ClusterConfigChange(&query_context_, query_req, &query_resp);
-  //   TraceLog("DEBUG: cluster config after move resp -> ",
-  //            query_resp.DebugString());
   ASSERT_EQ(status4.ok(), true);
 }
 

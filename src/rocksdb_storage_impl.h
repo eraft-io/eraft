@@ -98,7 +98,6 @@ class RocksDBStorageImpl : public Storage {
    */
   EStatus ReadRaftMeta(RaftServer* raft, int64_t* term, int64_t* vote);
 
-
   /**
    * @brief
    *
@@ -328,6 +327,17 @@ class RocksDBSingleLogStorageImpl : public LogStore {
    * @return EStatus
    */
   EStatus Append(eraftkv::Entry* ety);
+
+  void ResetFirstIndex(int64_t new_idx);
+
+  /**
+   * @brief
+   *
+   * @param term
+   * @param index
+   */
+  void ResetFirstLogEntry(int64_t term, int64_t index);
+
 
   /**
    * @brief EraseBefore erase all entries before the given index

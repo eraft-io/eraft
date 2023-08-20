@@ -59,3 +59,6 @@ FROM eraft/eraftkv:v0.0.4
 # RUN ldconfig
 
 RUN apt-get install -y redis-tools telnet
+
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git && cd spdlog && mkdir build && cd build \
+       && cmake .. && make -j && make install && rm -rf build

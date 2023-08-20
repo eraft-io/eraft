@@ -33,6 +33,7 @@
 #include "raft_server.h"
 
 #include <bits/stdc++.h>
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <thread>
@@ -63,9 +64,9 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , heartbeat_tick_count_(0)
     , election_tick_count_(0)
     , max_entries_per_append_req_(100)
-    , tick_interval_(50)
+    , tick_interval_(1000)
     , granted_votes_(0)
-    , snap_threshold_log_count_(20)
+    , snap_threshold_log_count_(21)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -75,13 +76,11 @@ RaftServer::RaftServer(RaftConfig raft_config,
   this->net_ = net;
   this->store_->ReadRaftMeta(this, &this->current_term_, &this->voted_for_);
   this->log_store_->ReadMetaState(&this->commit_idx_, &this->last_applied_idx_);
-  TraceLog("DEBUG: ",
-           " raft server init with current_term_ ",
-           current_term_,
-           " voted_for_ ",
-           voted_for_,
-           " commit_idx_ ",
-           commit_idx_);
+  SPDLOG_DEBUG(
+      " raft server init with current_term {}  voted_for {}  commit_idx {}",
+      current_term_,
+      voted_for_,
+      commit_idx_);
   for (auto n : raft_config.peer_address_map) {
     RaftNode* node = new RaftNode(n.first,
                                   NodeStateEnum::Running,
@@ -138,26 +137,25 @@ EStatus RaftServer::RunApply() {
 EStatus RaftServer::RunCycle() {
   ResetRandomElectionTimeout();
   while (true) {
-    TraceLog("DEBUG: ", " election_tick_count_ ", election_tick_count_);
-    TraceLog("DEBUG: ", " heartbeat_tick_count_ ", heartbeat_tick_count_);
-    TraceLog("DEBUG: ", " node role ", NodeRoleToStr(role_));
-    TraceLog("DEBUG: ",
-             " commit idx ",
-             this->commit_idx_,
-             " applied idx ",
-             this->last_applied_idx_);
+    SPDLOG_INFO("heartbeat_tick_count_  " +
+                std::to_string(heartbeat_tick_count_));
+    SPDLOG_INFO("node role " + NodeRoleToStr(role_));
+    SPDLOG_INFO("commit idx {} applied idx {}",
+                this->commit_idx_,
+                this->last_applied_idx_);
+
     heartbeat_tick_count_ += 1;
     election_tick_count_ += 1;
     if (heartbeat_tick_count_ == heartbeat_timeout_) {
       if (this->role_ == NodeRaftRoleEnum::Leader) {
-        TraceLog("DEBUG: ", "heartbeat timeout");
+        SPDLOG_INFO("heartbeat timeout");
         this->SendHeartBeat();
         heartbeat_tick_count_ = 0;
       }
     }
     if (election_tick_count_ >= election_timeout_ && election_running_) {
       if (this->role_ == NodeRaftRoleEnum::Follower) {
-        TraceLog("DEBUG: ", "start pre election in term", current_term_);
+        SPDLOG_INFO("start pre election in term {} ", current_term_);
         this->BecomePreCandidate();
         this->ElectionStart(true);
       } else if (this->role_ == NodeRaftRoleEnum::PreCandidate) {
@@ -200,6 +198,10 @@ EStatus RaftServer::SendAppendEntries() {
 
     auto prev_log_index = node->next_log_index - 1;
 
+    SPDLOG_INFO("node prev_log_index {} node id {}", prev_log_index, node->id);
+    SPDLOG_INFO("current node fist log index {}",
+                this->log_store_->FirstIndex());
+
     if (prev_log_index < this->log_store_->FirstIndex()) {
       auto                  new_first_log_ent = this->log_store_->GetFirstEty();
       eraftkv::SnapshotReq* snap_req = new eraftkv::SnapshotReq();
@@ -209,10 +211,9 @@ EStatus RaftServer::SendAppendEntries() {
       snap_req->set_last_included_term(new_first_log_ent->term());
       snap_req->set_data("snaptestdata");
 
-      TraceLog("send snapshot to node: ",
-               node->id,
-               " req ",
-               snap_req->DebugString());
+      SPDLOG_DEBUG("send snapshot to node {} with req {}",
+                   node->id,
+                   snap_req->DebugString());
 
       this->net_->SendSnapshot(this, node, snap_req);
 
@@ -279,23 +280,10 @@ bool RaftServer::IsUpToDate(int64_t last_idx, int64_t term) {
 EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
                                          const eraftkv::RequestVoteReq* req,
                                          eraftkv::RequestVoteResp*      resp) {
-  TraceLog("DEBUG: handle vote req ",
-           " term ",
-           req->term(),
-           " candidtate_id ",
-           req->candidtate_id(),
-           " last_log_idx ",
-           req->last_log_idx(),
-           " last_log_term ",
-           req->last_log_term());
-
-  TraceLog("DEBUG:  handle vote req",
-           " current_term_ ",
-           current_term_,
-           " leader_id_ ",
-           leader_id_);
   resp->set_term(current_term_);
   resp->set_prevote(req->prevote());
+  SPDLOG_INFO("handle vote req " + req->DebugString());
+
   if (this->current_term_ > req->term()) {
     resp->set_vote_granted(false);
     return EStatus::kOk;
@@ -314,7 +302,8 @@ EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
     return EStatus::kOk;
   }
   if (!req->prevote()) {
-    TraceLog("DEBUG: peer ", this->id_, " vote ", req->candidtate_id());
+    SPDLOG_INFO("peer {} vote {}", this->id_, req->candidtate_id());
+
     this->voted_for_ = req->candidtate_id();
 
     ResetRandomElectionTimeout();
@@ -357,26 +346,19 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
                                           const eraftkv::RequestVoteReq* req,
                                           eraftkv::RequestVoteResp*      resp) {
   if (resp != nullptr) {
-    TraceLog("DEBUG: ",
-             " send request vote revice resp: ",
-             " term ",
-             resp->term(),
-             " vote_granted ",
-             resp->vote_granted(),
-             " leader_id",
-             resp->leader_id(),
-             " from node ",
-             from_node->address);
+
+    SPDLOG_DEBUG("send request vote revice resp {}, from node {}",
+                 resp->DebugString(),
+                 from_node->address);
+
     if (this->role_ == NodeRaftRoleEnum::PreCandidate &&
         req->term() == this->current_term_ + 1 && resp->prevote()) {
       if (resp->vote_granted()) {
         this->granted_votes_ += 1;
         if (this->granted_votes_ > (this->nodes_.size() / 2)) {
-          TraceLog("DEBUG: ",
-                   " node ",
-                   this->id_,
-                   " get majority prevotes in term ",
-                   this->current_term_);
+          SPDLOG_INFO(" node {} get majority prevotes in term {}",
+                      this->id_,
+                      this->current_term_);
           this->election_tick_count_ = this->election_timeout_;
           // this->BecomeCandidate();
           // this->granted_votes_ = 0;
@@ -388,11 +370,9 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
       if (resp->vote_granted()) {
         this->granted_votes_ += 1;
         if (this->granted_votes_ > (this->nodes_.size() / 2)) {
-          TraceLog("DEBUG: ",
-                   " node ",
-                   this->id_,
-                   " get majority votes in term ",
-                   this->current_term_);
+          SPDLOG_INFO("node {} get majority votes in term {}",
+                      this->id_,
+                      this->current_term_);
           this->BecomeLeader();
           this->SendHeartBeat();
           this->SendAppendEntries();
@@ -467,7 +447,7 @@ EStatus RaftServer::HandleAppendEntriesReq(RaftNode* from_node,
   election_tick_count_ = 0;
 
   if (req->is_heartbeat()) {
-    TraceLog("DEBUG: recv heart beat");
+    SPDLOG_INFO("recv heart beat");
     this->AdvanceCommitIndexForFollower(req->leader_commit());
     resp->set_success(true);
     this->leader_id_ = req->leader_id();
@@ -606,7 +586,7 @@ EStatus RaftServer::HandleAppendEntriesResp(RaftNode* from_node,
 EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
                                       const eraftkv::SnapshotReq* req,
                                       eraftkv::SnapshotResp*      resp) {
-
+  SPDLOG_INFO("handle snapshot req {} ", req->DebugString());
   resp->set_term(this->current_term_);
   resp->set_success(false);
 
@@ -630,7 +610,19 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
   }
 
   // Install snapshot
+  // 1.save snapshot data
+  // 2.update log state
 
+  // if (req->last_included_index() <= this->commit_idx_) {
+  //   resp->set_success(false);
+  //   return EStatus::kOk;
+  // }
+
+  this->log_store_->ResetFirstLogEntry(req->last_included_term(),
+                                       req->last_included_index());
+
+  this->last_applied_idx_ = req->last_included_index();
+  this->commit_idx_ = req->last_included_index();
 
   return EStatus::kOk;
 }
@@ -694,6 +686,7 @@ EStatus RaftServer::HandleSnapshotResp(RaftNode*              from_node,
                                        eraftkv::SnapshotReq*  req,
                                        eraftkv::SnapshotResp* resp) {
   if (resp != nullptr) {
+    SPDLOG_INFO("handle snapshot resp {}", resp->DebugString());
     if (this->role_ == NodeRaftRoleEnum::Leader &&
         this->current_term_ == req->term()) {
       if (resp->term() > this->current_term_) {
@@ -837,10 +830,8 @@ EStatus RaftServer::BecomePreCandidate() {
  * @return EStatus
  */
 EStatus RaftServer::ElectionStart(bool is_prevote) {
-  TraceLog("DEBUG: ",
-           this->id_,
-           " start a new election in term ",
-           this->current_term_);
+  SPDLOG_INFO(
+      "{} start a new election in term {}", this->id_, this->current_term_);
   this->granted_votes_ = 1;
   this->leader_id_ = -1;
   this->voted_for_ = this->id_;
@@ -864,17 +855,9 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
       continue;
     }
 
-    TraceLog("DEBUG: ",
-             "send request vote to ",
-             node->address,
-             " term ",
-             this->current_term_,
-             " candidtate_id ",
-             this->id_,
-             " last_log_idx ",
-             this->log_store_->LastIndex(),
-             " last_log_term ",
-             this->log_store_->GetLastEty()->term());
+    SPDLOG_INFO("send request vote to {} with param {}",
+                node->address,
+                vote_req->DebugString());
     this->net_->SendRequestVote(this, node, vote_req);
   }
 
@@ -888,19 +871,21 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
  * @param snapdir
  * @return EStatus
  */
-EStatus RaftServer::SnaoshotingStart(int64_t ety_idx, std::string snapdir) {
-  auto snap_index = this->log_store_->FirstIndex();
+EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
 
   this->is_snapshoting_ = true;
+  auto snap_index = this->log_store_->FirstIndex();
 
   if (ety_idx <= snap_index) {
-    TraceLog("WARN: ", " ety index is larger than the first log index");
+    SPDLOG_WARN("ety index is larger than the first log index");
     this->is_snapshoting_ = false;
     return EStatus::kError;
   }
 
-  // TODO: async erase
-  // this->log_store_->EraseBefore(ety_idx);
+  SPDLOG_INFO("start snapshoting with index {}", ety_idx);
+
+  // reset first log index
+  this->log_store_->ResetFirstLogEntry(this->current_term_, ety_idx);
 
   this->store_->CreateCheckpoint(snapdir);
 
