@@ -11,3 +11,5 @@ rocksdb
 protobuf/
 spdlog/
 spdlog
+logs
+logs/

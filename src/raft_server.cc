@@ -796,6 +796,10 @@ EStatus RaftServer::BecomeLeader() {
   this->role_ = NodeRaftRoleEnum::Leader;
   heartbeat_tick_count_ = 0;
   this->leader_id_ = this->id_;
+  for (auto node : this->nodes_) {
+    node->next_log_index = this->log_store_->LastIndex() + 1;
+    node->match_log_index = 0;
+  }
   election_running_ = false;
   return EStatus::kOk;
 }
@@ -860,7 +864,6 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
     this->current_term_ += 1;
     vote_req->set_term(this->current_term_);
   }
-  // vote_req->set_term(this->current_term_);
   vote_req->set_candidtate_id(this->id_);
   vote_req->set_last_log_idx(this->log_store_->LastIndex());
   vote_req->set_last_log_term(this->log_store_->GetLastEty()->term());
