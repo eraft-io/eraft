@@ -51,6 +51,7 @@ struct RaftConfig {
   int64_t                        election_tick;
   int64_t                        heartbeat_tick;
   int64_t                        applied;
+  std::string                    snap_path;
   bool                           prevote;
   Network*                       net_impl;
   Storage*                       store_impl;

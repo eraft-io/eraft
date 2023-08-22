@@ -79,49 +79,6 @@ class RocksDBStorageImpl : public Storage {
                    int64_t     snapshot_term);
 
   /**
-   * @brief Get the Snapshot Block object
-   *
-   * @param raft
-   * @param node
-   * @param offset
-   * @param block
-   * @return EStatus
-   */
-  EStatus GetSnapshotBlock(RaftServer*             raft,
-                           RaftNode*               node,
-                           int64_t                 offset,
-                           eraftkv::SnapshotBlock* block);
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param snapshot_index
-   * @param offset
-   * @param block
-   * @return EStatus
-   */
-  EStatus StoreSnapshotBlock(RaftServer*             raft,
-                             int64_t                 snapshot_index,
-                             int64_t                 offset,
-                             eraftkv::SnapshotBlock* block);
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @return EStatus
-   */
-  EStatus ClearSnapshot(RaftServer* raft);
-
-  /**
-   * @brief
-   *
-   * @return EStatus
-   */
-  EStatus CreateDBSnapshot();
-
-  /**
    * @brief
    *
    * @param raft
@@ -140,7 +97,6 @@ class RocksDBStorageImpl : public Storage {
    * @return EStatus
    */
   EStatus ReadRaftMeta(RaftServer* raft, int64_t* term, int64_t* vote);
-
 
   /**
    * @brief
@@ -191,6 +147,14 @@ class RocksDBStorageImpl : public Storage {
    *
    */
   ~RocksDBStorageImpl();
+
+  /**
+   * @brief Create a Checkpoint object
+   *
+   * @param snap_path
+   * @return EStatus
+   */
+  EStatus CreateCheckpoint(std::string snap_path);
 
  private:
   /**
@@ -363,6 +327,22 @@ class RocksDBSingleLogStorageImpl : public LogStore {
    * @return EStatus
    */
   EStatus Append(eraftkv::Entry* ety);
+
+  /**
+   * @brief
+   *
+   * @param new_idx
+   */
+  void ResetFirstIndex(int64_t new_idx);
+
+  /**
+   * @brief
+   *
+   * @param term
+   * @param index
+   */
+  void ResetFirstLogEntry(int64_t term, int64_t index);
+
 
   /**
    * @brief EraseBefore erase all entries before the given index

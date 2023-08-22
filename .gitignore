@@ -9,3 +9,7 @@ grpc
 rocksdb/
 rocksdb
 protobuf/
+spdlog/
+spdlog
+logs
+logs/

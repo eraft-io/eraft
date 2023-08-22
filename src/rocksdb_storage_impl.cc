@@ -33,6 +33,9 @@
 
 #include "rocksdb_storage_impl.h"
 
+#include <rocksdb/utilities/checkpoint.h>
+#include <spdlog/spdlog.h>
+
 #include "consts.h"
 #include "eraftkv.pb.h"
 #include "eraftkv_server.h"
@@ -75,9 +78,9 @@ EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
 EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                                      int64_t     snapshot_index,
                                      int64_t     snapshot_term) {
-  // if (raft->commit_idx_ == raft->last_applied_idx_) {
-  //   return EStatus::kOk;
-  // }
+  if (raft->commit_idx_ == raft->last_applied_idx_) {
+    return EStatus::kOk;
+  }
   auto etys =
       raft->log_store_->Gets(raft->last_applied_idx_, raft->commit_idx_);
   for (auto ety : etys) {
@@ -95,8 +98,11 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                 {
                   std::lock_guard<std::mutex> lg(ERaftKvServer::ready_mutex_);
                   ERaftKvServer::is_ok_ = true;
-                  ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
-                      ->notify_one();
+                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
+                      nullptr) {
+                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                        ->notify_one();
+                  }
                 }
               }
             }
@@ -111,8 +117,11 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                 {
                   std::lock_guard<std::mutex> lg(ERaftKvServer::ready_mutex_);
                   ERaftKvServer::is_ok_ = true;
-                  ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
-                      ->notify_one();
+                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
+                      nullptr) {
+                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                        ->notify_one();
+                  }
                 }
               }
             }
@@ -125,6 +134,10 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
           }
         }
         delete op_pair;
+        if (raft->log_store_->LogCount() > raft->snap_threshold_log_count_) {
+          // to snapshot
+          raft->SnapshotingStart(ety->id(), raft->snap_db_path_);
+        }
         break;
       }
       case eraftkv::EntryType::ConfChange: {
@@ -151,10 +164,8 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                   node_exist = true;
                   // reinit node
                   if (node->node_state == NodeStateEnum::Down) {
-                    TraceLog("DEBUG: ",
-                             " reinit node ",
-                             conf_change_req->server().address(),
-                             " to running state");
+                    SPDLOG_DEBUG("reinit node {} to running state",
+                                 conf_change_req->server().address());
                     node->node_state = NodeStateEnum::Running;
                     node->next_log_index = 0;
                     node->match_log_index = ety->id();
@@ -254,55 +265,25 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
 }
 
 /**
- * @brief Get the Snapshot Block object
+ * @brief
  *
- * @param raft
- * @param node
- * @param offset
- * @param block
+ * @param snap_path
  * @return EStatus
  */
-EStatus RocksDBStorageImpl::GetSnapshotBlock(RaftServer*             raft,
-                                             RaftNode*               node,
-                                             int64_t                 offset,
-                                             eraftkv::SnapshotBlock* block) {
+EStatus RocksDBStorageImpl::CreateCheckpoint(std::string snap_path) {
+  rocksdb::Checkpoint* checkpoint;
+  auto st = rocksdb::Checkpoint::Create(this->kv_db_, &checkpoint);
+  if (!st.ok()) {
+    return EStatus::kError;
+  }
+  auto st_ = checkpoint->CreateCheckpoint(snap_path);
+  if (!st_.ok()) {
+    return EStatus::kError;
+  }
+  SPDLOG_INFO("success create db checkpoint in {} ", snap_path);
   return EStatus::kOk;
 }
 
-/**
- * @brief
- *
- * @param raft
- * @param snapshot_index
- * @param offset
- * @param block
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::StoreSnapshotBlock(RaftServer* raft,
-                                               int64_t     snapshot_index,
-                                               int64_t     offset,
-                                               eraftkv::SnapshotBlock* block) {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @param raft
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::ClearSnapshot(RaftServer* raft) {
-  return EStatus::kOk;
-}
-
-/**
- * @brief
- *
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::CreateDBSnapshot() {
-  return EStatus::kOk;
-}
 
 /**
  * @brief
@@ -368,7 +349,7 @@ EStatus RocksDBStorageImpl::ReadRaftMeta(RaftServer* raft,
  * @return EStatus
  */
 EStatus RocksDBStorageImpl::PutKV(std::string key, std::string val) {
-  TraceLog("DEBUG: ", " put key ", key, " value ", val, " to kv db");
+  SPDLOG_INFO("put key {} value {} to db", key, val);
   auto status = kv_db_->Put(rocksdb::WriteOptions(), "U:" + key, val);
   return status.ok() ? EStatus::kOk : EStatus::kPutKeyToRocksDBErr;
 }
@@ -425,7 +406,7 @@ std::map<std::string, std::string> RocksDBStorageImpl::PrefixScan(
  * @return EStatus
  */
 EStatus RocksDBStorageImpl::DelKV(std::string key) {
-  TraceLog("DEBUG: ", " del key ", key);
+  SPDLOG_DEBUG("del key {}", key);
   auto status = kv_db_->Delete(rocksdb::WriteOptions(), "U:" + key);
   return status.ok() ? EStatus::kOk : EStatus::kDelFromRocksDBErr;
 }
@@ -440,7 +421,6 @@ RocksDBStorageImpl::RocksDBStorageImpl(std::string db_path) {
   options.create_if_missing = true;
   rocksdb::Status status = rocksdb::DB::Open(options, db_path, &kv_db_);
   assert(status.ok());
-  TraceLog("DEBUG: ", "init rocksdb with path ", db_path);
 }
 
 /**

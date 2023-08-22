@@ -11,6 +11,7 @@
 
 #include "client.h"
 
+#include <spdlog/spdlog.h>
 #include <stdint.h>
 #include <sys/time.h>
 
@@ -50,7 +51,7 @@ Client::Client(std::string meta_addrs)
   // init stub to meta server node
   auto meta_node_addrs = StringUtil::Split(meta_addrs, ',');
   for (auto meta_node_addr : meta_node_addrs) {
-    TraceLog("DEBUG: init rpc link to ", meta_node_addr);
+    SPDLOG_INFO("init rpc link to {} ", meta_node_addr);
     auto chan_ =
         grpc::CreateChannel(meta_node_addr, grpc::InsecureChannelCredentials());
     std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
@@ -100,7 +101,7 @@ std::string Client::GetShardLeaderAddrAndSlot(std::string partion_key,
   std::string leader_address;
   int64_t     key_slot = -1;
   key_slot = HashUtil::CRC64(0, partion_key.c_str(), partion_key.size()) % 1024;
-  TraceLog("DEBUG: partion key " + partion_key + " with slot ", key_slot);
+  SPDLOG_DEBUG("partion key {} with slot {} ", partion_key, key_slot);
   *slot = key_slot;
   for (auto sg : cluster_conf_.shard_group()) {
     for (auto sl : sg.slots()) {

@@ -32,6 +32,7 @@
  */
 
 #include <rocksdb/db.h>
+#include <spdlog/spdlog.h>
 #include <stdint.h>
 
 #include <iostream>
@@ -208,6 +209,11 @@ int64_t RocksDBLogStorageImpl::LogCount() {
  * db instance
  ****************************************************************************/
 
+void RocksDBSingleLogStorageImpl::ResetFirstIndex(int64_t new_idx) {
+  this->first_idx = new_idx;
+}
+
+
 /**
  * @brief Append add new entries
  *
@@ -234,7 +240,6 @@ EStatus RocksDBSingleLogStorageImpl::Append(eraftkv::Entry* ety) {
  */
 EStatus RocksDBSingleLogStorageImpl::EraseBefore(int64_t first_index) {
   int64_t old_fir_idx = this->first_idx;
-  this->first_idx = first_index;
   for (int64_t i = old_fir_idx; i < first_index; i++) {
     std::string key;
     key.append("E:");
@@ -242,6 +247,7 @@ EStatus RocksDBSingleLogStorageImpl::EraseBefore(int64_t first_index) {
     auto st = log_db_->Delete(rocksdb::WriteOptions(), key);
     assert(st.ok());
   }
+  this->first_idx = first_index;
   return EStatus::kOk;
 }
 
@@ -334,6 +340,30 @@ eraftkv::Entry* RocksDBSingleLogStorageImpl::GetLastEty() {
  */
 int64_t RocksDBSingleLogStorageImpl::FirstIndex() {
   return this->first_idx;
+}
+
+void RocksDBSingleLogStorageImpl::ResetFirstLogEntry(int64_t term,
+                                                     int64_t index) {
+  int64_t old_fir_idx = this->first_idx;
+  for (int64_t i = old_fir_idx; i <= index; i++) {
+    std::string key;
+    key.append("E:");
+    EncodeDecodeTool::PutFixed64(&key, static_cast<uint64_t>(i));
+    auto st = log_db_->Delete(rocksdb::WriteOptions(), key);
+    assert(st.ok());
+  }
+  this->first_idx = index;
+
+  eraftkv::Entry* ety = new eraftkv::Entry();
+  // write init log with index 0 to rocksdb
+  ety->set_e_type(eraftkv::EntryType::NoOp);
+  std::string* key = new std::string();
+  key->append("E:");
+  EncodeDecodeTool::PutFixed64(key, static_cast<uint64_t>(this->FirstIndex()));
+  std::string val = ety->SerializeAsString();
+  auto        status = log_db_->Put(rocksdb::WriteOptions(), *key, val);
+  assert(status.ok());
+  this->snapshot_idx = index;
 }
 
 /**
@@ -434,7 +464,7 @@ RocksDBSingleLogStorageImpl::RocksDBSingleLogStorageImpl(std::string db_path)
   rocksdb::Options options;
   options.create_if_missing = true;
   rocksdb::Status status = rocksdb::DB::Open(options, db_path, &log_db_);
-  TraceLog("DEBUG: ", "init log db success with path ", db_path);
+  ("DEBUG: ", "init log db success with path ", db_path);
   // if not log meta, init log
   int64_t commit_idx, applied_idx;
   auto    est = ReadMetaState(&commit_idx, &applied_idx);

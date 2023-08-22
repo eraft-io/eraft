@@ -5,6 +5,7 @@ enum ErrorCode {
   REQUEST_NOT_LEADER_NODE = 0;
   NODE_IS_DOWN = 1;
   REQUEST_TIMEOUT = 2;
+  NODE_IS_SNAPSHOTING = 3;
 }
 
 message RequestVoteReq {
@@ -57,20 +58,16 @@ message AppendEntriesResp {
   int64  conflict_term = 6;
 }
 
-message SnapshotBlock {
-  int64 offset = 1;
-  bytes data = 2;
-  int64 block_size = 3;
-  bool  is_last_chunk = 4;
-}
 
 message SnapshotReq {
   int64         term = 1;
   int64         leader_id = 2;
   string        message_index = 3;
-  int64         snapshot_index = 4;
-  int64         snapshot_term = 5;
-  SnapshotBlock block = 6;
+  int64         last_included_index = 4;
+  int64         last_included_term = 5;
+  int64         offset = 6;
+  bytes         data = 7;
+  bool          done = 8;
 }
 
 message SnapshotResp {
