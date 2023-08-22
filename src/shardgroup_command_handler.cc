@@ -64,7 +64,6 @@ EStatus ShardGroupCommandHandler::Execute(
         return_bufs.push_back(server.address());
       }
     }
-    // example: *2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
     std::string reply_buf;
     reply_buf += "*";
     reply_buf += std::to_string(return_bufs.size());

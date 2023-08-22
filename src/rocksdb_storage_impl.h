@@ -328,6 +328,11 @@ class RocksDBSingleLogStorageImpl : public LogStore {
    */
   EStatus Append(eraftkv::Entry* ety);
 
+  /**
+   * @brief
+   *
+   * @param new_idx
+   */
   void ResetFirstIndex(int64_t new_idx);
 
   /**

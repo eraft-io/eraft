@@ -51,10 +51,10 @@ rm-net:
 	docker network rm mytestnetwork
 
 run-demo:
-	docker run --name kvserver-node1 --network mytestnetwork --ip 172.18.0.10 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 /tmp/snap_db0 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-1.log
+	docker run --name kvserver-node1 --network mytestnetwork --ip 172.18.0.10 --privileged=true -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 /tmp/snap_db0 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-1.log
 	sleep 2
-	docker run --name kvserver-node2 --network mytestnetwork --ip 172.18.0.11 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 /tmp/snap_db1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-2.log
-	docker run --name kvserver-node3 --network mytestnetwork --ip 172.18.0.12 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 /tmp/snap_db2 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-3.log
+	docker run --name kvserver-node2 --network mytestnetwork --ip 172.18.0.11 --privileged=true -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 /tmp/snap_db1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-2.log
+	docker run --name kvserver-node3 --network mytestnetwork --ip 172.18.0.12 --privileged=true -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 /tmp/snap_db2 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-3.log
 	sleep 1
 	docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /tmp/meta_db0 /tmp/log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 	sleep 3

@@ -66,7 +66,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , max_entries_per_append_req_(100)
     , tick_interval_(1000)
     , granted_votes_(0)
-    , snap_threshold_log_count_(21)
+    , snap_threshold_log_count_(20000)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -383,8 +383,6 @@ EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
                       this->id_,
                       this->current_term_);
           this->BecomeLeader();
-          this->SendHeartBeat();
-          this->SendAppendEntries();
           this->granted_votes_ = 0;
         }
       } else {
@@ -800,6 +798,7 @@ EStatus RaftServer::BecomeLeader() {
     node->next_log_index = this->log_store_->LastIndex() + 1;
     node->match_log_index = 0;
   }
+  this->SendHeartBeat();
   election_running_ = false;
   return EStatus::kOk;
 }
