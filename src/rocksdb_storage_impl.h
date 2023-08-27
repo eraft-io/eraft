@@ -200,6 +200,7 @@ class RocksDBLogStorageImpl : public LogStore {
    */
   ~RocksDBLogStorageImpl();
 
+  EStatus Reinit();
 
   EStatus Reset(int64_t index, int64_t term);
 
@@ -413,6 +414,8 @@ class RocksDBSingleLogStorageImpl : public LogStore {
    * @return int64_t
    */
   int64_t LastIndex();
+
+  EStatus Reinit();
 
   /**
    * @brief LogCount get the number of entries
