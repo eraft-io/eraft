@@ -66,7 +66,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , max_entries_per_append_req_(100)
     , tick_interval_(1000)
     , granted_votes_(0)
-    , snap_threshold_log_count_(20000)
+    , snap_threshold_log_count_(20)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -192,7 +192,8 @@ EStatus RaftServer::SendAppendEntries() {
   }
 
   for (auto node : this->nodes_) {
-    if (node->id == this->id_ || node->node_state == NodeStateEnum::Down) {
+    if (node->id == this->id_ ||
+        node->node_state == NodeStateEnum::LostConnection) {
       continue;
     }
 
@@ -627,10 +628,10 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
   // 1.save snapshot data
   // 2.update log state
 
-  // if (req->last_included_index() <= this->commit_idx_) {
-  //   resp->set_success(false);
-  //   return EStatus::kOk;
-  // }
+  if (req->last_included_index() <= this->commit_idx_) {
+    resp->set_success(false);
+    return EStatus::kOk;
+  }
 
   this->log_store_->ResetFirstLogEntry(req->last_included_term(),
                                        req->last_included_index());
@@ -713,6 +714,10 @@ EStatus RaftServer::HandleSnapshotResp(RaftNode*              from_node,
           if (from_node->id == node->id) {
             node->match_log_index = req->last_included_index();
             node->next_log_index = req->last_included_index() + 1;
+            SPDLOG_INFO("update node {} match_log_index {}, next_log_index{} ",
+                        node->address,
+                        node->match_log_index,
+                        node->next_log_index);
           }
         }
       }
@@ -892,7 +897,7 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
  */
 EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
 
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
 
   this->is_snapshoting_ = true;
   auto snap_index = this->log_store_->FirstIndex();
