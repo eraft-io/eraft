@@ -125,11 +125,11 @@ struct hash<SocketAddr> {
   typedef SocketAddr  argument_type;
   typedef std::size_t result_type;
   result_type         operator()(const argument_type& s) const noexcept {
-            result_type h1 = std::hash<short>{}(s.addr_.sin_family);
-            result_type h2 = std::hash<unsigned short>{}(s.addr_.sin_port);
-            result_type h3 = std::hash<unsigned int>{}(s.addr_.sin_addr.s_addr);
-            result_type tmp = h1 ^ (h2 << 1);
-            return h3 ^ (tmp << 1);
+    result_type h1 = std::hash<short>{}(s.addr_.sin_family);
+    result_type h2 = std::hash<unsigned short>{}(s.addr_.sin_port);
+    result_type h3 = std::hash<unsigned int>{}(s.addr_.sin_addr.s_addr);
+    result_type tmp = h1 ^ (h2 << 1);
+    return h3 ^ (tmp << 1);
   }
 };
 }  // namespace std

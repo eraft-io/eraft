@@ -387,6 +387,7 @@ EStatus RocksDBSingleLogStorageImpl::Reinit() {
   iter->Seek("E:");
   while (iter->Valid()) {
     auto st = log_db_->Delete(rocksdb::WriteOptions(), iter->key());
+    SPDLOG_INFO("delete log entry {}", iter->key());
     assert(st.ok());
     iter->Next();
   }
