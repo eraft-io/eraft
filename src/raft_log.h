@@ -50,6 +50,8 @@ class LogStore {
    */
   virtual ~LogStore() {}
 
+  virtual EStatus Reinit() = 0;
+
   /**
    * @brief Append add new entries
    *

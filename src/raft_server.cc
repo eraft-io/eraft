@@ -58,15 +58,15 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , last_applied_idx_(0)
     , tick_count_(0)
     , leader_id_(-1)
-    , heartbeat_timeout_(1)
+    , heartbeat_timeout_(2)
     , election_timeout_(0)
-    , base_election_timeout_(5)
+    , base_election_timeout_(10)
     , heartbeat_tick_count_(0)
     , election_tick_count_(0)
     , max_entries_per_append_req_(100)
     , tick_interval_(1000)
     , granted_votes_(0)
-    , snap_threshold_log_count_(20000)
+    , snap_threshold_log_count_(20)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -192,7 +192,8 @@ EStatus RaftServer::SendAppendEntries() {
   }
 
   for (auto node : this->nodes_) {
-    if (node->id == this->id_ || node->node_state == NodeStateEnum::Down) {
+    if (node->id == this->id_ ||
+        node->node_state == NodeStateEnum::LostConnection) {
       continue;
     }
 
@@ -623,15 +624,13 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
     return EStatus::kOk;
   }
 
-  // Install snapshot
-  // 1.save snapshot data
-  // 2.update log state
+  if (req->last_included_index() > this->log_store_->LastIndex()) {
+    this->log_store_->Reinit();
+  } else {
+    this->log_store_->EraseBefore(req->last_included_index());
+  }
 
-  // if (req->last_included_index() <= this->commit_idx_) {
-  //   resp->set_success(false);
-  //   return EStatus::kOk;
-  // }
-
+  // install snapshot
   this->log_store_->ResetFirstLogEntry(req->last_included_term(),
                                        req->last_included_index());
 
@@ -713,6 +712,10 @@ EStatus RaftServer::HandleSnapshotResp(RaftNode*              from_node,
           if (from_node->id == node->id) {
             node->match_log_index = req->last_included_index();
             node->next_log_index = req->last_included_index() + 1;
+            SPDLOG_INFO("update node {} match_log_index {}, next_log_index{} ",
+                        node->address,
+                        node->match_log_index,
+                        node->next_log_index);
           }
         }
       }
@@ -799,6 +802,7 @@ EStatus RaftServer::BecomeLeader() {
     node->match_log_index = 0;
   }
   this->SendHeartBeat();
+  heartbeat_tick_count_ = 0;
   election_running_ = false;
   return EStatus::kOk;
 }
@@ -892,7 +896,7 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
  */
 EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
 
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
+  std::lock_guard<std::mutex> guard(raft_op_mutex_);
 
   this->is_snapshoting_ = true;
   auto snap_index = this->log_store_->FirstIndex();
@@ -905,8 +909,9 @@ EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
 
   SPDLOG_INFO("start snapshoting with index {}", ety_idx);
 
+  this->log_store_->EraseBefore(ety_idx);
   // reset first log index
-  this->log_store_->ResetFirstLogEntry(this->current_term_, ety_idx);
+  this->log_store_->ResetFirstLogEntry(0, ety_idx);
 
   this->store_->CreateCheckpoint(snapdir);
 

@@ -13,3 +13,5 @@ spdlog/
 spdlog
 logs
 logs/
+data
+data/
