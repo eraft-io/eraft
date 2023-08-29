@@ -81,6 +81,9 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
   if (raft->commit_idx_ == raft->last_applied_idx_) {
     return EStatus::kOk;
   }
+  SPDLOG_INFO("appling entries from {} to {}",
+              raft->last_applied_idx_,
+              raft->commit_idx_);
   auto etys =
       raft->log_store_->Gets(raft->last_applied_idx_, raft->commit_idx_);
   for (auto ety : etys) {
@@ -136,7 +139,7 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
         delete op_pair;
         if (raft->log_store_->LogCount() > raft->snap_threshold_log_count_) {
           // to snapshot
-          raft->SnapshotingStart(ety->id(), raft->snap_db_path_);
+          raft->SnapshotingStart(ety->id());
         }
         break;
       }

@@ -103,7 +103,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
       raft_config.peer_address_map[count] = peer;
       count++;
     }
-    raft_config.snap_path = option.snap_db_path;
+    raft_config.snap_path = options_.snap_db_path;
     options_.svr_addr = raft_config.peer_address_map[options_.svr_id];
     GRpcNetworkImpl* net_rpc = new GRpcNetworkImpl();
     net_rpc->InitPeerNodeConnections(raft_config.peer_address_map);
