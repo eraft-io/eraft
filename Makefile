@@ -56,10 +56,10 @@ run-demo:
 	docker run --name kvserver-node2 --network mytestnetwork --ip 172.18.0.11 --privileged=true -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 1 /eraft/data/kv_db1 /eraft/data/log_db1 /eraft/data/snap_db1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-2.log
 	docker run --name kvserver-node3 --network mytestnetwork --ip 172.18.0.12 --privileged=true -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 2 /eraft/data/kv_db2 /eraft/data/log_db2 /eraft/data/snap_db2 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090 /eraft/logs/eraftkv-3.log
 	sleep 1
-	docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /tmp/meta_db0 /tmp/log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
+	docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /eraft/data/meta_db0 /eraft/data/meta_log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 	sleep 3
-	docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 1 /tmp/meta_db1 /tmp/log_db1 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-	docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /tmp/meta_db2 /tmp/log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
+	docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 1 /eraft/data/meta_db1 /eraft/data/meta_log_db1 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
+	docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /eraft/data/meta_db2 /eraft/data/meta_log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 	sleep 16
 	docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-kdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 /eraft/logs/eraftkdb.log
 

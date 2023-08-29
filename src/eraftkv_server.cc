@@ -261,7 +261,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
 }
 
 EStatus ERaftKvServer::TakeSnapshot(int64_t log_idx) {
-  return raft_context_->SnapshotingStart(log_idx, options_.kv_db_path);
+  return raft_context_->SnapshotingStart(log_idx);
 }
 
 /**

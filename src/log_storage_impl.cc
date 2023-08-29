@@ -310,9 +310,11 @@ eraftkv::Entry* RocksDBSingleLogStorageImpl::Get(int64_t index) {
   key.append("E:");
   EncodeDecodeTool::PutFixed64(&key, static_cast<uint64_t>(index));
   auto status = log_db_->Get(rocksdb::ReadOptions(), key, &new_ety_str);
-  assert(status.ok());
-  bool parse_ok = new_ety->ParseFromString(new_ety_str);
-  assert(parse_ok);
+  // assert(status.ok());
+  if (status.ok()) {
+    bool parse_ok = new_ety->ParseFromString(new_ety_str);
+  }
+  // assert(parse_ok);
   return new_ety;
 }
 
@@ -362,14 +364,16 @@ void RocksDBSingleLogStorageImpl::ResetFirstLogEntry(int64_t term,
 
   eraftkv::Entry* ety = new eraftkv::Entry();
   // write init log with index 0 to rocksdb
+  SPDLOG_INFO("reset first log with index {}, term {}", index, term);
   ety->set_e_type(eraftkv::EntryType::NoOp);
   ety->set_id(index);
   ety->set_term(term);
   std::string* key = new std::string();
   key->append("E:");
-  EncodeDecodeTool::PutFixed64(key, static_cast<uint64_t>(this->FirstIndex()));
+  EncodeDecodeTool::PutFixed64(key, static_cast<uint64_t>(index));
   std::string val = ety->SerializeAsString();
   auto        status = log_db_->Put(rocksdb::WriteOptions(), *key, val);
+  this->first_idx = index;
   assert(status.ok());
 }
 
@@ -383,12 +387,14 @@ int64_t RocksDBSingleLogStorageImpl::LastIndex() {
 }
 
 EStatus RocksDBSingleLogStorageImpl::Reinit() {
-  auto iter = log_db_->NewIterator(rocksdb::ReadOptions());
+  rocksdb::ReadOptions read_options;
+  auto                 iter = log_db_->NewIterator(read_options);
   iter->Seek("E:");
   while (iter->Valid()) {
-    auto st = log_db_->Delete(rocksdb::WriteOptions(), iter->key());
-    SPDLOG_INFO("delete log entry {}", iter->key().ToString());
-    assert(st.ok());
+    if (iter->key().ToString().rfind("E:", 0) == 0) {
+      auto st = log_db_->Delete(rocksdb::WriteOptions(), iter->key());
+      SPDLOG_INFO("delete log entry {}", iter->key().ToString());
+    }
     iter->Next();
   }
   return EStatus::kOk;

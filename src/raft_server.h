@@ -364,7 +364,7 @@ class RaftServer {
    * @param snapdir
    * @return EStatus
    */
-  EStatus SnapshotingStart(int64_t ety_idx, std::string snapdir);
+  EStatus SnapshotingStart(int64_t ety_idx);
 
   /**
    * @brief

@@ -46,10 +46,10 @@
  * @brief
  *
  * @param argc
- * @param argv (eg: eraftkv 0 /tmp/kv_db0 /tmp/log_db0
+ * @param argv (eg: eraftkv 0 /tmp/kv_db0 /tmp/log_db0 /tmp/snap_db0
  * 127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090)
- * eraftkv [node id] [kv data path] [log data path] [meta server addrs]
- * [log_file_path]
+ * eraftkv [node id] [kv data path] [log data path] [snap db path] [meta server
+ * addrs] [log_file_path]
  * @return int
  */
 int main(int argc, char* argv[]) {

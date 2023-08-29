@@ -204,7 +204,14 @@ EStatus RaftServer::SendAppendEntries() {
                 this->log_store_->FirstIndex());
 
     if (prev_log_index < this->log_store_->FirstIndex()) {
-      auto                  new_first_log_ent = this->log_store_->GetFirstEty();
+      auto new_first_log_ent = this->log_store_->GetFirstEty();
+
+      // TODO: loop send sst files
+      // auto snap_files = DirectoryTool::ListDirFiles(this->snap_db_path_);
+      // for (auto snapfile : snap_files) {
+      //   SPDLOG_INFO("snapfile {}", snapfile);
+      // }
+
       eraftkv::SnapshotReq* snap_req = new eraftkv::SnapshotReq();
       snap_req->set_term(this->current_term_);
       snap_req->set_leader_id(this->id_);
@@ -261,8 +268,9 @@ EStatus RaftServer::SendAppendEntries() {
  * @return EStatus
  */
 EStatus RaftServer::ApplyEntries() {
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
-  this->store_->ApplyLog(this, 0, 0);
+  if (!this->IsSnapshoting()) {
+    this->store_->ApplyLog(this, 0, 0);
+  }
   return EStatus::kOk;
 }
 
@@ -282,7 +290,6 @@ bool RaftServer::IsUpToDate(int64_t last_idx, int64_t term) {
 EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
                                          const eraftkv::RequestVoteReq* req,
                                          eraftkv::RequestVoteResp*      resp) {
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
   resp->set_term(current_term_);
   resp->set_prevote(req->prevote());
   SPDLOG_INFO("handle vote req " + req->DebugString());
@@ -411,7 +418,6 @@ EStatus RaftServer::Propose(std::string payload,
                             int64_t*    new_log_index,
                             int64_t*    new_log_term,
                             bool*       is_success) {
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
   if (this->role_ != NodeRaftRoleEnum::Leader) {
     *new_log_index = -1;
     *new_log_term = -1;
@@ -452,8 +458,7 @@ EStatus RaftServer::Propose(std::string payload,
 EStatus RaftServer::HandleAppendEntriesReq(RaftNode* from_node,
                                            const eraftkv::AppendEntriesReq* req,
                                            eraftkv::AppendEntriesResp* resp) {
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
-
+  SPDLOG_INFO("handle ae {}", req->DebugString());
   ResetRandomElectionTimeout();
   election_tick_count_ = 0;
 
@@ -485,15 +490,18 @@ EStatus RaftServer::HandleAppendEntriesReq(RaftNode* from_node,
   this->leader_id_ = req->leader_id();
 
   if (req->prev_log_index() < this->log_store_->FirstIndex()) {
-    resp->set_conflict_index(this->log_store_->FirstIndex());
-    resp->set_conflict_term(0);
+    resp->set_term(0);
     resp->set_success(false);
     return EStatus::kOk;
   }
-
-  if (!this->MatchLog(req->prev_log_term(), req->prev_log_index())) {
-    resp->set_success(false);
+  // after snapshoting GetLastEty()->term() is 0
+  if (!(this->MatchLog(req->prev_log_term(), req->prev_log_index()) ||
+        this->log_store_->GetLastEty()->term() == 0)) {
+    resp->set_success(true);
     if (this->log_store_->LastIndex() < req->prev_log_index()) {
+      SPDLOG_INFO("log conflict with index {} term {}",
+                  this->log_store_->LastIndex(),
+                  this->log_store_->GetLastEty()->term());
       resp->set_conflict_index(this->log_store_->LastIndex());
       resp->set_conflict_term(this->log_store_->GetLastEty()->term());
     } else {
@@ -602,10 +610,12 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
                                       const eraftkv::SnapshotReq* req,
                                       eraftkv::SnapshotResp*      resp) {
   SPDLOG_INFO("handle snapshot req {} ", req->DebugString());
+  this->is_snapshoting_ = true;
   resp->set_term(this->current_term_);
   resp->set_success(false);
 
   if (req->term() < this->current_term_) {
+    this->is_snapshoting_ = false;
     return EStatus::kOk;
   }
 
@@ -621,6 +631,7 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
   resp->set_success(true);
 
   if (req->last_included_index() <= this->commit_idx_) {
+    this->is_snapshoting_ = false;
     return EStatus::kOk;
   }
 
@@ -636,7 +647,7 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
 
   this->last_applied_idx_ = req->last_included_index();
   this->commit_idx_ = req->last_included_index();
-
+  this->is_snapshoting_ = false;
   return EStatus::kOk;
 }
 
@@ -751,7 +762,6 @@ EStatus RaftServer::ProposeConfChange(std::string payload,
                                       int64_t*    new_log_index,
                                       int64_t*    new_log_term,
                                       bool*       is_success) {
-  // std::lock_guard<std::mutex> guard(raft_op_mutex_);
   if (this->role_ != NodeRaftRoleEnum::Leader) {
     *new_log_index = -1;
     *new_log_term = -1;
@@ -894,10 +904,7 @@ EStatus RaftServer::ElectionStart(bool is_prevote) {
  * @param snapdir
  * @return EStatus
  */
-EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
-
-  std::lock_guard<std::mutex> guard(raft_op_mutex_);
-
+EStatus RaftServer::SnapshotingStart(int64_t ety_idx) {
   this->is_snapshoting_ = true;
   auto snap_index = this->log_store_->FirstIndex();
 
@@ -911,9 +918,9 @@ EStatus RaftServer::SnapshotingStart(int64_t ety_idx, std::string snapdir) {
 
   this->log_store_->EraseBefore(ety_idx);
   // reset first log index
-  this->log_store_->ResetFirstLogEntry(0, ety_idx);
+  this->log_store_->ResetFirstLogEntry(this->current_term_, ety_idx);
 
-  this->store_->CreateCheckpoint(snapdir);
+  this->store_->CreateCheckpoint(snap_db_path_);
 
   this->is_snapshoting_ = false;
 
