@@ -48,7 +48,7 @@ struct TableStruct_eraftkv_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[15]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[17]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -86,6 +86,12 @@ extern RequestVoteReqDefaultTypeInternal _RequestVoteReq_default_instance_;
 class RequestVoteResp;
 class RequestVoteRespDefaultTypeInternal;
 extern RequestVoteRespDefaultTypeInternal _RequestVoteResp_default_instance_;
+class SSTFileContent;
+class SSTFileContentDefaultTypeInternal;
+extern SSTFileContentDefaultTypeInternal _SSTFileContent_default_instance_;
+class SSTFileId;
+class SSTFileIdDefaultTypeInternal;
+extern SSTFileIdDefaultTypeInternal _SSTFileId_default_instance_;
 class Server;
 class ServerDefaultTypeInternal;
 extern ServerDefaultTypeInternal _Server_default_instance_;
@@ -113,6 +119,8 @@ template<> ::eraftkv::Entry* Arena::CreateMaybeMessage<::eraftkv::Entry>(Arena*)
 template<> ::eraftkv::KvOpPair* Arena::CreateMaybeMessage<::eraftkv::KvOpPair>(Arena*);
 template<> ::eraftkv::RequestVoteReq* Arena::CreateMaybeMessage<::eraftkv::RequestVoteReq>(Arena*);
 template<> ::eraftkv::RequestVoteResp* Arena::CreateMaybeMessage<::eraftkv::RequestVoteResp>(Arena*);
+template<> ::eraftkv::SSTFileContent* Arena::CreateMaybeMessage<::eraftkv::SSTFileContent>(Arena*);
+template<> ::eraftkv::SSTFileId* Arena::CreateMaybeMessage<::eraftkv::SSTFileId>(Arena*);
 template<> ::eraftkv::Server* Arena::CreateMaybeMessage<::eraftkv::Server>(Arena*);
 template<> ::eraftkv::ShardGroup* Arena::CreateMaybeMessage<::eraftkv::ShardGroup>(Arena*);
 template<> ::eraftkv::Slot* Arena::CreateMaybeMessage<::eraftkv::Slot>(Arena*);
@@ -3012,6 +3020,298 @@ class ClientOperationResp :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
+// -------------------------------------------------------------------
+
+class SSTFileId :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.SSTFileId) */ {
+ public:
+  SSTFileId();
+  virtual ~SSTFileId();
+
+  SSTFileId(const SSTFileId& from);
+  SSTFileId(SSTFileId&& from) noexcept
+    : SSTFileId() {
+    *this = ::std::move(from);
+  }
+
+  inline SSTFileId& operator=(const SSTFileId& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SSTFileId& operator=(SSTFileId&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const SSTFileId& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const SSTFileId* internal_default_instance() {
+    return reinterpret_cast<const SSTFileId*>(
+               &_SSTFileId_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    15;
+
+  friend void swap(SSTFileId& a, SSTFileId& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SSTFileId* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SSTFileId* New() const final {
+    return CreateMaybeMessage<SSTFileId>(nullptr);
+  }
+
+  SSTFileId* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<SSTFileId>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const SSTFileId& from);
+  void MergeFrom(const SSTFileId& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SSTFileId* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "eraftkv.SSTFileId";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
+    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kIdFieldNumber = 1,
+  };
+  // int32 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:eraftkv.SSTFileId)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int32 id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_eraftkv_2eproto;
+};
+// -------------------------------------------------------------------
+
+class SSTFileContent :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:eraftkv.SSTFileContent) */ {
+ public:
+  SSTFileContent();
+  virtual ~SSTFileContent();
+
+  SSTFileContent(const SSTFileContent& from);
+  SSTFileContent(SSTFileContent&& from) noexcept
+    : SSTFileContent() {
+    *this = ::std::move(from);
+  }
+
+  inline SSTFileContent& operator=(const SSTFileContent& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SSTFileContent& operator=(SSTFileContent&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const SSTFileContent& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const SSTFileContent* internal_default_instance() {
+    return reinterpret_cast<const SSTFileContent*>(
+               &_SSTFileContent_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  friend void swap(SSTFileContent& a, SSTFileContent& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SSTFileContent* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SSTFileContent* New() const final {
+    return CreateMaybeMessage<SSTFileContent>(nullptr);
+  }
+
+  SSTFileContent* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<SSTFileContent>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const SSTFileContent& from);
+  void MergeFrom(const SSTFileContent& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SSTFileContent* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "eraftkv.SSTFileContent";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_eraftkv_2eproto);
+    return ::descriptor_table_eraftkv_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 2,
+    kContentFieldNumber = 3,
+    kIdFieldNumber = 1,
+  };
+  // string name = 2;
+  void clear_name();
+  const std::string& name() const;
+  void set_name(const std::string& value);
+  void set_name(std::string&& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  std::string* mutable_name();
+  std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // bytes content = 3;
+  void clear_content();
+  const std::string& content() const;
+  void set_content(const std::string& value);
+  void set_content(std::string&& value);
+  void set_content(const char* value);
+  void set_content(const void* value, size_t size);
+  std::string* mutable_content();
+  std::string* release_content();
+  void set_allocated_content(std::string* content);
+  private:
+  const std::string& _internal_content() const;
+  void _internal_set_content(const std::string& value);
+  std::string* _internal_mutable_content();
+  public:
+
+  // int32 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_id() const;
+  void _internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:eraftkv.SSTFileContent)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
+  ::PROTOBUF_NAMESPACE_ID::int32 id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_eraftkv_2eproto;
+};
 // ===================================================================
 
 
@@ -5093,9 +5393,181 @@ inline void ClientOperationResp::set_leader_addr(::PROTOBUF_NAMESPACE_ID::int64 
   // @@protoc_insertion_point(field_set:eraftkv.ClientOperationResp.leader_addr)
 }
 
+// -------------------------------------------------------------------
+
+// SSTFileId
+
+// int32 id = 1;
+inline void SSTFileId::clear_id() {
+  id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SSTFileId::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SSTFileId::id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SSTFileId.id)
+  return _internal_id();
+}
+inline void SSTFileId::_internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  id_ = value;
+}
+inline void SSTFileId::set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SSTFileId.id)
+}
+
+// -------------------------------------------------------------------
+
+// SSTFileContent
+
+// int32 id = 1;
+inline void SSTFileContent::clear_id() {
+  id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SSTFileContent::_internal_id() const {
+  return id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 SSTFileContent::id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SSTFileContent.id)
+  return _internal_id();
+}
+inline void SSTFileContent::_internal_set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  id_ = value;
+}
+inline void SSTFileContent::set_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SSTFileContent.id)
+}
+
+// string name = 2;
+inline void SSTFileContent::clear_name() {
+  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& SSTFileContent::name() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SSTFileContent.name)
+  return _internal_name();
+}
+inline void SSTFileContent::set_name(const std::string& value) {
+  _internal_set_name(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SSTFileContent.name)
+}
+inline std::string* SSTFileContent::mutable_name() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.SSTFileContent.name)
+  return _internal_mutable_name();
+}
+inline const std::string& SSTFileContent::_internal_name() const {
+  return name_.GetNoArena();
+}
+inline void SSTFileContent::_internal_set_name(const std::string& value) {
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void SSTFileContent::set_name(std::string&& value) {
+  
+  name_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.SSTFileContent.name)
+}
+inline void SSTFileContent::set_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.SSTFileContent.name)
+}
+inline void SSTFileContent::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.SSTFileContent.name)
+}
+inline std::string* SSTFileContent::_internal_mutable_name() {
+  
+  return name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* SSTFileContent::release_name() {
+  // @@protoc_insertion_point(field_release:eraftkv.SSTFileContent.name)
+  
+  return name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void SSTFileContent::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.SSTFileContent.name)
+}
+
+// bytes content = 3;
+inline void SSTFileContent::clear_content() {
+  content_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& SSTFileContent::content() const {
+  // @@protoc_insertion_point(field_get:eraftkv.SSTFileContent.content)
+  return _internal_content();
+}
+inline void SSTFileContent::set_content(const std::string& value) {
+  _internal_set_content(value);
+  // @@protoc_insertion_point(field_set:eraftkv.SSTFileContent.content)
+}
+inline std::string* SSTFileContent::mutable_content() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.SSTFileContent.content)
+  return _internal_mutable_content();
+}
+inline const std::string& SSTFileContent::_internal_content() const {
+  return content_.GetNoArena();
+}
+inline void SSTFileContent::_internal_set_content(const std::string& value) {
+  
+  content_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void SSTFileContent::set_content(std::string&& value) {
+  
+  content_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.SSTFileContent.content)
+}
+inline void SSTFileContent::set_content(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  content_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.SSTFileContent.content)
+}
+inline void SSTFileContent::set_content(const void* value, size_t size) {
+  
+  content_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.SSTFileContent.content)
+}
+inline std::string* SSTFileContent::_internal_mutable_content() {
+  
+  return content_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* SSTFileContent::release_content() {
+  // @@protoc_insertion_point(field_release:eraftkv.SSTFileContent.content)
+  
+  return content_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void SSTFileContent::set_allocated_content(std::string* content) {
+  if (content != nullptr) {
+    
+  } else {
+    
+  }
+  content_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), content);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.SSTFileContent.content)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

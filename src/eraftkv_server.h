@@ -167,6 +167,12 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   Status ClusterConfigChange(ServerContext*                         context,
                              const eraftkv::ClusterConfigChangeReq* req,
                              eraftkv::ClusterConfigChangeResp*      resp);
+
+
+  Status PutSSTFile(ServerContext*                               context,
+                    grpc::ServerReader<eraftkv::SSTFileContent>* reader,
+                    eraftkv::SSTFileId*                          fileId);
+
   /**
    * @brief
    *

@@ -25,6 +25,7 @@ static const char* ERaftKv_method_names[] = {
   "/eraftkv.ERaftKv/RequestVote",
   "/eraftkv.ERaftKv/AppendEntries",
   "/eraftkv.ERaftKv/Snapshot",
+  "/eraftkv.ERaftKv/PutSSTFile",
   "/eraftkv.ERaftKv/ProcessRWOperation",
   "/eraftkv.ERaftKv/ClusterConfigChange",
 };
@@ -39,8 +40,9 @@ ERaftKv::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_RequestVote_(ERaftKv_method_names[0], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_AppendEntries_(ERaftKv_method_names[1], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_Snapshot_(ERaftKv_method_names[2], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ProcessRWOperation_(ERaftKv_method_names[3], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_ClusterConfigChange_(ERaftKv_method_names[4], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_PutSSTFile_(ERaftKv_method_names[3], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_ProcessRWOperation_(ERaftKv_method_names[4], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_ClusterConfigChange_(ERaftKv_method_names[5], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status ERaftKv::Stub::RequestVote(::grpc::ClientContext* context, const ::eraftkv::RequestVoteReq& request, ::eraftkv::RequestVoteResp* response) {
@@ -127,6 +129,22 @@ void ERaftKv::Stub::experimental_async::Snapshot(::grpc::ClientContext* context,
   return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::eraftkv::SnapshotResp>::Create(channel_.get(), cq, rpcmethod_Snapshot_, context, request, false);
 }
 
+::grpc::ClientWriter< ::eraftkv::SSTFileContent>* ERaftKv::Stub::PutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response) {
+  return ::grpc_impl::internal::ClientWriterFactory< ::eraftkv::SSTFileContent>::Create(channel_.get(), rpcmethod_PutSSTFile_, context, response);
+}
+
+void ERaftKv::Stub::experimental_async::PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::experimental::ClientWriteReactor< ::eraftkv::SSTFileContent>* reactor) {
+  ::grpc_impl::internal::ClientCallbackWriterFactory< ::eraftkv::SSTFileContent>::Create(stub_->channel_.get(), stub_->rpcmethod_PutSSTFile_, context, response, reactor);
+}
+
+::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>* ERaftKv::Stub::AsyncPutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc_impl::internal::ClientAsyncWriterFactory< ::eraftkv::SSTFileContent>::Create(channel_.get(), cq, rpcmethod_PutSSTFile_, context, response, true, tag);
+}
+
+::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>* ERaftKv::Stub::PrepareAsyncPutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq) {
+  return ::grpc_impl::internal::ClientAsyncWriterFactory< ::eraftkv::SSTFileContent>::Create(channel_.get(), cq, rpcmethod_PutSSTFile_, context, response, false, nullptr);
+}
+
 ::grpc::Status ERaftKv::Stub::ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::eraftkv::ClientOperationResp* response) {
   return ::grpc::internal::BlockingUnaryCall(channel_.get(), rpcmethod_ProcessRWOperation_, context, request, response);
 }
@@ -201,11 +219,16 @@ ERaftKv::Service::Service() {
           std::mem_fn(&ERaftKv::Service::Snapshot), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       ERaftKv_method_names[3],
+      ::grpc::internal::RpcMethod::CLIENT_STREAMING,
+      new ::grpc::internal::ClientStreamingHandler< ERaftKv::Service, ::eraftkv::SSTFileContent, ::eraftkv::SSTFileId>(
+          std::mem_fn(&ERaftKv::Service::PutSSTFile), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      ERaftKv_method_names[4],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< ERaftKv::Service, ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>(
           std::mem_fn(&ERaftKv::Service::ProcessRWOperation), this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      ERaftKv_method_names[4],
+      ERaftKv_method_names[5],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< ERaftKv::Service, ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>(
           std::mem_fn(&ERaftKv::Service::ClusterConfigChange), this)));
@@ -231,6 +254,13 @@ ERaftKv::Service::~Service() {
 ::grpc::Status ERaftKv::Service::Snapshot(::grpc::ServerContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response) {
   (void) context;
   (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status ERaftKv::Service::PutSSTFile(::grpc::ServerContext* context, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* reader, ::eraftkv::SSTFileId* response) {
+  (void) context;
+  (void) reader;
   (void) response;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }

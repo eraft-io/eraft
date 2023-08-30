@@ -36,8 +36,12 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
+#include <iostream>
 
 #include "consts.h"
+#include "file_reader_into_stream.h"
+#include "sequential_file_reader.h"
+#include "sequential_file_writer.h"
 
 RaftServer* ERaftKvServer::raft_context_ = nullptr;
 
@@ -259,6 +263,31 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
   }
   return grpc::Status::OK;
 }
+
+grpc::Status ERaftKvServer::PutSSTFile(
+    ServerContext*                               context,
+    grpc::ServerReader<eraftkv::SSTFileContent>* reader,
+    eraftkv::SSTFileId*                          fileId) {
+  eraftkv::SSTFileContent sst_file;
+  SequentialFileWriter    writer;
+  SPDLOG_INFO("recv sst filename {} id {}", sst_file.name(), sst_file.id());
+  DirectoryTool::MkDir("/eraft/data/sst_recv/");
+  uint64_t sec = std::chrono::duration_cast<std::chrono::seconds>(
+                     std::chrono::system_clock::now().time_since_epoch())
+                     .count();
+  writer.OpenIfNecessary("/eraft/data/sst_recv/" + std::to_string(sec) +
+                         ".sst");
+  while (reader->Read(&sst_file)) {
+    try {
+      auto* const data = sst_file.mutable_content();
+      writer.Write(*data);
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << '\n';
+    }
+  }
+  return grpc::Status::OK;
+}
+
 
 EStatus ERaftKvServer::TakeSnapshot(int64_t log_idx) {
   return raft_context_->SnapshotingStart(log_idx);

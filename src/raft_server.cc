@@ -36,6 +36,8 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <thread>
 
 #include "rocksdb_storage_impl.h"
@@ -206,18 +208,23 @@ EStatus RaftServer::SendAppendEntries() {
     if (prev_log_index < this->log_store_->FirstIndex()) {
       auto new_first_log_ent = this->log_store_->GetFirstEty();
 
-      // TODO: loop send sst files
-      // auto snap_files = DirectoryTool::ListDirFiles(this->snap_db_path_);
-      // for (auto snapfile : snap_files) {
-      //   SPDLOG_INFO("snapfile {}", snapfile);
-      // }
+      //
+      // loop send sst files
+      //
+      auto snap_files = DirectoryTool::ListDirFiles(this->snap_db_path_);
+      for (auto snapfile : snap_files) {
+        if (StringUtil::endsWith(snapfile, ".sst")) {
+          SPDLOG_INFO("snapfile {}", snapfile);
+          this->net_->SendFile(this, node, snapfile);
+        }
+      }
 
       eraftkv::SnapshotReq* snap_req = new eraftkv::SnapshotReq();
       snap_req->set_term(this->current_term_);
       snap_req->set_leader_id(this->id_);
       snap_req->set_last_included_index(new_first_log_ent->id());
       snap_req->set_last_included_term(new_first_log_ent->term());
-      snap_req->set_data("snaptestdata");
+      // snap_req->set_data("snapshotdata");
 
       SPDLOG_INFO("send snapshot to node {} with req {}",
                   node->id,
@@ -609,7 +616,7 @@ EStatus RaftServer::HandleAppendEntriesResp(RaftNode* from_node,
 EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
                                       const eraftkv::SnapshotReq* req,
                                       eraftkv::SnapshotResp*      resp) {
-  SPDLOG_INFO("handle snapshot req {} ", req->DebugString());
+  // SPDLOG_INFO("handle snapshot req {} ", req->DebugString());
   this->is_snapshoting_ = true;
   resp->set_term(this->current_term_);
   resp->set_success(false);
@@ -629,6 +636,13 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
   ResetRandomElectionTimeout();
 
   resp->set_success(true);
+
+  // save snapshot file and set to kv_db
+  // std::ofstream sstfile (snap_db_path_ + "/loading1.sst");
+  // if (sstfile.is_open()) {
+  //   sstfile << req->data();
+  //   sstfile.close();
+  // }
 
   if (req->last_included_index() <= this->commit_idx_) {
     this->is_snapshoting_ = false;

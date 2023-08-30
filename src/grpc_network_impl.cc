@@ -43,7 +43,10 @@
 
 #include "eraftkv.grpc.pb.h"
 #include "eraftkv.pb.h"
+#include "file_reader_into_stream.h"
 #include "raft_server.h"
+#include "sequential_file_reader.h"
+#include "sequential_file_writer.h"
 #include "util.h"
 
 using eraftkv::ERaftKv;
@@ -153,6 +156,47 @@ EStatus GRpcNetworkImpl::SendSnapshot(RaftServer*           raft,
     return EStatus::kNotFound;
   }
   delete resp;
+  return EStatus::kOk;
+}
+
+EStatus GRpcNetworkImpl::SendFile(RaftServer*        raft,
+                                  RaftNode*          target_node,
+                                  const std::string& filename) {
+  SPDLOG_INFO("send file {} to {}", filename, target_node->address);
+  ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
+  if (stub_ == nullptr) {
+    return EStatus::kNotFound;
+  }
+  ClientContext       context;
+  eraftkv::SSTFileId* fid = new eraftkv::SSTFileId;
+
+  std::unique_ptr<grpc::ClientWriter<eraftkv::SSTFileContent>> writer(
+      stub_->PutSSTFile(&context, fid));
+  try {
+    FileReaderIntoStream<grpc::ClientWriter<eraftkv::SSTFileContent>> reader(
+        filename, 8, *writer);
+
+    // TODO: Make the chunk size configurable
+    const size_t chunk_size = 1UL << 1;  // Hardcoded to 1MB, which seems to be
+                                         // recommended from experience.
+    reader.Read(chunk_size);
+  } catch (const std::exception& ex) {
+    std::cerr << "Failed to send the file " << filename << ": " << ex.what()
+              << std::endl;
+    // FIXME: Indicate to the server that something went wrong and that the
+    // trasfer should be aborted.
+  }
+
+  writer->WritesDone();
+  Status status = writer->Finish();
+  if (!status.ok()) {
+    std::cerr << "File Exchange rpc failed: " << status.error_message()
+              << std::endl;
+    return EStatus::kError;
+  } else {
+    // std::cout << "Finished sending file with id " << returnedId.id() <<
+    // std::endl;
+  }
   return EStatus::kOk;
 }
 

@@ -167,6 +167,11 @@ class StringUtil {
     return tmp_s;
   }
 
+  static bool endsWith(const std::string& str, const std::string& suffix) {
+    return str.size() >= suffix.size() &&
+           0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+  }
+
   static std::vector<std::string> Split(const std::string& str, char delim) {
     std::stringstream        ss(str);
     std::string              item;
