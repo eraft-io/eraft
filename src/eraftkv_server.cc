@@ -270,11 +270,11 @@ grpc::Status ERaftKvServer::PutSSTFile(
     eraftkv::SSTFileId*                          fileId) {
   eraftkv::SSTFileContent sst_file;
   SequentialFileWriter    writer;
-  SPDLOG_INFO("recv sst filename {} id {}", sst_file.name(), sst_file.id());
   DirectoryTool::MkDir("/eraft/data/sst_recv/");
-  uint64_t sec = std::chrono::duration_cast<std::chrono::seconds>(
+  uint64_t sec = std::chrono::duration_cast<std::chrono::milliseconds>(
                      std::chrono::system_clock::now().time_since_epoch())
                      .count();
+                SPDLOG_INFO("recv sst filename {} id {} sec {}", sst_file.name(), sst_file.id(), sec);
   writer.OpenIfNecessary("/eraft/data/sst_recv/" + std::to_string(sec) +
                          ".sst");
   while (reader->Read(&sst_file)) {

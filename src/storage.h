@@ -140,6 +140,14 @@ class Storage {
                                                         int64_t     limit) = 0;
 
   /**
+   * @brief 
+   * 
+   * @param sst_file_path 
+   * @return EStatus 
+   */
+  virtual EStatus IngestSST(std::string sst_file_path) = 0;
+
+  /**
    * @brief
    *
    * @param key

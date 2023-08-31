@@ -12,3 +12,5 @@
 #pragma once
 
 #define SG_META_PREFIX "SG_META"
+
+#define SNAPSHOTING_KEY_SCAN_PRE_COOUNT 500

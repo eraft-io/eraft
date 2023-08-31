@@ -128,6 +128,15 @@ class RocksDBStorageImpl : public Storage {
                                                 int64_t     limit);
 
   /**
+   * @brief 
+   * 
+   * @param sst_file_path 
+   * @return EStatus 
+   */
+  EStatus IngestSST(std::string sst_file_path);
+
+
+  /**
    * @brief
    *
    * @param key
