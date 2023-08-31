@@ -82,6 +82,18 @@ class GRpcNetworkImpl : public Network {
   /**
    * @brief
    *
+   * @param raft
+   * @param raft_node
+   * @param filename
+   * @return EStatus
+   */
+  EStatus SendFile(RaftServer*        raft,
+                   RaftNode*          raft_node,
+                   const std::string& filename);
+
+  /**
+   * @brief
+   *
    * @param peers_address
    * @return EStatus
    */

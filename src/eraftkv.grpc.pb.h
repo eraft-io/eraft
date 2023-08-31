@@ -57,6 +57,15 @@ class ERaftKv final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>> PrepareAsyncSnapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>>(PrepareAsyncSnapshotRaw(context, request, cq));
     }
+    std::unique_ptr< ::grpc::ClientWriterInterface< ::eraftkv::SSTFileContent>> PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response) {
+      return std::unique_ptr< ::grpc::ClientWriterInterface< ::eraftkv::SSTFileContent>>(PutSSTFileRaw(context, response));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::eraftkv::SSTFileContent>> AsyncPutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq, void* tag) {
+      return std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::eraftkv::SSTFileContent>>(AsyncPutSSTFileRaw(context, response, cq, tag));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::eraftkv::SSTFileContent>> PrepareAsyncPutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncWriterInterface< ::eraftkv::SSTFileContent>>(PrepareAsyncPutSSTFileRaw(context, response, cq));
+    }
     virtual ::grpc::Status ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::eraftkv::ClientOperationResp* response) = 0;
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>> AsyncProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>>(AsyncProcessRWOperationRaw(context, request, cq));
@@ -110,6 +119,11 @@ class ERaftKv final {
       #else
       virtual void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual void PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::ClientWriteReactor< ::eraftkv::SSTFileContent>* reactor) = 0;
+      #else
+      virtual void PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::experimental::ClientWriteReactor< ::eraftkv::SSTFileContent>* reactor) = 0;
+      #endif
       virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) = 0;
       virtual void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -149,6 +163,9 @@ class ERaftKv final {
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::AppendEntriesResp>* PrepareAsyncAppendEntriesRaw(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>* AsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::SnapshotResp>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientWriterInterface< ::eraftkv::SSTFileContent>* PutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response) = 0;
+    virtual ::grpc::ClientAsyncWriterInterface< ::eraftkv::SSTFileContent>* AsyncPutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq, void* tag) = 0;
+    virtual ::grpc::ClientAsyncWriterInterface< ::eraftkv::SSTFileContent>* PrepareAsyncPutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>* AsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClientOperationResp>* PrepareAsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::eraftkv::ClusterConfigChangeResp>* AsyncClusterConfigChangeRaw(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) = 0;
@@ -177,6 +194,15 @@ class ERaftKv final {
     }
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>> PrepareAsyncSnapshot(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>>(PrepareAsyncSnapshotRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientWriter< ::eraftkv::SSTFileContent>> PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response) {
+      return std::unique_ptr< ::grpc::ClientWriter< ::eraftkv::SSTFileContent>>(PutSSTFileRaw(context, response));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>> AsyncPutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq, void* tag) {
+      return std::unique_ptr< ::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>>(AsyncPutSSTFileRaw(context, response, cq, tag));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>> PrepareAsyncPutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>>(PrepareAsyncPutSSTFileRaw(context, response, cq));
     }
     ::grpc::Status ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::eraftkv::ClientOperationResp* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>> AsyncProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) {
@@ -231,6 +257,11 @@ class ERaftKv final {
       #else
       void Snapshot(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::SnapshotResp* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
+      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      void PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::ClientWriteReactor< ::eraftkv::SSTFileContent>* reactor) override;
+      #else
+      void PutSSTFile(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::experimental::ClientWriteReactor< ::eraftkv::SSTFileContent>* reactor) override;
+      #endif
       void ProcessRWOperation(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) override;
       void ProcessRWOperation(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::eraftkv::ClientOperationResp* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -272,6 +303,9 @@ class ERaftKv final {
     ::grpc::ClientAsyncResponseReader< ::eraftkv::AppendEntriesResp>* PrepareAsyncAppendEntriesRaw(::grpc::ClientContext* context, const ::eraftkv::AppendEntriesReq& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>* AsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::eraftkv::SnapshotResp>* PrepareAsyncSnapshotRaw(::grpc::ClientContext* context, const ::eraftkv::SnapshotReq& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientWriter< ::eraftkv::SSTFileContent>* PutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response) override;
+    ::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>* AsyncPutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq, void* tag) override;
+    ::grpc::ClientAsyncWriter< ::eraftkv::SSTFileContent>* PrepareAsyncPutSSTFileRaw(::grpc::ClientContext* context, ::eraftkv::SSTFileId* response, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>* AsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::eraftkv::ClientOperationResp>* PrepareAsyncProcessRWOperationRaw(::grpc::ClientContext* context, const ::eraftkv::ClientOperationReq& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::eraftkv::ClusterConfigChangeResp>* AsyncClusterConfigChangeRaw(::grpc::ClientContext* context, const ::eraftkv::ClusterConfigChangeReq& request, ::grpc::CompletionQueue* cq) override;
@@ -279,6 +313,7 @@ class ERaftKv final {
     const ::grpc::internal::RpcMethod rpcmethod_RequestVote_;
     const ::grpc::internal::RpcMethod rpcmethod_AppendEntries_;
     const ::grpc::internal::RpcMethod rpcmethod_Snapshot_;
+    const ::grpc::internal::RpcMethod rpcmethod_PutSSTFile_;
     const ::grpc::internal::RpcMethod rpcmethod_ProcessRWOperation_;
     const ::grpc::internal::RpcMethod rpcmethod_ClusterConfigChange_;
   };
@@ -291,6 +326,7 @@ class ERaftKv final {
     virtual ::grpc::Status RequestVote(::grpc::ServerContext* context, const ::eraftkv::RequestVoteReq* request, ::eraftkv::RequestVoteResp* response);
     virtual ::grpc::Status AppendEntries(::grpc::ServerContext* context, const ::eraftkv::AppendEntriesReq* request, ::eraftkv::AppendEntriesResp* response);
     virtual ::grpc::Status Snapshot(::grpc::ServerContext* context, const ::eraftkv::SnapshotReq* request, ::eraftkv::SnapshotResp* response);
+    virtual ::grpc::Status PutSSTFile(::grpc::ServerContext* context, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* reader, ::eraftkv::SSTFileId* response);
     virtual ::grpc::Status ProcessRWOperation(::grpc::ServerContext* context, const ::eraftkv::ClientOperationReq* request, ::eraftkv::ClientOperationResp* response);
     virtual ::grpc::Status ClusterConfigChange(::grpc::ServerContext* context, const ::eraftkv::ClusterConfigChangeReq* request, ::eraftkv::ClusterConfigChangeResp* response);
   };
@@ -355,12 +391,32 @@ class ERaftKv final {
     }
   };
   template <class BaseClass>
+  class WithAsyncMethod_PutSSTFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_PutSSTFile() {
+      ::grpc::Service::MarkMethodAsync(3);
+    }
+    ~WithAsyncMethod_PutSSTFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status PutSSTFile(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* /*reader*/, ::eraftkv::SSTFileId* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestPutSSTFile(::grpc::ServerContext* context, ::grpc::ServerAsyncReader< ::eraftkv::SSTFileId, ::eraftkv::SSTFileContent>* reader, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncClientStreaming(3, context, reader, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithAsyncMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_ProcessRWOperation() {
-      ::grpc::Service::MarkMethodAsync(3);
+      ::grpc::Service::MarkMethodAsync(4);
     }
     ~WithAsyncMethod_ProcessRWOperation() override {
       BaseClassMustBeDerivedFromService(this);
@@ -371,7 +427,7 @@ class ERaftKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestProcessRWOperation(::grpc::ServerContext* context, ::eraftkv::ClientOperationReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::ClientOperationResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -380,7 +436,7 @@ class ERaftKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_ClusterConfigChange() {
-      ::grpc::Service::MarkMethodAsync(4);
+      ::grpc::Service::MarkMethodAsync(5);
     }
     ~WithAsyncMethod_ClusterConfigChange() override {
       BaseClassMustBeDerivedFromService(this);
@@ -391,10 +447,10 @@ class ERaftKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestClusterConfigChange(::grpc::ServerContext* context, ::eraftkv::ClusterConfigChangeReq* request, ::grpc::ServerAsyncResponseWriter< ::eraftkv::ClusterConfigChangeResp>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_RequestVote<WithAsyncMethod_AppendEntries<WithAsyncMethod_Snapshot<WithAsyncMethod_ProcessRWOperation<WithAsyncMethod_ClusterConfigChange<Service > > > > > AsyncService;
+  typedef WithAsyncMethod_RequestVote<WithAsyncMethod_AppendEntries<WithAsyncMethod_Snapshot<WithAsyncMethod_PutSSTFile<WithAsyncMethod_ProcessRWOperation<WithAsyncMethod_ClusterConfigChange<Service > > > > > > AsyncService;
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_RequestVote : public BaseClass {
    private:
@@ -537,6 +593,44 @@ class ERaftKv final {
       { return nullptr; }
   };
   template <class BaseClass>
+  class ExperimentalWithCallbackMethod_PutSSTFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    ExperimentalWithCallbackMethod_PutSSTFile() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodCallback(3,
+          new ::grpc_impl::internal::CallbackClientStreamingHandler< ::eraftkv::SSTFileContent, ::eraftkv::SSTFileId>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::eraftkv::SSTFileId* response) { return this->PutSSTFile(context, response); }));
+    }
+    ~ExperimentalWithCallbackMethod_PutSSTFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status PutSSTFile(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* /*reader*/, ::eraftkv::SSTFileId* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    virtual ::grpc::ServerReadReactor< ::eraftkv::SSTFileContent>* PutSSTFile(
+      ::grpc::CallbackServerContext* /*context*/, ::eraftkv::SSTFileId* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::eraftkv::SSTFileContent>* PutSSTFile(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::eraftkv::SSTFileId* /*response*/)
+    #endif
+      { return nullptr; }
+  };
+  template <class BaseClass>
   class ExperimentalWithCallbackMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -547,7 +641,7 @@ class ERaftKv final {
     #else
       ::grpc::Service::experimental().
     #endif
-        MarkMethodCallback(3,
+        MarkMethodCallback(4,
           new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -559,9 +653,9 @@ class ERaftKv final {
     void SetMessageAllocatorFor_ProcessRWOperation(
         ::grpc::experimental::MessageAllocator< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
     #else
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(3);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(4);
     #endif
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>*>(handler)
               ->SetMessageAllocator(allocator);
@@ -594,7 +688,7 @@ class ERaftKv final {
     #else
       ::grpc::Service::experimental().
     #endif
-        MarkMethodCallback(4,
+        MarkMethodCallback(5,
           new ::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -606,9 +700,9 @@ class ERaftKv final {
     void SetMessageAllocatorFor_ClusterConfigChange(
         ::grpc::experimental::MessageAllocator< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(5);
     #else
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(4);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(5);
     #endif
       static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>*>(handler)
               ->SetMessageAllocator(allocator);
@@ -631,10 +725,10 @@ class ERaftKv final {
       { return nullptr; }
   };
   #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-  typedef ExperimentalWithCallbackMethod_RequestVote<ExperimentalWithCallbackMethod_AppendEntries<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_ProcessRWOperation<ExperimentalWithCallbackMethod_ClusterConfigChange<Service > > > > > CallbackService;
+  typedef ExperimentalWithCallbackMethod_RequestVote<ExperimentalWithCallbackMethod_AppendEntries<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_PutSSTFile<ExperimentalWithCallbackMethod_ProcessRWOperation<ExperimentalWithCallbackMethod_ClusterConfigChange<Service > > > > > > CallbackService;
   #endif
 
-  typedef ExperimentalWithCallbackMethod_RequestVote<ExperimentalWithCallbackMethod_AppendEntries<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_ProcessRWOperation<ExperimentalWithCallbackMethod_ClusterConfigChange<Service > > > > > ExperimentalCallbackService;
+  typedef ExperimentalWithCallbackMethod_RequestVote<ExperimentalWithCallbackMethod_AppendEntries<ExperimentalWithCallbackMethod_Snapshot<ExperimentalWithCallbackMethod_PutSSTFile<ExperimentalWithCallbackMethod_ProcessRWOperation<ExperimentalWithCallbackMethod_ClusterConfigChange<Service > > > > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_RequestVote : public BaseClass {
    private:
@@ -687,12 +781,29 @@ class ERaftKv final {
     }
   };
   template <class BaseClass>
+  class WithGenericMethod_PutSSTFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_PutSSTFile() {
+      ::grpc::Service::MarkMethodGeneric(3);
+    }
+    ~WithGenericMethod_PutSSTFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status PutSSTFile(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* /*reader*/, ::eraftkv::SSTFileId* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
   class WithGenericMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_ProcessRWOperation() {
-      ::grpc::Service::MarkMethodGeneric(3);
+      ::grpc::Service::MarkMethodGeneric(4);
     }
     ~WithGenericMethod_ProcessRWOperation() override {
       BaseClassMustBeDerivedFromService(this);
@@ -709,7 +820,7 @@ class ERaftKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_ClusterConfigChange() {
-      ::grpc::Service::MarkMethodGeneric(4);
+      ::grpc::Service::MarkMethodGeneric(5);
     }
     ~WithGenericMethod_ClusterConfigChange() override {
       BaseClassMustBeDerivedFromService(this);
@@ -781,12 +892,32 @@ class ERaftKv final {
     }
   };
   template <class BaseClass>
+  class WithRawMethod_PutSSTFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_PutSSTFile() {
+      ::grpc::Service::MarkMethodRaw(3);
+    }
+    ~WithRawMethod_PutSSTFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status PutSSTFile(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* /*reader*/, ::eraftkv::SSTFileId* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestPutSSTFile(::grpc::ServerContext* context, ::grpc::ServerAsyncReader< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* reader, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncClientStreaming(3, context, reader, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithRawMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_ProcessRWOperation() {
-      ::grpc::Service::MarkMethodRaw(3);
+      ::grpc::Service::MarkMethodRaw(4);
     }
     ~WithRawMethod_ProcessRWOperation() override {
       BaseClassMustBeDerivedFromService(this);
@@ -797,7 +928,7 @@ class ERaftKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestProcessRWOperation(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -806,7 +937,7 @@ class ERaftKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_ClusterConfigChange() {
-      ::grpc::Service::MarkMethodRaw(4);
+      ::grpc::Service::MarkMethodRaw(5);
     }
     ~WithRawMethod_ClusterConfigChange() override {
       BaseClassMustBeDerivedFromService(this);
@@ -817,7 +948,7 @@ class ERaftKv final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestClusterConfigChange(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -935,6 +1066,44 @@ class ERaftKv final {
       { return nullptr; }
   };
   template <class BaseClass>
+  class ExperimentalWithRawCallbackMethod_PutSSTFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    ExperimentalWithRawCallbackMethod_PutSSTFile() {
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      ::grpc::Service::
+    #else
+      ::grpc::Service::experimental().
+    #endif
+        MarkMethodRawCallback(3,
+          new ::grpc_impl::internal::CallbackClientStreamingHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+                   ::grpc::CallbackServerContext*
+    #else
+                   ::grpc::experimental::CallbackServerContext*
+    #endif
+                     context, ::grpc::ByteBuffer* response) { return this->PutSSTFile(context, response); }));
+    }
+    ~ExperimentalWithRawCallbackMethod_PutSSTFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status PutSSTFile(::grpc::ServerContext* /*context*/, ::grpc::ServerReader< ::eraftkv::SSTFileContent>* /*reader*/, ::eraftkv::SSTFileId* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+    virtual ::grpc::ServerReadReactor< ::grpc::ByteBuffer>* PutSSTFile(
+      ::grpc::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #else
+    virtual ::grpc::experimental::ServerReadReactor< ::grpc::ByteBuffer>* PutSSTFile(
+      ::grpc::experimental::CallbackServerContext* /*context*/, ::grpc::ByteBuffer* /*response*/)
+    #endif
+      { return nullptr; }
+  };
+  template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_ProcessRWOperation : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -945,7 +1114,7 @@ class ERaftKv final {
     #else
       ::grpc::Service::experimental().
     #endif
-        MarkMethodRawCallback(3,
+        MarkMethodRawCallback(4,
           new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -983,7 +1152,7 @@ class ERaftKv final {
     #else
       ::grpc::Service::experimental().
     #endif
-        MarkMethodRawCallback(4,
+        MarkMethodRawCallback(5,
           new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -1076,7 +1245,7 @@ class ERaftKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_ProcessRWOperation() {
-      ::grpc::Service::MarkMethodStreamed(3,
+      ::grpc::Service::MarkMethodStreamed(4,
         new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::ClientOperationReq, ::eraftkv::ClientOperationResp>(std::bind(&WithStreamedUnaryMethod_ProcessRWOperation<BaseClass>::StreamedProcessRWOperation, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_ProcessRWOperation() override {
@@ -1096,7 +1265,7 @@ class ERaftKv final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_ClusterConfigChange() {
-      ::grpc::Service::MarkMethodStreamed(4,
+      ::grpc::Service::MarkMethodStreamed(5,
         new ::grpc::internal::StreamedUnaryHandler< ::eraftkv::ClusterConfigChangeReq, ::eraftkv::ClusterConfigChangeResp>(std::bind(&WithStreamedUnaryMethod_ClusterConfigChange<BaseClass>::StreamedClusterConfigChange, this, std::placeholders::_1, std::placeholders::_2)));
     }
     ~WithStreamedUnaryMethod_ClusterConfigChange() override {

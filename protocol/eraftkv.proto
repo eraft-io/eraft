@@ -172,11 +172,22 @@ message ClientOperationResp {
   int64             leader_addr = 3;
 }
 
+message SSTFileId {
+  int32 id = 1;
+}
+
+message SSTFileContent {
+  int32  id = 1;
+  string name = 2;
+  bytes content = 3;
+}
+
 service ERaftKv {
   rpc RequestVote(RequestVoteReq) returns (RequestVoteResp);
   rpc AppendEntries(AppendEntriesReq) returns (AppendEntriesResp);
   rpc Snapshot(SnapshotReq) returns (SnapshotResp);
 
+  rpc PutSSTFile(stream SSTFileContent) returns (SSTFileId);
   rpc ProcessRWOperation(ClientOperationReq) returns (ClientOperationResp);
   rpc ClusterConfigChange(ClusterConfigChangeReq)
       returns (ClusterConfigChangeResp);

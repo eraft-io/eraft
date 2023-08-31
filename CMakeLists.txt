@@ -190,6 +190,8 @@ list(APPEND eraftkv_sources src/log_storage_impl.cc)
 list(APPEND eraftkv_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftkv_sources src/eraftkv.pb.cc)
 list(APPEND eraftkv_sources src/util.cc)
+list(APPEND eraftkv_sources src/sequential_file_reader.cc)
+list(APPEND eraftkv_sources src/sequential_file_writer.cc)
 list(APPEND eraftkv_sources src/raft_server.cc)
 list(APPEND eraftkv_sources src/log_entry_cache.cc)
 list(APPEND eraftkv_sources src/grpc_network_impl.cc)
@@ -214,6 +216,8 @@ list(APPEND eraftmeta_sources src/log_storage_impl.cc)
 list(APPEND eraftmeta_sources src/eraftkv.grpc.pb.cc)
 list(APPEND eraftmeta_sources src/eraftkv.pb.cc)
 list(APPEND eraftmeta_sources src/util.cc)
+list(APPEND eraftmeta_sources src/sequential_file_reader.cc)
+list(APPEND eraftmeta_sources src/sequential_file_writer.cc)
 list(APPEND eraftmeta_sources src/raft_server.cc)
 list(APPEND eraftmeta_sources src/log_entry_cache.cc)
 list(APPEND eraftmeta_sources src/grpc_network_impl.cc)
@@ -241,6 +245,8 @@ add_executable(eraftkv_server_test
     src/log_entry_cache.cc
     src/grpc_network_impl.cc
     src/util.cc
+    src/sequential_file_reader.cc
+    src/sequential_file_writer.cc
 )
 target_link_libraries(eraftkv_server_test PUBLIC
     ${GTEST_LIBRARIES}
@@ -256,6 +262,8 @@ add_executable(eraftmeta_server_test
     src/eraftkv.pb.cc 
     src/eraftkv.grpc.pb.cc
     src/util.cc
+    src/sequential_file_reader.cc
+    src/sequential_file_writer.cc
 )
 target_link_libraries(eraftmeta_server_test PUBLIC
     ${GTEST_LIBRARIES}
@@ -276,6 +284,8 @@ add_executable(rocksdb_storage_impl_tests
     src/log_storage_impl.cc
     src/rocksdb_storage_impl.cc
     src/log_entry_cache.cc
+    src/sequential_file_reader.cc
+    src/sequential_file_writer.cc
 )
 target_link_libraries(rocksdb_storage_impl_tests PUBLIC
     ${GTEST_LIBRARIES}
@@ -315,6 +325,8 @@ add_executable(grpc_network_impl_test
     src/rocksdb_storage_impl.cc
     src/log_entry_cache.cc
     src/util.cc
+    src/sequential_file_reader.cc
+    src/sequential_file_writer.cc
 )
 target_link_libraries(grpc_network_impl_test PUBLIC
     ${GTEST_LIBRARIES}
@@ -331,6 +343,8 @@ add_executable(eraftkv-ctl
     src/eraftkv.pb.cc 
     src/eraftkv.grpc.pb.cc
     src/util.cc
+    src/sequential_file_reader.cc
+    src/sequential_file_writer.cc
 )
 
 target_link_libraries(eraftkv-ctl PUBLIC

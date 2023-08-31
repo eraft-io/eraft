@@ -275,6 +275,7 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
  */
 EStatus RocksDBStorageImpl::CreateCheckpoint(std::string snap_path) {
   rocksdb::Checkpoint* checkpoint;
+  DirectoryTool::DeleteDir(snap_path);
   auto st = rocksdb::Checkpoint::Create(this->kv_db_, &checkpoint);
   if (!st.ok()) {
     return EStatus::kError;
@@ -400,6 +401,16 @@ std::map<std::string, std::string> RocksDBStorageImpl::PrefixScan(
     res_count += 1;
   }
   return kvs;
+}
+
+EStatus  RocksDBStorageImpl::IngestSST(std::string sst_file_path) {
+  rocksdb::IngestExternalFileOptions ifo;
+  auto st = kv_db_->IngestExternalFile({sst_file_path}, ifo);
+  if (!st.ok()) {
+    SPDLOG_ERROR("ingest sst file {} error", sst_file_path);
+    return EStatus::kError;
+  }
+  return EStatus::kOk;
 }
 
 /**

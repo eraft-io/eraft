@@ -90,6 +90,18 @@ class Network {
   /**
    * @brief
    *
+   * @param raft
+   * @param raft_node
+   * @param filename
+   * @return EStatus
+   */
+  virtual EStatus SendFile(RaftServer*        raft,
+                           RaftNode*          raft_node,
+                           const std::string& filename) = 0;
+
+  /**
+   * @brief
+   *
    * @param peers_address
    * @return EStatus
    */
