@@ -403,7 +403,7 @@ std::map<std::string, std::string> RocksDBStorageImpl::PrefixScan(
   return kvs;
 }
 
-EStatus  RocksDBStorageImpl::IngestSST(std::string sst_file_path) {
+EStatus RocksDBStorageImpl::IngestSST(std::string sst_file_path) {
   rocksdb::IngestExternalFileOptions ifo;
   auto st = kv_db_->IngestExternalFile({sst_file_path}, ifo);
   if (!st.ok()) {

@@ -31,6 +31,7 @@
  *
  */
 
+#include <gflags/gflags.h>
 #include <rocksdb/db.h>
 #include <spdlog/common.h>
 #include <spdlog/sinks/daily_file_sink.h>
@@ -42,6 +43,14 @@
 
 #include "eraftkv_server.h"
 #include "raft_server.h"
+
+DEFINE_int32(svr_id, 0, "server id");
+DEFINE_string(kv_db_path, "", "kv rocksdb path");
+DEFINE_string(log_db_path, "", "log rocksdb path");
+DEFINE_string(snap_db_path, "", "snapshot db path");
+DEFINE_string(peer_addrs, "", "peer address");
+DEFINE_string(log_file_path, "", "log file path");
+
 /**
  * @brief
  *
@@ -53,14 +62,18 @@
  * @return int
  */
 int main(int argc, char* argv[]) {
+  gflags::SetUsageMessage("ERaftKDB");
+  gflags::SetVersionString("1.0.0");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
   ERaftKvServerOptions options_;
   options_.svr_role = ServerRoleEnum::DataServer;
-  options_.svr_id = stoi(std::string(argv[1]));
-  options_.kv_db_path = std::string(argv[2]);
-  options_.log_db_path = std::string(argv[3]);
-  options_.snap_db_path = std::string(argv[4]);
-  options_.peer_addrs = std::string(argv[5]);
-  std::string   log_file_path = std::string(argv[6]);
+  options_.svr_id = FLAGS_svr_id;
+  options_.kv_db_path = FLAGS_kv_db_path;
+  options_.log_db_path = FLAGS_log_db_path;
+  options_.snap_db_path = FLAGS_snap_db_path;
+  options_.peer_addrs = FLAGS_peer_addrs;
+  std::string   log_file_path = FLAGS_log_file_path;
   ERaftKvServer server(options_);
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

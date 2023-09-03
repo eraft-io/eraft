@@ -67,4 +67,9 @@ clang-format -style=file --sort-includes -i ${SRCPATH}/src/unknow_command_handle
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/shardgroup_command_handler.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftmetaserver_test.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/key_encode.h
-
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/key_encode.h
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/file_reader_into_stream.h
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_reader.cc
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_reader.h
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_writer.cc
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_writer.h

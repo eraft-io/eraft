@@ -1,53 +1,78 @@
 /**
  * @file sequential_file_reader.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author ERaftGroup
+ * @brief
  * @version 0.1
  * @date 2023-08-30
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
+
+// MIT License
+
+// Copyright (c) 2019 Isac Casapu
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #pragma once
 
-#include <string>
 #include <cstdint>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
-// SequentialFileReader: Read a file using using mmap(). Attempt to overlap reads of the file and writes by the user's code
-// by reading the next segment 
+// SequentialFileReader: Read a file using using mmap(). Attempt to overlap
+// reads of the file and writes by the user's code by reading the next segment
 
 class SequentialFileReader {
-public:
-    SequentialFileReader(SequentialFileReader&&);
-    SequentialFileReader& operator=(SequentialFileReader&&);
-    ~SequentialFileReader();
+ public:
+  SequentialFileReader(SequentialFileReader&&);
+  SequentialFileReader& operator=(SequentialFileReader&&);
+  ~SequentialFileReader();
 
-    // TODO: Provide some way to log non-critical errors which don't prevent the actual reading
-    // of data, but could hurt performance
+  // TODO: Provide some way to log non-critical errors which don't prevent the
+  // actual reading of data, but could hurt performance
 
-    // Read the file, calling OnChunkAvailable() whenever data are available. It blocks until the reading
-    // is complete.
-    void Read(size_t max_chunk_size);
+  // Read the file, calling OnChunkAvailable() whenever data are available. It
+  // blocks until the reading is complete.
+  void Read(size_t max_chunk_size);
 
-    std::string GetFilePath() const
-    {
-        return m_file_path;
-    }
+  std::string GetFilePath() const {
+    return m_file_path;
+  }
 
-protected:
-    // Constructor. Attempts to open the file, and throws std::system_error if it fails to do so.
-    SequentialFileReader(const std::string& file_name);
+ protected:
+  // Constructor. Attempts to open the file, and throws std::system_error if it
+  // fails to do so.
+  SequentialFileReader(const std::string& file_name);
 
-    // TODO: Also provide a constructor that doesn't open the file, and a separate Open method.
+  // TODO: Also provide a constructor that doesn't open the file, and a separate
+  // Open method.
 
-    // OnChunkAvailable: The user needs to override this function to get called when data become available.
-    virtual void OnChunkAvailable(const void* data, size_t size) = 0;
+  // OnChunkAvailable: The user needs to override this function to get called
+  // when data become available.
+  virtual void OnChunkAvailable(const void* data, size_t size) = 0;
 
-private:
-    std::string m_file_path;
-    std::unique_ptr< const std::uint8_t, std::function<void(const std::uint8_t*)> > m_data;
-    size_t m_size;
+ private:
+  std::string m_file_path;
+  std::unique_ptr<const std::uint8_t, std::function<void(const std::uint8_t*)> >
+         m_data;
+  size_t m_size;
 };

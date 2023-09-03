@@ -107,6 +107,9 @@ message(STATUS "Using gRPC: ${gRPC_VERSION}")
 find_package(Gflags REQUIRED)
 include_directories(${GFLAGS_INCLUDE_DIRS})
 
+find_package(gflags REQUIRED)
+
+
 #
 # grpc end
 ################################################
@@ -179,6 +182,7 @@ target_link_libraries(eraft-kdb
     gRPC::grpc++
     ${Protobuf_LIBRARY}
     stdc++fs
+    gflags
 )
 target_include_directories(eraft-kdb PUBLIC ${eraftkv_INCLUDE_DIR})
 
@@ -205,6 +209,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     gRPC::grpc++
     ${Protobuf_LIBRARY}
     stdc++fs
+    gflags
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${eraftkv_INCLUDE_DIR})
 
@@ -229,6 +234,7 @@ target_link_libraries(eraftmeta PUBLIC
     gRPC::grpc++
     ${Protobuf_LIBRARY}
     stdc++fs
+    gflags
 )
 target_include_directories(eraftmeta PUBLIC ${eraftkv_INCLUDE_DIR})
 

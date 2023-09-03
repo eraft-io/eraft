@@ -40,9 +40,9 @@
 #include <iostream>
 #include <thread>
 
+#include "consts.h"
 #include "rocksdb_storage_impl.h"
 #include "util.h"
-#include "consts.h"
 
 /**
  * @brief Construct a new Raft Server object
@@ -210,24 +210,27 @@ EStatus RaftServer::SendAppendEntries() {
       auto new_first_log_ent = this->log_store_->GetFirstEty();
 
       RocksDBStorageImpl* snapshot_db = new RocksDBStorageImpl(snap_db_path_);
-      auto kvs = snapshot_db->PrefixScan("", 0, SNAPSHOTING_KEY_SCAN_PRE_COOUNT);
+      auto                kvs =
+          snapshot_db->PrefixScan("", 0, SNAPSHOTING_KEY_SCAN_PRE_COOUNT);
       DirectoryTool::MkDir("/eraft/data/sst_send/");
       uint64_t count = 1;
-      while (kvs.size() != 0)
-      {
+      while (kvs.size() != 0) {
         SPDLOG_INFO("scan find {} keys", kvs.size());
-        rocksdb::Options options;
+        rocksdb::Options       options;
         rocksdb::SstFileWriter sst_file_writer(rocksdb::EnvOptions(), options);
-        sst_file_writer.Open("/eraft/data/sst_send/" + std::to_string(count) + ".sst");
+        sst_file_writer.Open("/eraft/data/sst_send/" + std::to_string(count) +
+                             ".sst");
         for (auto kv : kvs) {
           SPDLOG_INFO("key {} -> val {}", kv.first, kv.second);
           sst_file_writer.Put(kv.first, kv.second);
         }
         sst_file_writer.Finish();
-        kvs = snapshot_db->PrefixScan("", count * SNAPSHOTING_KEY_SCAN_PRE_COOUNT, SNAPSHOTING_KEY_SCAN_PRE_COOUNT);
+        kvs = snapshot_db->PrefixScan("",
+                                      count * SNAPSHOTING_KEY_SCAN_PRE_COOUNT,
+                                      SNAPSHOTING_KEY_SCAN_PRE_COOUNT);
         count += 1;
       }
-      
+
 
       //
       // loop send sst files

@@ -274,7 +274,8 @@ grpc::Status ERaftKvServer::PutSSTFile(
   uint64_t sec = std::chrono::duration_cast<std::chrono::milliseconds>(
                      std::chrono::system_clock::now().time_since_epoch())
                      .count();
-                SPDLOG_INFO("recv sst filename {} id {} sec {}", sst_file.name(), sst_file.id(), sec);
+  SPDLOG_INFO(
+      "recv sst filename {} id {} sec {}", sst_file.name(), sst_file.id(), sec);
   writer.OpenIfNecessary("/eraft/data/sst_recv/" + std::to_string(sec) +
                          ".sst");
   while (reader->Read(&sst_file)) {
