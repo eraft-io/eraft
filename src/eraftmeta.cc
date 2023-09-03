@@ -9,8 +9,16 @@
  *
  */
 
+#include <gflags/gflags.h>
+
 #include "eraftkv_server.h"
 #include "raft_server.h"
+
+DEFINE_int32(svr_id, 0, "server id");
+DEFINE_string(kv_db_path, "", "kv rocksdb path");
+DEFINE_string(log_db_path, "", "log rocksdb path");
+DEFINE_string(peer_addrs, "", "peer address");
+
 /**
  * @brief
  *
@@ -20,12 +28,16 @@
  * @return int
  */
 int main(int argc, char* argv[]) {
+  gflags::SetUsageMessage("ERaftKDB");
+  gflags::SetVersionString("1.0.0");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
   ERaftKvServerOptions options_;
   options_.svr_role = ServerRoleEnum::MetaServer;
-  options_.svr_id = stoi(std::string(argv[1]));
-  options_.kv_db_path = std::string(argv[2]);
-  options_.log_db_path = std::string(argv[3]);
-  options_.peer_addrs = std::string(argv[4]);
+  options_.svr_id = FLAGS_svr_id;
+  options_.kv_db_path = FLAGS_kv_db_path;
+  options_.log_db_path = FLAGS_log_db_path;
+  options_.peer_addrs = FLAGS_peer_addrs;
   ERaftKvServer server(options_);
   server.BuildAndRunRpcServer();
   return 0;

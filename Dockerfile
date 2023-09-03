@@ -62,3 +62,5 @@ RUN apt-get install -y redis-tools telnet
 
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git && cd spdlog && mkdir build && cd build \
        && cmake .. && make -j && make install && rm -rf build
+
+RUN apt-get install libgflags-dev -y

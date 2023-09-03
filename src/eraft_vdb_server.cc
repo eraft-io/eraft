@@ -11,6 +11,7 @@
 
 #include "eraft_vdb_server.h"
 
+#include <gflags/gflags.h>
 #include <spdlog/common.h>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -53,6 +54,12 @@ bool ERaftVdbServer::_Recycle() {
   return true;
 }
 
+DEFINE_string(addr, "172.18.0.6:12306", "server address");
+DEFINE_string(metasvr_addrs,
+              "172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090",
+              "eraftmeta server addrs");
+DEFINE_string(logfile_path, "/eraft/logs/eraftkdb.log", "the path of log file");
+
 /**
  * @brief
  *
@@ -61,10 +68,15 @@ bool ERaftVdbServer::_Recycle() {
  * @return int
  */
 int main(int argc, char *argv[]) {
-  std::string    addr = std::string(argv[1]);
-  std::string    kv_svr_addrs = std::string(argv[2]);
-  std::string    log_file_path = std::string(argv[3]);
-  ERaftVdbServer svr(addr, kv_svr_addrs);
+
+  gflags::SetUsageMessage("ERaftKDB");
+  gflags::SetVersionString("1.0.0");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  std::string    addr = FLAGS_addr;
+  std::string    meta_svr_addrs = FLAGS_metasvr_addrs;
+  std::string    log_file_path = FLAGS_logfile_path;
+  ERaftVdbServer svr(addr, meta_svr_addrs);
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::trace);
@@ -86,8 +98,8 @@ int main(int argc, char *argv[]) {
   spdlog::set_default_logger(std::make_shared<spdlog::logger>(
       "multi_sink", spdlog::sinks_init_list({console_sink, file_sink})));
 
-  SPDLOG_INFO("eraftkdb server start with addr " + addr + " kv_svr_addrs " +
-              kv_svr_addrs);
+  SPDLOG_INFO("eraftkdb server start with addr " + addr + " meta_svr_addrs " +
+              meta_svr_addrs);
 
   svr.MainLoop(false);
   return 0;
