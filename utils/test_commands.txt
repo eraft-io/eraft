@@ -3,8 +3,10 @@ set b e
 set c l
 set d l
 set e o
-set a h
-set b e
-set c l
-set d l
-set e o
+get a
+get b
+get c
+get d
+get e
+del e
+get e
