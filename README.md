@@ -1,178 +1,138 @@
-# ERaftKDB
+[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
-ERaftKDB is a distributed database that supports the Redis RESP protocol, and uses ERaftKV as the distributed storage layer.
+中文 | [English](README_en.md)
 
-![eraft-kdb](doc/eraft-kdb.png)
+### 概述
 
-## Redis Command Support Plan
+eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系统，我们会用全网最简单，直白的语言介绍分布式系统的原理，并带着你设计和实现一个工业化的分布式存储系统。
 
-| Command    | Status |
-| -------- | ------- |
-| get  |  DONE |
-| set  | DONE   |
-| del  | DONE   |
-| scan  | TODO   |
+### 最新的文档
+如果你想查看最新的文档，请访问 [eraft 官网](https://eraft.cn)
+
+### 为什么需要分布式?
+
+首先我们看传统的单节点 C/S 或者 B/S 系统有啥缺点：
+单节点意味着只用一台机器，机器的性能是有上限的，而且性能越好的机器价格越贵，想 IBM 的大型机，价格是很贵的。同时，这台机器如果挂掉或者因为写的代码有 bug 导致进程异常，就无法容错，系统直接不可用。
+
+我们分析完单节点系统的缺点后，可以总结一下分布式系统的设计目标
+
+#### 1.可扩展性（Scalability）
+我们设计的分布式系统要具有可扩展性，这里的可扩展其实就是我们可以通过使用更多的机器来获取更高的系统总吞吐以及更好的性能，当然也不是机器越多性能越好，针对一些复杂的计算场景，节点越多性能并不一定会更好。
+
+#### 2.可用性（Availability）
+分布式系统不会因为系统中的某台机器故障而直接停止服务，某台机器故障后，系统可以快速切换流量到正常的机器上，继续提供服务。
+
+#### 3.一致性 (Consistency)
+我们要实现这一点，最重要的一个算法就是复制算法（replication），我们需要一种复制算法来保证挂掉的机器和切上去顶替它的机器数据是一致的，通常在分布式系统领域有专门一致性算法去保证复制的顺利进行。
 
 
-## ERaftKV
+### 一致性算法
 
-ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding for large-scale data storage.
+建议先看 [raft 小论文](https://raft.github.io/raft.pdf)
 
-## ERaftKV Features
-- Strong and consistent data storage ensures secure and reliable data persistence in distributed systems.
-- Support KV data type operations, including PUT, GET, DEL, and SCAN operations on keys. When users operate on cluster data, they must ensure the persistence of the operation and the sequential consistency of reading and writing.
-- Dynamically configure the cluster, including adding and deleting nodes, adding and deleting cluster sharding configurations, including which keyrange the cluster sharding is responsible for.
-- Support for snapshot taking with the raft to compress and merge logs. During the snapshot, it is required to not block data read and write.
-- Support switching to a specifying leader.
-- Raft elections support PreVote, and newly added nodes do not participate in the election by tracking data to avoid triggering unnecessary elections.
-- Raft read optimization: adding a read queue ensures that the leader node returns a read request after submitting it, and unnecessary logs are not written.
-- Support data migration, multi-shard scale out.
+带着下面的问题去看：
 
-# Getting Started
+##### 什么是分布式系统中的闹裂？
 
-## Build 
+##### 面对闹裂，我们的解决办法是什么？
 
-Execute follow build command on the machine with docker installed.
+##### 为什么多数派选举协议可以避免脑裂？
+
+##### 为什么 raft 需要使用日志？
+
+##### 为什么 raft 协议中只允许一个 leader?
+
+##### 怎么保证在一个任期内只有一个 leader 的？
+
+##### 集群中的节点怎么知道一个新的 leader 节点被选出了？
+
+##### 如果选举失败了，会发生什么？
+
+##### 如果两个节点都拿到了同样的票数，怎么选 leader？
+
+##### 如果老任期的 leader 不知道集群中新 leader 出现了怎么办？
+
+##### 随机的选举超时时间作用，如果去选取它的值？
+
+##### 节点中的日志什么时候会出现不一致？Raft 怎么去保证最终日志会一致的？
+
+##### 为什么不选择日志最长的服务器作为 leader？
+
+##### 在服务器突然崩溃的时候，会发生什么事情？
+
+##### 如果 raft 服务奔溃后重启了，raft 会记住哪些东西？
+
+##### 什么是 raft 系统中常见的性能瓶颈？
+
+##### 基于 raft 的服务崩溃重启后，是如何恢复的？
+
+##### 哪些日志条目 raft 节点不能删除？
+
+##### raft 日志是无限制增长的吗？如果不是，那么大规模的日志是怎么存储的？
+
+
+再看 [大论文](https://github.com/ongardie/dissertation) 
+
+
+### 数据分片
+
+好的，通过 Raft 基本算法，我们可以实现一个高可用的 raft 服务器组。我们已经解决了前面可用性和一致性的问题，但是问题还是存在的。一个 raft 服务器组中只有一个 leader 来接收读写流量，当然你可以用 follower 分担部分读流量提高性能（这里会涉及到事务的一些问题，我们会在后面讨论）。
+但是系统能提供的能力还是有上限的。
+
+这时候我们就要思考，将客户端写入过来的请求进行分片处理，就像  map reduce，map 的阶段一下，先把超大的数据集切割成一个个小的去处理。
+
+eraft 中使用了 hash 分片的方法，我们将数据通过哈希算法映射到一个个桶 (bucket) 里面，然后不同的 raft 组负责一部分桶，一个 raft 组可以负责多少个桶，是可以调整的。
+
+
+### 集群架构
+
+![集群架构](docs/imgs/eraftdb_arch.png)
+
+首先我们先介绍下架构介绍
+
+#### 概念介绍
+
+##### bucket
+
+它是集群做数据管理的逻辑单元，一个分组的服务可以负责多个 bucket 的数据
+
+##### config table
+
+集群配置表，它主要维护了集群服务分组与 bucket 的映射关系，客户端访问集群数据之前需要先到这个表查询要访问 bucket 所在的服务分组列表
+
+#### 服务模块
+
+##### metaserver
+
+它主要负责集群配置表版本管理，它内部维护了一个集群配置表的版本链，可以记录集群配置的变更。
+
+##### shardkvserver
+
+它主要负责集群数据存储，一般有三台机器组成一个 raft 组，对外提供高可用的服务。
+
+### 项目构建
+
+构建依赖
+
+go version >= go1.17.6
+
+编译
+```
+git clone https://github.com/eraft-io/eraft.git -b eraftbook
+
+cd eraft
+make
+``
+
+运行集群基本读写测试
 
 ```
-sudo make build-dev
+go test -run TestBasicClusterRW tests/integration_test.go -v
 ```
 
-## Run demo in docker
-
-- step 1, create docker sub net
+运行集群读写基准测试
 
 ```
-sudo make create-net
+go test -run TestClusterRwBench tests/integration_test.go -v
 ```
-
-command output
-```
-docker network create --subnet=172.18.0.0/16 mytestnetwork
-f57ad3d454f27f4b84efca3ce61bf4764bd30ce3d4971b85477daf05c6ae28a3
-```
-
-- step 2, run cluster in shard mode
-
-```
-sudo make run-demo
-```
-command output
-```
-docker run --name kvserver-node1 --network mytestnetwork --ip 172.18.0.10 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-bef74b85fcf9c0a2dedb15399b1f53010791e329f0c60d69fcd097e0843cbb86
-sleep 2
-docker run --name kvserver-node2 --network mytestnetwork --ip 172.18.0.11 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-333c02093fcb8c974cc1dc491fc7d2e19f474e3fda354fc130cf6be6d8920c85
-docker run --name kvserver-node3 --network mytestnetwork --ip 172.18.0.12 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-9856291dd34776cea94ab957780f7a244cb387bd0d74388b5a9d440175d6d28e
-sleep 1
-docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /tmp/meta_db0 /tmp/log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-09f9f12bc74212d1ae09a89bfecbc5a991f1b46cd9e8ba43fc278f775dd6176d
-sleep 3
-docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 1 /tmp/meta_db1 /tmp/log_db1 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-3b98b3f317e834263ddb81c0bc5b245ac31b69cd47f495415a3d70e951c13900
-docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /tmp/meta_db2 /tmp/log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-10269f84d95e9f82f75d3c60f0d7b0dc0efe5efe643366e615b7644fb8851f04
-sleep 16
-docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-kdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-run server success!
-```
-
-- step 3, run eraft kdb tests
-
-```
-sudo make init-kdb-meta
-sudo make run-kdb-tests
-```
-command output
-
-```
-chmod +x utils/run-kdb-tests.sh
-docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v /Users/colin/Documents/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-kdb-tests.sh
-+ redis-cli -h 172.18.0.6 -p 12306 shardgroup query
-1) "shardgroup"
-2) "1"
-3) "servers"
-4) "0"
-5) "172.18.0.10:8088"
-6) "1"
-7) "172.18.0.11:8089"
-8) "2"
-9) "172.18.0.12:8090"
-+ redis-cli -h 172.18.0.6 -p 12306 shardgroup join 1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 shardgroup move 1 0-1023
-OK
-+ sleep 1
-+ redis-cli -h 172.18.0.6 -p 12306 info
-meta server:
-server_id: 0,server_address: 172.18.0.2:8088,status: Running,Role: Leader
-meta server:
-server_id: 1,server_address: 172.18.0.3:8089,status: Running,Role: Follower
-meta server:
-server_id: 2,server_address: 172.18.0.4:8090,status: Running,Role: Follower
-+ redis-cli -h 172.18.0.6 -p 12306 set a h
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set b e
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set c l
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set d l
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set e o
-OK
-+ sleep 1
-+ redis-cli -h 172.18.0.6 -p 12306 get a
-"h"
-+ redis-cli -h 172.18.0.6 -p 12306 get b
-"e"
-+ redis-cli -h 172.18.0.6 -p 12306 get c
-"l"
-+ redis-cli -h 172.18.0.6 -p 12306 get d
-"l"
-+ redis-cli -h 172.18.0.6 -p 12306 get e
-"o"
-+ redis-cli -h 172.18.0.6 -p 12306 get nil_test
-(nil)
-```
-
-- step 4, clean all
-```
-sudo make stop-demo
-sudo make rm-net
-```
-
-## Building and run test using [GitHub Actions](https://github.com/features/actions)
-
-All you need to do is submit a Pull Request to our repository, and all compile, build, and testing will be automatically executed.
-
-You can check the [ERatfKVGitHubActions](https://github.com/eraft-io/eraft/actions) See the execution process of code build tests.
-
-## Building on your local machine.
-
-To compile eraftkv, you will need:
-- Docker
-
-To build:
-```
-make gen-protocol-code
-make build-dev
-```
-
-Run test:
-```
-make tests
-```
-
-If you want to build image youtself
-```
-make image
-```
-
-# Documentation
-[ERaftKV Documentation](doc/eraft-kdb.md)
-
-# Contributing
-
-You can quickly participate in development by following the instructions in [CONTROLUTING.md](https://github.com/eraft-io/eraft/blob/master/CONTRIBUTING.md)

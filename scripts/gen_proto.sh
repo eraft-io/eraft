@@ -20,19 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-default: meta_cli shard_server shard_cli meta_server
+#!/bin/sh
+export PATH="$PATH:$(go env GOPATH)/bin"
 
-meta_cli:
-	go build -o output/metacli cmd/metacli/metacli.go
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
-meta_server:
-	go build -o output/metaserver cmd/metasvr/metasvr.go
-
-shard_server:
-	go build -o output/shardserver cmd/shardsvr/shardsvr.go
-
-shard_cli:
-	go build -o output/shardcli cmd/shardcli/shardcli.go
-
-clean:
-	rm -rf output/*
+protoc -I ../pbs ../pbs/raftbasic.proto --go_out=../pbs/ --go-grpc_out=../pbs/
