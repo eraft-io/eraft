@@ -229,29 +229,24 @@ func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
 // EraseBefore
 // erase log before from idx, and copy [idx:] log return
 // this operation don't modity log in storage engine
-func (rfLog *RaftLog) EraseBefore(idx int64) []*pb.Entry {
+func (rfLog *RaftLog) EraseBefore(idx int64, withDel bool) (error, []*pb.Entry) {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
 	ents := []*pb.Entry{}
 	lastlog_id := rfLog.GetLastLogId()
 	firstlog_id := rfLog.GetFirstLogId()
+	if withDel {
+		for i := firstlog_id; i < firstlog_id+uint64(idx); i++ {
+			if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(i)); err != nil {
+				return err, ents
+			}
+			logger.ELogger().Sugar().Debugf("del log with id %d success", i)
+		}
+	}
 	for i := int64(firstlog_id) + idx; i <= int64(lastlog_id); i++ {
 		ents = append(ents, rfLog.GetEnt(i-int64(firstlog_id)))
 	}
-	return ents
-}
-
-func (rfLog *RaftLog) EraseBeforeWithDel(idx int64) error {
-	rfLog.mu.Lock()
-	defer rfLog.mu.Unlock()
-	firstlog_id := rfLog.GetFirstLogId()
-	for i := firstlog_id; i < firstlog_id+uint64(idx); i++ {
-		if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(i)); err != nil {
-			return err
-		}
-		logger.ELogger().Sugar().Debugf("del log with id %d success", i)
-	}
-	return nil
+	return nil, ents
 }
 
 // EraseAfter

@@ -67,7 +67,7 @@ func main() {
 		svr_peer_map[i] = addr
 	}
 
-	shard_svr := shardkvserver.MakeShardKVServer(svr_peer_map, node_id, gid, os.Args[3])
+	shard_svr := shardkvserver.MakeShardKVServer(svr_peer_map, int64(node_id), gid, os.Args[3])
 	lis, err := net.Listen("tcp", svr_peer_map[node_id])
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)

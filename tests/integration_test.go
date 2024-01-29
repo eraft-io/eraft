@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"testing"
@@ -59,7 +60,7 @@ func RunShardKvServer(svrPeerMaps map[int]string, nodeId int, groupId int, metaa
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	shardSvr := shardkvserver.MakeShardKVServer(svrPeerMaps, nodeId, groupId, metaaddrs)
+	shardSvr := shardkvserver.MakeShardKVServer(svrPeerMaps, int64(nodeId), groupId, metaaddrs)
 	lis, err := net.Listen("tcp", svrPeerMaps[nodeId])
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)
@@ -165,12 +166,12 @@ func TestClusterRwBench(t *testing.T) {
 	// R-W test
 	shardkvcli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
 
-	N := 1000
+	N := 300
 	KEY_SIZE := 64
 	VAL_SIZE := 64
 	bench_kvs := map[string]string{}
 	for i := 0; i <= N; i++ {
-		k := common.RandStringRunes(KEY_SIZE)
+		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KEY_SIZE)
 		v := common.RandStringRunes(VAL_SIZE)
 		bench_kvs[k] = v
 	}

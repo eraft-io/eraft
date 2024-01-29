@@ -60,7 +60,7 @@ func TestEraseBefore1(t *testing.T) {
 	t.Logf("first log %s", fristEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
-	ents := raftLog.EraseBefore(1)
+	_, ents := raftLog.EraseBefore(1, false)
 	t.Logf("%v", ents)
 	RemoveDir("./log_data_test")
 }
@@ -103,7 +103,7 @@ func TestPersisEraseBefore0And1(t *testing.T) {
 	t.Logf("first log %s", fristEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
-	ents := raftLog.EraseBefore(0)
+	_, ents := raftLog.EraseBefore(0, false)
 	t.Logf("%v", ents)
 	raftLog.Append(&pb.Entry{
 		Index: 1,
@@ -113,7 +113,7 @@ func TestPersisEraseBefore0And1(t *testing.T) {
 		Index: 2,
 		Term:  1,
 	})
-	ents = raftLog.EraseBefore(1)
+	_, ents = raftLog.EraseBefore(1, false)
 	t.Logf("%v", ents)
 	t.Logf("%d", raftLog.LogItemCount())
 	RemoveDir("./log_data_test")
@@ -173,7 +173,7 @@ func TestTestPersisLogErase(t *testing.T) {
 		Term:  1,
 		Data:  []byte{0x01, 0x02},
 	})
-	raftLog.EraseBefore(0)
+	raftLog.EraseBefore(0, false)
 	fristEnt := raftLog.GetFirst()
 	t.Logf("first log %s", fristEnt.String())
 	lastEnt := raftLog.GetLast()
@@ -262,7 +262,7 @@ func TestPersisLogGetRangeAfterGc(t *testing.T) {
 		Term:  1,
 		Data:  []byte{0x01, 0x02},
 	})
-	raftLog.EraseBeforeWithDel(2)
+	raftLog.EraseBefore(2, true)
 	ents := raftLog.GetRange(1, 2)
 	for _, ent := range ents {
 		t.Logf("got ent %s", ent.String())

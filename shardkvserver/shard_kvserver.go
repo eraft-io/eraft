@@ -71,7 +71,7 @@ type ShardKV struct {
 // nodeId: the peer's nodeId in the raft group
 // gid: the node's raft group id
 // configServerAddr: config server addr (leader addr, need to optimized into config server peer map)
-func MakeShardKVServer(peerMaps map[int]string, nodeId int, gid int, configServerAddrs string) *ShardKV {
+func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configServerAddrs string) *ShardKV {
 	client_ends := []*raftcore.RaftClientEnd{}
 	for id, addr := range peerMaps {
 		new_end := raftcore.MakeRaftClientEnd(addr, uint64(id))
@@ -79,9 +79,9 @@ func MakeShardKVServer(peerMaps map[int]string, nodeId int, gid int, configServe
 	}
 	new_apply_ch := make(chan *pb.ApplyMsg)
 
-	log_db_eng := storage_eng.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(nodeId))
+	log_db_eng := storage_eng.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
 	new_rf := raftcore.MakeRaft(client_ends, nodeId, log_db_eng, new_apply_ch, 50, 150)
-	newdb_eng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(nodeId))
+	newdb_eng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
 
 	shard_kv := &ShardKV{
 		dead:        0,

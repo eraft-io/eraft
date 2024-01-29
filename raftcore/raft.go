@@ -61,7 +61,7 @@ func NodeToString(role NodeRole) string {
 type Raft struct {
 	mu             sync.RWMutex
 	peers          []*RaftClientEnd // rpc client end
-	me_            int
+	id             int64
 	dead           int32
 	applyCh        chan *pb.ApplyMsg
 	applyCond      *sync.Cond
@@ -85,10 +85,10 @@ type Raft struct {
 	baseElecTimeout  uint64
 }
 
-func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, applyCh chan *pb.ApplyMsg, heartbeatTimeOutMs uint64, baseElectionTimeOutMs uint64) *Raft {
+func MakeRaft(peers []*RaftClientEnd, me int64, newdbEng storage_eng.KvStore, applyCh chan *pb.ApplyMsg, heartbeatTimeOutMs uint64, baseElectionTimeOutMs uint64) *Raft {
 	rf := &Raft{
 		peers:            peers,
-		me_:              me,
+		id:               me,
 		dead:             0,
 		applyCh:          applyCh,
 		replicatorCond:   make([]*sync.Cond, len(peers)),
@@ -107,13 +107,12 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage_eng.KvStore, appl
 		heartBeatTimeout: heartbeatTimeOutMs,
 	}
 	rf.curTerm, rf.votedFor = rf.persister.ReadRaftState()
-	rf.ReInitLog()
 	rf.applyCond = sync.NewCond(&rf.mu)
 	last_log := rf.logs.GetLast()
 	for _, peer := range peers {
 		logger.ELogger().Sugar().Debugf("peer addr %s id %d", peer.addr, peer.id)
 		rf.matchIdx[peer.id], rf.nextIdx[peer.id] = 0, int(last_log.Index+1)
-		if int(peer.id) != me {
+		if int64(peer.id) != me {
 			rf.replicatorCond[peer.id] = sync.NewCond(&sync.Mutex{})
 			go rf.Replicator(peer)
 		}
@@ -156,7 +155,7 @@ func (rf *Raft) SwitchRaftNodeRole(role NodeRole) {
 	case NodeRoleLeader:
 		// become leader，set replica (matchIdx and nextIdx) processs table
 		lastLog := rf.logs.GetLast()
-		rf.leaderId = int64(rf.me_)
+		rf.leaderId = int64(rf.id)
 		for i := 0; i < len(rf.peers); i++ {
 			rf.matchIdx[i], rf.nextIdx[i] = 0, int(lastLog.Index+1)
 		}
@@ -201,7 +200,7 @@ func (rf *Raft) HandleRequestVote(req *pb.RequestVoteRequest, resp *pb.RequestVo
 
 	last_log := rf.logs.GetLast()
 
-	if !(req.LastLogTerm > int64(last_log.Term) || (req.LastLogTerm == int64(last_log.Term) && req.LastLogIndex >= last_log.Index)) {
+	if req.LastLogTerm < int64(last_log.Term) || (req.LastLogTerm == int64(last_log.Term) && req.LastLogIndex < last_log.Index) {
 		resp.Term, resp.VoteGranted = rf.curTerm, false
 		return
 	}
@@ -244,7 +243,7 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 	if req.PrevLogIndex < int64(rf.logs.GetFirst().Index) {
 		resp.Term = 0
 		resp.Success = false
-		logger.ELogger().Sugar().Debugf("peer %d reject append entires request from %d", rf.me_, req.LeaderId)
+		logger.ELogger().Sugar().Debugf("peer %d reject append entires request from %d", rf.id, req.LeaderId)
 		return
 	}
 
@@ -295,7 +294,7 @@ func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, 
 	if lastIncludedIndex > int(rf.logs.GetLast().Index) {
 		rf.logs.ReInitLogs()
 	} else {
-		rf.logs.EraseBeforeWithDel(int64(lastIncludedIndex) - rf.logs.GetFirst().Index)
+		rf.logs.EraseBefore(int64(lastIncludedIndex)-rf.logs.GetFirst().Index, true)
 		rf.logs.SetEntFirstData([]byte{})
 	}
 	// update dummy entry with lastIncludedTerm and lastIncludedIndex
@@ -318,7 +317,7 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 		logger.ELogger().Sugar().Warnf("reject snapshot, current snapshotIndex is larger in cur term")
 		return
 	}
-	rf.logs.EraseBeforeWithDel(int64(index) - int64(snapshot_index))
+	rf.logs.EraseBefore(int64(index)-int64(snapshot_index), true)
 	rf.logs.SetEntFirstData([]byte{})
 	logger.ELogger().Sugar().Debugf("del log entry before idx %d", index)
 	rf.isSnapshoting = false
@@ -377,10 +376,13 @@ func (rf *Raft) GetLogCount() int {
 func (rf *Raft) advanceCommitIndexForLeader() {
 	sort.Ints(rf.matchIdx)
 	n := len(rf.matchIdx)
+	// [18 18 '19 19 20] majority replicate log index 19
+	// [18 '18 19] majority replicate log index 18
+	// [18 '18 19 20] majority replicate log index 18
 	new_commit_index := rf.matchIdx[n-(n/2+1)]
 	if new_commit_index > int(rf.commitIdx) {
 		if rf.MatchLog(rf.curTerm, int64(new_commit_index)) {
-			logger.ELogger().Sugar().Debugf("peer %d advance commit index %d at term %d", rf.me_, rf.commitIdx, rf.curTerm)
+			logger.ELogger().Sugar().Debugf("peer %d advance commit index %d at term %d", rf.id, rf.commitIdx, rf.curTerm)
 			rf.commitIdx = int64(new_commit_index)
 			rf.applyCond.Signal()
 		}
@@ -390,7 +392,7 @@ func (rf *Raft) advanceCommitIndexForLeader() {
 func (rf *Raft) advanceCommitIndexForFollower(leaderCommit int) {
 	new_commit_index := Min(leaderCommit, int(rf.logs.GetLast().Index))
 	if new_commit_index > int(rf.commitIdx) {
-		logger.ELogger().Sugar().Debugf("peer %d advance commit index %d at term %d", rf.me_, rf.commitIdx, rf.curTerm)
+		logger.ELogger().Sugar().Debugf("peer %d advance commit index %d at term %d", rf.id, rf.commitIdx, rf.curTerm)
 		rf.commitIdx = int64(new_commit_index)
 		rf.applyCond.Signal()
 	}
@@ -403,19 +405,19 @@ func (rf *Raft) MatchLog(term, index int64) bool {
 
 // Election  make a new election
 func (rf *Raft) Election() {
-	logger.ELogger().Sugar().Debugf("%d start election ", rf.me_)
+	logger.ELogger().Sugar().Debugf("%d start election ", rf.id)
 
 	rf.IncrGrantedVotes()
-	rf.votedFor = int64(rf.me_)
+	rf.votedFor = int64(rf.id)
 	vote_req := &pb.RequestVoteRequest{
 		Term:         rf.curTerm,
-		CandidateId:  int64(rf.me_),
+		CandidateId:  int64(rf.id),
 		LastLogIndex: int64(rf.logs.GetLast().Index),
 		LastLogTerm:  int64(rf.logs.GetLast().Term),
 	}
 	rf.PersistRaftState()
 	for _, peer := range rf.peers {
-		if int(peer.id) == rf.me_ {
+		if int64(peer.id) == rf.id {
 			continue
 		}
 		go func(peer *RaftClientEnd) {
@@ -434,7 +436,7 @@ func (rf *Raft) Election() {
 						// success granted the votes
 						rf.IncrGrantedVotes()
 						if rf.grantedVotes > len(rf.peers)/2 {
-							logger.ELogger().Sugar().Debugf("I'm win this term, (node %d) get majority votes int term %d ", rf.me_, rf.curTerm)
+							logger.ELogger().Sugar().Debugf("I'm win this term, (node %d) get majority votes int term %d ", rf.id, rf.curTerm)
 							rf.SwitchRaftNodeRole(NodeRoleLeader)
 							rf.BroadcastHeartbeat()
 							rf.grantedVotes = 0
@@ -457,7 +459,7 @@ func (rf *Raft) Election() {
 
 func (rf *Raft) BroadcastAppend() {
 	for _, peer := range rf.peers {
-		if peer.id == uint64(rf.me_) {
+		if peer.id == uint64(rf.id) {
 			continue
 		}
 		rf.replicatorCond[peer.id].Signal()
@@ -467,7 +469,7 @@ func (rf *Raft) BroadcastAppend() {
 // BroadcastHeartbeat broadcast heartbeat to peers
 func (rf *Raft) BroadcastHeartbeat() {
 	for _, peer := range rf.peers {
-		if int(peer.id) == rf.me_ {
+		if int64(peer.id) == rf.id {
 			continue
 		}
 		logger.ELogger().Sugar().Debugf("send heart beat to %s", peer.addr)
@@ -529,8 +531,8 @@ func (rf *Raft) Append(command []byte) *pb.Entry {
 		Data:  command,
 	}
 	rf.logs.Append(newLog)
-	rf.matchIdx[rf.me_] = int(newLog.Index)
-	rf.nextIdx[rf.me_] = int(newLog.Index) + 1
+	rf.matchIdx[rf.id] = int(newLog.Index)
+	rf.nextIdx[rf.id] = int(newLog.Index) + 1
 	rf.PersistRaftState()
 	return newLog
 }
@@ -568,7 +570,7 @@ func (rf *Raft) replicateOneRound(peer *RaftClientEnd) {
 		first_log := rf.logs.GetFirst()
 		snap_shot_req := &pb.InstallSnapshotRequest{
 			Term:              rf.curTerm,
-			LeaderId:          int64(rf.me_),
+			LeaderId:          int64(rf.id),
 			LastIncludedIndex: first_log.Index,
 			LastIncludedTerm:  int64(first_log.Term),
 			Data:              rf.ReadSnapshot(),
@@ -604,11 +606,13 @@ func (rf *Raft) replicateOneRound(peer *RaftClientEnd) {
 	} else {
 		first_index := rf.logs.GetFirst().Index
 		logger.ELogger().Sugar().Debugf("first log index %d", first_index)
-		entries := make([]*pb.Entry, len(rf.logs.EraseBefore(int64(prev_log_index)+1-first_index)))
-		copy(entries, rf.logs.EraseBefore(int64(prev_log_index)+1-first_index))
+		_, new_ents := rf.logs.EraseBefore(int64(prev_log_index)+1-first_index, false)
+		entries := make([]*pb.Entry, len(new_ents))
+		copy(entries, new_ents)
+
 		append_ent_req := &pb.AppendEntriesRequest{
 			Term:         rf.curTerm,
-			LeaderId:     int64(rf.me_),
+			LeaderId:     int64(rf.id),
 			PrevLogIndex: int64(prev_log_index),
 			PrevLogTerm:  int64(rf.logs.GetEntry(int64(prev_log_index) - first_index).Term),
 			Entries:      entries,
@@ -666,7 +670,7 @@ func (rf *Raft) Applier() {
 		first_index, commit_index, last_applied := rf.logs.GetFirst().Index, rf.commitIdx, rf.lastApplied
 		entries := make([]*pb.Entry, commit_index-last_applied)
 		copy(entries, rf.logs.GetRange(last_applied+1-int64(first_index), commit_index+1-int64(first_index)))
-		logger.ELogger().Sugar().Debugf("%d, applies entries %d-%d in term %d", rf.me_, rf.lastApplied, commit_index, rf.curTerm)
+		logger.ELogger().Sugar().Debugf("%d, applies entries %d-%d in term %d", rf.id, rf.lastApplied, commit_index, rf.curTerm)
 
 		rf.mu.Unlock()
 		for _, entry := range entries {

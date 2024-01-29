@@ -65,7 +65,7 @@ func MakeMetaServer(peerMaps map[int]string, nodeId int) *MetaServer {
 	newdb_eng := storage.EngineFactory("leveldb", "./data/db/metanode_"+strconv.Itoa(nodeId))
 	logdb_eng := storage.EngineFactory("leveldb", "./data/log/metanode_"+strconv.Itoa(nodeId))
 
-	newRf := raftcore.MakeRaft(client_ends, nodeId, logdb_eng, newApplyCh, 50, 150)
+	newRf := raftcore.MakeRaft(client_ends, int64(nodeId), logdb_eng, newApplyCh, 50, 150)
 	meta_server := &MetaServer{
 		Rf:          newRf,
 		applyCh:     newApplyCh,
