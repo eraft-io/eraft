@@ -55,9 +55,9 @@ type MetaServer struct {
 }
 
 func MakeMetaServer(peerMaps map[int]string, nodeId int) *MetaServer {
-	client_ends := []*raftcore.RaftClientEnd{}
+	client_ends := []*raftcore.RaftPeerNode{}
 	for id, addr := range peerMaps {
-		new_end := raftcore.MakeRaftClientEnd(addr, uint64(id))
+		new_end := raftcore.MakeRaftPeerNode(addr, uint64(id))
 		client_ends = append(client_ends, new_end)
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)

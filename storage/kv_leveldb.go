@@ -113,7 +113,7 @@ func (levelDB *LevelDBKvStore) SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
 			return maxKeyId, iter.Error()
 		}
 		kBytes := iter.Key()
-		KeyId := binary.LittleEndian.Uint64(kBytes[len(prefix):])
+		KeyId := binary.BigEndian.Uint64(kBytes[len(prefix):])
 		if KeyId > maxKeyId {
 			maxKeyId = KeyId
 		}

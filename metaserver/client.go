@@ -39,7 +39,7 @@ import (
 )
 
 type MetaSvrCli struct {
-	endpoints []*raftcore.RaftClientEnd
+	endpoints []*raftcore.RaftPeerNode
 	leaderId  int64
 	clientId  int64
 	commandId int64
@@ -60,14 +60,14 @@ func MakeMetaSvrClient(targetId uint64, targetAddrs []string) *MetaSvrCli {
 	}
 
 	for _, addr := range targetAddrs {
-		cli := raftcore.MakeRaftClientEnd(addr, targetId)
+		cli := raftcore.MakeRaftPeerNode(addr, targetId)
 		mate_svr_cli.endpoints = append(mate_svr_cli.endpoints, cli)
 	}
 
 	return mate_svr_cli
 }
 
-func (meta_svr_cli *MetaSvrCli) GetRpcClis() []*raftcore.RaftClientEnd {
+func (meta_svr_cli *MetaSvrCli) GetRpcClis() []*raftcore.RaftPeerNode {
 	return meta_svr_cli.endpoints
 }
 

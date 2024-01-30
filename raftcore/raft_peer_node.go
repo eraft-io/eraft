@@ -30,22 +30,22 @@ import (
 	"google.golang.org/grpc"
 )
 
-type RaftClientEnd struct {
+type RaftPeerNode struct {
 	id             uint64
 	addr           string
 	conns          []*grpc.ClientConn
 	raftServiceCli *raftpb.RaftServiceClient
 }
 
-func (rfEnd *RaftClientEnd) Id() uint64 {
+func (rfEnd *RaftPeerNode) Id() uint64 {
 	return rfEnd.id
 }
 
-func (rfEnd *RaftClientEnd) GetRaftServiceCli() *raftpb.RaftServiceClient {
+func (rfEnd *RaftPeerNode) GetRaftServiceCli() *raftpb.RaftServiceClient {
 	return rfEnd.raftServiceCli
 }
 
-func MakeRaftClientEnd(addr string, id uint64) *RaftClientEnd {
+func MakeRaftPeerNode(addr string, id uint64) *RaftPeerNode {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		logger.ELogger().Sugar().DPanicf("faild to connect: %v", err)
@@ -53,7 +53,7 @@ func MakeRaftClientEnd(addr string, id uint64) *RaftClientEnd {
 	conns := []*grpc.ClientConn{}
 	conns = append(conns, conn)
 	rpc_client := raftpb.NewRaftServiceClient(conn)
-	return &RaftClientEnd{
+	return &RaftPeerNode{
 		id:             id,
 		addr:           addr,
 		conns:          conns,
@@ -61,7 +61,7 @@ func MakeRaftClientEnd(addr string, id uint64) *RaftClientEnd {
 	}
 }
 
-func (rfEnd *RaftClientEnd) CloseAllConn() {
+func (rfEnd *RaftPeerNode) CloseAllConn() {
 	for _, conn := range rfEnd.conns {
 		conn.Close()
 	}

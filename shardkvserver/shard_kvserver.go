@@ -72,9 +72,9 @@ type ShardKV struct {
 // gid: the node's raft group id
 // configServerAddr: config server addr (leader addr, need to optimized into config server peer map)
 func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configServerAddrs string) *ShardKV {
-	client_ends := []*raftcore.RaftClientEnd{}
+	client_ends := []*raftcore.RaftPeerNode{}
 	for id, addr := range peerMaps {
-		new_end := raftcore.MakeRaftClientEnd(addr, uint64(id))
+		new_end := raftcore.MakeRaftPeerNode(addr, uint64(id))
 		client_ends = append(client_ends, new_end)
 	}
 	new_apply_ch := make(chan *pb.ApplyMsg)
@@ -260,6 +260,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 				continue
 			}
 			s.lastApplied = int(appliedMsg.CommandIndex)
+			logger.ELogger().Sugar().Debugf("shard_kvserver last applied %d", s.lastApplied)
 
 			cmd_resp := &pb.CommandResponse{}
 			value := ""
