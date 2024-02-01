@@ -270,7 +270,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 			case pb.OpType_OpPut:
 				bucket_id := common.Key2BucketID(req.Key)
 				if s.CanServe(bucket_id) {
-					logger.ELogger().Sugar().Debug("put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucket_id))
+					logger.ELogger().Sugar().Debug("WRITE put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucket_id))
 					s.stm[bucket_id].Put(req.Key, req.Value)
 				}
 			case pb.OpType_OpAppend:

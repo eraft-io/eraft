@@ -31,7 +31,6 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"math/big"
 	"strings"
 
@@ -53,8 +52,9 @@ type KvClient struct {
 	csCli *metaserver.MetaSvrCli
 	// current config, got from config server group
 	config *metaserver.Config
-	// leader id, got from config server group
-	leaderId int64
+
+	groupLeaderAddrs map[int64]string
+
 	// the client id, use to identify a client
 	clientId int64
 	// the command id, use to identify a command
@@ -97,11 +97,12 @@ func nrand() int64 {
 func MakeKvClient(csAddrs string) *KvClient {
 	meta_svr_cli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(csAddrs, ","))
 	kv_cli := &KvClient{
-		csCli:     meta_svr_cli,
-		rpcCli:    nil,
-		leaderId:  0,
-		clientId:  nrand(),
-		commandId: 0,
+		csCli:            meta_svr_cli,
+		rpcCli:           nil,
+		groupLeaderAddrs: map[int64]string{},
+		connectsCache:    make(map[string]*raftcore.RaftPeerNode),
+		clientId:         nrand(),
+		commandId:        0,
 	}
 	kv_cli.config = kv_cli.csCli.Query(-1)
 	return kv_cli
@@ -174,7 +175,11 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 		for _, svrAddr := range servers {
 			if kvCli.GetConnFromCache(svrAddr) == nil {
 				kvCli.rpcCli = raftcore.MakeRaftPeerNode(svrAddr, common.UN_UNSED_TID)
+				kvCli.AddConnToCache(svrAddr, kvCli.rpcCli)
 			} else {
+				if kvCli.groupLeaderAddrs[int64(gid)] != "" {
+					svrAddr = kvCli.groupLeaderAddrs[int64(gid)]
+				}
 				kvCli.rpcCli = kvCli.GetConnFromCache(svrAddr)
 			}
 			resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
@@ -191,11 +196,12 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 				kvCli.config = kvCli.csCli.Query(-1)
 				return "", errors.New("WrongGroup")
 			case common.ErrCodeWrongLeader:
+				kvCli.groupLeaderAddrs[int64(gid)] = servers[resp.LeaderId]
 				kvCli.rpcCli = raftcore.MakeRaftPeerNode(servers[resp.LeaderId], common.UN_UNSED_TID)
+				kvCli.AddConnToCache(servers[resp.LeaderId], kvCli.rpcCli)
 				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 				if err != nil {
-					fmt.Printf("err %s", err.Error())
-					panic(err)
+					logger.ELogger().Sugar().Errorf("send command to server error", err.Error())
 				}
 				if resp.ErrCode == common.ErrCodeNoErr {
 					kvCli.commandId++

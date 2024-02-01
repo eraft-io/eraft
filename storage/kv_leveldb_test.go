@@ -48,14 +48,6 @@ func TestPrefixRange(t *testing.T) {
 		ldb.PutBytesKv(outBuf.Bytes(), []byte{byte(i)})
 	}
 
-	idMax, err := ldb.SeekPrefixKeyIdMax(prefixBytes)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	t.Logf("idMax -> %d", idMax)
-
 	ldb.db.Close()
 	common.RemoveDir("./test_data")
 }

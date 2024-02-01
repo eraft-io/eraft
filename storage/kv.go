@@ -30,13 +30,12 @@ type KvStore interface {
 	Get(string) (string, error)
 	Delete(string) error
 	DumpPrefixKey(string) (map[string]string, error)
-	PutBytesKv(k []byte, v []byte) error
-	DeleteBytesK(k []byte) error
-	GetBytesValue(k []byte) ([]byte, error)
-	SeekPrefixLast(prefix []byte) ([]byte, []byte, error)
-	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
-	DelPrefixKeys(prefix string) error
-	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
+	PutBytesKv([]byte, []byte) error
+	DeleteBytesK([]byte) error
+	GetBytesValue([]byte) ([]byte, error)
+	SeekPrefixLast([]byte) ([]byte, []byte, error)
+	SeekPrefixFirst([]byte) ([]byte, []byte, error)
+	DelPrefixKeys([]byte) error
 	FlushDB()
 }
 

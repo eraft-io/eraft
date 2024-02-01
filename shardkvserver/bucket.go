@@ -97,5 +97,5 @@ func (bu *Bucket) deepCopy() (map[string]string, error) {
 // delete all the data in a bucket
 func (bu *Bucket) deleteBucketData() error {
 	encode_key_prefix := strconv.Itoa(bu.ID) + SPLIT
-	return bu.KvDB.DelPrefixKeys(encode_key_prefix)
+	return bu.KvDB.DelPrefixKeys([]byte(encode_key_prefix))
 }

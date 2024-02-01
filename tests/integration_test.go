@@ -170,7 +170,7 @@ func TestClusterRwBench(t *testing.T) {
 	KEY_SIZE := 64
 	VAL_SIZE := 64
 	bench_kvs := map[string]string{}
-	for i := 0; i <= N; i++ {
+	for i := 0; i < N; i++ {
 		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KEY_SIZE)
 		v := common.RandStringRunes(VAL_SIZE)
 		bench_kvs[k] = v
