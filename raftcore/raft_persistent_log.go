@@ -96,18 +96,6 @@ func (rfLog *RaftLog) ReadRaftState() (curTerm int64, votedFor int64) {
 	return rf_state.CurTerm, rf_state.VotedFor
 }
 
-func (rfLog *RaftLog) PersisSnapshot(snapContext []byte) {
-	rfLog.dbEng.PutBytesKv(SNAPSHOT_STATE_KEY, snapContext)
-}
-
-func (rfLog *RaftLog) ReadSnapshot() ([]byte, error) {
-	bytes, err := rfLog.dbEng.GetBytesValue(SNAPSHOT_STATE_KEY)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
 // GetFirstLogId
 // get the first log id from storage engine
 func (rfLog *RaftLog) GetFirstLogId() uint64 {
@@ -141,6 +129,21 @@ func (rfLog *RaftLog) SetEntFirstData(d []byte) error {
 	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(first_idx), newent_encode)
 }
 
+func (rfLog *RaftLog) ResetFirstLogEntry(term int64, index int64) error {
+	rfLog.mu.Lock()
+	defer rfLog.mu.Unlock()
+	new_ent := &pb.Entry{}
+	new_ent.EntryType = pb.EntryType_EntryNormal
+	new_ent.Term = uint64(term)
+	new_ent.Index = index
+	newent_encode := EncodeEntry(new_ent)
+	if err := rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(index)), newent_encode); err != nil {
+		return err
+	}
+	rfLog.firstIdx = uint64(index)
+	return nil
+}
+
 // ReInitLogs
 // make logs to init state
 func (rfLog *RaftLog) ReInitLogs() error {
@@ -156,32 +159,6 @@ func (rfLog *RaftLog) ReInitLogs() error {
 	emp_ent := &pb.Entry{}
 	empent_encode := EncodeEntry(emp_ent)
 	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), empent_encode)
-}
-
-//
-// SetEntFirstTermAndIndex
-//
-
-func (rfLog *RaftLog) ResetFirstEntryTermAndIndex(term, index int64) error {
-	rfLog.mu.Lock()
-	defer rfLog.mu.Unlock()
-	first_idx := rfLog.GetFirstLogId()
-	encode_value, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(uint64(first_idx)))
-	if err != nil {
-		logger.ELogger().Sugar().Panicf("get log entry with id %d error!", first_idx)
-		panic(err)
-	}
-	// del olf first ent
-	if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(first_idx)); err != nil {
-		return err
-	}
-	ent := DecodeEntry(encode_value)
-	ent.Term = uint64(term)
-	ent.Index = index
-	rfLog.firstIdx = uint64(index)
-	logger.ELogger().Sugar().Debugf("change first ent to -> ", ent.String())
-	new_ent_encode := EncodeEntry(ent)
-	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(index)), new_ent_encode)
 }
 
 // GetFirst

@@ -254,6 +254,12 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 			return
 		case appliedMsg := <-s.applyCh:
 			logger.ELogger().Sugar().Debugf("appling msg %s", appliedMsg.String())
+
+			if appliedMsg.SnapshotValid {
+				// TODO: install snapshot data to leveldb
+				s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex))
+			}
+
 			req := &pb.CommandRequest{}
 			if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
 				logger.ELogger().Sugar().Errorf("Unmarshal CommandRequest err", err.Error())
@@ -365,6 +371,17 @@ func (s *ShardKV) AppendEntries(ctx context.Context, req *pb.AppendEntriesReques
 
 	s.rf.HandleAppendEntries(req, resp)
 	logger.ELogger().Sugar().Debugf("append entries %s ", resp.String())
+	return resp, nil
+}
+
+// snapshot rpc interface
+func (s *ShardKV) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) (*pb.InstallSnapshotResponse, error) {
+	resp := &pb.InstallSnapshotResponse{}
+	logger.ELogger().Sugar().Debugf("handle snapshot req %s ", req.String())
+
+	s.rf.HandleInstallSnapshot(req, resp)
+	logger.ELogger().Sugar().Debugf("handle snapshot resp %s ", resp.String())
+
 	return resp, nil
 }
 

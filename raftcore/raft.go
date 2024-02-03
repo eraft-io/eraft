@@ -26,6 +26,7 @@ package raftcore
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -59,24 +60,23 @@ func NodeToString(role NodeRole) string {
 
 // raft stack definition
 type Raft struct {
-	mu             sync.RWMutex
-	peers          []*RaftPeerNode // rpc client end
-	id             int64
-	dead           int32
-	applyCh        chan *pb.ApplyMsg
-	applyCond      *sync.Cond
-	replicatorCond []*sync.Cond
-	role           NodeRole
-	curTerm        int64
-	votedFor       int64
-	grantedVotes   int
-	logs           *RaftLog
-	commitIdx      int64
-	lastApplied    int64
-	nextIdx        []int
-	matchIdx       []int
-	isSnapshoting  bool
-
+	mu               sync.RWMutex
+	peers            []*RaftPeerNode // rpc client end
+	id               int64
+	dead             int32
+	applyCh          chan *pb.ApplyMsg
+	applyCond        *sync.Cond
+	replicatorCond   []*sync.Cond
+	role             NodeRole
+	curTerm          int64
+	votedFor         int64
+	grantedVotes     int
+	logs             *RaftLog
+	commitIdx        int64
+	lastApplied      int64
+	nextIdx          []int
+	matchIdx         []int
+	isSnapshoting    bool
 	leaderId         int64
 	electionTimer    *time.Timer
 	heartbeatTimer   *time.Timer
@@ -170,10 +170,6 @@ func (rf *Raft) GetState() (int, bool) {
 
 func (rf *Raft) IncrGrantedVotes() {
 	rf.grantedVotes += 1
-}
-
-func (rf *Raft) ReInitLog() {
-	rf.logs.ReInitLogs()
 }
 
 // HandleRequestVote  handle request vote from other node
@@ -277,7 +273,7 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 	resp.Success = true
 }
 
-func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
+func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int) bool {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
@@ -289,41 +285,13 @@ func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, 
 		rf.logs.ReInitLogs()
 	} else {
 		rf.logs.EraseBefore(int64(lastIncludedIndex), true)
-		rf.logs.SetEntFirstData([]byte{})
 	}
-	// update dummy entry with lastIncludedTerm and lastIncludedIndex
-	rf.logs.ResetFirstEntryTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
+	rf.logs.ResetFirstLogEntry(int64(lastIncluedTerm), int64(lastIncludedIndex))
 
 	rf.lastApplied = int64(lastIncludedIndex)
 	rf.commitIdx = int64(lastIncludedIndex)
 
 	return true
-}
-
-// take a snapshot
-func (rf *Raft) Snapshot(index int, snapshot []byte) {
-	rf.mu.Lock()
-	defer rf.mu.Unlock()
-	rf.isSnapshoting = true
-	snapshot_index := rf.logs.GetFirstLogId()
-	if index <= int(snapshot_index) {
-		rf.isSnapshoting = false
-		logger.ELogger().Sugar().Warnf("reject snapshot, current snapshotIndex is larger in cur term")
-		return
-	}
-	rf.logs.EraseBefore(int64(index), true)
-	rf.logs.SetEntFirstData([]byte{})
-	logger.ELogger().Sugar().Debugf("del log entry before idx %d", index)
-	rf.isSnapshoting = false
-	rf.logs.PersisSnapshot(snapshot)
-}
-
-func (rf *Raft) ReadSnapshot() []byte {
-	b, err := rf.logs.ReadSnapshot()
-	if err != nil {
-		logger.ELogger().Sugar().Error(err.Error())
-	}
-	return b
 }
 
 // install snapshot from leader
@@ -359,12 +327,6 @@ func (rf *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, respon
 		}
 	}()
 
-}
-
-func (rf *Raft) GetLogCount() int {
-	rf.mu.Lock()
-	defer rf.mu.Unlock()
-	return rf.logs.LogItemCount()
 }
 
 func (rf *Raft) advanceCommitIndexForLeader() {
@@ -416,31 +378,28 @@ func (rf *Raft) Election() {
 		}
 		go func(peer *RaftPeerNode) {
 			logger.ELogger().Sugar().Debugf("send request vote to %s %s", peer.addr, vote_req.String())
-
 			request_vote_resp, err := (*peer.raftServiceCli).RequestVote(context.Background(), vote_req)
 			if err != nil {
 				logger.ELogger().Sugar().Errorf("send request vote to %s failed %v", peer.addr, err.Error())
 			}
-			if request_vote_resp != nil {
-				rf.mu.Lock()
-				defer rf.mu.Unlock()
+			rf.mu.Lock()
+			defer rf.mu.Unlock()
+			if request_vote_resp != nil && rf.curTerm == vote_req.Term && rf.role == NodeRoleCandidate {
 				logger.ELogger().Sugar().Errorf("send request vote to %s recive -> %s, curterm %d, req term %d", peer.addr, request_vote_resp.String(), rf.curTerm, vote_req.Term)
-				if rf.curTerm == vote_req.Term && rf.role == NodeRoleCandidate {
-					if request_vote_resp.VoteGranted {
-						// success granted the votes
-						rf.IncrGrantedVotes()
-						if rf.grantedVotes > len(rf.peers)/2 {
-							logger.ELogger().Sugar().Debugf("I'm win this term, (node %d) get majority votes int term %d ", rf.id, rf.curTerm)
-							rf.SwitchRaftNodeRole(NodeRoleLeader)
-							rf.BroadcastHeartbeat()
-							rf.grantedVotes = 0
-						}
-					} else if request_vote_resp.Term > rf.curTerm {
-						// request vote reject
-						rf.SwitchRaftNodeRole(NodeRoleFollower)
-						rf.curTerm, rf.votedFor = request_vote_resp.Term, -1
-						rf.PersistRaftState()
+				if request_vote_resp.VoteGranted {
+					// success granted the votes
+					rf.IncrGrantedVotes()
+					if rf.grantedVotes > len(rf.peers)/2 {
+						logger.ELogger().Sugar().Debugf("I'm win this term, (node %d) get majority votes int term %d ", rf.id, rf.curTerm)
+						rf.SwitchRaftNodeRole(NodeRoleLeader)
+						rf.BroadcastHeartbeat()
+						rf.grantedVotes = 0
 					}
+				} else if request_vote_resp.Term > rf.curTerm {
+					// request vote reject
+					rf.SwitchRaftNodeRole(NodeRoleFollower)
+					rf.curTerm, rf.votedFor = request_vote_resp.Term, -1
+					rf.PersistRaftState()
 				}
 			}
 		}(peer)
@@ -562,12 +521,14 @@ func (rf *Raft) replicateOneRound(peer *RaftPeerNode) {
 	logger.ELogger().Sugar().Debugf("leader prev log index %d", prev_log_index)
 	if prev_log_index < uint64(rf.logs.GetFirst().Index) {
 		first_log := rf.logs.GetFirst()
+
+		// TODO: send kv leveldb snapshot
+
 		snap_shot_req := &pb.InstallSnapshotRequest{
 			Term:              rf.curTerm,
 			LeaderId:          int64(rf.id),
 			LastIncludedIndex: first_log.Index,
 			LastIncludedTerm:  int64(first_log.Term),
-			Data:              rf.ReadSnapshot(),
 		}
 
 		rf.mu.RUnlock()
@@ -680,4 +641,18 @@ func (rf *Raft) Applier() {
 		rf.lastApplied = int64(Max(int(rf.lastApplied), int(commit_index)))
 		rf.mu.Unlock()
 	}
+}
+
+func (rf *Raft) StartSnapshot(snap_idx uint64) error {
+	rf.isSnapshoting = true
+	if snap_idx <= rf.logs.GetFirstLogId() {
+		rf.isSnapshoting = false
+		return errors.New("ety index is larger than the first log index")
+	}
+	rf.logs.EraseBefore(int64(snap_idx), true)
+	rf.logs.ResetFirstLogEntry(rf.curTerm, int64(snap_idx))
+
+	// create checkpoint for db
+	rf.isSnapshoting = false
+	return nil
 }
