@@ -135,57 +135,6 @@ find_package(benchmark REQUIRED)
 # google benchmark end
 ################################################
 
-# build eraftvdb
-
-set(eraftvdb_sources)
-list(APPEND eraftvdb_sources src/async_buffer.cc)
-list(APPEND eraftvdb_sources src/async_buffer.h)
-list(APPEND eraftvdb_sources src/buffer.h)
-list(APPEND eraftvdb_sources src/client.cc)
-list(APPEND eraftvdb_sources src/client.h)
-list(APPEND eraftvdb_sources src/epoller.cc)
-list(APPEND eraftvdb_sources src/epoller.h)
-list(APPEND eraftvdb_sources src/eraft_vdb_server.cc)
-list(APPEND eraftvdb_sources src/eraft_vdb_server.h)
-list(APPEND eraftvdb_sources src/listen_socket.cc)
-list(APPEND eraftvdb_sources src/listen_socket.h)
-list(APPEND eraftvdb_sources src/net_thread_pool.cc)
-list(APPEND eraftvdb_sources src/net_thread_pool.h)
-list(APPEND eraftvdb_sources src/proto_parser.cc)
-list(APPEND eraftvdb_sources src/proto_parser.h)
-list(APPEND eraftvdb_sources src/server.cc)
-list(APPEND eraftvdb_sources src/server.h)
-list(APPEND eraftvdb_sources src/socket.cc)
-list(APPEND eraftvdb_sources src/socket.h)
-list(APPEND eraftvdb_sources src/stream_socket.cc)
-list(APPEND eraftvdb_sources src/stream_socket.h)
-list(APPEND eraftvdb_sources src/task_manager.cc)
-list(APPEND eraftvdb_sources src/task_manager.h)
-list(APPEND eraftvdb_sources src/thread_pool.cc)
-list(APPEND eraftvdb_sources src/thread_pool.h)
-list(APPEND eraftvdb_sources src/unbounded_buffer.cc)
-list(APPEND eraftvdb_sources src/unbounded_buffer.h)
-list(APPEND eraftvdb_sources src/eraftkv.grpc.pb.cc)
-list(APPEND eraftvdb_sources src/eraftkv.pb.cc)
-list(APPEND eraftvdb_sources src/info_command_handler.cc)
-list(APPEND eraftvdb_sources src/set_command_handler.cc)
-list(APPEND eraftvdb_sources src/get_command_handler.cc)
-list(APPEND eraftvdb_sources src/del_command_handler.cc)
-list(APPEND eraftvdb_sources src/shardgroup_command_handler.cc)
-list(APPEND eraftvdb_sources src/unknow_command_handler.cc)
-list(APPEND eraftvdb_sources src/util.cc)
-
-add_executable(eraft-kdb ${eraftvdb_sources})
-target_link_libraries(eraft-kdb 
-    pthread
-    rocksdb
-    gRPC::grpc++
-    ${Protobuf_LIBRARY}
-    stdc++fs
-    gflags
-)
-target_include_directories(eraft-kdb PUBLIC ${eraftkv_INCLUDE_DIR})
-
 # build eraftkv
 set(eraftkv_sources)
 list(APPEND eraftkv_sources src/eraftkv_server.cc)
