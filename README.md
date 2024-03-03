@@ -1,19 +1,3 @@
-# ERaftKDB
-
-ERaftKDB is a distributed database that supports the Redis RESP protocol, and uses ERaftKV as the distributed storage layer.
-
-![eraft-kdb](doc/eraft-kdb.png)
-
-## Redis Command Support Plan
-
-| Command    | Status |
-| -------- | ------- |
-| get  |  DONE |
-| set  | DONE   |
-| del  | DONE   |
-| scan  | TODO   |
-
-
 ## ERaftKV
 
 ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding for large-scale data storage.
@@ -57,87 +41,8 @@ f57ad3d454f27f4b84efca3ce61bf4764bd30ce3d4971b85477daf05c6ae28a3
 ```
 sudo make run-demo
 ```
-command output
-```
-docker run --name kvserver-node1 --network mytestnetwork --ip 172.18.0.10 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 0 /tmp/kv_db0 /tmp/log_db0 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-bef74b85fcf9c0a2dedb15399b1f53010791e329f0c60d69fcd097e0843cbb86
-sleep 2
-docker run --name kvserver-node2 --network mytestnetwork --ip 172.18.0.11 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 1 /tmp/kv_db1 /tmp/log_db1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-333c02093fcb8c974cc1dc491fc7d2e19f474e3fda354fc130cf6be6d8920c85
-docker run --name kvserver-node3 --network mytestnetwork --ip 172.18.0.12 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv 2 /tmp/kv_db2 /tmp/log_db2 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-9856291dd34776cea94ab957780f7a244cb387bd0d74388b5a9d440175d6d28e
-sleep 1
-docker run --name metaserver-node1 --network mytestnetwork --ip 172.18.0.2 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 0 /tmp/meta_db0 /tmp/log_db0 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-09f9f12bc74212d1ae09a89bfecbc5a991f1b46cd9e8ba43fc278f775dd6176d
-sleep 3
-docker run --name metaserver-node2 --network mytestnetwork --ip 172.18.0.3 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 1 /tmp/meta_db1 /tmp/log_db1 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-3b98b3f317e834263ddb81c0bc5b245ac31b69cd47f495415a3d70e951c13900
-docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta 2 /tmp/meta_db2 /tmp/log_db2 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-10269f84d95e9f82f75d3c60f0d7b0dc0efe5efe643366e615b7644fb8851f04
-sleep 16
-docker run --name vdbserver-node --network mytestnetwork --ip 172.18.0.6 -it --rm -v /home/colin/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraft-kdb 172.18.0.6:12306 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
-run server success!
-```
 
-- step 3, run eraft kdb tests
-
-```
-sudo make init-kdb-meta
-sudo make run-kdb-tests
-```
-command output
-
-```
-chmod +x utils/run-kdb-tests.sh
-docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v /Users/colin/Documents/eraft:/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-kdb-tests.sh
-+ redis-cli -h 172.18.0.6 -p 12306 shardgroup query
-1) "shardgroup"
-2) "1"
-3) "servers"
-4) "0"
-5) "172.18.0.10:8088"
-6) "1"
-7) "172.18.0.11:8089"
-8) "2"
-9) "172.18.0.12:8090"
-+ redis-cli -h 172.18.0.6 -p 12306 shardgroup join 1 172.18.0.10:8088,172.18.0.11:8089,172.18.0.12:8090
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 shardgroup move 1 0-1023
-OK
-+ sleep 1
-+ redis-cli -h 172.18.0.6 -p 12306 info
-meta server:
-server_id: 0,server_address: 172.18.0.2:8088,status: Running,Role: Leader
-meta server:
-server_id: 1,server_address: 172.18.0.3:8089,status: Running,Role: Follower
-meta server:
-server_id: 2,server_address: 172.18.0.4:8090,status: Running,Role: Follower
-+ redis-cli -h 172.18.0.6 -p 12306 set a h
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set b e
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set c l
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set d l
-OK
-+ redis-cli -h 172.18.0.6 -p 12306 set e o
-OK
-+ sleep 1
-+ redis-cli -h 172.18.0.6 -p 12306 get a
-"h"
-+ redis-cli -h 172.18.0.6 -p 12306 get b
-"e"
-+ redis-cli -h 172.18.0.6 -p 12306 get c
-"l"
-+ redis-cli -h 172.18.0.6 -p 12306 get d
-"l"
-+ redis-cli -h 172.18.0.6 -p 12306 get e
-"o"
-+ redis-cli -h 172.18.0.6 -p 12306 get nil_test
-(nil)
-```
-
-- step 4, clean all
+- step 3, clean all
 ```
 sudo make stop-demo
 sudo make rm-net
@@ -169,9 +74,6 @@ If you want to build image youtself
 ```
 make image
 ```
-
-# Documentation
-[ERaftKV Documentation](doc/eraft-kdb.md)
 
 # Contributing
 
