@@ -93,7 +93,7 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    *
    * @param config
    */
-  ERaftKvServer(ERaftKvServerOptions option) : options_(option), op_count_(1) {
+  ERaftKvServer(ERaftKvServerOptions option) : options_(option), op_sign(1) {
     // init raft lib
     RaftConfig raft_config;
     raft_config.id = options_.svr_id;
@@ -208,5 +208,5 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   static RaftServer* raft_context_;
 
 
-  int op_count_;
+  int op_sign;
 };

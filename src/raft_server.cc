@@ -67,7 +67,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , heartbeat_tick_count_(0)
     , election_tick_count_(0)
     , max_entries_per_append_req_(100)
-    , tick_interval_(1000)
+    , tick_interval_(100)
     , granted_votes_(0)
     , snap_threshold_log_count_(300)
     , open_auto_apply_(true)

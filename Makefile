@@ -64,11 +64,7 @@ run-demo:
 	docker run --name metaserver-node3 --network mytestnetwork --ip 172.18.0.4 -d --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftmeta -svr_id 2 -kv_db_path /eraft/data/meta_db2 -log_db_path /eraft/data/meta_log_db2 -peer_addrs 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090
 
 stop-demo:
-	docker stop kvserver-node1 kvserver-node2 kvserver-node3 vdbserver-node metaserver-node1 metaserver-node2 metaserver-node3
+	docker stop kvserver-node1 kvserver-node2 kvserver-node3 metaserver-node1 metaserver-node2 metaserver-node3
 
 run-demo-bench:
-	docker run --name kvserver-bench --network mytestnetwork --ip 172.18.0.5 --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv-ctl 172.18.0.2:8088 bench 64 64 10
-
-init-kdb-meta:
-	chmod +x utils/init-kdb-meta.sh
-	docker run --name vdbserver-node-tests --network mytestnetwork --ip 172.18.0.9 -it --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/init-kdb-meta.sh
+	docker run --name kvserver-bench --network mytestnetwork --ip 172.18.0.5 --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv-ctl 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 querygroups

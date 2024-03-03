@@ -42,7 +42,18 @@ f57ad3d454f27f4b84efca3ce61bf4764bd30ce3d4971b85477daf05c6ae28a3
 sudo make run-demo
 ```
 
-- step 3, clean all
+- step 3, use eraftkv-ctl to operator the cluster
+
+```
+add_group: ./eraftkv-ctl [metaserver addresses] add_group [groupid] [group server addresses]
+remove_group: ./eraftkv-ctl [metaserver addresses] remove_group [group id] [node id]
+query_groups: ./eraftkv-ctl [metaserver addresses] query_groups
+set_slot: ./eraftkv-ctl [metaserver addresses] set_slot [groupid] [startSlot-endSlot]
+put_kv: ./eraftkv-ctl [metaserver addresses] put_kv [key] [value]
+get_kv: ./eraftkv-ctl [metaserver addresses] get_kv [key]
+```
+
+- step 4, clean all
 ```
 sudo make stop-demo
 sudo make rm-net

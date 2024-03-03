@@ -2243,7 +2243,7 @@ class ClusterConfigChangeReq :
     kHandleServerTypeFieldNumber = 2,
     kShardIdFieldNumber = 3,
     kConfigVersionFieldNumber = 5,
-    kOpCountFieldNumber = 6,
+    kOpSignFieldNumber = 6,
     kCommandIdFieldNumber = 7,
   };
   // .eraftkv.Server server = 4;
@@ -2312,13 +2312,13 @@ class ClusterConfigChangeReq :
   void _internal_set_config_version(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // int64 op_count = 6;
-  void clear_op_count();
-  ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
-  void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // int64 op_sign = 6;
+  void clear_op_sign();
+  ::PROTOBUF_NAMESPACE_ID::int64 op_sign() const;
+  void set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_count() const;
-  void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_sign() const;
+  void _internal_set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
   // int64 command_id = 7;
@@ -2341,7 +2341,7 @@ class ClusterConfigChangeReq :
   int handle_server_type_;
   ::PROTOBUF_NAMESPACE_ID::int64 shard_id_;
   ::PROTOBUF_NAMESPACE_ID::int64 config_version_;
-  ::PROTOBUF_NAMESPACE_ID::int64 op_count_;
+  ::PROTOBUF_NAMESPACE_ID::int64 op_sign_;
   ::PROTOBUF_NAMESPACE_ID::int64 command_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
@@ -2639,7 +2639,7 @@ class KvOpPair :
     kValueFieldNumber = 3,
     kOpTypeFieldNumber = 1,
     kSuccessFieldNumber = 4,
-    kOpCountFieldNumber = 5,
+    kOpSignFieldNumber = 5,
   };
   // string key = 2;
   void clear_key();
@@ -2691,13 +2691,13 @@ class KvOpPair :
   void _internal_set_success(bool value);
   public:
 
-  // int64 op_count = 5;
-  void clear_op_count();
-  ::PROTOBUF_NAMESPACE_ID::int64 op_count() const;
-  void set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // int64 op_sign = 5;
+  void clear_op_sign();
+  ::PROTOBUF_NAMESPACE_ID::int64 op_sign() const;
+  void set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_count() const;
-  void _internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_op_sign() const;
+  void _internal_set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
   // @@protoc_insertion_point(class_scope:eraftkv.KvOpPair)
@@ -2709,7 +2709,7 @@ class KvOpPair :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
   int op_type_;
   bool success_;
-  ::PROTOBUF_NAMESPACE_ID::int64 op_count_;
+  ::PROTOBUF_NAMESPACE_ID::int64 op_sign_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -4840,24 +4840,24 @@ inline void ClusterConfigChangeReq::set_config_version(::PROTOBUF_NAMESPACE_ID::
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.config_version)
 }
 
-// int64 op_count = 6;
-inline void ClusterConfigChangeReq::clear_op_count() {
-  op_count_ = PROTOBUF_LONGLONG(0);
+// int64 op_sign = 6;
+inline void ClusterConfigChangeReq::clear_op_sign() {
+  op_sign_ = PROTOBUF_LONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::_internal_op_count() const {
-  return op_count_;
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::_internal_op_sign() const {
+  return op_sign_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::op_count() const {
-  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.op_count)
-  return _internal_op_count();
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClusterConfigChangeReq::op_sign() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.op_sign)
+  return _internal_op_sign();
 }
-inline void ClusterConfigChangeReq::_internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void ClusterConfigChangeReq::_internal_set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
-  op_count_ = value;
+  op_sign_ = value;
 }
-inline void ClusterConfigChangeReq::set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_op_count(value);
-  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.op_count)
+inline void ClusterConfigChangeReq::set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_op_sign(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.op_sign)
 }
 
 // int64 command_id = 7;
@@ -5227,24 +5227,24 @@ inline void KvOpPair::set_success(bool value) {
   // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.success)
 }
 
-// int64 op_count = 5;
-inline void KvOpPair::clear_op_count() {
-  op_count_ = PROTOBUF_LONGLONG(0);
+// int64 op_sign = 5;
+inline void KvOpPair::clear_op_sign() {
+  op_sign_ = PROTOBUF_LONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 KvOpPair::_internal_op_count() const {
-  return op_count_;
+inline ::PROTOBUF_NAMESPACE_ID::int64 KvOpPair::_internal_op_sign() const {
+  return op_sign_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 KvOpPair::op_count() const {
-  // @@protoc_insertion_point(field_get:eraftkv.KvOpPair.op_count)
-  return _internal_op_count();
+inline ::PROTOBUF_NAMESPACE_ID::int64 KvOpPair::op_sign() const {
+  // @@protoc_insertion_point(field_get:eraftkv.KvOpPair.op_sign)
+  return _internal_op_sign();
 }
-inline void KvOpPair::_internal_set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void KvOpPair::_internal_set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
-  op_count_ = value;
+  op_sign_ = value;
 }
-inline void KvOpPair::set_op_count(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_op_count(value);
-  // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.op_count)
+inline void KvOpPair::set_op_sign(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_op_sign(value);
+  // @@protoc_insertion_point(field_set:eraftkv.KvOpPair.op_sign)
 }
 
 // -------------------------------------------------------------------
