@@ -131,7 +131,7 @@ message ClusterConfigChangeReq {
   int64            shard_id = 3;
   Server           server = 4;
   int64            config_version = 5;
-  int64            op_count = 6;
+  int64            op_sign = 6;
   int64            command_id = 7;
   ShardGroup       shard_group = 8;
 }
@@ -157,7 +157,7 @@ message KvOpPair {
   string       key = 2;
   string       value = 3;
   bool         success = 4;
-  int64        op_count = 5;
+  int64        op_sign = 5;
 }
 
 

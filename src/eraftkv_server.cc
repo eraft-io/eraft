@@ -142,7 +142,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
         res->set_value(val.first);
         res->set_success(val.second);
         res->set_op_type(eraftkv::ClientOpType::Get);
-        res->set_op_count(kv_op.op_count());
+        res->set_op_sign(kv_op.op_sign());
         break;
       }
       case eraftkv::ClientOpType::Put:
@@ -152,7 +152,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
           std::condition_variable*    new_var = new std::condition_variable();
           std::lock_guard<std::mutex> lg(map_mutex_);
           ERaftKvServer::ready_cond_vars_[rand_seq] = new_var;
-          kv_op.set_op_count(rand_seq);
+          kv_op.set_op_sign(rand_seq);
         }
         raft_context_->Propose(
             kv_op.SerializeAsString(), &log_index, &log_term, &success);
@@ -171,7 +171,7 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
           res->set_value(kv_op.value());
           res->set_success(true);
           res->set_op_type(kv_op.op_type());
-          res->set_op_count(rand_seq);
+          res->set_op_sign(rand_seq);
         }
         break;
       }
@@ -244,7 +244,7 @@ grpc::Status ERaftKvServer::ClusterConfigChange(
       {
         std::lock_guard<std::mutex> lg(map_mutex_);
         std::condition_variable*    new_var = new std::condition_variable();
-        conf_change_req->set_op_count(rand_seq);
+        conf_change_req->set_op_sign(rand_seq);
       }
       bool success;
       raft_context_->ProposeConfChange(conf_change_req->SerializeAsString(),

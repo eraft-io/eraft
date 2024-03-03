@@ -5,6 +5,7 @@ SRCPATH=$(cd $SCRIPTPATH/..; pwd -P)
 
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftkv_server.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftkv_server.h
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftkv_ctl.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftkv_server_test.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/estatus.h
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/grpc_network_impl.cc

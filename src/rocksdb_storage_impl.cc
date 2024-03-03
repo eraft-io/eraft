@@ -101,9 +101,9 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                 {
                   std::lock_guard<std::mutex> lg(ERaftKvServer::ready_mutex_);
                   ERaftKvServer::is_ok_ = true;
-                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
+                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_sign()] !=
                       nullptr) {
-                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                    ERaftKvServer::ready_cond_vars_[op_pair->op_sign()]
                         ->notify_one();
                   }
                 }
@@ -120,9 +120,9 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
                 {
                   std::lock_guard<std::mutex> lg(ERaftKvServer::ready_mutex_);
                   ERaftKvServer::is_ok_ = true;
-                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_count()] !=
+                  if (ERaftKvServer::ready_cond_vars_[op_pair->op_sign()] !=
                       nullptr) {
-                    ERaftKvServer::ready_cond_vars_[op_pair->op_count()]
+                    ERaftKvServer::ready_cond_vars_[op_pair->op_sign()]
                         ->notify_one();
                   }
                 }
@@ -251,9 +251,9 @@ EStatus RocksDBStorageImpl::ApplyLog(RaftServer* raft,
         std::mutex map_mutex;
         {
           std::lock_guard<std::mutex> lg(map_mutex);
-          if (ERaftKvServer::ready_cond_vars_[conf_change_req->op_count()] !=
+          if (ERaftKvServer::ready_cond_vars_[conf_change_req->op_sign()] !=
               nullptr) {
-            ERaftKvServer::ready_cond_vars_[conf_change_req->op_count()]
+            ERaftKvServer::ready_cond_vars_[conf_change_req->op_sign()]
                 ->notify_one();
           }
         }
