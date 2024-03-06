@@ -10,6 +10,11 @@ The eraft t project is to industrialize the mit6.824 lab operation into a distri
 
 If you want to check the latest documents, please visit [eraft official website](https://eraft.cn)
 
+### Ebook for this project
+
+![eraftbook](doc/eraftbook.jpeg)
+
+
 ### Why we need build a distributed system?
 
 First, let's look at the shortcomings of traditional single-node C/S or B/S systems:
@@ -69,8 +74,6 @@ The hash sharding method is used in eraft. We map data into buckets through a ha
 
 ### System Architecture
 
-![System Architecture](docs/imgs/eraftdb_arch.png)
-
 #### Concept introduction
 
 ##### bucket
@@ -96,7 +99,7 @@ It is mainly responsible for cluster data storage. Generally, three machines for
 
 pre-dependencies
 
-go version >= go1.17.6
+go version >= go 1.21
 
 download code and make it
 
@@ -105,7 +108,7 @@ git clone https://github.com/eraft-io/eraft.git
 
 cd eraft
 make
-``
+```
 
 run basic cluster
 ```
