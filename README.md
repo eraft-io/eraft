@@ -1,5 +1,7 @@
 ## ERaftKV
 
+> :warning: ERaftKV is still being developed, you can find a golang version for ebooks - [Distributed Data Services](https://3.cn/1W-jAWMR) at branch [eraftbook](https://github.com/eraft-io/eraft/tree/eraftbook) 
+
 ERaftKV is a persistent distributed KV storage system, uses the Raft protocol to ensure data consistency, At the same time, it supports sharding for large-scale data storage.
 
 ## ERaftKV Features
