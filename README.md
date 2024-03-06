@@ -115,15 +115,18 @@ eraft 中使用了 hash 分片的方法，我们将数据通过哈希算法映�
 
 构建依赖
 
+```
 go version >= go1.17.6
+```
 
 编译
+
 ```
 git clone https://github.com/eraft-io/eraft.git -b eraftbook
 
 cd eraft
 make
-``
+```
 
 运行集群基本读写测试
 
