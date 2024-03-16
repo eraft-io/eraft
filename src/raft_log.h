@@ -151,35 +151,3 @@ class LogStore {
 
   virtual EStatus ReadMetaState(int64_t* commit_idx, int64_t* applied_idx) = 0;
 };
-
-/**
- * @brief
- *
- */
-class InternalMemLogStorageImpl : public LogStore {
-
- private:
-  /**
-   * @brief the number of entries in memory
-   *
-   */
-  uint64_t count_;
-
-  /**
-   * @brief the node id
-   *
-   */
-  std::string node_id_;
-
-  /**
-   * @brief master log
-   *
-   */
-  std::vector<eraftkv::Entry> master_log_db_;
-
-  /**
-   * @brief standby log when snapshoting
-   *
-   */
-  std::vector<eraftkv::Entry> standby_log_db_;
-};

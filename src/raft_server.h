@@ -94,7 +94,7 @@ class RaftServer {
    */
   EStatus RunCycle();
 
-  EStatus RunApply();
+  void RunApply();
 
   /**
    * @brief

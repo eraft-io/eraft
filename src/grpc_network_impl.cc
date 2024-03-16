@@ -75,7 +75,6 @@ EStatus GRpcNetworkImpl::SendRequestVote(RaftServer*              raft,
   resp->set_leader_id(-1);
   ClientContext context;
   auto          status = stub_->RequestVote(&context, *req, resp);
-  // 2.call raft->HandleRequestVoteResp();
   if (raft->HandleRequestVoteResp(target_node, req, resp) == EStatus::kOk) {
     return EStatus::kOk;
   } else {
@@ -100,7 +99,6 @@ EStatus GRpcNetworkImpl::SendAppendEntries(RaftServer* raft,
   SPDLOG_INFO("send append entries request to {} req {}",
               target_node->address,
               req->DebugString());
-  // 1.send entries with grpc message to target_node
   ERaftKv::Stub* stub_ = GetPeerNodeConnection(target_node->id);
   if (stub_ == nullptr) {
     return EStatus::kNotFound;
@@ -183,8 +181,6 @@ EStatus GRpcNetworkImpl::SendFile(RaftServer*        raft,
   } catch (const std::exception& ex) {
     std::cerr << "Failed to send the file " << filename << ": " << ex.what()
               << std::endl;
-    // FIXME: Indicate to the server that something went wrong and that the
-    // trasfer should be aborted.
   }
 
   writer->WritesDone();
@@ -193,9 +189,6 @@ EStatus GRpcNetworkImpl::SendFile(RaftServer*        raft,
     std::cerr << "File Exchange rpc failed: " << status.error_message()
               << std::endl;
     return EStatus::kError;
-  } else {
-    // std::cout << "Finished sending file with id " << returnedId.id() <<
-    // std::endl;
   }
   return EStatus::kOk;
 }

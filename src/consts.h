@@ -1,6 +1,6 @@
 /**
  * @file consts.h
- * @author jay_jieliu@outlook.com
+ * @author ERaftGroup
  * @brief 
  * @version 0.1
  * @date 2023-07-01

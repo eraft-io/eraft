@@ -53,6 +53,11 @@ put_kv: ./eraftkv-ctl [metaserver addresses] put_kv [key] [value]
 get_kv: ./eraftkv-ctl [metaserver addresses] get_kv [key]
 ```
 
+You can use follow command to run a basic rw bench test with ERaftKV
+```
+sudo make run-demo-test
+```
+
 - step 4, clean all
 ```
 sudo make stop-demo

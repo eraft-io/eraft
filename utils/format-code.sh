@@ -36,3 +36,4 @@ clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_reade
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_reader.h
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_writer.cc
 clang-format -style=file --sort-includes -i ${SRCPATH}/src/sequential_file_writer.h
+clang-format -style=file --sort-includes -i ${SRCPATH}/src/eraftkv_ctl.cc

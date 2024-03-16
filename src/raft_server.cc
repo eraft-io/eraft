@@ -69,7 +69,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , max_entries_per_append_req_(100)
     , tick_interval_(100)
     , granted_votes_(0)
-    , snap_threshold_log_count_(300)
+    , snap_threshold_log_count_(10000)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -122,14 +122,13 @@ RaftServer* RaftServer::RunMainLoop(RaftConfig raft_config,
 }
 
 
-EStatus RaftServer::RunApply() {
+void RaftServer::RunApply() {
   while (true) {
     if (open_auto_apply_) {
       this->ApplyEntries();
     }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
-  return EStatus::kOk;
 }
 
 /**
@@ -146,7 +145,6 @@ EStatus RaftServer::RunCycle() {
     SPDLOG_INFO("commit idx {} applied idx {}",
                 this->commit_idx_,
                 this->last_applied_idx_);
-
     heartbeat_tick_count_ += 1;
     election_tick_count_ += 1;
     if (heartbeat_tick_count_ == heartbeat_timeout_) {
@@ -329,7 +327,6 @@ EStatus RaftServer::HandleRequestVoteReq(RaftNode* from_node,
     resp->set_vote_granted(false);
     return EStatus::kOk;
   }
-  // resp->set_leader_id(leader_id_);
 
   bool can_vote = (this->voted_for_ == req->candidtate_id()) ||
                   this->voted_for_ == -1 && this->leader_id_ == -1 ||
@@ -393,52 +390,45 @@ EStatus RaftServer::SendHeartBeat() {
 EStatus RaftServer::HandleRequestVoteResp(RaftNode* from_node,
                                           const eraftkv::RequestVoteReq* req,
                                           eraftkv::RequestVoteResp*      resp) {
-  if (resp != nullptr) {
+  SPDLOG_INFO("send request vote revice resp {}, from node {}",
+              resp->DebugString(),
+              from_node->address);
 
-    SPDLOG_INFO("send request vote revice resp {}, from node {}",
-                resp->DebugString(),
-                from_node->address);
-
-    if (this->role_ == NodeRaftRoleEnum::PreCandidate &&
-        req->term() == this->current_term_ + 1 && resp->prevote()) {
-      if (resp->vote_granted()) {
-        this->granted_votes_ += 1;
-        if (this->granted_votes_ > (this->nodes_.size() / 2)) {
-          SPDLOG_INFO(" node {} get majority prevotes in term {}",
-                      this->id_,
-                      this->current_term_);
-          this->election_tick_count_ = this->election_timeout_;
-          // this->BecomeCandidate();
-          // this->granted_votes_ = 0;
-        }
+  if (this->role_ == NodeRaftRoleEnum::PreCandidate &&
+      req->term() == this->current_term_ + 1 && resp->prevote()) {
+    if (resp->vote_granted()) {
+      this->granted_votes_ += 1;
+      if (this->granted_votes_ > (this->nodes_.size() / 2)) {
+        SPDLOG_INFO(" node {} get majority prevotes in term {}",
+                    this->id_,
+                    this->current_term_);
+        this->election_tick_count_ = this->election_timeout_;
       }
     }
-    if (this->current_term_ == req->term() &&
-        this->role_ == NodeRaftRoleEnum::Candidate && !resp->prevote()) {
-      if (resp->vote_granted()) {
-        this->granted_votes_ += 1;
-        if (this->granted_votes_ > (this->nodes_.size() / 2)) {
-          SPDLOG_INFO("node {} get majority votes in term {}",
-                      this->id_,
-                      this->current_term_);
-          this->BecomeLeader();
-          this->granted_votes_ = 0;
-        }
-      } else {
-        if (resp->leader_id() != -1) {
-          this->leader_id_ = resp->leader_id();
-          this->current_term_ = resp->term();
-          this->BecomeFollower();
-          this->voted_for_ = -1;
-          this->store_->SaveRaftMeta(
-              this, this->current_term_, this->voted_for_);
-        }
-        if (resp->term() >= this->current_term_) {
-          this->BecomeFollower();
-          this->voted_for_ = -1;
-          this->store_->SaveRaftMeta(
-              this, this->current_term_, this->voted_for_);
-        }
+  }
+  if (this->current_term_ == req->term() &&
+      this->role_ == NodeRaftRoleEnum::Candidate && !resp->prevote()) {
+    if (resp->vote_granted()) {
+      this->granted_votes_ += 1;
+      if (this->granted_votes_ > (this->nodes_.size() / 2)) {
+        SPDLOG_INFO("node {} get majority votes in term {}",
+                    this->id_,
+                    this->current_term_);
+        this->BecomeLeader();
+        this->granted_votes_ = 0;
+      }
+    } else {
+      if (resp->leader_id() != -1) {
+        this->leader_id_ = resp->leader_id();
+        this->current_term_ = resp->term();
+        this->BecomeFollower();
+        this->voted_for_ = -1;
+        this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
+      }
+      if (resp->term() >= this->current_term_) {
+        this->BecomeFollower();
+        this->voted_for_ = -1;
+        this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
       }
     }
   }
@@ -571,52 +561,47 @@ EStatus RaftServer::HandleAppendEntriesResp(RaftNode* from_node,
                                             eraftkv::AppendEntriesReq*  req,
                                             eraftkv::AppendEntriesResp* resp) {
   if (role_ == NodeRaftRoleEnum::Leader) {
-    if (resp != nullptr) {
-      SPDLOG_INFO("send append entry resp {}", resp->DebugString());
-      if (resp->success()) {
-        for (auto node : this->nodes_) {
-          if (node->node_state == NodeStateEnum::Down) {
-            continue;
-          }
-          if (from_node->id == node->id) {
-            node->match_log_index =
-                req->prev_log_index() + req->entries().size();
-            SPDLOG_INFO("update node {} match_log_index = {}",
-                        from_node->id,
-                        node->match_log_index);
-            node->next_log_index = node->match_log_index + 1;
-            this->AdvanceCommitIndexForLeader();
-          }
+    SPDLOG_INFO("send append entry resp {}", resp->DebugString());
+    if (resp->success()) {
+      for (auto node : this->nodes_) {
+        if (node->node_state == NodeStateEnum::Down) {
+          continue;
         }
+        if (from_node->id == node->id) {
+          node->match_log_index = req->prev_log_index() + req->entries().size();
+          SPDLOG_INFO("update node {} match_log_index = {}",
+                      from_node->id,
+                      node->match_log_index);
+          node->next_log_index = node->match_log_index + 1;
+          this->AdvanceCommitIndexForLeader();
+        }
+      }
+    } else {
+      if (resp->term() > req->term()) {
+        this->BecomeFollower();
+        this->current_term_ = resp->term();
+        this->voted_for_ = -1;
+        this->store_->SaveRaftMeta(this, this->current_term_, this->voted_for_);
       } else {
-        if (resp->term() > req->term()) {
-          this->BecomeFollower();
-          this->current_term_ = resp->term();
-          this->voted_for_ = -1;
-          this->store_->SaveRaftMeta(
-              this, this->current_term_, this->voted_for_);
-        } else {
-          if (resp->conflict_term() == 0) {
-            for (auto node : this->nodes_) {
-              if (from_node->id == node->id) {
-                node->next_log_index = resp->conflict_index();
-              }
+        if (resp->conflict_term() == 0) {
+          for (auto node : this->nodes_) {
+            if (from_node->id == node->id) {
+              node->next_log_index = resp->conflict_index();
             }
-          } else {
-            for (auto node : this->nodes_) {
-              if (node->node_state == NodeStateEnum::Down) {
-                continue;
-              }
-              if (from_node->id == node->id) {
-                node->next_log_index = resp->conflict_index();
-                for (int64_t i = resp->conflict_index();
-                     i >= this->log_store_->FirstIndex();
-                     i--) {
-                  if (this->log_store_->Get(i)->term() ==
-                      resp->conflict_term()) {
-                    node->next_log_index = i + 1;
-                    break;
-                  }
+          }
+        } else {
+          for (auto node : this->nodes_) {
+            if (node->node_state == NodeStateEnum::Down) {
+              continue;
+            }
+            if (from_node->id == node->id) {
+              node->next_log_index = resp->conflict_index();
+              for (int64_t i = resp->conflict_index();
+                   i >= this->log_store_->FirstIndex();
+                   i--) {
+                if (this->log_store_->Get(i)->term() == resp->conflict_term()) {
+                  node->next_log_index = i + 1;
+                  break;
                 }
               }
             }
@@ -661,12 +646,6 @@ EStatus RaftServer::HandleSnapshotReq(RaftNode*                   from_node,
 
   resp->set_success(true);
 
-  // save snapshot file and set to kv_db
-  // std::ofstream sstfile (snap_db_path_ + "/loading1.sst");
-  // if (sstfile.is_open()) {
-  //   sstfile << req->data();
-  //   sstfile.close();
-  // }
   auto snap_files = DirectoryTool::ListDirFiles("/eraft/data/sst_recv/");
   for (auto snapfile : snap_files) {
     this->store_->IngestSST(snapfile);

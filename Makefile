@@ -66,5 +66,5 @@ run-demo:
 stop-demo:
 	docker stop kvserver-node1 kvserver-node2 kvserver-node3 metaserver-node1 metaserver-node2 metaserver-node3
 
-run-demo-bench:
-	docker run --name kvserver-bench --network mytestnetwork --ip 172.18.0.5 --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/build/eraftkv-ctl 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 querygroups
+run-demo-test:
+	docker run --name kvserver-bench --network mytestnetwork --ip 172.18.0.5 --rm -v $(realpath .):/eraft eraft/eraftkv:v0.0.6 /eraft/utils/run-tests.sh

@@ -22,7 +22,7 @@
 
 /**
  * @file eraftkv_ctl.cc
- * @author your name (you@domain.com)
+ * @author ERaftGroup
  * @brief
  * @version 0.1
  * @date 2023-06-10
@@ -55,6 +55,7 @@ enum op_code {
   RemoveGroup,
   PutKV,
   GetKV,
+  RunBenchmark,
   Unknow
 };
 
@@ -71,6 +72,8 @@ op_code hashit(std::string const& inString) {
     return PutKV;
   if (inString == "get_kv")
     return GetKV;
+  if (inString == "run_bench")
+    return RunBenchmark;
   return Unknow;
 }
 
@@ -142,6 +145,35 @@ std::string GetKVServerGroupLeader(
   return kv_leader_address;
 }
 
+std::unique_ptr<ERaftKv::Stub> GetKvLeaderStubByPartitionKey(
+    std::string                    partition_key,
+    std::unique_ptr<ERaftKv::Stub> meta_leader_stub) {
+  ClientContext                   context;
+  eraftkv::ClusterConfigChangeReq req;
+  req.set_handle_server_type(eraftkv::HandleServerType::MetaServer);
+  req.set_change_type(eraftkv::ChangeType::ShardsQuery);
+  eraftkv::ClusterConfigChangeResp cluster_config_resp;
+  auto                             st = meta_leader_stub->ClusterConfigChange(
+      &context, req, &cluster_config_resp);
+  if (!st.ok()) {
+    SPDLOG_ERROR("call ClusterConfigChange error {}, {}",
+                 st.error_code(),
+                 st.error_message());
+    return nullptr;
+  }
+  std::string kv_leader_address;
+  // cal key slot
+  auto key_slot =
+      HashUtil::CRC64(0, partition_key.c_str(), partition_key.size()) % 10;
+  std::map<std::string, std::unique_ptr<ERaftKv::Stub> > kv_svr_stubs_;
+  kv_leader_address = GetKVServerGroupLeader(
+      key_slot, cluster_config_resp, std::move(kv_svr_stubs_));
+  SPDLOG_INFO("kv server leader {}", kv_leader_address);
+  auto kv_leader_chan = grpc::CreateChannel(kv_leader_address,
+                                            grpc::InsecureChannelCredentials());
+  return ERaftKv::NewStub(kv_leader_chan);
+}
+
 int main(int argc, char* argv[]) {
   if (argc < 2) {
     std::cout << "Welcome to eraftkv-ctl, Copyright (c) 2023 ERaftGroup "
@@ -182,8 +214,9 @@ int main(int argc, char* argv[]) {
   SPDLOG_INFO("meta server leader {}", meta_leader_addr);
   auto leader_chan =
       grpc::CreateChannel(meta_leader_addr, grpc::InsecureChannelCredentials());
-  std::unique_ptr<ERaftKv::Stub> leader_stub(ERaftKv::NewStub(leader_chan));
-  std::string                    cmd = std::string(argv[2]);
+  std::unique_ptr<ERaftKv::Stub> meta_leader_stub(
+      ERaftKv::NewStub(leader_chan));
+  std::string cmd = std::string(argv[2]);
   switch (hashit(cmd)) {
     case AddGroup: {
       ClientContext                   context;
@@ -203,7 +236,7 @@ int main(int argc, char* argv[]) {
       }
       req.set_change_type(eraftkv::ChangeType::ShardJoin);
       eraftkv::ClusterConfigChangeResp resp;
-      auto st = leader_stub->ClusterConfigChange(&context, req, &resp);
+      auto st = meta_leader_stub->ClusterConfigChange(&context, req, &resp);
       assert(st.ok());
       std::cout << resp.DebugString() << std::endl;
       break;
@@ -214,7 +247,7 @@ int main(int argc, char* argv[]) {
       req.set_handle_server_type(eraftkv::HandleServerType::MetaServer);
       req.set_change_type(eraftkv::ChangeType::ShardsQuery);
       eraftkv::ClusterConfigChangeResp resp;
-      auto st = leader_stub->ClusterConfigChange(&context, req, &resp);
+      auto st = meta_leader_stub->ClusterConfigChange(&context, req, &resp);
       if (!st.ok()) {
         SPDLOG_ERROR("call ClusterConfigChange error {}, {}",
                      st.error_code(),
@@ -250,7 +283,7 @@ int main(int argc, char* argv[]) {
         }
       }
       eraftkv::ClusterConfigChangeResp resp;
-      auto st = leader_stub->ClusterConfigChange(&context, req, &resp);
+      auto st = meta_leader_stub->ClusterConfigChange(&context, req, &resp);
       if (!st.ok()) {
         SPDLOG_ERROR("call ClusterConfigChange error {}, {}",
                      st.error_code(),
@@ -266,7 +299,7 @@ int main(int argc, char* argv[]) {
       req.set_change_type(eraftkv::ChangeType::ShardLeave);
       req.set_shard_id(shard_id);
       eraftkv::ClusterConfigChangeResp resp;
-      auto st = leader_stub->ClusterConfigChange(&context, req, &resp);
+      auto st = meta_leader_stub->ClusterConfigChange(&context, req, &resp);
       if (!st.ok()) {
         SPDLOG_ERROR("call ClusterConfigChange error {}, {}",
                      st.error_code(),
@@ -275,39 +308,37 @@ int main(int argc, char* argv[]) {
       std::cout << resp.DebugString() << std::endl;
       break;
     }
-    case PutKV: {
-      ClientContext                   context;
-      eraftkv::ClusterConfigChangeReq req;
-      req.set_handle_server_type(eraftkv::HandleServerType::MetaServer);
-      req.set_change_type(eraftkv::ChangeType::ShardsQuery);
-      eraftkv::ClusterConfigChangeResp cluster_config_resp;
-      auto                             st =
-          leader_stub->ClusterConfigChange(&context, req, &cluster_config_resp);
-      if (!st.ok()) {
-        SPDLOG_ERROR("call ClusterConfigChange error {}, {}",
-                     st.error_code(),
-                     st.error_message());
-        return -1;
+    case RunBenchmark: {
+      int64_t N =
+              static_cast<int64_t>(std::stoi(std::string(argv[3])));
+      for (int i = 0; i < N; i ++) {
+        auto partition_key = StringUtil::RandStr(256);
+        auto kv_leader_stub = GetKvLeaderStubByPartitionKey(
+            partition_key, std::make_unique<ERaftKv::Stub>(*meta_leader_stub));
+        auto                         value = StringUtil::RandStr(256);
+        ClientContext                op_context;
+        eraftkv::ClientOperationReq  op_req;
+        eraftkv::ClientOperationResp op_resp;
+        auto                         kv_pair_ = op_req.add_kvs();
+        kv_pair_->set_key(partition_key);
+        kv_pair_->set_value(value);
+        kv_pair_->set_op_type(eraftkv::ClientOpType::Put);
+        kv_pair_->set_op_sign(RandomNumber::Between(1, 10000));
+        kv_leader_stub->ProcessRWOperation(&op_context, op_req, &op_resp);
+        std::cout << op_resp.DebugString() << std::endl;
       }
-      auto        partion_key = std::string(std::string(argv[3]));
-      auto        value = std::string(std::string(argv[4]));
-      std::string kv_leader_address;
-      // cal key slot
-      auto key_slot =
-          HashUtil::CRC64(0, partion_key.c_str(), partion_key.size()) % 10;
-      std::map<std::string, std::unique_ptr<ERaftKv::Stub> > kv_svr_stubs_;
-      kv_leader_address = GetKVServerGroupLeader(
-          key_slot, cluster_config_resp, std::move(kv_svr_stubs_));
-      SPDLOG_INFO("kv server leader {}", kv_leader_address);
-      auto kv_leader_chan = grpc::CreateChannel(
-          kv_leader_address, grpc::InsecureChannelCredentials());
-      std::unique_ptr<ERaftKv::Stub> kv_leader_stub(
-          ERaftKv::NewStub(kv_leader_chan));
+      break;
+    }
+    case PutKV: {
+      auto partition_key = std::string(std::string(argv[3]));
+      auto value = std::string(std::string(argv[4]));
+      auto kv_leader_stub = GetKvLeaderStubByPartitionKey(
+          partition_key, std::move(meta_leader_stub));
       ClientContext                op_context;
       eraftkv::ClientOperationReq  op_req;
       eraftkv::ClientOperationResp op_resp;
       auto                         kv_pair_ = op_req.add_kvs();
-      kv_pair_->set_key(partion_key);
+      kv_pair_->set_key(partition_key);
       kv_pair_->set_value(value);
       kv_pair_->set_op_type(eraftkv::ClientOpType::Put);
       kv_pair_->set_op_sign(RandomNumber::Between(1, 10000));
@@ -316,37 +347,14 @@ int main(int argc, char* argv[]) {
       break;
     }
     case GetKV: {
-      ClientContext                   context;
-      eraftkv::ClusterConfigChangeReq req;
-      req.set_handle_server_type(eraftkv::HandleServerType::MetaServer);
-      req.set_change_type(eraftkv::ChangeType::ShardsQuery);
-      eraftkv::ClusterConfigChangeResp cluster_config_resp;
-      auto                             st =
-          leader_stub->ClusterConfigChange(&context, req, &cluster_config_resp);
-      if (!st.ok()) {
-        SPDLOG_ERROR("call ClusterConfigChange error {}, {}",
-                     st.error_code(),
-                     st.error_message());
-        return -1;
-      }
-      auto        partion_key = std::string(std::string(argv[3]));
-      std::string kv_leader_address;
-      // cal key slot
-      auto key_slot =
-          HashUtil::CRC64(0, partion_key.c_str(), partion_key.size()) % 10;
-      std::map<std::string, std::unique_ptr<ERaftKv::Stub> > kv_svr_stubs_;
-      kv_leader_address = GetKVServerGroupLeader(
-          key_slot, cluster_config_resp, std::move(kv_svr_stubs_));
-      SPDLOG_INFO("kv server leader {}", kv_leader_address);
-      auto kv_leader_chan = grpc::CreateChannel(
-          kv_leader_address, grpc::InsecureChannelCredentials());
-      std::unique_ptr<ERaftKv::Stub> kv_leader_stub(
-          ERaftKv::NewStub(kv_leader_chan));
+      auto partition_key = std::string(std::string(argv[3]));
+      auto kv_leader_stub = GetKvLeaderStubByPartitionKey(
+          partition_key, std::move(meta_leader_stub));
       ClientContext                op_context;
       eraftkv::ClientOperationReq  op_req;
       eraftkv::ClientOperationResp op_resp;
       auto                         kv_pair_ = op_req.add_kvs();
-      kv_pair_->set_key(partion_key);
+      kv_pair_->set_key(partition_key);
       kv_pair_->set_op_type(eraftkv::ClientOpType::Get);
       kv_pair_->set_op_sign(RandomNumber::Between(1, 10000));
       kv_leader_stub->ProcessRWOperation(&op_context, op_req, &op_resp);

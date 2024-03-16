@@ -20,17 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/**
- * @file network.h
- * @author https://github.com/loveyacper/Qedis
- * @brief
- * @version 0.1
- * @date 2023-05-21
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #pragma once
 
 #include "estatus.h"
