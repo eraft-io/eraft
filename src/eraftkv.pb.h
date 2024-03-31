@@ -2237,8 +2237,9 @@ class ClusterConfigChangeReq :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kClientIdFieldNumber = 8,
     kServerFieldNumber = 4,
-    kShardGroupFieldNumber = 8,
+    kShardGroupFieldNumber = 9,
     kChangeTypeFieldNumber = 1,
     kHandleServerTypeFieldNumber = 2,
     kShardIdFieldNumber = 3,
@@ -2246,6 +2247,22 @@ class ClusterConfigChangeReq :
     kOpSignFieldNumber = 6,
     kCommandIdFieldNumber = 7,
   };
+  // string client_id = 8;
+  void clear_client_id();
+  const std::string& client_id() const;
+  void set_client_id(const std::string& value);
+  void set_client_id(std::string&& value);
+  void set_client_id(const char* value);
+  void set_client_id(const char* value, size_t size);
+  std::string* mutable_client_id();
+  std::string* release_client_id();
+  void set_allocated_client_id(std::string* client_id);
+  private:
+  const std::string& _internal_client_id() const;
+  void _internal_set_client_id(const std::string& value);
+  std::string* _internal_mutable_client_id();
+  public:
+
   // .eraftkv.Server server = 4;
   bool has_server() const;
   private:
@@ -2261,7 +2278,7 @@ class ClusterConfigChangeReq :
   ::eraftkv::Server* _internal_mutable_server();
   public:
 
-  // .eraftkv.ShardGroup shard_group = 8;
+  // .eraftkv.ShardGroup shard_group = 9;
   bool has_shard_group() const;
   private:
   bool _internal_has_shard_group() const;
@@ -2335,6 +2352,7 @@ class ClusterConfigChangeReq :
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr client_id_;
   ::eraftkv::Server* server_;
   ::eraftkv::ShardGroup* shard_group_;
   int change_type_;
@@ -2821,10 +2839,12 @@ class ClientOperationReq :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kKvsFieldNumber = 2,
+    kKvsFieldNumber = 4,
+    kClientIdFieldNumber = 2,
     kOpTimestampFieldNumber = 1,
+    kCommandIdFieldNumber = 3,
   };
-  // repeated .eraftkv.KvOpPair kvs = 2;
+  // repeated .eraftkv.KvOpPair kvs = 4;
   int kvs_size() const;
   private:
   int _internal_kvs_size() const;
@@ -2842,6 +2862,22 @@ class ClientOperationReq :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair >&
       kvs() const;
 
+  // string client_id = 2;
+  void clear_client_id();
+  const std::string& client_id() const;
+  void set_client_id(const std::string& value);
+  void set_client_id(std::string&& value);
+  void set_client_id(const char* value);
+  void set_client_id(const char* value, size_t size);
+  std::string* mutable_client_id();
+  std::string* release_client_id();
+  void set_allocated_client_id(std::string* client_id);
+  private:
+  const std::string& _internal_client_id() const;
+  void _internal_set_client_id(const std::string& value);
+  std::string* _internal_mutable_client_id();
+  public:
+
   // uint64 op_timestamp = 1;
   void clear_op_timestamp();
   ::PROTOBUF_NAMESPACE_ID::uint64 op_timestamp() const;
@@ -2851,13 +2887,24 @@ class ClientOperationReq :
   void _internal_set_op_timestamp(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // int64 command_id = 3;
+  void clear_command_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 command_id() const;
+  void set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_command_id() const;
+  void _internal_set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:eraftkv.ClientOperationReq)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::eraftkv::KvOpPair > kvs_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr client_id_;
   ::PROTOBUF_NAMESPACE_ID::uint64 op_timestamp_;
+  ::PROTOBUF_NAMESPACE_ID::int64 command_id_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_eraftkv_2eproto;
 };
@@ -4880,7 +4927,67 @@ inline void ClusterConfigChangeReq::set_command_id(::PROTOBUF_NAMESPACE_ID::int6
   // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.command_id)
 }
 
-// .eraftkv.ShardGroup shard_group = 8;
+// string client_id = 8;
+inline void ClusterConfigChangeReq::clear_client_id() {
+  client_id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& ClusterConfigChangeReq::client_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClusterConfigChangeReq.client_id)
+  return _internal_client_id();
+}
+inline void ClusterConfigChangeReq::set_client_id(const std::string& value) {
+  _internal_set_client_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClusterConfigChangeReq.client_id)
+}
+inline std::string* ClusterConfigChangeReq::mutable_client_id() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.ClusterConfigChangeReq.client_id)
+  return _internal_mutable_client_id();
+}
+inline const std::string& ClusterConfigChangeReq::_internal_client_id() const {
+  return client_id_.GetNoArena();
+}
+inline void ClusterConfigChangeReq::_internal_set_client_id(const std::string& value) {
+  
+  client_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void ClusterConfigChangeReq::set_client_id(std::string&& value) {
+  
+  client_id_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.ClusterConfigChangeReq.client_id)
+}
+inline void ClusterConfigChangeReq::set_client_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  client_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.ClusterConfigChangeReq.client_id)
+}
+inline void ClusterConfigChangeReq::set_client_id(const char* value, size_t size) {
+  
+  client_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.ClusterConfigChangeReq.client_id)
+}
+inline std::string* ClusterConfigChangeReq::_internal_mutable_client_id() {
+  
+  return client_id_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* ClusterConfigChangeReq::release_client_id() {
+  // @@protoc_insertion_point(field_release:eraftkv.ClusterConfigChangeReq.client_id)
+  
+  return client_id_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void ClusterConfigChangeReq::set_allocated_client_id(std::string* client_id) {
+  if (client_id != nullptr) {
+    
+  } else {
+    
+  }
+  client_id_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), client_id);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.ClusterConfigChangeReq.client_id)
+}
+
+// .eraftkv.ShardGroup shard_group = 9;
 inline bool ClusterConfigChangeReq::_internal_has_shard_group() const {
   return this != internal_default_instance() && shard_group_ != nullptr;
 }
@@ -5271,7 +5378,87 @@ inline void ClientOperationReq::set_op_timestamp(::PROTOBUF_NAMESPACE_ID::uint64
   // @@protoc_insertion_point(field_set:eraftkv.ClientOperationReq.op_timestamp)
 }
 
-// repeated .eraftkv.KvOpPair kvs = 2;
+// string client_id = 2;
+inline void ClientOperationReq::clear_client_id() {
+  client_id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& ClientOperationReq::client_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClientOperationReq.client_id)
+  return _internal_client_id();
+}
+inline void ClientOperationReq::set_client_id(const std::string& value) {
+  _internal_set_client_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClientOperationReq.client_id)
+}
+inline std::string* ClientOperationReq::mutable_client_id() {
+  // @@protoc_insertion_point(field_mutable:eraftkv.ClientOperationReq.client_id)
+  return _internal_mutable_client_id();
+}
+inline const std::string& ClientOperationReq::_internal_client_id() const {
+  return client_id_.GetNoArena();
+}
+inline void ClientOperationReq::_internal_set_client_id(const std::string& value) {
+  
+  client_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void ClientOperationReq::set_client_id(std::string&& value) {
+  
+  client_id_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:eraftkv.ClientOperationReq.client_id)
+}
+inline void ClientOperationReq::set_client_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  client_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:eraftkv.ClientOperationReq.client_id)
+}
+inline void ClientOperationReq::set_client_id(const char* value, size_t size) {
+  
+  client_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:eraftkv.ClientOperationReq.client_id)
+}
+inline std::string* ClientOperationReq::_internal_mutable_client_id() {
+  
+  return client_id_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* ClientOperationReq::release_client_id() {
+  // @@protoc_insertion_point(field_release:eraftkv.ClientOperationReq.client_id)
+  
+  return client_id_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void ClientOperationReq::set_allocated_client_id(std::string* client_id) {
+  if (client_id != nullptr) {
+    
+  } else {
+    
+  }
+  client_id_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), client_id);
+  // @@protoc_insertion_point(field_set_allocated:eraftkv.ClientOperationReq.client_id)
+}
+
+// int64 command_id = 3;
+inline void ClientOperationReq::clear_command_id() {
+  command_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClientOperationReq::_internal_command_id() const {
+  return command_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 ClientOperationReq::command_id() const {
+  // @@protoc_insertion_point(field_get:eraftkv.ClientOperationReq.command_id)
+  return _internal_command_id();
+}
+inline void ClientOperationReq::_internal_set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  command_id_ = value;
+}
+inline void ClientOperationReq::set_command_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_command_id(value);
+  // @@protoc_insertion_point(field_set:eraftkv.ClientOperationReq.command_id)
+}
+
+// repeated .eraftkv.KvOpPair kvs = 4;
 inline int ClientOperationReq::_internal_kvs_size() const {
   return kvs_.size();
 }

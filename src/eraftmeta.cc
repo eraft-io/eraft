@@ -10,6 +10,9 @@
  */
 
 #include <gflags/gflags.h>
+#include <prometheus/counter.h>
+#include <prometheus/exposer.h>
+#include <prometheus/registry.h>
 
 #include "eraftkv_server.h"
 #include "raft_server.h"
@@ -18,6 +21,7 @@ DEFINE_int32(svr_id, 0, "server id");
 DEFINE_string(kv_db_path, "", "kv rocksdb path");
 DEFINE_string(log_db_path, "", "log rocksdb path");
 DEFINE_string(peer_addrs, "", "peer address");
+DEFINE_string(monitor_addrs, "", "monitor address");
 
 /**
  * @brief
@@ -38,7 +42,15 @@ int main(int argc, char* argv[]) {
   options_.kv_db_path = FLAGS_kv_db_path;
   options_.log_db_path = FLAGS_log_db_path;
   options_.peer_addrs = FLAGS_peer_addrs;
+  options_.monitor_addrs = FLAGS_monitor_addrs;
+
   ERaftKvServer server(options_);
+
+  prometheus::Exposer exposer(options_.monitor_addrs);
+  auto                registry = std::make_shared<prometheus::Registry>();
+  exposer.RegisterCollectable(registry);
+  server.regis = registry;
+
   server.BuildAndRunRpcServer();
   return 0;
 }

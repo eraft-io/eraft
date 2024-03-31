@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM eraft/eraftkv:v0.0.4
+FROM eraft/eraftkv:v0.0.6
 
 # ENV TZ=Asia/Kolkata \
 #     DEBIAN_FRONTEND=noninteractive
@@ -56,11 +56,6 @@ FROM eraft/eraftkv:v0.0.4
 
 # RUN cd /grpc/third_party/protobuf && ./autogen.sh && ./configure && make -j8 && make install
 
-# RUN ldconfig
+RUN git clone https://github.com/jupp0r/prometheus-cpp.git && cd prometheus-cpp && git submodule init && git submodule update && mkdir _build && cd _build && cmake .. -DBUILD_SHARED_LIBS=ON -DENABLE_PUSH=OFF -DENABLE_COMPRESSION=OFF && cmake --build . --parallel 4 && cmake --install .
 
-RUN apt-get install -y redis-tools telnet
-
-RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git && cd spdlog && mkdir build && cd build \
-       && cmake .. && make -j && make install && rm -rf build
-
-RUN apt-get install libgflags-dev -y
+RUN apt-get install curl -y

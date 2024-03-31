@@ -32,6 +32,9 @@
  */
 
 #include <gflags/gflags.h>
+#include <prometheus/counter.h>
+#include <prometheus/exposer.h>
+#include <prometheus/registry.h>
 #include <rocksdb/db.h>
 #include <spdlog/common.h>
 #include <spdlog/sinks/daily_file_sink.h>
@@ -50,6 +53,7 @@ DEFINE_string(log_db_path, "", "log rocksdb path");
 DEFINE_string(snap_db_path, "", "snapshot db path");
 DEFINE_string(peer_addrs, "", "peer address");
 DEFINE_string(log_file_path, "", "log file path");
+DEFINE_string(monitor_addrs, "", "monitor address");
 
 /**
  * @brief
@@ -73,6 +77,7 @@ int main(int argc, char* argv[]) {
   options_.log_db_path = FLAGS_log_db_path;
   options_.snap_db_path = FLAGS_snap_db_path;
   options_.peer_addrs = FLAGS_peer_addrs;
+  options_.monitor_addrs = FLAGS_monitor_addrs;
   std::string   log_file_path = FLAGS_log_file_path;
   ERaftKvServer server(options_);
 
@@ -98,6 +103,14 @@ int main(int argc, char* argv[]) {
   SPDLOG_INFO("eraftkv server start with peer_addrs " + options_.peer_addrs +
               " kv_db_path " + options_.kv_db_path);
 
+  prometheus::Exposer exposer(options_.monitor_addrs);
+  auto                registry = std::make_shared<prometheus::Registry>();
+  exposer.RegisterCollectable(registry);
+  //   auto& put_counter = prometheus::BuildCounter()
+  //                         .Name("eraftkv_put_total")
+  //                         .Help("Number of put request")
+  //                         .Register(*registry);
+  //   put_counter.Add({{"method", "put"}}).Increment();
   server.BuildAndRunRpcServer();
   return 0;
 }

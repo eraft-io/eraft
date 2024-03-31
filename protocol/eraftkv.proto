@@ -133,7 +133,8 @@ message ClusterConfigChangeReq {
   int64            config_version = 5;
   int64            op_sign = 6;
   int64            command_id = 7;
-  ShardGroup       shard_group = 8;
+  string           client_id = 8;
+  ShardGroup       shard_group = 9;
 }
 
 message ClusterConfigChangeResp {
@@ -163,7 +164,9 @@ message KvOpPair {
 
 message ClientOperationReq {
   uint64            op_timestamp = 1;
-  repeated KvOpPair kvs = 2;
+  string            client_id = 2;
+  int64             command_id = 3;
+  repeated KvOpPair kvs = 4;
 }
 
 message ClientOperationResp {

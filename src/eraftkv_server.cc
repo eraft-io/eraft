@@ -117,7 +117,8 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
   int64_t log_index;
   int64_t log_term;
   bool    success;
-  SPDLOG_INFO("recv rw op with ts {} ", req->op_timestamp());
+  SPDLOG_INFO(
+      "recv rw op with ts {} {}", req->op_timestamp(), req->DebugString());
   // no leader reject
   if (!raft_context_->IsLeader()) {
     resp->set_error_code(eraftkv::ErrorCode::REQUEST_NOT_LEADER_NODE);
