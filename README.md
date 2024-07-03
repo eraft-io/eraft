@@ -4,13 +4,17 @@
 中文 | [English](README_en.md)
 
 ### 概述
-
+书籍名称：《分布式数据服务：事务模型、处理语言、一致性与体系结构》  ISBN：978-7-111-73737-7
+本书详细地介绍了分布式数据服务协议库的eRaft原型系统实现原理和代码解剖。
 eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系统，我们会用全网最简单，直白的语言介绍分布式系统的原理，并带着你设计和实现一个工业化的分布式存储系统。
 
 ### 最新的文档
 如果你想查看最新的文档，请访问 [eraft 官网](https://eraft.cn)
 
-### 项目书籍
+##  书籍配套视频教程
+[bilibili](https://space.bilibili.com/389476201/channel/collectiondetail?sid=481263&spm_id_from=333.788.0.0)
+
+### 书籍信息
 
 ![eraftbook](doc/eraftbook.jpeg)
 
