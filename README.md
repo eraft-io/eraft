@@ -11,7 +11,7 @@ eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系
 ### 最新的文档
 如果你想查看最新的文档，请访问 [eraft 官网](https://eraft.cn)
 
-##  书籍配套视频教程
+### 书籍配套视频教程
 [bilibili](https://space.bilibili.com/389476201/channel/collectiondetail?sid=481263&spm_id_from=333.788.0.0)
 
 ### 书籍信息
