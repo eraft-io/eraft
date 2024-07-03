@@ -2,13 +2,21 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
 [中文](README.md) | English
-### Overview
+### Overview 
+Book title: 【Distributed Data Services: Transaction Models, Processing Language, Consistency and Architecture.】 
+
+ISBN：978-7-111-73737-7
+
+This book provides a detailed introduction to the implementation principles and code analysis of the eRaft prototype system in the distributed data services protocol library.
 
 The eraft t project is to industrialize the mit6.824 lab operation into a distributed storage system. We will introduce the principles of distributed systems in the simplest and straightforward way, and guide you to design and implement an industrialized distributed storage system.
 
 ### Newest document
 
 If you want to check the latest documents, please visit [eraft official website](https://eraft.cn)
+
+### Video tutorials
+[bilibili](https://space.bilibili.com/389476201/channel/collectiondetail?sid=481263&spm_id_from=333.788.0.0)
 
 ### Ebook for this project
 
