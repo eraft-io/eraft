@@ -228,7 +228,6 @@ void Client::UpdateKvServerLeaderStubByPartitionKey(std::string partition_key) {
 }
 
 bool Client::PutKV(std::string k, std::string v) {
-  this->UpdateKvServerLeaderStubByPartitionKey(k);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;
@@ -250,7 +249,6 @@ bool Client::PutKV(std::string k, std::string v) {
 }
 
 std::pair<std::string, std::string> Client::GetKV(std::string k) {
-  this->UpdateKvServerLeaderStubByPartitionKey(k);
   ClientContext                op_context;
   eraftkv::ClientOperationReq  op_req;
   eraftkv::ClientOperationResp op_resp;
@@ -271,8 +269,9 @@ std::pair<std::string, std::string> Client::GetKV(std::string k) {
 }
 
 void Client::RunBench(int64_t N) {
+  auto partition_key = StringUtil::RandStr(256);
+  this->UpdateKvServerLeaderStubByPartitionKey(partition_key);
   for (int i = 0; i < N; i++) {
-    auto partition_key = StringUtil::RandStr(256);
     auto value = StringUtil::RandStr(256);
     this->PutKV(partition_key, value);
   }

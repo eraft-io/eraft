@@ -44,6 +44,14 @@
 
 RaftServer* ERaftKvServer::raft_context_ = nullptr;
 
+std::map<int, std::condition_variable*>*
+    ERaftKvServer::response_ready_singals_ = nullptr;
+
+std::mutex* ERaftKvServer::response_ready_mutex_ = nullptr;
+
+bool* ERaftKvServer::is_ok_to_response_ = nullptr;
+
+
 /**
  * @brief
  *
@@ -141,9 +149,22 @@ grpc::Status ERaftKvServer::ProcessRWOperation(
       }
       case eraftkv::ClientOpType::Put:
       case eraftkv::ClientOpType::Del: {
+        std::mutex map_mutex_;
+        {
+          std::condition_variable* new_signal = new std::condition_variable();
+          std::lock_guard<std::mutex> lg(map_mutex_);
+          (*ERaftKvServer::response_ready_singals_)[rand_seq] = new_signal;
+          kv_op.set_op_sign(rand_seq);
+        }
         raft_context_->Propose(
             kv_op.SerializeAsString(), &log_index, &log_term, &success);
         {
+          auto end_time =
+              std::chrono::system_clock::now() +
+              std::chrono::seconds(DEAFULT_READ_WRITE_TIMEOUT_SECONDS);
+          std::unique_lock<std::mutex> ul(*response_ready_mutex_);
+          (*ERaftKvServer::response_ready_singals_)[rand_seq]->wait_until(
+              ul, end_time, []() { return *is_ok_to_response_; });
           auto res = resp->add_ops();
           res->set_key(kv_op.key());
           res->set_value(kv_op.value());

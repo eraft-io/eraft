@@ -52,6 +52,8 @@ using eraftkv::ERaftKv;
 using grpc::ServerContext;
 using grpc::Status;
 
+#define DEAFULT_READ_WRITE_TIMEOUT_SECONDS 5
+
 
 enum ServerRoleEnum { DataServer, MetaServer };
 
@@ -114,8 +116,16 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
     RocksDBSingleLogStorageImpl* log_db =
         new RocksDBSingleLogStorageImpl(options_.log_db_path);
     RocksDBStorageImpl* kv_db = new RocksDBStorageImpl(options_.kv_db_path);
-    raft_context_ =
-        RaftServer::RunMainLoop(raft_config, log_db, kv_db, net_rpc);
+    response_ready_singals_ = new std::map<int, std::condition_variable*>();
+    response_ready_mutex_ = new std::mutex();
+    is_ok_to_response_ = new bool(false);
+    raft_context_ = RaftServer::RunMainLoop(raft_config,
+                                            log_db,
+                                            kv_db,
+                                            net_rpc,
+                                            response_ready_singals_,
+                                            response_ready_mutex_,
+                                            is_ok_to_response_);
   }
 
   ERaftKvServer() {}
@@ -190,11 +200,11 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    */
   ERaftKvServerOptions options_;
 
-  static std::map<int, std::condition_variable*> ready_cond_vars_;
+  static std::map<int, std::condition_variable*>* response_ready_singals_;
 
-  static std::mutex ready_mutex_;
+  static std::mutex* response_ready_mutex_;
 
-  static bool is_ok_;
+  static bool* is_ok_to_response_;
 
  private:
   /**

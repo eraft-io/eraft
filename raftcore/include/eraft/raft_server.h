@@ -269,10 +269,14 @@ class RaftServer {
    * @param raft_config
    * @return EStatus
    */
-  static RaftServer* RunMainLoop(RaftConfig raft_config,
-                                 LogStore*  log_store,
-                                 Storage*   store,
-                                 Network*   net);
+  static RaftServer* RunMainLoop(
+      RaftConfig                               raft_config,
+      LogStore*                                log_store,
+      Storage*                                 store,
+      Network*                                 net,
+      std::map<int, std::condition_variable*>* response_ready_singals,
+      std::mutex*                              response_ready_mutex,
+      bool*                                    is_ok_to_response);
 
   /**
    * @brief
@@ -560,6 +564,12 @@ class RaftServer {
    *
    */
   std::condition_variable apply_ready_cv_;
+
+  std::map<int, std::condition_variable*>* response_ready_singals_;
+
+  std::mutex* response_ready_mutex_;
+
+  bool* is_ok_to_response_;
 
  private:
   /**

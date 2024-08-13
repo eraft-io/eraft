@@ -129,11 +129,18 @@ EStatus RaftServer::ResetRandomElectionTimeout() {
  * @param net
  * @return RaftServer*
  */
-RaftServer* RaftServer::RunMainLoop(RaftConfig raft_config,
-                                    LogStore*  log_store,
-                                    Storage*   store,
-                                    Network*   net) {
+RaftServer* RaftServer::RunMainLoop(
+    RaftConfig                               raft_config,
+    LogStore*                                log_store,
+    Storage*                                 store,
+    Network*                                 net,
+    std::map<int, std::condition_variable*>* response_ready_singals,
+    std::mutex*                              response_ready_mutex,
+    bool*                                    is_ok_to_response) {
   RaftServer* svr = new RaftServer(raft_config, log_store, store, net);
+  svr->response_ready_singals_ = response_ready_singals;
+  svr->response_ready_mutex_ = response_ready_mutex;
+  svr->is_ok_to_response_ = is_ok_to_response;
   std::thread th(&RaftServer::RunCycle, svr);
   th.detach();
   std::thread th1(&RaftServer::RunApply, svr);
@@ -349,6 +356,14 @@ EStatus RaftServer::ApplyEntries() {
                                                    ety->id());
               this->last_applied_idx_ = ety->id();
               break;
+            }
+          }
+          {
+            // notify to response
+            std::lock_guard<std::mutex> lg(*response_ready_mutex_);
+            *is_ok_to_response_ = true;
+            if ((*response_ready_singals_)[op_pair->op_sign()] != nullptr) {
+              (*response_ready_singals_)[op_pair->op_sign()]->notify_one();
             }
           }
           delete op_pair;
