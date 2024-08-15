@@ -66,6 +66,11 @@ EStatus RocksDBSingleLogStorageImpl::Append(eraftkv::Entry* ety) {
   auto        st = log_db_->Put(rocksdb::WriteOptions(), key, val);
   assert(st.ok());
   this->last_idx = ety->id();
+  auto status = log_db_->Put(
+      rocksdb::WriteOptions(), "M:LAST_IDX", std::to_string(this->last_idx));
+  if (!status.ok()) {
+    return EStatus::kError;
+  }
   return EStatus::kOk;
 }
 

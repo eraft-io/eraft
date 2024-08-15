@@ -52,28 +52,6 @@ class Storage {
    */
   virtual ~Storage() {}
 
-
-  /**
-   * @brief Get the Node Address object
-   *
-   * @param raft
-   * @param id
-   * @return std::string
-   */
-  virtual std::string GetNodeAddress(RaftServer* raft, std::string id) = 0;
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param id
-   * @param address
-   * @return EStatus
-   */
-  virtual EStatus SaveNodeAddress(RaftServer* raft,
-                                  std::string id,
-                                  std::string address) = 0;
-
   /**
    * @brief
    *

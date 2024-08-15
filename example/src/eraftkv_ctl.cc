@@ -145,15 +145,13 @@ int main(int argc, char* argv[]) {
     case PutKV: {
       auto partition_key = std::string(std::string(argv[3]));
       auto value = std::string(std::string(argv[4]));
-      eraftkv_ctl
-          .UpdateKvServerLeaderStubByPartitionKey(partition_key);
-              eraftkv_ctl.PutKV(partition_key, value);
+      eraftkv_ctl.UpdateKvServerLeaderStubByPartitionKey(partition_key);
+      eraftkv_ctl.PutKV(partition_key, value);
       break;
     }
     case GetKV: {
-      eraftkv_ctl
-          .UpdateKvServerLeaderStubByPartitionKey(std::string(argv[3]));
-              eraftkv_ctl.GetKV(std::string(argv[3]));
+      eraftkv_ctl.UpdateKvServerLeaderStubByPartitionKey(std::string(argv[3]));
+      eraftkv_ctl.GetKV(std::string(argv[3]));
       break;
     }
     default:

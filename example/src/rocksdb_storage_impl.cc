@@ -41,32 +41,6 @@
 #include "protocol/eraftkv.pb.h"
 
 /**
- * @brief Get the Node Address object
- *
- * @param raft
- * @param id
- * @return std::string
- */
-std::string RocksDBStorageImpl::GetNodeAddress(RaftServer* raft,
-                                               std::string id) {
-  return std::string("");
-}
-
-/**
- * @brief
- *
- * @param raft
- * @param id
- * @param address
- * @return EStatus
- */
-EStatus RocksDBStorageImpl::SaveNodeAddress(RaftServer* raft,
-                                            std::string id,
-                                            std::string address) {
-  return EStatus::kOk;
-}
-
-/**
  * @brief
  *
  * @param snap_path

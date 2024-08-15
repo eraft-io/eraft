@@ -70,7 +70,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , max_entries_per_append_req_(100)
     , tick_interval_(100)
     , granted_votes_(0)
-    , snap_threshold_log_count_(500)
+    , snap_threshold_log_count_(10000)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -141,10 +141,10 @@ RaftServer* RaftServer::RunMainLoop(
   svr->response_ready_singals_ = response_ready_singals;
   svr->response_ready_mutex_ = response_ready_mutex;
   svr->is_ok_to_response_ = is_ok_to_response;
-  std::thread th(&RaftServer::RunCycle, svr);
-  th.detach();
-  std::thread th1(&RaftServer::RunApply, svr);
-  th1.detach();
+  std::thread cycleThread(&RaftServer::RunCycle, svr);
+  cycleThread.detach();
+  std::thread applyThread(&RaftServer::RunApply, svr);
+  applyThread.detach();
   return svr;
 }
 
@@ -731,35 +731,35 @@ EStatus RaftServer::HandleAppendEntriesReq(RaftNode* from_node,
   // after snapshoting GetLastEty()->term() is 0
   if (!(this->MatchLog(req->prev_log_term(), req->prev_log_index()) ||
         this->log_store_->GetLastEty()->term() == 0)) {
-    resp->set_success(true);
+    resp->set_success(false);
     if (this->log_store_->LastIndex() < req->prev_log_index()) {
       SPDLOG_INFO("log conflict with index {} term {}",
-                  this->log_store_->LastIndex(),
-                  this->log_store_->GetLastEty()->term());
-      resp->set_conflict_index(this->log_store_->LastIndex());
-      resp->set_conflict_term(this->log_store_->GetLastEty()->term());
+                  this->log_store_->LastIndex() + 1,
+                  -1);
+      resp->set_conflict_index(this->log_store_->LastIndex() + 1);
+      resp->set_conflict_term(-1);
     } else {
       // set term
       resp->set_conflict_term(
           this->log_store_->Get(req->prev_log_index())->term());
       // find conflict index
-      auto index = req->prev_log_index();
-      while (index >= this->commit_idx_ &&
+      auto index = req->prev_log_index() - 1;
+      while (index >= this->log_store_->FirstIndex() &&
              this->log_store_->Get(index)->term() == resp->conflict_term()) {
         index -= 1;
       }
       resp->set_conflict_index(index);
     }
-  } else {
-    for (auto ety : req->entries()) {
-      this->log_store_->Append(&ety);
-      this->log_store_->PersisLogMetaState(this->commit_idx_,
-                                           this->last_applied_idx_);
-    }
-    this->AdvanceCommitIndexForFollower(req->leader_commit());
-    resp->set_success(true);
+    return EStatus::kOk;
   }
 
+  for (auto ety : req->entries()) {
+    this->log_store_->Append(&ety);
+    this->log_store_->PersisLogMetaState(this->commit_idx_,
+                                         this->last_applied_idx_);
+  }
+  this->AdvanceCommitIndexForFollower(req->leader_commit());
+  resp->set_success(true);
   return EStatus::kOk;
 }
 

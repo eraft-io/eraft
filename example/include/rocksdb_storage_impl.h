@@ -46,27 +46,6 @@ class RocksDBStorageImpl : public Storage {
 
  public:
   /**
-   * @brief Get the Node Address object
-   *
-   * @param raft
-   * @param id
-   * @return std::string
-   */
-  std::string GetNodeAddress(RaftServer* raft, std::string id);
-
-  /**
-   * @brief
-   *
-   * @param raft
-   * @param id
-   * @param address
-   * @return EStatus
-   */
-  EStatus SaveNodeAddress(RaftServer* raft,
-                          std::string id,
-                          std::string address);
-
-  /**
    * @brief
    *
    * @param raft
