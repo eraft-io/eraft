@@ -175,6 +175,9 @@ EStatus RaftServer::RunCycle() {
   while (true) {
     SPDLOG_INFO("heartbeat_tick_count_  " +
                 std::to_string(heartbeat_tick_count_));
+    SPDLOG_INFO("election_tick_count_  " +
+                std::to_string(election_tick_count_));
+    SPDLOG_INFO("election_timeout_  " + std::to_string(election_timeout_));
     SPDLOG_INFO("node role " + NodeRoleToStr(role_));
     SPDLOG_INFO("commit idx {} applied idx {}",
                 this->commit_idx_,
@@ -185,10 +188,11 @@ EStatus RaftServer::RunCycle() {
       if (this->role_ == NodeRaftRoleEnum::Leader) {
         SPDLOG_INFO("heartbeat timeout");
         this->SendHeartBeat();
+        this->ResetRandomElectionTimeout();
         heartbeat_tick_count_ = 0;
       }
     }
-    if (election_tick_count_ >= election_timeout_ && election_running_) {
+    if (election_tick_count_ >= election_timeout_) {
       switch (this->role_) {
         case NodeRaftRoleEnum::Follower: {
           SPDLOG_INFO("start pre election in term {} ", current_term_);
