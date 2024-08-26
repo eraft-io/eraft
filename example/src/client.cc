@@ -84,6 +84,7 @@ bool Client::SetServerGroupSlotsToMeta(int64_t start_slot,
 }
 
 bool Client::AddServerGroupToMeta(int64_t     shard_id,
+                                  int64_t     leader_id,
                                   std::string group_server_addrs) {
   ClientContext                   context;
   eraftkv::ClusterConfigChangeReq req;
@@ -101,6 +102,7 @@ bool Client::AddServerGroupToMeta(int64_t     shard_id,
     count++;
     svr->set_server_status(eraftkv::ServerStatus::Up);
   }
+  req.mutable_shard_group()->set_leader_id(leader_id);
   req.set_change_type(eraftkv::ChangeType::ShardJoin);
   eraftkv::ClusterConfigChangeResp resp;
   auto st = this->meta_leader_stub_->ClusterConfigChange(&context, req, &resp);

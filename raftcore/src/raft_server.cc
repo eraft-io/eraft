@@ -171,7 +171,7 @@ void RaftServer::RunApply() {
  * @return EStatus
  */
 EStatus RaftServer::RunCycle() {
-  ResetRandomElectionTimeout();
+  this->ResetRandomElectionTimeout();
   while (true) {
     SPDLOG_INFO("heartbeat_tick_count_  " +
                 std::to_string(heartbeat_tick_count_));
@@ -184,13 +184,12 @@ EStatus RaftServer::RunCycle() {
                 this->last_applied_idx_);
     heartbeat_tick_count_ += 1;
     election_tick_count_ += 1;
-    if (heartbeat_tick_count_ == heartbeat_timeout_) {
-      if (this->role_ == NodeRaftRoleEnum::Leader) {
-        SPDLOG_INFO("heartbeat timeout");
-        this->SendHeartBeat();
-        this->ResetRandomElectionTimeout();
-        heartbeat_tick_count_ = 0;
-      }
+    if (heartbeat_tick_count_ == heartbeat_timeout_ &&
+        this->role_ == NodeRaftRoleEnum::Leader) {
+      SPDLOG_INFO("heartbeat timeout");
+      this->SendHeartBeat();
+      this->ResetRandomElectionTimeout();
+      heartbeat_tick_count_ = 0;
     }
     if (election_tick_count_ >= election_timeout_) {
       switch (this->role_) {
@@ -1206,4 +1205,12 @@ bool RaftServer::IsLeader() {
  */
 bool RaftServer::IsSnapshoting() {
   return is_snapshoting_;
+}
+
+int64_t RaftServer::GetCommitIndex() {
+  return commit_idx_;
+}
+
+int64_t RaftServer::GetAppliedIndex() {
+  return last_applied_idx_;
 }

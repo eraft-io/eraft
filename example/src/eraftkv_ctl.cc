@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
   switch (hashit(cmd)) {
     case AddGroup: {
       int shard_id = stoi(std::string(argv[3]));
-      eraftkv_ctl.AddServerGroupToMeta(shard_id, std::string(argv[4]));
+      eraftkv_ctl.AddServerGroupToMeta(shard_id, -1, std::string(argv[4]));
       break;
     }
     case QeuryGroups: {

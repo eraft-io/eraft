@@ -380,6 +380,10 @@ class RaftServer {
    */
   EStatus SnapshotingStart(int64_t ety_idx);
 
+  int64_t GetCommitIndex();
+
+  int64_t GetAppliedIndex();
+
   /**
    * @brief
    *

@@ -45,6 +45,8 @@
 
 #define DEFAULT_METASERVER_ADDRS \
   "172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090"
+#define DEFAULT_SHARD_MONITOR_ADDRS \
+  "http://172.18.0.10:18088,http://172.18.0.11:18081,http://172.18.0.12:18082"
 
 using eraftkv::ERaftKv;
 using grpc::Channel;
@@ -63,6 +65,7 @@ class Client {
   void UpdateKvServerLeaderStubByPartitionKey(std::string partition_key);
 
   bool AddServerGroupToMeta(int64_t     group_shard_id,
+                            int64_t     leader_id,
                             std::string group_server_addrs);
 
   std::map<int64_t, eraftkv::ShardGroup> GetServerGroupsFromMeta();

@@ -38,7 +38,9 @@
 #include <chrono>
 #include <iostream>
 
+#include "client.h"
 #include "file_reader_into_stream.h"
+#include "httplib.h"
 #include "sequential_file_reader.h"
 #include "sequential_file_writer.h"
 
@@ -51,6 +53,11 @@ std::mutex* ERaftKvServer::response_ready_mutex_ = nullptr;
 
 bool* ERaftKvServer::is_ok_to_response_ = nullptr;
 
+std::atomic<std::string*> ERaftKvServer::stat_json_str_ = nullptr;
+
+std::atomic<std::string*> ERaftKvServer::cluster_stats_json_str_ = nullptr;
+
+int ERaftKvServer::svr_role_ = -1;
 
 /**
  * @brief
@@ -290,4 +297,62 @@ EStatus ERaftKvServer::BuildAndRunRpcServer() {
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   server->Wait();
   return EStatus::kOk;
+}
+
+void ERaftKvServer::UpdateMetaStats() {
+  try {
+    if (raft_context_->GetLeaderId() == -1) {
+      return;
+    }
+    auto kvs = raft_context_->store_->PrefixScan(SG_META_PREFIX, 0, 256);
+    for (auto kv : kvs) {
+      eraftkv::ShardGroup* sg = new eraftkv::ShardGroup();
+      sg->ParseFromString(kv.second);
+      auto sg_leader_id = sg->leader_id();
+      *cluster_stats_json_str_ = "[";
+      auto shard_svr_addrs =
+          StringUtil::Split(DEFAULT_SHARD_MONITOR_ADDRS, ',');
+      for (auto shard_svr : shard_svr_addrs) {
+        httplib::Client cli(shard_svr);
+        auto            res = cli.Get("/collect_stats");
+      }
+      for (auto server : sg->servers()) {
+        *cluster_stats_json_str_ += ("{\"id\":" + std::to_string(server.id()));
+        *cluster_stats_json_str_ += (",\"addr\":\"" + server.address() + "\"");
+        if (sg_leader_id == server.id()) {
+          *cluster_stats_json_str_ += ",\"state\":\"L\"";
+        } else {
+          *cluster_stats_json_str_ += ",\"state\":\"F\"";
+        }
+        *cluster_stats_json_str_ += "},";
+      }
+      (*cluster_stats_json_str_).pop_back();
+      *cluster_stats_json_str_ += "]";
+      delete sg;
+    }
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+  }
+}
+
+void ERaftKvServer::ReportStats() {
+  try {
+    if (raft_context_->GetLeaderId() == -1) {
+      return;
+    }
+    auto        nodes = raft_context_->GetNodes();
+    std::string group_server_addresses = "";
+    for (auto node : nodes) {
+      group_server_addresses += node->address + ",";
+    }
+    group_server_addresses.pop_back();
+    Client metaserver_cli = Client();
+    metaserver_cli.AddServerGroupToMeta(
+        1, raft_context_->GetLeaderId(), group_server_addresses);
+    *stat_json_str_ = "{";
+    *stat_json_str_ += "\"commit_index\":\"" +
+                       std::to_string(raft_context_->GetCommitIndex()) + "\"}";
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+  }
 }

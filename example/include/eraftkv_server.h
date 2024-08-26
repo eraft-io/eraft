@@ -96,19 +96,23 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    *
    * @param config
    */
-  ERaftKvServer(ERaftKvServerOptions option) : options_(option), op_sign(1) {
+  ERaftKvServer(ERaftKvServerOptions option, int server_role)
+      : options_(option), op_sign(1) {
     // init raft lib
     RaftConfig raft_config;
     raft_config.id = options_.svr_id;
+    svr_role_ = server_role;
     auto    peers = StringUtil::Split(options_.peer_addrs, ',');
     int64_t count = 0;
     for (auto peer : peers) {
       raft_config.peer_address_map[count] = peer;
       count++;
     }
-    if (options_.svr_role == ServerRoleEnum::DataServer) {
+    if (server_role == 0) {
       DirectoryTool::MkDir(options_.snap_db_path);
     }
+    stat_json_str_ = new std::string("");
+    cluster_stats_json_str_ = new std::string("");
     raft_config.snap_path = options_.snap_db_path;
     options_.svr_addr = raft_config.peer_address_map[options_.svr_id];
     GRpcNetworkImpl* net_rpc = new GRpcNetworkImpl();
@@ -194,6 +198,10 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
    */
   EStatus BuildAndRunRpcServer();
 
+  static void ReportStats();
+
+  static void UpdateMetaStats();
+
   /**
    * @brief
    *
@@ -205,6 +213,12 @@ class ERaftKvServer : public eraftkv::ERaftKv::Service {
   static std::mutex* response_ready_mutex_;
 
   static bool* is_ok_to_response_;
+
+  static std::atomic<std::string*> stat_json_str_;
+
+  static std::atomic<std::string*> cluster_stats_json_str_;
+
+  static int svr_role_;
 
  private:
   /**

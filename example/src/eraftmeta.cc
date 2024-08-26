@@ -13,12 +13,26 @@
 
 #include "eraft/raft_server.h"
 #include "eraftkv_server.h"
+#include "httplib.h"
 
 DEFINE_int32(svr_id, 0, "server id");
 DEFINE_string(kv_db_path, "", "kv rocksdb path");
 DEFINE_string(log_db_path, "", "log rocksdb path");
 DEFINE_string(peer_addrs, "", "peer address");
-DEFINE_string(monitor_addrs, "", "monitor address");
+DEFINE_int32(monitor_port, 19080, "monitor port");
+
+static void RunHTTPServer(std::atomic<std::string*>* json_stat,
+                          int32_t                    monitor_port) {
+  httplib::Server svr;
+  svr.Get("/v1_cluster_stats",
+          [json_stat](const httplib::Request& req, httplib::Response& res) {
+            ERaftKvServer::UpdateMetaStats();
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_content(*(*json_stat), "application/json");
+          });
+  svr.listen("0.0.0.0", monitor_port);
+}
+
 
 /**
  * @brief
@@ -39,9 +53,12 @@ int main(int argc, char* argv[]) {
   options_.kv_db_path = FLAGS_kv_db_path;
   options_.log_db_path = FLAGS_log_db_path;
   options_.peer_addrs = FLAGS_peer_addrs;
-  options_.monitor_addrs = FLAGS_monitor_addrs;
 
-  ERaftKvServer server(options_);
+  ERaftKvServer server(options_, 1);
+  std::thread   httpSvrThread(&RunHTTPServer,
+                            &ERaftKvServer::cluster_stats_json_str_,
+                            FLAGS_monitor_port);
+  httpSvrThread.detach();
 
   server.BuildAndRunRpcServer();
   return 0;
