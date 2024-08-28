@@ -384,6 +384,10 @@ class RaftServer {
 
   int64_t GetAppliedIndex();
 
+  std::vector<eraftkv::Entry*> GetPrefixLogs();
+
+  std::vector<eraftkv::Entry*> GetSuffixLogs();
+
   /**
    * @brief
    *

@@ -70,7 +70,7 @@ RaftServer::RaftServer(RaftConfig raft_config,
     , max_entries_per_append_req_(100)
     , tick_interval_(100)
     , granted_votes_(0)
-    , snap_threshold_log_count_(10000)
+    , snap_threshold_log_count_(100000)
     , open_auto_apply_(true)
     , is_snapshoting_(false)
     , snap_db_path_(raft_config.snap_path)
@@ -1213,4 +1213,15 @@ int64_t RaftServer::GetCommitIndex() {
 
 int64_t RaftServer::GetAppliedIndex() {
   return last_applied_idx_;
+}
+
+
+std::vector<eraftkv::Entry*> RaftServer::GetPrefixLogs() {
+  return log_store_->Gets(this->log_store_->FirstIndex(),
+                          this->log_store_->FirstIndex() + 5);
+}
+
+std::vector<eraftkv::Entry*> RaftServer::GetSuffixLogs() {
+  return log_store_->Gets(this->log_store_->LastIndex() - 5,
+                          this->log_store_->LastIndex());
 }

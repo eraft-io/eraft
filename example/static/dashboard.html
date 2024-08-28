@@ -1,0 +1,76 @@
+<html lang="en">
+  <body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <canvas id="canvas1" width="800" height="400"></canvas>
+    <script type="application/javascript">
+        function drawRaftCluster() {
+            const canvas = document.getElementById("canvas");
+            if (canvas.getContext) {
+                const ctx = canvas.getContext("2d");
+                const Http = new XMLHttpRequest();
+                const url = "http://127.0.0.1:19080/v1_cluster_stats";
+                Http.open("GET", url);
+                Http.send();
+                Http.onreadystatechange = (e) => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const nodes = JSON.parse(Http.response);
+                    followerCount = 0;
+                    for (var i = 0; i < nodes.length; i++) {
+                        if (nodes[i].state === 'L') {
+                            ctx.beginPath();
+                            ctx.fillStyle = "rgb(56 138 247)";
+                            ctx.arc(100, 100, 50, 0, Math.PI * 2.0, false);
+                            ctx.strokeStyle = 'gray';
+                            ctx.strokeText("L: " + nodes[i].addr, 45, 35);
+                            ctx.fill();
+                            ctx.beginPath();
+                        } else {
+                            ctx.beginPath();
+                            ctx.fillStyle = "rgb(221 222 227)";
+                            ctx.arc(100 + (followerCount * 120), 280, 50, 0, Math.PI * 2.0, false);
+                            ctx.strokeStyle = 'gray';
+                            ctx.strokeText("L: " + nodes[i].addr, 60 + (followerCount * 100), 200);
+                            ctx.fill();
+                            ctx.beginPath();
+                            followerCount += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawRaftLogsNode1() {
+            const canvas1 = document.getElementById("canvas1");
+            if (canvas1.getContext) {
+                const ctx = canvas1.getContext('2d');
+                const Http = new XMLHttpRequest();
+                const stat_url = "http://127.0.0.1:18080/collect_stats";
+                Http.open("GET", stat_url);
+                Http.send();
+                Http.onreadystatechange = (e) => {
+                    const stats = JSON.parse(Http.response);
+                    ctx.beginPath();
+                    ctx.clearRect(0, 0, canvas1.width, canvas1.height);
+                    ctx.strokeStyle = 'gray';
+                    ctx.strokeText("node logs: ", 45, 15);
+                    for (var i = 0; i < stats.prefix_logs.length; i ++) {
+                        ctx.strokeText("index: " + stats.prefix_logs[i].index, 86 + (i * 100), 66);
+                        ctx.strokeText("term: " + stats.prefix_logs[i].term, 86 + (i * 100), 86);
+                        ctx.strokeText("val: " + stats.prefix_logs[i].val, 86 + (i * 100), 106);
+                        ctx.strokeRect(80 + (i * 100), 56, 80, 80);
+                    }
+                    for (var i = 0; i < stats.suffix_logs.length; i ++) {
+                        ctx.strokeText("index: " + stats.suffix_logs[i].index, 86 + (i * 100), 196);
+                        ctx.strokeText("term: " + stats.suffix_logs[i].term, 86 + (i * 100), 206);
+                        ctx.strokeText("val: " + stats.suffix_logs[i].val, 86 + (i * 100), 236);
+                        ctx.strokeRect(80 + (i * 100), 180, 80, 80);
+                    }
+                }
+            }
+        }
+        setInterval(drawRaftCluster, 1000);
+        setInterval(drawRaftLogsNode1, 1000);
+    </script>
+  </body>
+</html>
+

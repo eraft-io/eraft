@@ -34,14 +34,20 @@
 
 Client::Client() {
   this->metaserver_addrs_ = StringUtil::Split(DEFAULT_METASERVER_ADDRS, ',');
+  bool is_chan_create_ok = false;
   for (auto metaserver_addr : this->metaserver_addrs_) {
     SPDLOG_INFO("init rpc link to {} ", metaserver_addr);
-    auto                           chan_ = grpc::CreateChannel(metaserver_addr,
+    auto chan_ = grpc::CreateChannel(metaserver_addr,
                                      grpc::InsecureChannelCredentials());
-    std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
-    this->meta_svr_stubs_[metaserver_addr] = std::move(stub_);
+    if (chan_ != nullptr) {
+      std::unique_ptr<ERaftKv::Stub> stub_(ERaftKv::NewStub(chan_));
+      this->meta_svr_stubs_[metaserver_addr] = std::move(stub_);
+      is_chan_create_ok = true;
+    }
   }
-  this->UpdateMetaServerLeaderStub();
+  if (is_chan_create_ok) {
+    this->UpdateMetaServerLeaderStub();
+  }
   this->client_id_ = StringUtil::RandStr(16);
   this->command_id_ = 0;
 }
@@ -105,8 +111,11 @@ bool Client::AddServerGroupToMeta(int64_t     shard_id,
   req.mutable_shard_group()->set_leader_id(leader_id);
   req.set_change_type(eraftkv::ChangeType::ShardJoin);
   eraftkv::ClusterConfigChangeResp resp;
-  auto st = this->meta_leader_stub_->ClusterConfigChange(&context, req, &resp);
-  assert(st.ok());
+  if (this->meta_leader_stub_ != nullptr) {
+    auto st =
+        this->meta_leader_stub_->ClusterConfigChange(&context, req, &resp);
+    assert(st.ok());
+  }
   this->command_id_++;
   return resp.success();
 }

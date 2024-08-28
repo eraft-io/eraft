@@ -314,7 +314,10 @@ void ERaftKvServer::UpdateMetaStats() {
           StringUtil::Split(DEFAULT_SHARD_MONITOR_ADDRS, ',');
       for (auto shard_svr : shard_svr_addrs) {
         httplib::Client cli(shard_svr);
-        auto            res = cli.Get("/collect_stats");
+        cli.set_connection_timeout(0, 200);
+        cli.set_read_timeout(0, 200);
+        cli.set_write_timeout(0, 200);
+        auto res = cli.Get("/collect_stats");
       }
       for (auto server : sg->servers()) {
         *cluster_stats_json_str_ += ("{\"id\":" + std::to_string(server.id()));
@@ -350,8 +353,46 @@ void ERaftKvServer::ReportStats() {
     metaserver_cli.AddServerGroupToMeta(
         1, raft_context_->GetLeaderId(), group_server_addresses);
     *stat_json_str_ = "{";
-    *stat_json_str_ += "\"commit_index\":\"" +
-                       std::to_string(raft_context_->GetCommitIndex()) + "\"}";
+    *stat_json_str_ +=
+        "\"commit_index\":" + std::to_string(raft_context_->GetCommitIndex()) +
+        ",";
+    *stat_json_str_ += "\"applied_index\":" +
+                       std::to_string(raft_context_->GetAppliedIndex()) + ",";
+    *stat_json_str_ += "\"prefix_logs\":[";
+    for (auto log : raft_context_->GetPrefixLogs()) {
+      *stat_json_str_ += "{\"index\":" + std::to_string(log->id()) + ",";
+      *stat_json_str_ += "\"term\":" + std::to_string(log->term()) + ",";
+      switch (log->e_type()) {
+        case eraftkv::EntryType::Normal: {
+          eraftkv::KvOpPair* op_pair = new eraftkv::KvOpPair();
+          op_pair->ParseFromString(log->data());
+          *stat_json_str_ +=
+              "\"val\":\"" + op_pair->value().substr(0, 6) + "\"},";
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    (*stat_json_str_).pop_back();
+    *stat_json_str_ += "],\"suffix_logs\":[";
+    for (auto log : raft_context_->GetSuffixLogs()) {
+      *stat_json_str_ += "{\"index\":" + std::to_string(log->id()) + ",";
+      *stat_json_str_ += "\"term\":" + std::to_string(log->term()) + ",";
+      switch (log->e_type()) {
+        case eraftkv::EntryType::Normal: {
+          eraftkv::KvOpPair* op_pair = new eraftkv::KvOpPair();
+          op_pair->ParseFromString(log->data());
+          *stat_json_str_ +=
+              "\"val\":\"" + op_pair->value().substr(0, 6) + "\"},";
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    (*stat_json_str_).pop_back();
+    *stat_json_str_ += "]}";
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
   }
