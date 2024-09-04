@@ -141,6 +141,67 @@ func TestBasicClusterRW(t *testing.T) {
 	common.RemoveDir("./data")
 }
 
+func TestClusterSingleShardRwBench(t *testing.T) {
+	// start metaserver cluster
+	go RunMetaServer(map[int]string{0: "127.0.0.1:8088", 1: "127.0.0.1:8089", 2: "127.0.0.1:8090"}, 0)
+	go RunMetaServer(map[int]string{0: "127.0.0.1:8088", 1: "127.0.0.1:8089", 2: "127.0.0.1:8090"}, 1)
+	go RunMetaServer(map[int]string{0: "127.0.0.1:8088", 1: "127.0.0.1:8089", 2: "127.0.0.1:8090"}, 2)
+	time.Sleep(time.Second * 5)
+	// start shardserver cluster
+	go RunShardKvServer(map[int]string{0: "127.0.0.1:6088", 1: "127.0.0.1:6089", 2: "127.0.0.1:6090"}, 0, 1, "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
+	go RunShardKvServer(map[int]string{0: "127.0.0.1:6088", 1: "127.0.0.1:6089", 2: "127.0.0.1:6090"}, 1, 1, "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
+	go RunShardKvServer(map[int]string{0: "127.0.0.1:6088", 1: "127.0.0.1:6089", 2: "127.0.0.1:6090"}, 2, 1, "127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
+	time.Sleep(time.Second * 5)
+	// init meta server
+	AddServerGroup("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", 1, "127.0.0.1:6088,127.0.0.1:6089,127.0.0.1:6090")
+	MoveSlotToServerGroup("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090", 0, 9, 1)
+	time.Sleep(time.Second * 20)
+
+	// R-W test
+	shardkvcli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
+
+	N := 1000
+	KEY_SIZE := 64
+	VAL_SIZE := 64
+	bench_kvs := map[string]string{}
+	for i := 0; i < N; i++ {
+		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KEY_SIZE)
+		v := common.RandStringRunes(VAL_SIZE)
+		bench_kvs[k] = v
+	}
+	timecost := []int64{}
+
+	for key, val := range bench_kvs {
+		start := time.Now()
+		shardkvcli.Put(key, val)
+		elapsed := time.Since(start)
+		timecost = append(timecost, elapsed.Milliseconds())
+	}
+
+	sum := 0.0
+	avg := 0.0
+	max := 0.0
+	min := 9999999999999999.0
+
+	for _, cost := range timecost {
+		sum += float64(cost)
+		if cost > int64(max) {
+			max = float64(cost)
+		}
+		if cost < int64(min) {
+			min = float64(cost)
+		}
+	}
+	avg = sum / float64(len(timecost))
+	logger.ELogger().Sugar().Debugf("total request: %d", N)
+	logger.ELogger().Sugar().Debugf("total time cost: %f", sum)
+	logger.ELogger().Sugar().Debugf("avg time cost: %f", avg)
+	logger.ELogger().Sugar().Debugf("max time cost: %f", max)
+	logger.ELogger().Sugar().Debugf("min time cost: %f", min)
+	time.Sleep(time.Second * 2)
+	common.RemoveDir("./data")
+}
+
 func TestClusterRwBench(t *testing.T) {
 	// start metaserver cluster
 	go RunMetaServer(map[int]string{0: "127.0.0.1:8088", 1: "127.0.0.1:8089", 2: "127.0.0.1:8090"}, 0)
