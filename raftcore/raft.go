@@ -641,16 +641,35 @@ func (rf *Raft) Applier() {
 	}
 }
 
-func (rf *Raft) StartSnapshot(snap_idx uint64) error {
+func (rf *Raft) Snapshot(snap_idx uint64, snapshotContext []byte) error {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
 	rf.isSnapshoting = true
 	if snap_idx <= rf.logs.GetFirstLogId() {
 		rf.isSnapshoting = false
 		return errors.New("ety index is larger than the first log index")
 	}
-	rf.logs.EraseBefore(int64(snap_idx), true)
-	rf.logs.ResetFirstLogEntry(rf.curTerm, int64(snap_idx))
+	_, err := rf.logs.EraseBefore(int64(snap_idx), true)
+	if err != nil {
+		rf.isSnapshoting = false
+		return err
+	}
+	if err := rf.logs.ResetFirstLogEntry(rf.curTerm, int64(snap_idx)); err != nil {
+		rf.isSnapshoting = false
+		return err
+	}
 
 	// create checkpoint for db
 	rf.isSnapshoting = false
-	return nil
+	return rf.logs.PersistSnapshot(snapshotContext)
+}
+
+func (rf *Raft) ReadSnapshot() ([]byte, error) {
+	rf.mu.RLock()
+	defer rf.mu.RUnlock()
+	return rf.logs.ReadSnapshot()
+}
+
+func (rf *Raft) LogCount() int {
+	return rf.logs.LogItemCount()
 }

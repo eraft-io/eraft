@@ -24,6 +24,7 @@ package storage
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -74,11 +75,14 @@ func (levelDB *LevelDBKvStore) Delete(k string) error {
 	return levelDB.db.Delete([]byte(k), nil)
 }
 
-func (levelDB *LevelDBKvStore) DumpPrefixKey(prefix string) (map[string]string, error) {
+func (levelDB *LevelDBKvStore) DumpPrefixKey(prefix string, trimPrefix bool) (map[string]string, error) {
 	kvs := make(map[string]string)
 	iter := levelDB.db.NewIterator(util.BytesPrefix([]byte(prefix)), nil)
 	for iter.Next() {
 		k := string(iter.Key())
+		if trimPrefix {
+			k = strings.TrimPrefix(k, prefix)
+		}
 		v := string(iter.Value())
 		kvs[k] = v
 	}

@@ -25,9 +25,12 @@
 package shardkvserver
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"maps"
 	"strconv"
 	"strings"
 	"sync"
@@ -64,6 +67,10 @@ type ShardKV struct {
 	stopApplyCh chan interface{}
 
 	pb.UnimplementedRaftServiceServer
+}
+
+type MemSnapshotDB struct {
+	KV map[string]string
 }
 
 // MakeShardKVServer make a new shard kv server
@@ -256,8 +263,13 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 			logger.ELogger().Sugar().Debugf("appling msg %s", appliedMsg.String())
 
 			if appliedMsg.SnapshotValid {
-				// TODO: install snapshot data to leveldb
-				s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex))
+				s.mu.Lock()
+				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex)) {
+					s.restoreSnapshot(appliedMsg.Snapshot)
+					s.lastApplied = int(appliedMsg.SnapshotIndex)
+				}
+				s.mu.Unlock()
+				return
 			}
 
 			req := &pb.CommandRequest{}
@@ -340,6 +352,12 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 
 			ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
 			ch <- cmd_resp
+
+			if _, isLeader := s.rf.GetState(); isLeader && s.GetRf().LogCount() > 500 {
+				s.mu.Lock()
+				s.takeSnapshot(uint64(appliedMsg.CommandIndex))
+				s.mu.Unlock()
+			}
 		}
 	}
 }
@@ -349,6 +367,44 @@ func (s *ShardKV) initStm(eng storage_eng.KvStore) {
 	for i := 0; i < common.NBuckets; i++ {
 		if _, ok := s.stm[i]; !ok {
 			s.stm[i] = NewBucket(eng, i)
+		}
+	}
+}
+
+// takeSnapshot
+func (s *ShardKV) takeSnapshot(index uint64) {
+	var bytesState bytes.Buffer
+	enc := gob.NewEncoder(&bytesState)
+	memSnapshotDB := MemSnapshotDB{}
+	memSnapshotDB.KV = map[string]string{}
+	for i := 0; i < common.NBuckets; i++ {
+		if s.CanServe(i) {
+			kvs, err := s.stm[i].deepCopy(true)
+			if err != nil {
+				logger.ELogger().Sugar().Errorf(err.Error())
+			}
+			maps.Copy(memSnapshotDB.KV, kvs)
+		}
+	}
+	enc.Encode(memSnapshotDB)
+	s.GetRf().Snapshot(index, bytesState.Bytes())
+}
+
+// restoreSnapshot
+func (s *ShardKV) restoreSnapshot(snapData []byte) {
+	if snapData == nil {
+		return
+	}
+	buf := bytes.NewBuffer(snapData)
+	data := gob.NewDecoder(buf)
+	var memSnapshotDB MemSnapshotDB
+	if data.Decode(&memSnapshotDB) != nil {
+		logger.ELogger().Sugar().Error("decode memsnapshot error")
+	}
+	for k, v := range memSnapshotDB.KV {
+		bucketID := common.Key2BucketID(k)
+		if s.CanServe(bucketID) {
+			s.stm[bucketID].Put(k, v)
 		}
 	}
 }
@@ -403,7 +459,7 @@ func (s *ShardKV) DoBucketsOperation(ctx context.Context, req *pb.BucketOperatio
 			bucket_datas := &BucketDatasVo{}
 			bucket_datas.Datas = map[int]map[string]string{}
 			for _, bucketID := range req.BucketIds {
-				sDatas, err := s.stm[int(bucketID)].deepCopy()
+				sDatas, err := s.stm[int(bucketID)].deepCopy(false)
 				if err != nil {
 					s.mu.RUnlock()
 					return op_resp, err

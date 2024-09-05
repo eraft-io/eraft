@@ -29,7 +29,7 @@ type KvStore interface {
 	Put(string, string) error
 	Get(string) (string, error)
 	Delete(string) error
-	DumpPrefixKey(string) (map[string]string, error)
+	DumpPrefixKey(string, bool) (map[string]string, error)
 	PutBytesKv([]byte, []byte) error
 	DeleteBytesK([]byte) error
 	GetBytesValue([]byte) ([]byte, error)

@@ -85,9 +85,9 @@ func (bu *Bucket) Append(key, value string) error {
 }
 
 // copy all of the data in a bucket
-func (bu *Bucket) deepCopy() (map[string]string, error) {
+func (bu *Bucket) deepCopy(trimPrefix bool) (map[string]string, error) {
 	encode_key_prefix := strconv.Itoa(bu.ID) + SPLIT
-	kvs, err := bu.KvDB.DumpPrefixKey(encode_key_prefix)
+	kvs, err := bu.KvDB.DumpPrefixKey(encode_key_prefix, trimPrefix)
 	if err != nil {
 		return nil, err
 	}

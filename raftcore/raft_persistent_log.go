@@ -52,11 +52,17 @@ type RaftPersistenState struct {
 // newdbEng: a LevelDBKvStore storage engine
 func MakePersistRaftLog(newdbEng storage_eng.KvStore) *RaftLog {
 	_, err := newdbEng.GetBytesValue(EncodeRaftLogKey(INIT_LOG_INDEX))
-	if err != nil {
+	_, readBootstrapStateErr := newdbEng.GetBytesValue(BootstrapStateKey)
+	if err != nil && readBootstrapStateErr != nil {
 		logger.ELogger().Sugar().Debugf("init raft log state")
 		emp_ent := &pb.Entry{}
 		emp_ent_encode := EncodeEntry(emp_ent)
-		newdbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), emp_ent_encode)
+		if err := newdbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), emp_ent_encode); err != nil {
+			panic(err.Error())
+		}
+		if err := newdbEng.PutBytesKv(BootstrapStateKey, []byte{}); err != nil {
+			panic(err.Error())
+		}
 		return &RaftLog{dbEng: newdbEng}
 	}
 	lidkBytes, _, err := newdbEng.SeekPrefixLast(RAFTLOG_PREFIX)
@@ -94,6 +100,20 @@ func (rfLog *RaftLog) ReadRaftState() (curTerm int64, votedFor int64) {
 	}
 	rf_state := DecodeRaftState(rf_bytes)
 	return rf_state.CurTerm, rf_state.VotedFor
+}
+
+// PersistSnapshot ...
+func (rfLog *RaftLog) PersistSnapshot(context []byte) error {
+	return rfLog.dbEng.PutBytesKv(SNAPSHOT_STATE_KEY, context)
+}
+
+// ReadSnapshot ...
+func (rfLog *RaftLog) ReadSnapshot() ([]byte, error) {
+	snapContext, err := rfLog.dbEng.GetBytesValue(SNAPSHOT_STATE_KEY)
+	if err != nil {
+		return nil, err
+	}
+	return snapContext, nil
 }
 
 // GetFirstLogId
