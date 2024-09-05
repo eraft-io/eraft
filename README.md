@@ -18,8 +18,6 @@ eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系
 
 ### 书籍信息
 
-![eraftbook](doc/eraftbook.jpeg)
-
 [官方购买链接](https://3.cn/1W-jAWMR)
 
 ### 为什么需要分布式?

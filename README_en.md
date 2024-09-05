@@ -20,8 +20,7 @@ If you want to check the latest documents, please visit [eraft official website]
 
 ### Ebook for this project
 
-![eraftbook](doc/eraftbook.jpeg)
-
+[Shopping link](https://3.cn/1W-jAWMR)
 
 ### Why we need build a distributed system?
 
