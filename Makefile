@@ -29,11 +29,11 @@ default: meta_cli shard_server shard_cli meta_server
 image:
 	docker build -f Dockerfile --network=host -t $(BUILDER_IMAGE) .
 
-build_dev:
+build-dev:
 	chmod +x scripts/build_dev.sh
 	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftbook:$(IMAGE_VERSION) /eraft/scripts/build_dev.sh
 
-run_test:
+run-test:
 	chmod +x scripts/run_tests.sh
 	docker run --name test-cli-node --network mytestnetwork --ip 172.18.0.5 -it --rm -v  $(realpath .):/eraft eraft/eraftbook:$(IMAGE_VERSION) /eraft/scripts/run_tests.sh
 

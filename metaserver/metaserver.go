@@ -55,29 +55,29 @@ type MetaServer struct {
 }
 
 func MakeMetaServer(peerMaps map[int]string, nodeId int) *MetaServer {
-	client_ends := []*raftcore.RaftPeerNode{}
+	clientEnds := []*raftcore.RaftPeerNode{}
 	for id, addr := range peerMaps {
-		new_end := raftcore.MakeRaftPeerNode(addr, uint64(id))
-		client_ends = append(client_ends, new_end)
+		newEnd := raftcore.MakeRaftPeerNode(addr, uint64(id))
+		clientEnds = append(clientEnds, newEnd)
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
-	newdb_eng := storage.EngineFactory("leveldb", "./data/db/metanode_"+strconv.Itoa(nodeId))
-	logdb_eng := storage.EngineFactory("leveldb", "./data/log/metanode_"+strconv.Itoa(nodeId))
+	newdbEng := storage.EngineFactory("leveldb", "./data/db/metanode_"+strconv.Itoa(nodeId))
+	logdbEng := storage.EngineFactory("leveldb", "./data/log/metanode_"+strconv.Itoa(nodeId))
 
-	newRf := raftcore.MakeRaft(client_ends, int64(nodeId), logdb_eng, newApplyCh, 50, 150)
-	meta_server := &MetaServer{
+	newRf := raftcore.MakeRaft(clientEnds, int64(nodeId), logdbEng, newApplyCh, 50, 150)
+	metaServer := &MetaServer{
 		Rf:          newRf,
 		applyCh:     newApplyCh,
 		dead:        0,
-		stm:         NewMemConfigStm(newdb_eng),
+		stm:         NewMemConfigStm(newdbEng),
 		notifyChans: make(map[int]chan *pb.ConfigResponse),
 	}
 
-	meta_server.stopApplyCh = make(chan interface{})
+	metaServer.stopApplyCh = make(chan interface{})
 
-	go meta_server.ApplingToStm(meta_server.stopApplyCh)
-	return meta_server
+	go metaServer.ApplingToStm(metaServer.stopApplyCh)
+	return metaServer
 }
 
 func (s *MetaServer) StopApply() {
@@ -94,20 +94,20 @@ func (s *MetaServer) getNotifyChan(index int) chan *pb.ConfigResponse {
 func (s *MetaServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb.ConfigResponse, error) {
 	logger.ELogger().Sugar().Debugf("DoConfig %s", req.String())
 
-	cmd_resp := &pb.ConfigResponse{}
+	cmdResp := &pb.ConfigResponse{}
 
 	req_bytes, err := json.Marshal(req)
 	if err != nil {
-		cmd_resp.ErrMsg = err.Error()
-		return cmd_resp, err
+		cmdResp.ErrMsg = err.Error()
+		return cmdResp, err
 	}
 
 	index, _, isLeader := s.Rf.Propose(req_bytes)
 	if !isLeader {
-		cmd_resp.ErrMsg = "is not leader"
-		cmd_resp.ErrCode = common.ErrCodeWrongLeader
-		cmd_resp.LeaderId = s.Rf.GetLeaderId()
-		return cmd_resp, nil
+		cmdResp.ErrMsg = "is not leader"
+		cmdResp.ErrCode = common.ErrCodeWrongLeader
+		cmdResp.LeaderId = s.Rf.GetLeaderId()
+		return cmdResp, nil
 	}
 
 	s.mu.Lock()
@@ -116,13 +116,13 @@ func (s *MetaServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb.C
 
 	select {
 	case res := <-ch:
-		cmd_resp.Config = res.Config
-		cmd_resp.ErrMsg = res.ErrMsg
-		cmd_resp.ErrCode = common.ErrCodeNoErr
+		cmdResp.Config = res.Config
+		cmdResp.ErrMsg = res.ErrMsg
+		cmdResp.ErrCode = common.ErrCodeNoErr
 	case <-time.After(ExecTimeout):
-		cmd_resp.ErrMsg = "server exec timeout"
-		cmd_resp.ErrCode = common.ErrCodeExecTimeout
-		return cmd_resp, errors.New("ExecTimeout")
+		cmdResp.ErrMsg = "server exec timeout"
+		cmdResp.ErrCode = common.ErrCodeExecTimeout
+		return cmdResp, errors.New("ExecTimeout")
 	}
 
 	go func() {
@@ -131,7 +131,7 @@ func (s *MetaServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb.C
 		s.mu.Unlock()
 	}()
 
-	return cmd_resp, nil
+	return cmdResp, nil
 }
 
 func (s *MetaServer) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb.RequestVoteResponse, error) {

@@ -33,22 +33,22 @@ import (
 )
 
 func TestRangeArr(t *testing.T) {
-	var new_buckets [common.NBuckets]int
-	new_buckets[0] = 2
-	for k, v := range new_buckets {
+	var newBuckets [common.NBuckets]int
+	newBuckets[0] = 2
+	for k, v := range newBuckets {
 		t.Logf("k -> %d, v -> %d", k, v)
 	}
 }
 
 func TestAddGroups(t *testing.T) {
-	new_db_eng, err := storage_eng.MakeLevelDBKvStore("./conf_data/" + "/test")
+	newDbEng, err := storage_eng.MakeLevelDBKvStore("./conf_data/" + "/test")
 	if err != nil {
 		raftcore.PrintDebugLog("boot storage engine err!")
 		panic(err)
 	}
-	mem_conf_stm := NewMemConfigStm(new_db_eng)
+	memConfStm := NewMemConfigStm(newDbEng)
 	for i := 0; i < 1000; i++ {
-		conf, _ := mem_conf_stm.Query(-1)
+		conf, _ := memConfStm.Query(-1)
 		t.Logf("%v %d", conf, i)
 	}
 }

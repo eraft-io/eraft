@@ -47,11 +47,11 @@ func Key2BucketID(key string) int {
 }
 
 func CRC32KeyHash(k string, base int) int {
-	bucket_id := 0
+	bucketID := 0
 	crc32q := crc32.MakeTable(0xD5828281)
 	sum := crc32.Checksum([]byte(k), crc32q)
-	bucket_id = int(sum) % NBuckets
-	return bucket_id
+	bucketID = int(sum) % NBuckets
+	return bucketID
 }
 
 func Int64ArrToIntArr(in []int64) []int {

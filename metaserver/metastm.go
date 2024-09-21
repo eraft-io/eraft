@@ -40,7 +40,7 @@ const CUR_VERSION_KEY = "CUR_CONF_VERSION"
 type ConfigStm interface {
 	Join(groups map[int][]string) error
 	Leave(gids []int) error
-	Move(bucket_id, gid int) error
+	Move(bucketID, gID int) error
 	Query(num int) (Config, error)
 }
 
@@ -52,7 +52,7 @@ type MemConfigStm struct {
 func NewMemConfigStm(dbEng storage.KvStore) *MemConfigStm {
 	// check if has default conf
 	_, err := dbEng.Get(CF_PREFIX + strconv.Itoa(0))
-	conf_stm := &MemConfigStm{dbEng: dbEng, curConfVersion: 0}
+	confStm := &MemConfigStm{dbEng: dbEng, curConfVersion: 0}
 	if err != nil {
 		defaultConfig := DefaultConfig()
 		defaultConfigBytes, err := json.Marshal(defaultConfig)
@@ -61,105 +61,105 @@ func NewMemConfigStm(dbEng storage.KvStore) *MemConfigStm {
 		}
 		// init conf
 		logger.ELogger().Sugar().Debugf("init conf -> " + string(defaultConfigBytes))
-		if err := conf_stm.dbEng.Put(CF_PREFIX+strconv.Itoa(0), string(defaultConfigBytes)); err != nil {
+		if err := confStm.dbEng.Put(CF_PREFIX+strconv.Itoa(0), string(defaultConfigBytes)); err != nil {
 			panic(err)
 		}
-		if err := conf_stm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(conf_stm.curConfVersion)); err != nil {
+		if err := confStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(confStm.curConfVersion)); err != nil {
 			panic(err)
 		}
-		return conf_stm
+		return confStm
 	}
 	version_str, err := dbEng.Get(CUR_VERSION_KEY)
 	if err != nil {
 		panic(err)
 	}
 	version_int, _ := strconv.Atoi(version_str)
-	conf_stm.curConfVersion = version_int
-	return conf_stm
+	confStm.curConfVersion = version_int
+	return confStm
 }
 
 func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
-	conf_bytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
 	}
-	last_conf := &Config{}
-	json.Unmarshal([]byte(conf_bytes), last_conf)
-	new_config := Config{cfStm.curConfVersion + 1, last_conf.Buckets, deepCopy(last_conf.Groups)}
+	lastConf := &Config{}
+	json.Unmarshal([]byte(confBytes), lastConf)
+	newConfig := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
 	for gid, servers := range groups {
-		if _, ok := new_config.Groups[gid]; !ok {
+		if _, ok := newConfig.Groups[gid]; !ok {
 			newSvrs := make([]string, len(servers))
 			copy(newSvrs, servers)
-			new_config.Groups[gid] = newSvrs
+			newConfig.Groups[gid] = newSvrs
 		}
 	}
-	s2g := new_config.GetGroup2Buckets()
+	s2g := newConfig.GetGroup2Buckets()
 	var new_buckets [common.NBuckets]int
 	for gid, buckets := range s2g {
 		for _, bid := range buckets {
 			new_buckets[bid] = gid
 		}
 	}
-	new_config.Buckets = new_buckets
-	new_config_bytes, _ := json.Marshal(new_config)
+	newConfig.Buckets = new_buckets
+	newConfigBytes, _ := json.Marshal(newConfig)
 	cfStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(new_config_bytes))
+	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
 	cfStm.curConfVersion += 1
 	return nil
 }
 
 func (cfStm *MemConfigStm) Leave(gids []int) error {
-	conf_bytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
 	}
-	last_conf := &Config{}
-	json.Unmarshal([]byte(conf_bytes), last_conf)
-	new_conf := Config{cfStm.curConfVersion + 1, last_conf.Buckets, deepCopy(last_conf.Groups)}
+	lastConf := &Config{}
+	json.Unmarshal([]byte(confBytes), lastConf)
+	newConf := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
 	for _, gid := range gids {
-		delete(new_conf.Groups, gid)
+		delete(newConf.Groups, gid)
 	}
 	var newBuckets [common.NBuckets]int
-	new_conf.Buckets = newBuckets
-	new_config_bytes, _ := json.Marshal(new_conf)
+	newConf.Buckets = newBuckets
+	newConfigBytes, _ := json.Marshal(newConf)
 	cfStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(new_config_bytes))
+	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
 	cfStm.curConfVersion += 1
 	return nil
 }
 
 func (cfStm *MemConfigStm) Move(bid, gid int) error {
-	conf_bytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
 	}
-	last_conf := &Config{}
-	json.Unmarshal([]byte(conf_bytes), last_conf)
-	new_conf := Config{cfStm.curConfVersion + 1, last_conf.Buckets, deepCopy(last_conf.Groups)}
-	new_conf.Buckets[bid] = gid
-	new_config_bytes, _ := json.Marshal(new_conf)
+	lastConf := &Config{}
+	json.Unmarshal([]byte(confBytes), lastConf)
+	newConf := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
+	newConf.Buckets[bid] = gid
+	newConfigBytes, _ := json.Marshal(newConf)
 	cfStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(new_config_bytes))
+	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
 	cfStm.curConfVersion += 1
 	return nil
 }
 
 func (cfStm *MemConfigStm) Query(version int) (Config, error) {
 	if version < 0 || version >= cfStm.curConfVersion {
-		last_conf := &Config{}
+		lastConf := &Config{}
 		logger.ELogger().Sugar().Debugf("query cur version -> " + strconv.Itoa(cfStm.curConfVersion))
 		confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
 		if err != nil {
 			return DefaultConfig(), err
 		}
-		json.Unmarshal([]byte(confBytes), last_conf)
-		return *last_conf, nil
+		json.Unmarshal([]byte(confBytes), lastConf)
+		return *lastConf, nil
 	}
-	conf_bytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(version))
+	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(version))
 	if err != nil {
 		return DefaultConfig(), err
 	}
-	spec_conf := &Config{}
-	json.Unmarshal([]byte(conf_bytes), spec_conf)
-	return *spec_conf, nil
+	specConf := &Config{}
+	json.Unmarshal([]byte(confBytes), specConf)
+	return *specConf, nil
 }

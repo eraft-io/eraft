@@ -79,44 +79,44 @@ type MemSnapshotDB struct {
 // gid: the node's raft group id
 // configServerAddr: config server addr (leader addr, need to optimized into config server peer map)
 func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configServerAddrs string) *ShardKV {
-	client_ends := []*raftcore.RaftPeerNode{}
+	clientEnds := []*raftcore.RaftPeerNode{}
 	for id, addr := range peerMaps {
-		new_end := raftcore.MakeRaftPeerNode(addr, uint64(id))
-		client_ends = append(client_ends, new_end)
+		newEnd := raftcore.MakeRaftPeerNode(addr, uint64(id))
+		clientEnds = append(clientEnds, newEnd)
 	}
-	new_apply_ch := make(chan *pb.ApplyMsg)
+	newApplyCh := make(chan *pb.ApplyMsg)
 
-	log_db_eng := storage_eng.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
-	new_rf := raftcore.MakeRaft(client_ends, nodeId, log_db_eng, new_apply_ch, 50, 150)
-	newdb_eng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
+	logDbEng := storage_eng.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
+	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 50, 150)
+	newdbEng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
 
-	shard_kv := &ShardKV{
+	shardKv := &ShardKV{
 		dead:        0,
-		rf:          new_rf,
-		applyCh:     new_apply_ch,
+		rf:          newRf,
+		applyCh:     newApplyCh,
 		gid_:        gid,
 		cvCli:       metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(configServerAddrs, ",")),
 		lastApplied: 0,
 		curConfig:   metaserver.DefaultConfig(),
 		lastConfig:  metaserver.DefaultConfig(),
 		stm:         make(map[int]*Bucket),
-		dbEng:       newdb_eng,
+		dbEng:       newdbEng,
 		notifyChans: map[int]chan *pb.CommandResponse{},
 	}
 
-	shard_kv.initStm(shard_kv.dbEng)
+	shardKv.initStm(shardKv.dbEng)
 
-	shard_kv.curConfig = *shard_kv.cvCli.Query(-1)
-	shard_kv.lastConfig = *shard_kv.cvCli.Query(-1)
+	shardKv.curConfig = *shardKv.cvCli.Query(-1)
+	shardKv.lastConfig = *shardKv.cvCli.Query(-1)
 
-	shard_kv.stopApplyCh = make(chan interface{})
+	shardKv.stopApplyCh = make(chan interface{})
 
 	// start applier
-	go shard_kv.ApplingToStm(shard_kv.stopApplyCh)
+	go shardKv.ApplingToStm(shardKv.stopApplyCh)
 
-	go shard_kv.ConfigAction()
+	go shardKv.ConfigAction()
 
-	return shard_kv
+	return shardKv
 }
 
 // CloseApply close the stopApplyCh to stop commit entries apply
@@ -135,36 +135,36 @@ func (s *ShardKV) ConfigAction() {
 			logger.ELogger().Sugar().Debugf("timeout into config action")
 
 			s.mu.RLock()
-			can_perform_next_conf := true
+			canPerformNextConf := true
 			for _, bucket := range s.stm {
 				if bucket.Status != Runing {
-					can_perform_next_conf = false
+					canPerformNextConf = false
 					logger.ELogger().Sugar().Errorf("cano't perform next conf")
 					break
 				}
 			}
-			if can_perform_next_conf {
+			if canPerformNextConf {
 				logger.ELogger().Sugar().Debug("can perform next conf")
 			}
-			cur_conf_version := s.curConfig.Version
+			curConfVersion := s.curConfig.Version
 			s.mu.RUnlock()
-			if can_perform_next_conf {
-				next_config := s.cvCli.Query(int64(cur_conf_version) + 1)
-				if next_config == nil {
+			if canPerformNextConf {
+				nextConfig := s.cvCli.Query(int64(curConfVersion) + 1)
+				if nextConfig == nil {
 					continue
 				}
-				next_cf_bytes, _ := json.Marshal(next_config)
-				cur_cf_bytes, _ := json.Marshal(s.curConfig)
-				logger.ELogger().Sugar().Debugf("next config %s ", string(next_cf_bytes))
-				logger.ELogger().Sugar().Debugf("cur config %s ", string(cur_cf_bytes))
-				if next_config.Version == cur_conf_version+1 {
+				nextCfBytes, _ := json.Marshal(nextConfig)
+				curCfBytes, _ := json.Marshal(s.curConfig)
+				logger.ELogger().Sugar().Debugf("next config %s ", string(nextCfBytes))
+				logger.ELogger().Sugar().Debugf("cur config %s ", string(curCfBytes))
+				if nextConfig.Version == curConfVersion+1 {
 					req := &pb.CommandRequest{}
-					next_cf_bytes, _ := json.Marshal(next_config)
-					logger.ELogger().Sugar().Debugf("can perform next conf %s ", string(next_cf_bytes))
-					req.Context = next_cf_bytes
+					nextCfBytes, _ := json.Marshal(nextConfig)
+					logger.ELogger().Sugar().Debugf("can perform next conf %s ", string(nextCfBytes))
+					req.Context = nextCfBytes
 					req.OpType = pb.OpType_OpConfigChange
-					req_bytes, _ := json.Marshal(req)
-					idx, _, isLeader := s.rf.Propose(req_bytes)
+					reqBytes, _ := json.Marshal(req)
+					idx, _, isLeader := s.rf.Propose(reqBytes)
 					if !isLeader {
 						return
 					}
@@ -212,11 +212,11 @@ func (s *ShardKV) IsKilled() bool {
 // DoCommand do client put get command
 func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.CommandResponse, error) {
 
-	cmd_resp := &pb.CommandResponse{}
+	cmdResp := &pb.CommandResponse{}
 
 	if !s.CanServe(common.Key2BucketID(req.Key)) {
-		cmd_resp.ErrCode = common.ErrCodeWrongGroup
-		return cmd_resp, nil
+		cmdResp.ErrCode = common.ErrCodeWrongGroup
+		return cmdResp, nil
 	}
 	req_bytes, err := json.Marshal(req)
 	if err != nil {
@@ -225,9 +225,9 @@ func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.Co
 	// propose to raft
 	idx, _, isLeader := s.rf.Propose(req_bytes)
 	if !isLeader {
-		cmd_resp.ErrCode = common.ErrCodeWrongLeader
-		cmd_resp.LeaderId = s.GetRf().GetLeaderId()
-		return cmd_resp, nil
+		cmdResp.ErrCode = common.ErrCodeWrongLeader
+		cmdResp.LeaderId = s.GetRf().GetLeaderId()
+		return cmdResp, nil
 	}
 
 	s.mu.Lock()
@@ -237,11 +237,11 @@ func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.Co
 	select {
 	case res := <-ch:
 		if res != nil {
-			cmd_resp.ErrCode = common.ErrCodeNoErr
-			cmd_resp.Value = res.Value
+			cmdResp.ErrCode = common.ErrCodeNoErr
+			cmdResp.Value = res.Value
 		}
 	case <-time.After(metaserver.ExecTimeout):
-		return cmd_resp, errors.New("ExecTimeout")
+		return cmdResp, errors.New("ExecTimeout")
 	}
 
 	go func() {
@@ -250,7 +250,7 @@ func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.Co
 		s.mu.Unlock()
 	}()
 
-	return cmd_resp, nil
+	return cmdResp, nil
 }
 
 // ApplingToStm  apply the commit operation to state machine
@@ -280,49 +280,49 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 			s.lastApplied = int(appliedMsg.CommandIndex)
 			logger.ELogger().Sugar().Debugf("shard_kvserver last applied %d", s.lastApplied)
 
-			cmd_resp := &pb.CommandResponse{}
+			cmdResp := &pb.CommandResponse{}
 			value := ""
 			var err error
 			switch req.OpType {
 			// Normal Op
 			case pb.OpType_OpPut:
-				bucket_id := common.Key2BucketID(req.Key)
-				if s.CanServe(bucket_id) {
-					logger.ELogger().Sugar().Debug("WRITE put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucket_id))
-					s.stm[bucket_id].Put(req.Key, req.Value)
+				bucketID := common.Key2BucketID(req.Key)
+				if s.CanServe(bucketID) {
+					logger.ELogger().Sugar().Debug("WRITE put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucketID))
+					s.stm[bucketID].Put(req.Key, req.Value)
 				}
 			case pb.OpType_OpAppend:
-				bucket_id := common.Key2BucketID(req.Key)
-				if s.CanServe(bucket_id) {
-					s.stm[bucket_id].Append(req.Key, req.Value)
+				bucketID := common.Key2BucketID(req.Key)
+				if s.CanServe(bucketID) {
+					s.stm[bucketID].Append(req.Key, req.Value)
 				}
 			case pb.OpType_OpGet:
-				bucket_id := common.Key2BucketID(req.Key)
-				if s.CanServe(bucket_id) {
-					value, err = s.stm[bucket_id].Get(req.Key)
-					logger.ELogger().Sugar().Debug("get " + req.Key + " value " + value + " from bucket " + strconv.Itoa(bucket_id))
+				bucketID := common.Key2BucketID(req.Key)
+				if s.CanServe(bucketID) {
+					value, err = s.stm[bucketID].Get(req.Key)
+					logger.ELogger().Sugar().Debug("get " + req.Key + " value " + value + " from bucket " + strconv.Itoa(bucketID))
 				}
-				cmd_resp.Value = value
+				cmdResp.Value = value
 			case pb.OpType_OpConfigChange:
-				next_config := &metaserver.Config{}
-				json.Unmarshal(req.Context, next_config)
-				if next_config.Version == s.curConfig.Version+1 {
+				nextConfig := &metaserver.Config{}
+				json.Unmarshal(req.Context, nextConfig)
+				if nextConfig.Version == s.curConfig.Version+1 {
 					for i := 0; i < common.NBuckets; i++ {
-						if s.curConfig.Buckets[i] != s.gid_ && next_config.Buckets[i] == s.gid_ {
+						if s.curConfig.Buckets[i] != s.gid_ && nextConfig.Buckets[i] == s.gid_ {
 							gid := s.curConfig.Buckets[i]
 							if gid != 0 {
 								s.stm[i].Status = Runing
 							}
 						}
-						if s.curConfig.Buckets[i] == s.gid_ && next_config.Buckets[i] != s.gid_ {
-							gid := next_config.Buckets[i]
+						if s.curConfig.Buckets[i] == s.gid_ && nextConfig.Buckets[i] != s.gid_ {
+							gid := nextConfig.Buckets[i]
 							if gid != 0 {
 								s.stm[i].Status = Stopped
 							}
 						}
 					}
 					s.lastConfig = s.curConfig
-					s.curConfig = *next_config
+					s.curConfig = *nextConfig
 					cf_bytes, _ := json.Marshal(s.curConfig)
 					logger.ELogger().Sugar().Debugf("applied config to server %s ", string(cf_bytes))
 				}
@@ -351,7 +351,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 			}
 
 			ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
-			ch <- cmd_resp
+			ch <- cmdResp
 
 			if _, isLeader := s.rf.GetState(); isLeader && s.GetRf().LogCount() > 500 {
 				s.mu.Lock()
@@ -444,9 +444,9 @@ func (s *ShardKV) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) 
 // rpc interface
 // DoBucketsOperation hanlde bucket data get, delete and insert
 func (s *ShardKV) DoBucketsOperation(ctx context.Context, req *pb.BucketOperationRequest) (*pb.BucketOperationResponse, error) {
-	op_resp := &pb.BucketOperationResponse{}
+	opResp := &pb.BucketOperationResponse{}
 	if _, isLeader := s.rf.GetState(); !isLeader {
-		return op_resp, errors.New("ErrorWrongLeader")
+		return opResp, errors.New("ErrorWrongLeader")
 	}
 	switch req.BucketOpType {
 	case pb.BucketOpType_OpGetData:
@@ -454,21 +454,21 @@ func (s *ShardKV) DoBucketsOperation(ctx context.Context, req *pb.BucketOperatio
 			s.mu.RLock()
 			if s.curConfig.Version < int(req.ConfigVersion) {
 				s.mu.RUnlock()
-				return op_resp, errors.New("ErrNotReady")
+				return opResp, errors.New("ErrNotReady")
 			}
-			bucket_datas := &BucketDatasVo{}
-			bucket_datas.Datas = map[int]map[string]string{}
+			bucketDatas := &BucketDatasVo{}
+			bucketDatas.Datas = map[int]map[string]string{}
 			for _, bucketID := range req.BucketIds {
 				sDatas, err := s.stm[int(bucketID)].deepCopy(false)
 				if err != nil {
 					s.mu.RUnlock()
-					return op_resp, err
+					return opResp, err
 				}
-				bucket_datas.Datas[int(bucketID)] = sDatas
+				bucketDatas.Datas[int(bucketID)] = sDatas
 			}
-			buket_data_bytes, _ := json.Marshal(bucket_datas)
-			op_resp.BucketsDatas = buket_data_bytes
-			op_resp.ConfigVersion = req.ConfigVersion
+			buketDataBytes, _ := json.Marshal(bucketDatas)
+			opResp.BucketsDatas = buketDataBytes
+			opResp.ConfigVersion = req.ConfigVersion
 			s.mu.RUnlock()
 		}
 	case pb.BucketOpType_OpDeleteData:
@@ -476,18 +476,18 @@ func (s *ShardKV) DoBucketsOperation(ctx context.Context, req *pb.BucketOperatio
 			s.mu.RLock()
 			if int64(s.curConfig.Version) > req.ConfigVersion {
 				s.mu.RUnlock()
-				return op_resp, nil
+				return opResp, nil
 			}
 			s.mu.RUnlock()
-			command_req := &pb.CommandRequest{}
-			bucket_op_req_bytes, _ := json.Marshal(req)
-			command_req.Context = bucket_op_req_bytes
-			command_req.OpType = pb.OpType_OpDeleteBuckets
-			command_req_bytes, _ := json.Marshal(command_req)
+			commandReq := &pb.CommandRequest{}
+			bucketOpReqBytes, _ := json.Marshal(req)
+			commandReq.Context = bucketOpReqBytes
+			commandReq.OpType = pb.OpType_OpDeleteBuckets
+			commandReqBytes, _ := json.Marshal(commandReq)
 			// async
-			_, _, isLeader := s.rf.Propose(command_req_bytes)
+			_, _, isLeader := s.rf.Propose(commandReqBytes)
 			if !isLeader {
-				return op_resp, nil
+				return opResp, nil
 			}
 		}
 	case pb.BucketOpType_OpInsertData:
@@ -495,20 +495,20 @@ func (s *ShardKV) DoBucketsOperation(ctx context.Context, req *pb.BucketOperatio
 			s.mu.RLock()
 			if int64(s.curConfig.Version) > req.ConfigVersion {
 				s.mu.RUnlock()
-				return op_resp, nil
+				return opResp, nil
 			}
 			s.mu.RUnlock()
-			command_req := &pb.CommandRequest{}
-			bucket_op_req_bytes, _ := json.Marshal(req)
-			command_req.Context = bucket_op_req_bytes
-			command_req.OpType = pb.OpType_OpInsertBuckets
-			command_req_bytes, _ := json.Marshal(command_req)
+			commandReq := &pb.CommandRequest{}
+			bucketOpReqBytes, _ := json.Marshal(req)
+			commandReq.Context = bucketOpReqBytes
+			commandReq.OpType = pb.OpType_OpInsertBuckets
+			commandReqBytes, _ := json.Marshal(commandReq)
 			// async
-			_, _, isLeader := s.rf.Propose(command_req_bytes)
+			_, _, isLeader := s.rf.Propose(commandReqBytes)
 			if !isLeader {
-				return op_resp, nil
+				return opResp, nil
 			}
 		}
 	}
-	return op_resp, nil
+	return opResp, nil
 }

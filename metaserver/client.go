@@ -40,9 +40,9 @@ import (
 
 type MetaSvrCli struct {
 	endpoints []*raftcore.RaftPeerNode
-	leaderId  int64
-	clientId  int64
-	commandId int64
+	leaderID  int64
+	clientID  int64
+	commandID int64
 }
 
 func nrand() int64 {
@@ -51,32 +51,31 @@ func nrand() int64 {
 	return bigx.Int64()
 }
 
-func MakeMetaSvrClient(targetId uint64, targetAddrs []string) *MetaSvrCli {
-
-	mate_svr_cli := &MetaSvrCli{
-		leaderId:  0,
-		clientId:  nrand(),
-		commandId: 0,
+func MakeMetaSvrClient(targetID uint64, targetAddrs []string) *MetaSvrCli {
+	mateSvrCli := &MetaSvrCli{
+		leaderID:  0,
+		clientID:  nrand(),
+		commandID: 0,
 	}
 
 	for _, addr := range targetAddrs {
-		cli := raftcore.MakeRaftPeerNode(addr, targetId)
-		mate_svr_cli.endpoints = append(mate_svr_cli.endpoints, cli)
+		cli := raftcore.MakeRaftPeerNode(addr, targetID)
+		mateSvrCli.endpoints = append(mateSvrCli.endpoints, cli)
 	}
 
-	return mate_svr_cli
+	return mateSvrCli
 }
 
-func (meta_svr_cli *MetaSvrCli) GetRpcClis() []*raftcore.RaftPeerNode {
-	return meta_svr_cli.endpoints
+func (metaSvrCli *MetaSvrCli) GetRpcClis() []*raftcore.RaftPeerNode {
+	return metaSvrCli.endpoints
 }
 
-func (meta_svr_cli *MetaSvrCli) Query(ver int64) *Config {
-	conf_req := &pb.ConfigRequest{
+func (metaSvrCli *MetaSvrCli) Query(ver int64) *Config {
+	confReq := &pb.ConfigRequest{
 		OpType:        pb.ConfigOpType_OpQuery,
 		ConfigVersion: ver,
 	}
-	resp := meta_svr_cli.CallDoConfigRpc(conf_req)
+	resp := metaSvrCli.CallDoConfigRpc(confReq)
 	cf := &Config{}
 	if resp != nil {
 		cf.Version = int(resp.Config.ConfigVersion)
@@ -92,60 +91,60 @@ func (meta_svr_cli *MetaSvrCli) Query(ver int64) *Config {
 	return cf
 }
 
-func (meta_svr_cli *MetaSvrCli) Move(bucket_id, gid int) *pb.ConfigResponse {
-	conf_req := &pb.ConfigRequest{
+func (metaSvrCli *MetaSvrCli) Move(bucketID, gid int) *pb.ConfigResponse {
+	confReq := &pb.ConfigRequest{
 		OpType:   pb.ConfigOpType_OpMove,
-		BucketId: int64(bucket_id),
+		BucketId: int64(bucketID),
 		Gid:      int64(gid),
 	}
-	return meta_svr_cli.CallDoConfigRpc(conf_req)
+	return metaSvrCli.CallDoConfigRpc(confReq)
 }
 
-func (meta_svr_cli *MetaSvrCli) Join(servers map[int64]string) *pb.ConfigResponse {
-	conf_req := &pb.ConfigRequest{
+func (metaSvrCli *MetaSvrCli) Join(servers map[int64]string) *pb.ConfigResponse {
+	confReq := &pb.ConfigRequest{
 		OpType:  pb.ConfigOpType_OpJoin,
 		Servers: servers,
 	}
-	return meta_svr_cli.CallDoConfigRpc(conf_req)
+	return metaSvrCli.CallDoConfigRpc(confReq)
 }
 
-func (meta_svr_cli *MetaSvrCli) Leave(gids []int64) *pb.ConfigResponse {
-	conf_req := &pb.ConfigRequest{
+func (metaSvrCli *MetaSvrCli) Leave(gids []int64) *pb.ConfigResponse {
+	confReq := &pb.ConfigRequest{
 		OpType: pb.ConfigOpType_OpLeave,
 		Gids:   gids,
 	}
-	return meta_svr_cli.CallDoConfigRpc(conf_req)
+	return metaSvrCli.CallDoConfigRpc(confReq)
 }
 
-func (meta_svr_cli *MetaSvrCli) CallDoConfigRpc(req *pb.ConfigRequest) *pb.ConfigResponse {
+func (metaSvrCli *MetaSvrCli) CallDoConfigRpc(req *pb.ConfigRequest) *pb.ConfigResponse {
 	var err error
-	conf_resp := &pb.ConfigResponse{}
-	conf_resp.Config = &pb.ServerConfig{}
-	for _, end := range meta_svr_cli.endpoints {
-		conf_resp, err = (*end.GetRaftServiceCli()).DoConfig(context.Background(), req)
+	confResp := &pb.ConfigResponse{}
+	confResp.Config = &pb.ServerConfig{}
+	for _, end := range metaSvrCli.endpoints {
+		confResp, err = (*end.GetRaftServiceCli()).DoConfig(context.Background(), req)
 		if err != nil {
 			continue
 		}
-		switch conf_resp.ErrCode {
+		switch confResp.ErrCode {
 		case common.ErrCodeNoErr:
-			meta_svr_cli.commandId++
-			return conf_resp
+			metaSvrCli.commandID++
+			return confResp
 		case common.ErrCodeWrongLeader:
-			conf_resp, err := (*meta_svr_cli.endpoints[conf_resp.LeaderId].GetRaftServiceCli()).DoConfig(context.Background(), req)
+			confResp, err := (*metaSvrCli.endpoints[confResp.LeaderId].GetRaftServiceCli()).DoConfig(context.Background(), req)
 			if err != nil {
 				logger.ELogger().Sugar().Debugf("a node in cluster is down : ", err.Error())
 				continue
 			}
-			if conf_resp.ErrCode == common.ErrCodeNoErr {
-				meta_svr_cli.commandId++
-				return conf_resp
+			if confResp.ErrCode == common.ErrCodeNoErr {
+				metaSvrCli.commandID++
+				return confResp
 			}
-			if conf_resp.ErrCode == common.ErrCodeExecTimeout {
+			if confResp.ErrCode == common.ErrCodeExecTimeout {
 				logger.ELogger().Sugar().Debug("exec timeout")
-				return conf_resp
+				return confResp
 			}
-			return conf_resp
+			return confResp
 		}
 	}
-	return conf_resp
+	return confResp
 }

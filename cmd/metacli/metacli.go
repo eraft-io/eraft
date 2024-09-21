@@ -49,15 +49,15 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 
 	addrs := strings.Split(os.Args[1], ",")
-	meta_cli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, addrs)
+	metaCli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, addrs)
 
-	sig_chan := make(chan os.Signal, 1)
-	signal.Notify(sig_chan)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan)
 
 	go func() {
 		sig := <-sigs
 		fmt.Println(sig)
-		for _, cli := range meta_cli.GetRpcClis() {
+		for _, cli := range metaCli.GetRpcClis() {
 			cli.CloseAllConn()
 		}
 		os.Exit(-1)
@@ -69,18 +69,18 @@ func main() {
 			gid, _ := strconv.Atoi(os.Args[3])
 			addr_map := make(map[int64]string)
 			addr_map[int64(gid)] = os.Args[4]
-			meta_cli.Join(addr_map)
+			metaCli.Join(addr_map)
 		}
 	case "leave":
 		{
 			gid, _ := strconv.Atoi(os.Args[3])
-			meta_cli.Leave([]int64{int64(gid)})
+			metaCli.Leave([]int64{int64(gid)})
 		}
 	case "query":
 		{
-			last_conf := meta_cli.Query(-1)
-			out_bytes, _ := json.Marshal(last_conf)
-			raftcore.PrintDebugLog("latest configuration: " + string(out_bytes))
+			lastConf := metaCli.Query(-1)
+			outBytes, _ := json.Marshal(lastConf)
+			raftcore.PrintDebugLog("latest configuration: " + string(outBytes))
 		}
 	case "move":
 		{
@@ -94,7 +94,7 @@ func main() {
 			gid, _ := strconv.Atoi(os.Args[4])
 
 			for i := start; i <= end; i++ {
-				meta_cli.Move(i, gid)
+				metaCli.Move(i, gid)
 			}
 		}
 	}

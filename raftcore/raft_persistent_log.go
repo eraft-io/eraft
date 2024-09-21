@@ -55,9 +55,9 @@ func MakePersistRaftLog(newdbEng storage_eng.KvStore) *RaftLog {
 	_, readBootstrapStateErr := newdbEng.GetBytesValue(BootstrapStateKey)
 	if err != nil && readBootstrapStateErr != nil {
 		logger.ELogger().Sugar().Debugf("init raft log state")
-		emp_ent := &pb.Entry{}
-		emp_ent_encode := EncodeEntry(emp_ent)
-		if err := newdbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), emp_ent_encode); err != nil {
+		empEnt := &pb.Entry{}
+		empEntEncode := EncodeEntry(empEnt)
+		if err := newdbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), empEntEncode); err != nil {
 			panic(err.Error())
 		}
 		if err := newdbEng.PutBytesKv(BootstrapStateKey, []byte{}); err != nil {
@@ -69,13 +69,13 @@ func MakePersistRaftLog(newdbEng storage_eng.KvStore) *RaftLog {
 	if err != nil {
 		panic(err)
 	}
-	last_idx := binary.BigEndian.Uint64(lidkBytes[len(RAFTLOG_PREFIX):])
+	lastIdx := binary.BigEndian.Uint64(lidkBytes[len(RAFTLOG_PREFIX):])
 	fidkBytes, _, err := newdbEng.SeekPrefixFirst(RAFTLOG_PREFIX)
 	if err != nil {
 		panic(err)
 	}
-	first_idx := binary.BigEndian.Uint64(fidkBytes[len(RAFTLOG_PREFIX):])
-	return &RaftLog{dbEng: newdbEng, lastIdx: last_idx, firstIdx: first_idx}
+	firstIdx := binary.BigEndian.Uint64(fidkBytes[len(RAFTLOG_PREFIX):])
+	return &RaftLog{dbEng: newdbEng, lastIdx: lastIdx, firstIdx: firstIdx}
 }
 
 // PersistRaftState Persistent storage raft state
@@ -84,22 +84,22 @@ func MakePersistRaftLog(newdbEng storage_eng.KvStore) *RaftLog {
 func (rfLog *RaftLog) PersistRaftState(curTerm int64, votedFor int64) {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
-	rf_state := &RaftPersistenState{
+	rfState := &RaftPersistenState{
 		CurTerm:  curTerm,
 		VotedFor: votedFor,
 	}
-	rfLog.dbEng.PutBytesKv(RAFT_STATE_KEY, EncodeRaftState(rf_state))
+	rfLog.dbEng.PutBytesKv(RAFT_STATE_KEY, EncodeRaftState(rfState))
 }
 
 // ReadRaftState
 // read the persist curTerm, votedFor for node from storage engine
 func (rfLog *RaftLog) ReadRaftState() (curTerm int64, votedFor int64) {
-	rf_bytes, err := rfLog.dbEng.GetBytesValue(RAFT_STATE_KEY)
+	rfBytes, err := rfLog.dbEng.GetBytesValue(RAFT_STATE_KEY)
 	if err != nil {
 		return 0, -1
 	}
-	rf_state := DecodeRaftState(rf_bytes)
-	return rf_state.CurTerm, rf_state.VotedFor
+	rfState := DecodeRaftState(rfBytes)
+	return rfState.CurTerm, rfState.VotedFor
 }
 
 // PersistSnapshot ...
@@ -136,28 +136,28 @@ func (rfLog *RaftLog) GetLastLogId() uint64 {
 func (rfLog *RaftLog) SetEntFirstData(d []byte) error {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
-	first_idx := rfLog.GetFirstLogId()
-	encode_value, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(uint64(first_idx)))
+	firstIdx := rfLog.GetFirstLogId()
+	encodeValue, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(uint64(firstIdx)))
 	if err != nil {
-		logger.ELogger().Sugar().Panicf("get log entry with id %d error!", first_idx)
+		logger.ELogger().Sugar().Panicf("get log entry with id %d error!", firstIdx)
 		panic(err)
 	}
-	ent := DecodeEntry(encode_value)
-	ent.Index = int64(first_idx)
+	ent := DecodeEntry(encodeValue)
+	ent.Index = int64(firstIdx)
 	ent.Data = d
-	newent_encode := EncodeEntry(ent)
-	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(first_idx), newent_encode)
+	newentEncode := EncodeEntry(ent)
+	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(firstIdx), newentEncode)
 }
 
 func (rfLog *RaftLog) ResetFirstLogEntry(term int64, index int64) error {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
-	new_ent := &pb.Entry{}
-	new_ent.EntryType = pb.EntryType_EntryNormal
-	new_ent.Term = uint64(term)
-	new_ent.Index = index
-	newent_encode := EncodeEntry(new_ent)
-	if err := rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(index)), newent_encode); err != nil {
+	newEnt := &pb.Entry{}
+	newEnt.EntryType = pb.EntryType_EntryNormal
+	newEnt.Term = uint64(term)
+	newEnt.Index = index
+	newentEncode := EncodeEntry(newEnt)
+	if err := rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(index)), newentEncode); err != nil {
 		return err
 	}
 	rfLog.firstIdx = uint64(index)
@@ -176,9 +176,9 @@ func (rfLog *RaftLog) ReInitLogs() error {
 	rfLog.firstIdx = 0
 	rfLog.lastIdx = 0
 	// add a empty
-	emp_ent := &pb.Entry{}
-	empent_encode := EncodeEntry(emp_ent)
-	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), empent_encode)
+	empEnt := &pb.Entry{}
+	empentEncode := EncodeEntry(empEnt)
+	return rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(INIT_LOG_INDEX), empentEncode)
 }
 
 // GetFirst
@@ -214,8 +214,8 @@ func (rfLog *RaftLog) LogItemCount() int {
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
-	newent_encode := EncodeEntry(newEnt)
-	rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(rfLog.lastIdx)+1), newent_encode)
+	newentEncode := EncodeEntry(newEnt)
+	rfLog.dbEng.PutBytesKv(EncodeRaftLogKey(uint64(rfLog.lastIdx)+1), newentEncode)
 	rfLog.lastIdx += 1
 }
 
@@ -226,10 +226,10 @@ func (rfLog *RaftLog) EraseBefore(logidx int64, withDel bool) ([]*pb.Entry, erro
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
 	ents := []*pb.Entry{}
-	lastlog_id := rfLog.GetLastLogId()
-	firstlog_id := rfLog.GetFirstLogId()
+	lastlogID := rfLog.GetLastLogId()
+	firstlogID := rfLog.GetFirstLogId()
 	if withDel {
-		for i := firstlog_id; i < uint64(logidx); i++ {
+		for i := firstlogID; i < uint64(logidx); i++ {
 			if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(i)); err != nil {
 				return ents, err
 			}
@@ -237,7 +237,7 @@ func (rfLog *RaftLog) EraseBefore(logidx int64, withDel bool) ([]*pb.Entry, erro
 		}
 		rfLog.firstIdx = uint64(logidx)
 	}
-	for i := logidx; i <= int64(lastlog_id); i++ {
+	for i := logidx; i <= int64(lastlogID); i++ {
 		ents = append(ents, rfLog.GetEnt(i))
 	}
 	return ents, nil
@@ -249,7 +249,7 @@ func (rfLog *RaftLog) EraseBefore(logidx int64, withDel bool) ([]*pb.Entry, erro
 func (rfLog *RaftLog) EraseAfter(logidx int64, withDel bool) []*pb.Entry {
 	rfLog.mu.Lock()
 	defer rfLog.mu.Unlock()
-	firstlog_id := rfLog.GetFirstLogId()
+	firstlogID := rfLog.GetFirstLogId()
 	if withDel {
 		for i := logidx; i <= int64(rfLog.GetLastLogId()); i++ {
 			if err := rfLog.dbEng.DeleteBytesK(EncodeRaftLogKey(uint64(i))); err != nil {
@@ -259,7 +259,7 @@ func (rfLog *RaftLog) EraseAfter(logidx int64, withDel bool) []*pb.Entry {
 		rfLog.lastIdx = uint64(logidx) - 1
 	}
 	ents := []*pb.Entry{}
-	for i := firstlog_id; i < uint64(logidx); i++ {
+	for i := firstlogID; i < uint64(logidx); i++ {
 		ents = append(ents, rfLog.GetEnt(int64(i)))
 	}
 	return ents
@@ -287,23 +287,23 @@ func (rfLog *RaftLog) GetEntry(idx int64) *pb.Entry {
 }
 
 func (rfLog *RaftLog) GetEnt(logidx int64) *pb.Entry {
-	encode_value, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(uint64(logidx)))
+	encodeValue, err := rfLog.dbEng.GetBytesValue(EncodeRaftLogKey(uint64(logidx)))
 	if err != nil {
 		logger.ELogger().Sugar().Debugf("get log entry with id %d error!", logidx)
 		panic(err)
 	}
-	return DecodeEntry(encode_value)
+	return DecodeEntry(encodeValue)
 }
 
 // EncodeRaftLogKey
 // encode raft log key with perfix -> RAFTLOG_PREFIX
 func EncodeRaftLogKey(idx uint64) []byte {
-	var out_buf bytes.Buffer
-	out_buf.Write(RAFTLOG_PREFIX)
+	var outBuf bytes.Buffer
+	outBuf.Write(RAFTLOG_PREFIX)
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, uint64(idx))
-	out_buf.Write(b)
-	return out_buf.Bytes()
+	outBuf.Write(b)
+	return outBuf.Bytes()
 }
 
 // DecodeRaftLogKey
@@ -333,17 +333,17 @@ func DecodeEntry(in []byte) *pb.Entry {
 // EncodeRaftState
 // encode RaftPersistenState to bytes sequence
 func EncodeRaftState(rfState *RaftPersistenState) []byte {
-	var bytes_state bytes.Buffer
-	enc := gob.NewEncoder(&bytes_state)
+	var bytesState bytes.Buffer
+	enc := gob.NewEncoder(&bytesState)
 	enc.Encode(rfState)
-	return bytes_state.Bytes()
+	return bytesState.Bytes()
 }
 
 // DecodeRaftState
 // decode RaftPersistenState from bytes sequence
 func DecodeRaftState(in []byte) *RaftPersistenState {
 	dec := gob.NewDecoder(bytes.NewBuffer(in))
-	rf_state := RaftPersistenState{}
-	dec.Decode(&rf_state)
-	return &rf_state
+	rfState := RaftPersistenState{}
+	dec.Decode(&rfState)
+	return &rfState
 }

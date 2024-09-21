@@ -37,7 +37,6 @@ import (
 
 	"github.com/eraft-io/eraft/shardkvserver"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -49,33 +48,33 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	node_id_str := os.Args[1]
-	node_id, err := strconv.Atoi(node_id_str)
+	nodeIdStr := os.Args[1]
+	nodeID, err := strconv.Atoi(nodeIdStr)
 	if err != nil {
 		panic(err)
 	}
 
-	gid_str := os.Args[2]
-	gid, err := strconv.Atoi(gid_str)
+	gidStr := os.Args[2]
+	gid, err := strconv.Atoi(gidStr)
 	if err != nil {
 		panic(err)
 	}
 
-	svr_addrs := strings.Split(os.Args[4], ",")
-	svr_peer_map := make(map[int]string)
-	for i, addr := range svr_addrs {
-		svr_peer_map[i] = addr
+	svrAddrs := strings.Split(os.Args[4], ",")
+	svrPeerMap := make(map[int]string)
+	for i, addr := range svrAddrs {
+		svrPeerMap[i] = addr
 	}
 
-	shard_svr := shardkvserver.MakeShardKVServer(svr_peer_map, int64(node_id), gid, os.Args[3])
-	lis, err := net.Listen("tcp", svr_peer_map[node_id])
+	shardSvr := shardkvserver.MakeShardKVServer(svrPeerMap, int64(nodeID), gid, os.Args[3])
+	lis, err := net.Listen("tcp", svrPeerMap[nodeID])
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)
 		return
 	}
-	fmt.Printf("server listen on: %s \n", svr_peer_map[node_id])
+	fmt.Printf("server listen on: %s \n", svrPeerMap[nodeID])
 	s := grpc.NewServer()
-	pb.RegisterRaftServiceServer(s, shard_svr)
+	pb.RegisterRaftServiceServer(s, shardSvr)
 
 	sigChan := make(chan os.Signal, 1)
 
@@ -84,12 +83,11 @@ func main() {
 	go func() {
 		sig := <-sigs
 		fmt.Println(sig)
-		shard_svr.GetRf().CloseEndsConn()
-		shard_svr.CloseApply()
+		shardSvr.GetRf().CloseEndsConn()
+		shardSvr.CloseApply()
 		os.Exit(-1)
 	}()
 
-	reflection.Register(s)
 	err = s.Serve(lis)
 	if err != nil {
 		fmt.Printf("failed to serve: %v", err)

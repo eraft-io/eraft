@@ -54,11 +54,11 @@ func (cf *Config) GetGroup2Buckets() map[int][]int {
 const ExecTimeout = 3 * time.Second
 
 func deepCopy(groups map[int][]string) map[int][]string {
-	new_group := make(map[int][]string)
-	for gid, severs := range groups {
+	newGroup := make(map[int][]string)
+	for gID, severs := range groups {
 		newSvrs := make([]string, len(severs))
 		copy(newSvrs, severs)
-		new_group[gid] = newSvrs
+		newGroup[gID] = newSvrs
 	}
-	return new_group
+	return newGroup
 }

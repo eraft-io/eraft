@@ -50,26 +50,26 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	node_id_str := os.Args[1]
-	node_id, err := strconv.Atoi(node_id_str)
+	nodeIdStr := os.Args[1]
+	nodeID, err := strconv.Atoi(nodeIdStr)
 	if err != nil {
 		panic(err)
 	}
-	meta_svr_addrs := strings.Split(os.Args[2], ",")
-	cf_peer_map := make(map[int]string)
-	for i, addr := range meta_svr_addrs {
-		cf_peer_map[i] = addr
+	metaSvrAddrs := strings.Split(os.Args[2], ",")
+	cfPeerMap := make(map[int]string)
+	for i, addr := range metaSvrAddrs {
+		cfPeerMap[i] = addr
 	}
 
-	meta_svr := metaserver.MakeMetaServer(cf_peer_map, node_id)
-	lis, err := net.Listen("tcp", cf_peer_map[node_id])
+	metaSvr := metaserver.MakeMetaServer(cfPeerMap, nodeID)
+	lis, err := net.Listen("tcp", cfPeerMap[nodeID])
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)
 		return
 	}
 	s := grpc.NewServer()
 
-	pb.RegisterRaftServiceServer(s, meta_svr)
+	pb.RegisterRaftServiceServer(s, metaSvr)
 
 	sigChan := make(chan os.Signal, 1)
 
@@ -78,8 +78,8 @@ func main() {
 	go func() {
 		sig := <-sigs
 		fmt.Println(sig)
-		meta_svr.Rf.CloseEndsConn()
-		meta_svr.StopApply()
+		metaSvr.Rf.CloseEndsConn()
+		metaSvr.StopApply()
 		os.Exit(-1)
 	}()
 

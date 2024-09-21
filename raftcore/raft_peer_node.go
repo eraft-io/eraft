@@ -52,12 +52,12 @@ func MakeRaftPeerNode(addr string, id uint64) *RaftPeerNode {
 	}
 	conns := []*grpc.ClientConn{}
 	conns = append(conns, conn)
-	rpc_client := raftpb.NewRaftServiceClient(conn)
+	rpcClient := raftpb.NewRaftServiceClient(conn)
 	return &RaftPeerNode{
 		id:             id,
 		addr:           addr,
 		conns:          conns,
-		raftServiceCli: &rpc_client,
+		raftServiceCli: &rpcClient,
 	}
 }
 
