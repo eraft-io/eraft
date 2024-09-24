@@ -66,6 +66,8 @@ type ShardKV struct {
 
 	stopApplyCh chan interface{}
 
+	lastSnapShotIdx int
+
 	pb.UnimplementedRaftServiceServer
 }
 
@@ -91,17 +93,18 @@ func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configSer
 	newdbEng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
 
 	shardKv := &ShardKV{
-		dead:        0,
-		rf:          newRf,
-		applyCh:     newApplyCh,
-		gid_:        gid,
-		cvCli:       metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(configServerAddrs, ",")),
-		lastApplied: 0,
-		curConfig:   metaserver.DefaultConfig(),
-		lastConfig:  metaserver.DefaultConfig(),
-		stm:         make(map[int]*Bucket),
-		dbEng:       newdbEng,
-		notifyChans: map[int]chan *pb.CommandResponse{},
+		dead:            0,
+		rf:              newRf,
+		applyCh:         newApplyCh,
+		gid_:            gid,
+		cvCli:           metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(configServerAddrs, ",")),
+		lastApplied:     0,
+		curConfig:       metaserver.DefaultConfig(),
+		lastConfig:      metaserver.DefaultConfig(),
+		stm:             make(map[int]*Bucket),
+		dbEng:           newdbEng,
+		lastSnapShotIdx: 0,
+		notifyChans:     map[int]chan *pb.CommandResponse{},
 	}
 
 	shardKv.initStm(shardKv.dbEng)
@@ -272,91 +275,96 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 				return
 			}
 
-			req := &pb.CommandRequest{}
-			if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
-				logger.ELogger().Sugar().Errorf("Unmarshal CommandRequest err", err.Error())
-				continue
-			}
-			s.lastApplied = int(appliedMsg.CommandIndex)
-			logger.ELogger().Sugar().Debugf("shard_kvserver last applied %d", s.lastApplied)
-
-			cmdResp := &pb.CommandResponse{}
-			value := ""
-			var err error
-			switch req.OpType {
-			// Normal Op
-			case pb.OpType_OpPut:
-				bucketID := common.Key2BucketID(req.Key)
-				if s.CanServe(bucketID) {
-					logger.ELogger().Sugar().Debug("WRITE put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucketID))
-					s.stm[bucketID].Put(req.Key, req.Value)
-				}
-			case pb.OpType_OpAppend:
-				bucketID := common.Key2BucketID(req.Key)
-				if s.CanServe(bucketID) {
-					s.stm[bucketID].Append(req.Key, req.Value)
-				}
-			case pb.OpType_OpGet:
-				bucketID := common.Key2BucketID(req.Key)
-				if s.CanServe(bucketID) {
-					value, err = s.stm[bucketID].Get(req.Key)
-					logger.ELogger().Sugar().Debug("get " + req.Key + " value " + value + " from bucket " + strconv.Itoa(bucketID))
-				}
-				cmdResp.Value = value
-			case pb.OpType_OpConfigChange:
-				nextConfig := &metaserver.Config{}
-				json.Unmarshal(req.Context, nextConfig)
-				if nextConfig.Version == s.curConfig.Version+1 {
-					for i := 0; i < common.NBuckets; i++ {
-						if s.curConfig.Buckets[i] != s.gid_ && nextConfig.Buckets[i] == s.gid_ {
-							gid := s.curConfig.Buckets[i]
-							if gid != 0 {
-								s.stm[i].Status = Runing
-							}
-						}
-						if s.curConfig.Buckets[i] == s.gid_ && nextConfig.Buckets[i] != s.gid_ {
-							gid := nextConfig.Buckets[i]
-							if gid != 0 {
-								s.stm[i].Status = Stopped
-							}
-						}
-					}
-					s.lastConfig = s.curConfig
-					s.curConfig = *nextConfig
-					cf_bytes, _ := json.Marshal(s.curConfig)
-					logger.ELogger().Sugar().Debugf("applied config to server %s ", string(cf_bytes))
-				}
-			case pb.OpType_OpDeleteBuckets:
-				bucket_op_reqs := &pb.BucketOperationRequest{}
-				json.Unmarshal(req.Context, bucket_op_reqs)
-				for _, bid := range bucket_op_reqs.BucketIds {
-					s.stm[int(bid)].deleteBucketData()
-					logger.ELogger().Sugar().Debugf("del buckets data list %d", strconv.Itoa(int(bid)))
-				}
-			case pb.OpType_OpInsertBuckets:
-				bucket_op_reqs := &pb.BucketOperationRequest{}
-				json.Unmarshal(req.Context, bucket_op_reqs)
-				bucketDatas := &BucketDatasVo{}
-				json.Unmarshal(bucket_op_reqs.BucketsDatas, bucketDatas)
-				for bucket_id, kvs := range bucketDatas.Datas {
-					s.stm[bucket_id] = NewBucket(s.dbEng, bucket_id)
-					for k, v := range kvs {
-						s.stm[bucket_id].Put(k, v)
-						logger.ELogger().Sugar().Debug("insert kv data to buckets k -> " + k + " v-> " + v)
-					}
-				}
-			}
-			if err != nil {
-				raftcore.PrintDebugLog(err.Error())
-			}
-
-			ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
-			ch <- cmdResp
-
-			if _, isLeader := s.rf.GetState(); isLeader && s.GetRf().LogCount() > 500 {
+			if appliedMsg.CommandValid {
 				s.mu.Lock()
-				s.takeSnapshot(uint64(appliedMsg.CommandIndex))
+
+				req := &pb.CommandRequest{}
+				if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
+					logger.ELogger().Sugar().Errorf("Unmarshal CommandRequest err", err.Error())
+					continue
+				}
+				s.lastApplied = int(appliedMsg.CommandIndex)
+				logger.ELogger().Sugar().Debugf("shard_kvserver last applied %d", s.lastApplied)
+
+				cmdResp := &pb.CommandResponse{}
+				value := ""
+				var err error
+				switch req.OpType {
+				// Normal Op
+				case pb.OpType_OpPut:
+					bucketID := common.Key2BucketID(req.Key)
+					if s.CanServe(bucketID) {
+						logger.ELogger().Sugar().Debug("WRITE put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucketID))
+						s.stm[bucketID].Put(req.Key, req.Value)
+					}
+				case pb.OpType_OpAppend:
+					bucketID := common.Key2BucketID(req.Key)
+					if s.CanServe(bucketID) {
+						s.stm[bucketID].Append(req.Key, req.Value)
+					}
+				case pb.OpType_OpGet:
+					bucketID := common.Key2BucketID(req.Key)
+					if s.CanServe(bucketID) {
+						value, err = s.stm[bucketID].Get(req.Key)
+						logger.ELogger().Sugar().Debug("get " + req.Key + " value " + value + " from bucket " + strconv.Itoa(bucketID))
+					}
+					cmdResp.Value = value
+				case pb.OpType_OpConfigChange:
+					nextConfig := &metaserver.Config{}
+					json.Unmarshal(req.Context, nextConfig)
+					if nextConfig.Version == s.curConfig.Version+1 {
+						for i := 0; i < common.NBuckets; i++ {
+							if s.curConfig.Buckets[i] != s.gid_ && nextConfig.Buckets[i] == s.gid_ {
+								gid := s.curConfig.Buckets[i]
+								if gid != 0 {
+									s.stm[i].Status = Runing
+								}
+							}
+							if s.curConfig.Buckets[i] == s.gid_ && nextConfig.Buckets[i] != s.gid_ {
+								gid := nextConfig.Buckets[i]
+								if gid != 0 {
+									s.stm[i].Status = Stopped
+								}
+							}
+						}
+						s.lastConfig = s.curConfig
+						s.curConfig = *nextConfig
+						cf_bytes, _ := json.Marshal(s.curConfig)
+						logger.ELogger().Sugar().Debugf("applied config to server %s ", string(cf_bytes))
+					}
+				case pb.OpType_OpDeleteBuckets:
+					bucket_op_reqs := &pb.BucketOperationRequest{}
+					json.Unmarshal(req.Context, bucket_op_reqs)
+					for _, bid := range bucket_op_reqs.BucketIds {
+						s.stm[int(bid)].deleteBucketData()
+						logger.ELogger().Sugar().Debugf("del buckets data list %d", strconv.Itoa(int(bid)))
+					}
+				case pb.OpType_OpInsertBuckets:
+					bucket_op_reqs := &pb.BucketOperationRequest{}
+					json.Unmarshal(req.Context, bucket_op_reqs)
+					bucketDatas := &BucketDatasVo{}
+					json.Unmarshal(bucket_op_reqs.BucketsDatas, bucketDatas)
+					for bucket_id, kvs := range bucketDatas.Datas {
+						s.stm[bucket_id] = NewBucket(s.dbEng, bucket_id)
+						for k, v := range kvs {
+							s.stm[bucket_id].Put(k, v)
+							logger.ELogger().Sugar().Debug("insert kv data to buckets k -> " + k + " v-> " + v)
+						}
+					}
+				}
+				if err != nil {
+					raftcore.PrintDebugLog(err.Error())
+				}
+
+				if _, isLeader := s.rf.GetState(); isLeader {
+					ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
+					ch <- cmdResp
+					if s.GetRf().LogCount() > 50 {
+						s.takeSnapshot(uint64(appliedMsg.CommandIndex))
+					}
+				}
 				s.mu.Unlock()
+
 			}
 		}
 	}

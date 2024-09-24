@@ -77,6 +77,7 @@ type Raft struct {
 	nextIdx          []int
 	matchIdx         []int
 	isSnapshoting    bool
+	lastSnapShotIdx  int64
 	leaderId         int64
 	electionTimer    *time.Timer
 	heartbeatTimer   *time.Timer
@@ -103,6 +104,7 @@ func MakeRaft(peers []*RaftPeerNode, me int64, newdbEng storage_eng.KvStore, app
 		electionTimer:    time.NewTimer(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(baseElectionTimeOutMs)))),
 		baseElecTimeout:  baseElectionTimeOutMs,
 		heartBeatTimeout: heartbeatTimeOutMs,
+		lastSnapShotIdx:  0,
 	}
 	rf.curTerm, rf.votedFor = rf.logs.ReadRaftState()
 	rf.applyCond = sync.NewCond(&rf.mu)
@@ -522,17 +524,17 @@ func (rf *Raft) replicateOneRound(peer *RaftPeerNode) {
 	if prevLogIndex < uint64(rf.logs.GetFirst().Index) {
 		firstLog := rf.logs.GetFirst()
 
-		// snapShotContext, err := rf.ReadSnapshot()
-		// if err != nil {
-		// 	logger.ELogger().Sugar().Errorf("read snapshot data error %v", err)
-		// }
+		snapShotContext, err := rf.ReadSnapshot()
+		if err != nil {
+			logger.ELogger().Sugar().Errorf("read snapshot data error %v", err)
+		}
 
 		snapShotReq := &pb.InstallSnapshotRequest{
 			Term:              rf.curTerm,
 			LeaderId:          int64(rf.id),
 			LastIncludedIndex: firstLog.Index,
 			LastIncludedTerm:  int64(firstLog.Term),
-			// Data:              snapShotContext,
+			Data:              snapShotContext,
 		}
 
 		rf.mu.RUnlock()
@@ -646,6 +648,12 @@ func (rf *Raft) Applier() {
 	}
 }
 
+func (rf *Raft) GetLastSnapshotIdx() int64 {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	return rf.lastSnapShotIdx
+}
+
 func (rf *Raft) Snapshot(snapIdx uint64, snapshotContext []byte) error {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
@@ -664,6 +672,7 @@ func (rf *Raft) Snapshot(snapIdx uint64, snapshotContext []byte) error {
 		return err
 	}
 
+	rf.lastSnapShotIdx = int64(snapIdx)
 	// create checkpoint for db
 	rf.isSnapshoting = false
 	return rf.logs.PersistSnapshot(snapshotContext)

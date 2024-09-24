@@ -36,10 +36,11 @@ import (
 )
 
 type RaftLog struct {
-	mu       sync.RWMutex
-	firstIdx uint64
-	lastIdx  uint64
-	dbEng    storage_eng.KvStore
+	mu           sync.RWMutex
+	firstIdx     uint64
+	lastIdx      uint64
+	compactedIdx uint64
+	dbEng        storage_eng.KvStore
 }
 
 type RaftPersistenState struct {
@@ -161,6 +162,7 @@ func (rfLog *RaftLog) ResetFirstLogEntry(term int64, index int64) error {
 		return err
 	}
 	rfLog.firstIdx = uint64(index)
+	rfLog.compactedIdx = uint64(index)
 	return nil
 }
 
