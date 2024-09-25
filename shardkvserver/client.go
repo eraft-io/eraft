@@ -44,9 +44,9 @@ import (
 // a client is defined for the shard_kvserver
 type KvClient struct {
 	// raft group rpc client
-	rpcCli *raftcore.RaftPeerNode
+	rpcCli *raftcore.RaftClientEnd
 
-	connectsCache map[string]*raftcore.RaftPeerNode
+	connectsCache map[string]*raftcore.RaftClientEnd
 
 	// config server group client
 	csCli *metaserver.MetaSvrCli
@@ -61,11 +61,11 @@ type KvClient struct {
 	commandId int64
 }
 
-func (cli *KvClient) AddConnToCache(svrAddr string, rpcCli *raftcore.RaftPeerNode) {
+func (cli *KvClient) AddConnToCache(svrAddr string, rpcCli *raftcore.RaftClientEnd) {
 	cli.connectsCache[svrAddr] = rpcCli
 }
 
-func (cli *KvClient) GetConnFromCache(svrAddr string) *raftcore.RaftPeerNode {
+func (cli *KvClient) GetConnFromCache(svrAddr string) *raftcore.RaftClientEnd {
 	if conn, ok := cli.connectsCache[svrAddr]; ok {
 		return conn
 	}
@@ -82,7 +82,7 @@ func (cli *KvClient) GetCsClient() *metaserver.MetaSvrCli {
 }
 
 // expose raft group rpc client to the outside
-func (cli *KvClient) GetRpcClient() *raftcore.RaftPeerNode {
+func (cli *KvClient) GetRpcClient() *raftcore.RaftClientEnd {
 	return cli.rpcCli
 }
 
@@ -100,7 +100,7 @@ func MakeKvClient(csAddrs string) *KvClient {
 		csCli:            meta_svr_cli,
 		rpcCli:           nil,
 		groupLeaderAddrs: map[int64]string{},
-		connectsCache:    make(map[string]*raftcore.RaftPeerNode),
+		connectsCache:    make(map[string]*raftcore.RaftClientEnd),
 		clientId:         nrand(),
 		commandId:        0,
 	}
@@ -174,7 +174,7 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 	if servers, ok := kvCli.config.Groups[gid]; ok {
 		for _, svrAddr := range servers {
 			if kvCli.GetConnFromCache(svrAddr) == nil {
-				kvCli.rpcCli = raftcore.MakeRaftPeerNode(svrAddr, common.UN_UNSED_TID)
+				kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
 				kvCli.AddConnToCache(svrAddr, kvCli.rpcCli)
 			} else {
 				if kvCli.groupLeaderAddrs[int64(gid)] != "" {
@@ -197,7 +197,7 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 				return "", errors.New("WrongGroup")
 			case common.ErrCodeWrongLeader:
 				kvCli.groupLeaderAddrs[int64(gid)] = servers[resp.LeaderId]
-				kvCli.rpcCli = raftcore.MakeRaftPeerNode(servers[resp.LeaderId], common.UN_UNSED_TID)
+				kvCli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UN_UNSED_TID)
 				kvCli.AddConnToCache(servers[resp.LeaderId], kvCli.rpcCli)
 				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 				if err != nil {
@@ -223,7 +223,7 @@ func (kvCli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
 	for {
 		if servers, ok := kvCli.config.Groups[int(req.Gid)]; ok {
 			for _, svrAddr := range servers {
-				kvCli.rpcCli = raftcore.MakeRaftPeerNode(svrAddr, common.UN_UNSED_TID)
+				kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
 				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoBucketsOperation(context.Background(), req)
 				if err == nil {
 					if resp != nil {

@@ -22,33 +22,62 @@
 // SOFTWARE.
 //
 
-package storage
+package main
 
-// If you want to contribute a new engine implementation, you need to implement these interfaces
-type KvStore interface {
-	Put(string, string) error
-	Get(string) (string, error)
-	Delete(string) error
-	DumpPrefixKey(string, bool) (map[string]string, error)
-	PutBytesKv(k []byte, v []byte) error
-	DeleteBytesK(k []byte) error
-	GetBytesValue(k []byte) ([]byte, error)
-	SeekPrefixLast(prefix []byte) ([]byte, []byte, error)
-	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
-	DelPrefixKeys(prefix string) error
-	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
-	FlushDB()
-}
+import (
+	"fmt"
+	"net"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 
-func EngineFactory(name string, dbPath string) KvStore {
-	switch name {
-	case "leveldb":
-		levelDB, err := MakeLevelDBKvStore(dbPath)
-		if err != nil {
-			panic(err)
-		}
-		return levelDB
-	default:
-		panic("No such engine type support")
+	kvsvr "github.com/eraft-io/eraft/kvserver"
+	pb "github.com/eraft-io/eraft/raftpb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("usage: server [nodeId]")
+		return
+	}
+	sigs := make(chan os.Signal, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	nodeIdStr := os.Args[1]
+	nodeId, err := strconv.Atoi(nodeIdStr)
+	if err != nil {
+		panic(err)
+	}
+
+	kvServer := kvsvr.MakeKvServer(nodeId)
+	lis, err := net.Listen("tcp", kvsvr.PeersMap[nodeId])
+	if err != nil {
+		fmt.Printf("failed to listen: %v", err)
+		return
+	}
+	fmt.Printf("server listen on: %s \n", kvsvr.PeersMap[nodeId])
+	s := grpc.NewServer()
+	pb.RegisterRaftServiceServer(s, kvServer)
+
+	sigChan := make(chan os.Signal)
+
+	signal.Notify(sigChan)
+
+	go func() {
+		sig := <-sigs
+		fmt.Println(sig)
+		kvServer.Rf.CloseEndsConn()
+		os.Exit(-1)
+	}()
+
+	reflection.Register(s)
+	err = s.Serve(lis)
+	if err != nil {
+		fmt.Printf("failed to serve: %v", err)
+		return
 	}
 }

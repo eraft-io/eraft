@@ -25,35 +25,36 @@
 package raftcore
 
 import (
-	"github.com/eraft-io/eraft/logger"
+	"fmt"
+
 	raftpb "github.com/eraft-io/eraft/raftpb"
 	"google.golang.org/grpc"
 )
 
-type RaftPeerNode struct {
+type RaftClientEnd struct {
 	id             uint64
 	addr           string
 	conns          []*grpc.ClientConn
 	raftServiceCli *raftpb.RaftServiceClient
 }
 
-func (rfEnd *RaftPeerNode) Id() uint64 {
+func (rfEnd *RaftClientEnd) Id() uint64 {
 	return rfEnd.id
 }
 
-func (rfEnd *RaftPeerNode) GetRaftServiceCli() *raftpb.RaftServiceClient {
+func (rfEnd *RaftClientEnd) GetRaftServiceCli() *raftpb.RaftServiceClient {
 	return rfEnd.raftServiceCli
 }
 
-func MakeRaftPeerNode(addr string, id uint64) *RaftPeerNode {
+func MakeRaftClientEnd(addr string, id uint64) *RaftClientEnd {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		logger.ELogger().Sugar().DPanicf("faild to connect: %v", err)
+		fmt.Printf("faild to connect: %v", err)
 	}
 	conns := []*grpc.ClientConn{}
 	conns = append(conns, conn)
 	rpcClient := raftpb.NewRaftServiceClient(conn)
-	return &RaftPeerNode{
+	return &RaftClientEnd{
 		id:             id,
 		addr:           addr,
 		conns:          conns,
@@ -61,7 +62,8 @@ func MakeRaftPeerNode(addr string, id uint64) *RaftPeerNode {
 	}
 }
 
-func (rfEnd *RaftPeerNode) CloseAllConn() {
+func (rfEnd *RaftClientEnd) CloseAllConn() {
+	// PrintDebugLog(fmt.Sprintf("%s close rpc connect", rfEnd.addr))
 	for _, conn := range rfEnd.conns {
 		conn.Close()
 	}

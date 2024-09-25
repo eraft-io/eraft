@@ -25,9 +25,10 @@
 package raftcore
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/eraft-io/eraft/logger"
 )
 
 func RandIntRange(min int, max int) int {
@@ -41,7 +42,7 @@ func MakeAnRandomElectionTimeout(base int) int {
 }
 
 func PrintDebugLog(msg string) {
-	fmt.Printf("%s %s \n", time.Now().Format("2006-01-02 15:04:05"), msg)
+	logger.ELogger().Sugar().Debugf("%s %s \n", time.Now().Format("2006-01-02 15:04:05"), msg)
 }
 
 func Min(x, y int) int {

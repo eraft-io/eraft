@@ -172,3 +172,9 @@ go test -run TestBasicClusterRW tests/integration_test.go -v
 ```
 go test -run TestClusterRwBench tests/integration_test.go -v
 ```
+
+运行单分片集群读写基准测试
+
+```
+go test -run TestClusterSingleShardRwBench tests/integration_test.go -v
+```

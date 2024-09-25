@@ -22,33 +22,37 @@
 // SOFTWARE.
 //
 
-package storage
+package kvserver
 
-// If you want to contribute a new engine implementation, you need to implement these interfaces
-type KvStore interface {
-	Put(string, string) error
-	Get(string) (string, error)
-	Delete(string) error
-	DumpPrefixKey(string, bool) (map[string]string, error)
-	PutBytesKv(k []byte, v []byte) error
-	DeleteBytesK(k []byte) error
-	GetBytesValue(k []byte) ([]byte, error)
-	SeekPrefixLast(prefix []byte) ([]byte, []byte, error)
-	SeekPrefixFirst(prefix string) ([]byte, []byte, error)
-	DelPrefixKeys(prefix string) error
-	SeekPrefixKeyIdMax(prefix []byte) (uint64, error)
-	FlushDB()
+import "errors"
+
+type StateMachine interface {
+	Get(key string) (string, error)
+	Put(key, value string) error
+	Append(key, value string) error
 }
 
-func EngineFactory(name string, dbPath string) KvStore {
-	switch name {
-	case "leveldb":
-		levelDB, err := MakeLevelDBKvStore(dbPath)
-		if err != nil {
-			panic(err)
-		}
-		return levelDB
-	default:
-		panic("No such engine type support")
+type MemKV struct {
+	KV map[string]string
+}
+
+func NewMemKV() *MemKV {
+	return &MemKV{make(map[string]string)}
+}
+
+func (memKv *MemKV) Get(key string) (string, error) {
+	if v, ok := memKv.KV[key]; ok {
+		return v, nil
 	}
+	return "", errors.New("KeyNotFound")
+}
+
+func (memKv *MemKV) Put(key, value string) error {
+	memKv.KV[key] = value
+	return nil
+}
+
+func (memKv *MemKV) Append(key, value string) error {
+	memKv.KV[key] += value
+	return nil
 }

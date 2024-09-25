@@ -1,26 +1,26 @@
-//
-// MIT License
+// //
+// // MIT License
 
-// Copyright (c) 2022 eraft dev group
+// // Copyright (c) 2022 eraft dev group
 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// // Permission is hereby granted, free of charge, to any person obtaining a copy
+// // of this software and associated documentation files (the "Software"), to deal
+// // in the Software without restriction, including without limitation the rights
+// // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// // copies of the Software, and to permit persons to whom the Software is
+// // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// // The above copyright notice and this permission notice shall be included in
+// // all copies or substantial portions of the Software.
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-//
+// // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// // SOFTWARE.
+// //
 
 package shardkvserver
 
@@ -81,15 +81,15 @@ type MemSnapshotDB struct {
 // gid: the node's raft group id
 // configServerAddr: config server addr (leader addr, need to optimized into config server peer map)
 func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configServerAddrs string) *ShardKV {
-	clientEnds := []*raftcore.RaftPeerNode{}
+	clientEnds := []*raftcore.RaftClientEnd{}
 	for id, addr := range peerMaps {
-		newEnd := raftcore.MakeRaftPeerNode(addr, uint64(id))
+		newEnd := raftcore.MakeRaftClientEnd(addr, uint64(id))
 		clientEnds = append(clientEnds, newEnd)
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
 	logDbEng := storage_eng.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
-	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 50, 150)
+	newRf := raftcore.MakeRaft(clientEnds, int(nodeId), logDbEng, newApplyCh, 50, 150)
 	newdbEng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
 
 	shardKv := &ShardKV{
@@ -113,7 +113,7 @@ func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configSer
 	shardKv.lastConfig = *shardKv.cvCli.Query(-1)
 
 	shardKv.stopApplyCh = make(chan interface{})
-
+	shardKv.restoreSnapshot(newRf.ReadSnapshot())
 	// start applier
 	go shardKv.ApplingToStm(shardKv.stopApplyCh)
 
@@ -267,7 +267,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 
 			if appliedMsg.SnapshotValid {
 				s.mu.Lock()
-				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex)) {
+				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
 					s.restoreSnapshot(appliedMsg.Snapshot)
 					s.lastApplied = int(appliedMsg.SnapshotIndex)
 				}
@@ -281,8 +281,16 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 				req := &pb.CommandRequest{}
 				if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
 					logger.ELogger().Sugar().Errorf("Unmarshal CommandRequest err", err.Error())
+					s.mu.Unlock()
 					continue
 				}
+
+				// outdate checked
+				if appliedMsg.CommandIndex <= int64(s.lastApplied) {
+					s.mu.Unlock()
+					continue
+				}
+
 				s.lastApplied = int(appliedMsg.CommandIndex)
 				logger.ELogger().Sugar().Debugf("shard_kvserver last applied %d", s.lastApplied)
 
@@ -359,10 +367,12 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 				if _, isLeader := s.rf.GetState(); isLeader {
 					ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
 					ch <- cmdResp
-					if s.GetRf().LogCount() > 50 {
-						s.takeSnapshot(uint64(appliedMsg.CommandIndex))
-					}
 				}
+
+				if s.GetRf().GetLogCount() > 50 {
+					s.takeSnapshot(uint64(appliedMsg.CommandIndex))
+				}
+
 				s.mu.Unlock()
 
 			}
@@ -381,6 +391,7 @@ func (s *ShardKV) initStm(eng storage_eng.KvStore) {
 
 // takeSnapshot
 func (s *ShardKV) takeSnapshot(index uint64) {
+	logger.ELogger().Sugar().Infof("start take snapshot at % d", index)
 	var bytesState bytes.Buffer
 	enc := gob.NewEncoder(&bytesState)
 	memSnapshotDB := MemSnapshotDB{}
@@ -395,7 +406,7 @@ func (s *ShardKV) takeSnapshot(index uint64) {
 		}
 	}
 	enc.Encode(memSnapshotDB)
-	s.GetRf().Snapshot(index, bytesState.Bytes())
+	s.GetRf().Snapshot(int(index), bytesState.Bytes())
 }
 
 // restoreSnapshot

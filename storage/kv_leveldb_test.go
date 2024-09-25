@@ -25,10 +25,18 @@ package storage
 import (
 	"bytes"
 	"encoding/binary"
+	"io/ioutil"
+	"os"
+	"path"
 	"testing"
-
-	"github.com/eraft-io/eraft/common"
 )
+
+func RemoveDir(in string) {
+	dir, _ := ioutil.ReadDir(in)
+	for _, d := range dir {
+		os.RemoveAll(path.Join([]string{in, d.Name()}...))
+	}
+}
 
 func TestPrefixRange(t *testing.T) {
 	ldb, err := MakeLevelDBKvStore("./test_data")
@@ -48,6 +56,14 @@ func TestPrefixRange(t *testing.T) {
 		ldb.PutBytesKv(outBuf.Bytes(), []byte{byte(i)})
 	}
 
+	idMax, err := ldb.SeekPrefixKeyIdMax(prefixBytes)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	t.Logf("idMax -> %d", idMax)
+
 	ldb.db.Close()
-	common.RemoveDir("./test_data")
+	RemoveDir("./test_data")
 }
