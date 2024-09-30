@@ -54,10 +54,10 @@ func NodeToString(role NodeRole) string {
 	case NodeRoleLeader:
 		return "Leader"
 	}
-	return "unknow"
+	return "unknown"
 }
 
-// raft stack definition
+// Raft raft stack definition
 type Raft struct {
 	mu             sync.RWMutex
 	peers          []*RaftClientEnd // rpc client end
@@ -76,16 +76,16 @@ type Raft struct {
 	lastApplied    int64
 	nextIdx        []int
 	matchIdx       []int
-	isSnapshoting  bool
+	isSnapshotting bool
 
 	leaderId         int64
 	electionTimer    *time.Timer
 	heartbeatTimer   *time.Timer
 	heartBeatTimeout uint64
-	baseElecTimeout  uint64
+	baseElectTimeout uint64
 }
 
-func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage.KvStore, applyCh chan *pb.ApplyMsg, heartbeatTimeOutMs uint64, baseElectionTimeOutMs uint64) *Raft {
+func MakeRaft(peers []*RaftClientEnd, me int, newDBEng storage.KvStore, applyCh chan *pb.ApplyMsg, heartbeatTimeOutMs uint64, baseElectionTimeOutMs uint64) *Raft {
 	rf := &Raft{
 		peers:            peers,
 		me_:              me,
@@ -94,16 +94,16 @@ func MakeRaft(peers []*RaftClientEnd, me int, newdbEng storage.KvStore, applyCh 
 		replicatorCond:   make([]*sync.Cond, len(peers)),
 		role:             NodeRoleFollower,
 		curTerm:          0,
-		votedFor:         VOTE_FOR_NO_ONE,
+		votedFor:         VoteForNoOne,
 		grantedVotes:     0,
-		isSnapshoting:    false,
-		logs:             MakePersistRaftLog(newdbEng),
-		persister:        MakePersistRaftLog(newdbEng),
+		isSnapshotting:   false,
+		logs:             MakePersistRaftLog(newDBEng),
+		persister:        MakePersistRaftLog(newDBEng),
 		nextIdx:          make([]int, len(peers)),
 		matchIdx:         make([]int, len(peers)),
 		heartbeatTimer:   time.NewTimer(time.Millisecond * time.Duration(heartbeatTimeOutMs)),
 		electionTimer:    time.NewTimer(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(baseElectionTimeOutMs)))),
-		baseElecTimeout:  baseElectionTimeOutMs,
+		baseElectTimeout: baseElectionTimeOutMs,
 		heartBeatTimeout: heartbeatTimeOutMs,
 	}
 	rf.curTerm, rf.votedFor, rf.lastApplied = rf.persister.ReadRaftState()
@@ -150,10 +150,10 @@ func (rf *Raft) SwitchRaftNodeRole(role NodeRole) {
 	switch role {
 	case NodeRoleFollower:
 		rf.heartbeatTimer.Stop()
-		rf.electionTimer.Reset(time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))) * time.Millisecond)
+		rf.electionTimer.Reset(time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElectTimeout))) * time.Millisecond)
 	case NodeRoleCandidate:
 	case NodeRoleLeader:
-		// become leader，set replica (matchIdx and nextIdx) processs table
+		// become leader，set replica (matchIdx and nextIdx) processes table
 		lastLog := rf.logs.GetLast()
 		rf.leaderId = int64(rf.me_)
 		for i := 0; i < len(rf.peers); i++ {
@@ -206,7 +206,7 @@ func (rf *Raft) HandleRequestVote(req *pb.RequestVoteRequest, resp *pb.RequestVo
 	}
 
 	rf.votedFor = req.CandidateId
-	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
+	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElectTimeout))))
 	resp.Term, resp.VoteGranted = rf.curTerm, true
 }
 
@@ -233,14 +233,14 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 
 	if req.Term > rf.curTerm {
 		rf.curTerm = req.Term
-		rf.votedFor = VOTE_FOR_NO_ONE
+		rf.votedFor = VoteForNoOne
 	}
 
 	rf.SwitchRaftNodeRole(NodeRoleFollower)
 	rf.leaderId = req.LeaderId
-	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
+	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElectTimeout))))
 
-	if req.PrevLogIndex < int64(rf.logs.GetFirst().Index) {
+	if req.PrevLogIndex < rf.logs.GetFirst().Index {
 		resp.Term = 0
 		resp.Success = false
 		PrintDebugLog(fmt.Sprintf("peer %d reject append entires request from %d", rf.me_, req.LeaderId))
@@ -257,9 +257,9 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 			resp.ConflictIndex = lastIndex + 1
 		} else {
 			firstIndex := rf.logs.GetFirst().Index
-			resp.ConflictTerm = int64(rf.logs.GetEntry(req.PrevLogIndex - int64(firstIndex)).Term)
+			resp.ConflictTerm = int64(rf.logs.GetEntry(req.PrevLogIndex - firstIndex).Term)
 			index := req.PrevLogIndex - 1
-			for index >= int64(firstIndex) && rf.logs.GetEntry(index-firstIndex).Term == uint64(resp.ConflictTerm) {
+			for index >= firstIndex && rf.logs.GetEntry(index-firstIndex).Term == uint64(resp.ConflictTerm) {
 				index--
 			}
 			resp.ConflictIndex = index
@@ -283,7 +283,7 @@ func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.Appen
 	resp.Success = true
 }
 
-func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, snapshot []byte) bool {
+func (rf *Raft) CondInstallSnapshot(lastIncludedTerm int, lastIncludedIndex int, snapshot []byte) bool {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
@@ -300,7 +300,7 @@ func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, 
 		rf.logs.SetEntFirstData([]byte{})
 	}
 	// update dummy entry with lastIncludedTerm and lastIncludedIndex
-	rf.logs.SetEntFirstTermAndIndex(int64(lastIncluedTerm), int64(lastIncludedIndex))
+	rf.logs.SetEntFirstTermAndIndex(int64(lastIncludedTerm), int64(lastIncludedIndex))
 
 	rf.lastApplied = int64(lastIncludedIndex)
 	rf.commitIdx = int64(lastIncludedIndex)
@@ -313,17 +313,17 @@ func (rf *Raft) CondInstallSnapshot(lastIncluedTerm int, lastIncludedIndex int, 
 func (rf *Raft) Snapshot(index int, snapshot []byte) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
-	rf.isSnapshoting = true
+	rf.isSnapshotting = true
 	snapshotIndex := rf.logs.GetFirstLogId()
 	if index <= int(snapshotIndex) {
-		rf.isSnapshoting = false
+		rf.isSnapshotting = false
 		PrintDebugLog("reject snapshot, current snapshotIndex is larger in cur term")
 		return
 	}
 	rf.logs.EraseBeforeWithDel(int64(index) - int64(snapshotIndex))
 	rf.logs.SetEntFirstData([]byte{}) // 第一个操作日志号设为空
 	PrintDebugLog(fmt.Sprintf("del log entry before idx %d", index))
-	rf.isSnapshoting = false
+	rf.isSnapshotting = false
 	rf.logs.PersisSnapshot(snapshot)
 }
 
@@ -354,7 +354,7 @@ func (rf *Raft) HandleInstallSnapshot(request *pb.InstallSnapshotRequest, respon
 	}
 
 	rf.SwitchRaftNodeRole(NodeRoleFollower)
-	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
+	rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElectTimeout))))
 
 	if request.LastIncludedIndex <= rf.commitIdx {
 		return
@@ -401,7 +401,7 @@ func (rf *Raft) advanceCommitIndexForFollower(leaderCommit int) {
 
 // MatchLog is log matched
 func (rf *Raft) MatchLog(term, index int64) bool {
-	return index <= int64(rf.logs.GetLast().Index) && rf.logs.GetEntry(index-int64(rf.logs.GetFirst().Index)).Term == uint64(term)
+	return index <= rf.logs.GetLast().Index && rf.logs.GetEntry(index-rf.logs.GetFirst().Index).Term == uint64(term)
 }
 
 // Election  make a new election
@@ -412,7 +412,7 @@ func (rf *Raft) Election() {
 	voteReq := &pb.RequestVoteRequest{
 		Term:         rf.curTerm,
 		CandidateId:  int64(rf.me_),
-		LastLogIndex: int64(rf.logs.GetLast().Index),
+		LastLogIndex: rf.logs.GetLast().Index,
 		LastLogTerm:  int64(rf.logs.GetLast().Term),
 	}
 	rf.PersistRaftState()
@@ -489,7 +489,7 @@ func (rf *Raft) Tick() {
 				rf.SwitchRaftNodeRole(NodeRoleCandidate)
 				rf.IncrCurrentTerm()
 				rf.Election()
-				rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElecTimeout))))
+				rf.electionTimer.Reset(time.Millisecond * time.Duration(MakeAnRandomElectionTimeout(int(rf.baseElectTimeout))))
 			}
 		case <-rf.heartbeatTimer.C:
 			{
@@ -503,7 +503,7 @@ func (rf *Raft) Tick() {
 }
 
 //
-// Propose the interface to the appplication propose a operation
+// Propose the interface to the application propose an operation
 //
 
 func (rf *Raft) Propose(payload []byte) (int, int, bool) {
@@ -512,7 +512,7 @@ func (rf *Raft) Propose(payload []byte) (int, int, bool) {
 	if rf.role != NodeRoleLeader {
 		return -1, -1, false
 	}
-	if rf.isSnapshoting {
+	if rf.isSnapshotting {
 		return -1, -1, false
 	}
 	newLog := rf.Append(payload)
@@ -637,13 +637,13 @@ func (rf *Raft) replicateOneRound(peer *RaftClientEnd) {
 					if resp.Term > rf.curTerm {
 						rf.SwitchRaftNodeRole(NodeRoleFollower)
 						rf.curTerm = resp.Term
-						rf.votedFor = VOTE_FOR_NO_ONE
+						rf.votedFor = VoteForNoOne
 						rf.PersistRaftState()
 					} else if resp.Term == rf.curTerm {
 						rf.nextIdx[peer.id] = int(resp.ConflictIndex)
 						if resp.ConflictTerm != -1 {
-							for i := appendEntReq.PrevLogIndex; i >= int64(firstIndex); i-- {
-								if rf.logs.GetEntry(i-int64(firstIndex)).Term == uint64(resp.ConflictTerm) {
+							for i := appendEntReq.PrevLogIndex; i >= firstIndex; i-- {
+								if rf.logs.GetEntry(i-firstIndex).Term == uint64(resp.ConflictTerm) {
 									rf.nextIdx[peer.id] = int(i + 1)
 									break
 								}
@@ -656,7 +656,7 @@ func (rf *Raft) replicateOneRound(peer *RaftClientEnd) {
 	}
 }
 
-// Applier() Write the commited message to the applyCh channel
+// Applier Write the committed message to the applyCh channel
 // and update lastApplied
 func (rf *Raft) Applier() {
 	for !rf.IsKilled() {
@@ -668,7 +668,7 @@ func (rf *Raft) Applier() {
 
 		firstIndex, commitIndex, lastApplied := rf.logs.GetFirst().Index, rf.commitIdx, rf.lastApplied
 		entries := make([]*pb.Entry, commitIndex-lastApplied)
-		copy(entries, rf.logs.GetRange(lastApplied+1-int64(firstIndex), commitIndex+1-int64(firstIndex)))
+		copy(entries, rf.logs.GetRange(lastApplied+1-firstIndex, commitIndex+1-firstIndex))
 		PrintDebugLog(fmt.Sprintf("%d, applies entries %d-%d in term %d", rf.me_, rf.lastApplied, commitIndex, rf.curTerm))
 
 		rf.mu.Unlock()
@@ -677,7 +677,7 @@ func (rf *Raft) Applier() {
 				CommandValid: true,
 				Command:      entry.Data,
 				CommandTerm:  int64(entry.Term),
-				CommandIndex: int64(entry.Index),
+				CommandIndex: entry.Index,
 			}
 		}
 

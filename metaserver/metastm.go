@@ -33,9 +33,9 @@ import (
 	"github.com/eraft-io/eraft/storage"
 )
 
-const CF_PREFIX = "CF_"
+const CfPrefix = "CF_"
 
-const CUR_VERSION_KEY = "CUR_CONF_VERSION"
+const CurVersionKey = "CUR_CONF_VERSION"
 
 type ConfigStm interface {
 	Join(groups map[int][]string) error
@@ -50,8 +50,8 @@ type MemConfigStm struct {
 }
 
 func NewMemConfigStm(dbEng storage.KvStore) *MemConfigStm {
-	// check if has default conf
-	_, err := dbEng.Get(CF_PREFIX + strconv.Itoa(0))
+	// check if it has default conf
+	_, err := dbEng.Get(CfPrefix + strconv.Itoa(0))
 	confStm := &MemConfigStm{dbEng: dbEng, curConfVersion: 0}
 	if err != nil {
 		defaultConfig := DefaultConfig()
@@ -61,25 +61,25 @@ func NewMemConfigStm(dbEng storage.KvStore) *MemConfigStm {
 		}
 		// init conf
 		logger.ELogger().Sugar().Debugf("init conf -> " + string(defaultConfigBytes))
-		if err := confStm.dbEng.Put(CF_PREFIX+strconv.Itoa(0), string(defaultConfigBytes)); err != nil {
+		if err := confStm.dbEng.Put(CfPrefix+strconv.Itoa(0), string(defaultConfigBytes)); err != nil {
 			panic(err)
 		}
-		if err := confStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(confStm.curConfVersion)); err != nil {
+		if err := confStm.dbEng.Put(CurVersionKey, strconv.Itoa(confStm.curConfVersion)); err != nil {
 			panic(err)
 		}
 		return confStm
 	}
-	version_str, err := dbEng.Get(CUR_VERSION_KEY)
+	versionStr, err := dbEng.Get(CurVersionKey)
 	if err != nil {
 		panic(err)
 	}
-	version_int, _ := strconv.Atoi(version_str)
-	confStm.curConfVersion = version_int
+	versionInt, _ := strconv.Atoi(versionStr)
+	confStm.curConfVersion = versionInt
 	return confStm
 }
 
 func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
-	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
 	}
@@ -94,22 +94,22 @@ func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
 		}
 	}
 	s2g := newConfig.GetGroup2Buckets()
-	var new_buckets [common.NBuckets]int
+	var newBuckets [common.NBuckets]int
 	for gid, buckets := range s2g {
 		for _, bid := range buckets {
-			new_buckets[bid] = gid
+			newBuckets[bid] = gid
 		}
 	}
-	newConfig.Buckets = new_buckets
+	newConfig.Buckets = newBuckets
 	newConfigBytes, _ := json.Marshal(newConfig)
-	cfStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
+	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(cfStm.curConfVersion+1))
+	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
 	cfStm.curConfVersion += 1
 	return nil
 }
 
 func (cfStm *MemConfigStm) Leave(gids []int) error {
-	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
 	}
@@ -122,14 +122,14 @@ func (cfStm *MemConfigStm) Leave(gids []int) error {
 	var newBuckets [common.NBuckets]int
 	newConf.Buckets = newBuckets
 	newConfigBytes, _ := json.Marshal(newConf)
-	cfStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
+	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(cfStm.curConfVersion+1))
+	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
 	cfStm.curConfVersion += 1
 	return nil
 }
 
 func (cfStm *MemConfigStm) Move(bid, gid int) error {
-	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
 	if err != nil {
 		return err
 	}
@@ -138,8 +138,8 @@ func (cfStm *MemConfigStm) Move(bid, gid int) error {
 	newConf := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
 	newConf.Buckets[bid] = gid
 	newConfigBytes, _ := json.Marshal(newConf)
-	cfStm.dbEng.Put(CUR_VERSION_KEY, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CF_PREFIX+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
+	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(cfStm.curConfVersion+1))
+	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
 	cfStm.curConfVersion += 1
 	return nil
 }
@@ -148,14 +148,14 @@ func (cfStm *MemConfigStm) Query(version int) (Config, error) {
 	if version < 0 || version >= cfStm.curConfVersion {
 		lastConf := &Config{}
 		logger.ELogger().Sugar().Debugf("query cur version -> " + strconv.Itoa(cfStm.curConfVersion))
-		confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(cfStm.curConfVersion))
+		confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
 		if err != nil {
 			return DefaultConfig(), err
 		}
 		json.Unmarshal([]byte(confBytes), lastConf)
 		return *lastConf, nil
 	}
-	confBytes, err := cfStm.dbEng.Get(CF_PREFIX + strconv.Itoa(version))
+	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(version))
 	if err != nil {
 		return DefaultConfig(), err
 	}

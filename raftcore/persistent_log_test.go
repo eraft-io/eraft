@@ -42,10 +42,10 @@ func RemoveDir(in string) {
 }
 
 func TestTestPersisLogGetInit(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	t.Logf("log items count %d", raftLog.LogItemCount())
@@ -53,10 +53,10 @@ func TestTestPersisLogGetInit(t *testing.T) {
 }
 
 func TestEraseBefore1(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseBefore(1)
@@ -65,10 +65,10 @@ func TestEraseBefore1(t *testing.T) {
 }
 
 func TestPersisEraseAfter1(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseAfter(1, false)
@@ -77,10 +77,10 @@ func TestPersisEraseAfter1(t *testing.T) {
 }
 
 func TestPersisEraseAfter0And1(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseAfter(0, false)
@@ -96,10 +96,10 @@ func TestPersisEraseAfter0And1(t *testing.T) {
 }
 
 func TestPersisEraseBefore0And1(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseBefore(0)
@@ -119,10 +119,10 @@ func TestPersisEraseBefore0And1(t *testing.T) {
 }
 
 func TestPersisEraseAfter0(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseAfter(0, false)
@@ -131,8 +131,8 @@ func TestPersisEraseAfter0(t *testing.T) {
 }
 
 func TestTestPersisLogAppend(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
 	for i := 0; i < 1000; i++ {
 		raftLog.Append(&pb.Entry{
 			Index: int64(i),
@@ -140,8 +140,8 @@ func TestTestPersisLogAppend(t *testing.T) {
 			Data:  []byte{0x01, 0x02},
 		})
 	}
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	t.Logf("log items count %d", raftLog.LogItemCount())
@@ -150,8 +150,8 @@ func TestTestPersisLogAppend(t *testing.T) {
 }
 
 func TestTestPersisLogErase(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
 	raftLog.Append(&pb.Entry{
 		Index: 1,
 		Term:  1,
@@ -173,15 +173,15 @@ func TestTestPersisLogErase(t *testing.T) {
 		Data:  []byte{0x01, 0x02},
 	})
 	raftLog.EraseBefore(0)
-	fristEnt := raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt := raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	t.Logf("log items count %d", raftLog.LogItemCount())
 	t.Logf("get log item with id 2 -> %s", raftLog.GetEntry(2).String())
 	raftLog.EraseAfter(3, false)
-	fristEnt = raftLog.GetFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt = raftLog.GetFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt = raftLog.GetLast()
 	t.Logf("last log %s", lastEnt.String())
 	t.Logf("get log item with id 3 -> %s", raftLog.GetEntry(3).String())
@@ -195,8 +195,8 @@ func TestSliceSplit(t *testing.T) {
 }
 
 func TestRaftStatePersis(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
 	curterm, votedFor, _ := raftLog.ReadRaftState()
 	t.Logf("%d", curterm)
 	t.Logf("%d", votedFor)
@@ -208,8 +208,8 @@ func TestRaftStatePersis(t *testing.T) {
 }
 
 func TestPersisLogGetRange(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
 	raftLog.Append(&pb.Entry{
 		Index: 1,
 		Term:  1,
@@ -239,8 +239,8 @@ func TestPersisLogGetRange(t *testing.T) {
 }
 
 func TestPersisLogGetRangeAfterGc(t *testing.T) {
-	newdbEng := storage.EngineFactory("leveldb", "./log_data_test")
-	raftLog := MakePersistRaftLog(newdbEng)
+	newDBEng := storage.EngineFactory("leveldb", "./log_data_test")
+	raftLog := MakePersistRaftLog(newDBEng)
 	raftLog.Append(&pb.Entry{
 		Index: 1,
 		Term:  1,

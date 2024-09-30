@@ -46,8 +46,8 @@ type MetaSvrCli struct {
 }
 
 func nrand() int64 {
-	max := big.NewInt(int64(1) << 62)
-	bigx, _ := rand.Int(rand.Reader, max)
+	maxi := big.NewInt(int64(1) << 62)
+	bigx, _ := rand.Int(rand.Reader, maxi)
 	return bigx.Int64()
 }
 
@@ -132,7 +132,7 @@ func (metaSvrCli *MetaSvrCli) CallDoConfigRpc(req *pb.ConfigRequest) *pb.ConfigR
 		case common.ErrCodeWrongLeader:
 			confResp, err := (*metaSvrCli.endpoints[confResp.LeaderId].GetRaftServiceCli()).DoConfig(context.Background(), req)
 			if err != nil {
-				logger.ELogger().Sugar().Debugf("a node in cluster is down : ", err.Error())
+				logger.ELogger().Sugar().Debug("a node in cluster is down :", err.Error())
 				continue
 			}
 			if confResp.ErrCode == common.ErrCodeNoErr {

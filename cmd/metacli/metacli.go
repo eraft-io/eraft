@@ -49,7 +49,7 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 
 	addrs := strings.Split(os.Args[1], ",")
-	metaCli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, addrs)
+	metaCli := metaserver.MakeMetaSvrClient(common.UnUsedTid, addrs)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan)
@@ -67,9 +67,9 @@ func main() {
 	case "join":
 		{
 			gid, _ := strconv.Atoi(os.Args[3])
-			addr_map := make(map[int64]string)
-			addr_map[int64(gid)] = os.Args[4]
-			metaCli.Join(addr_map)
+			addrMap := make(map[int64]string)
+			addrMap[int64(gid)] = os.Args[4]
+			metaCli.Join(addrMap)
 		}
 	case "leave":
 		{

@@ -52,8 +52,8 @@ func (kvCli *KvClient) Close() {
 }
 
 func nrand() int64 {
-	max := big.NewInt(int64(1) << 62)
-	bigx, _ := rand.Int(rand.Reader, max)
+	maxi := big.NewInt(int64(1) << 62)
+	bigx, _ := rand.Int(rand.Reader, maxi)
 	return bigx.Int64()
 }
 
@@ -119,18 +119,18 @@ func main() {
 	}()
 
 	keys := make([]string, count)
-	vals := make([]string, count)
+	values := make([]string, count)
 
 	for i := 0; i < count; i++ {
 		rndK := common.RandStringRunes(8)
 		rndV := common.RandStringRunes(8)
 		keys[i] = rndK
-		vals[i] = rndV
+		values[i] = rndV
 	}
 
 	startTs := time.Now()
 	for i := 0; i < count; i++ {
-		kvCli.Put(keys[i], vals[i])
+		kvCli.Put(keys[i], values[i])
 	}
 	elapsed := time.Since(startTs).Seconds()
 	fmt.Printf("total cost %f s\n", elapsed)

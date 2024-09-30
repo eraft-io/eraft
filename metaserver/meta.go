@@ -56,9 +56,9 @@ const ExecTimeout = 3 * time.Second
 func deepCopy(groups map[int][]string) map[int][]string {
 	newGroup := make(map[int][]string)
 	for gID, severs := range groups {
-		newSvrs := make([]string, len(severs))
-		copy(newSvrs, severs)
-		newGroup[gID] = newSvrs
+		newSevers := make([]string, len(severs))
+		copy(newSevers, severs)
+		newGroup[gID] = newSevers
 	}
 	return newGroup
 }

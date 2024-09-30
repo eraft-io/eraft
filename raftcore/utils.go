@@ -34,7 +34,7 @@ import (
 func RandIntRange(min int, max int) int {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
-	return r1.Intn(max-min) + int(min)
+	return r1.Intn(max-min) + min
 }
 
 func MakeAnRandomElectionTimeout(base int) int {
