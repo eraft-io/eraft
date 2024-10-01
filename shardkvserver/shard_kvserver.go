@@ -41,7 +41,7 @@ import (
 	"github.com/eraft-io/eraft/logger"
 	"github.com/eraft-io/eraft/metaserver"
 	pb "github.com/eraft-io/eraft/raftpb"
-	storage_eng "github.com/eraft-io/eraft/storage"
+	"github.com/eraft-io/eraft/storage"
 
 	"github.com/eraft-io/eraft/raftcore"
 )
@@ -60,9 +60,9 @@ type ShardKV struct {
 
 	stm map[int]*Bucket
 
-	dbEng storage_eng.KvStore
+	dbEng storage.KvStore
 
-	notifyChans map[int]chan *pb.CommandResponse
+	notifyChs map[int]chan *pb.CommandResponse
 
 	stopApplyCh chan interface{}
 
@@ -88,23 +88,23 @@ func MakeShardKVServer(peerMaps map[int]string, nodeId int64, gid int, configSer
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
-	logDbEng := storage_eng.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
-	newRf := raftcore.MakeRaft(clientEnds, int(nodeId), logDbEng, newApplyCh, 50, 150)
-	newdbEng := storage_eng.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
+	logDBEng := storage.EngineFactory("leveldb", "./data/log/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
+	newRf := raftcore.MakeRaft(clientEnds, int(nodeId), logDBEng, newApplyCh, 50, 150)
+	newDBEng := storage.EngineFactory("leveldb", "./data/db/datanode_group_"+strconv.Itoa(gid)+"_nodeid_"+strconv.Itoa(int(nodeId)))
 
 	shardKv := &ShardKV{
 		dead:            0,
 		rf:              newRf,
 		applyCh:         newApplyCh,
 		gid_:            gid,
-		cvCli:           metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(configServerAddrs, ",")),
+		cvCli:           metaserver.MakeMetaSvrClient(common.UnUsedTid, strings.Split(configServerAddrs, ",")),
 		lastApplied:     0,
 		curConfig:       metaserver.DefaultConfig(),
 		lastConfig:      metaserver.DefaultConfig(),
 		stm:             make(map[int]*Bucket),
-		dbEng:           newdbEng,
+		dbEng:           newDBEng,
 		lastSnapShotIdx: 0,
-		notifyChans:     map[int]chan *pb.CommandResponse{},
+		notifyChs:       map[int]chan *pb.CommandResponse{},
 	}
 
 	shardKv.initStm(shardKv.dbEng)
@@ -140,7 +140,7 @@ func (s *ShardKV) ConfigAction() {
 			s.mu.RLock()
 			canPerformNextConf := true
 			for _, bucket := range s.stm {
-				if bucket.Status != Runing {
+				if bucket.Status != Running {
 					canPerformNextConf = false
 					logger.ELogger().Sugar().Errorf("cano't perform next conf")
 					break
@@ -175,11 +175,11 @@ func (s *ShardKV) ConfigAction() {
 					ch := s.getNotifyChan(idx)
 					s.mu.Unlock()
 
-					cmd_resp := &pb.CommandResponse{}
+					cmdResp := &pb.CommandResponse{}
 
 					select {
 					case res := <-ch:
-						cmd_resp.Value = res.Value
+						cmdResp.Value = res.Value
 					case <-time.After(metaserver.ExecTimeout):
 					}
 
@@ -187,7 +187,7 @@ func (s *ShardKV) ConfigAction() {
 
 					go func() {
 						s.mu.Lock()
-						delete(s.notifyChans, idx)
+						delete(s.notifyChs, idx)
 						s.mu.Unlock()
 					}()
 				}
@@ -198,14 +198,14 @@ func (s *ShardKV) ConfigAction() {
 }
 
 func (s *ShardKV) CanServe(bucketId int) bool {
-	return s.curConfig.Buckets[bucketId] == s.gid_ && (s.stm[bucketId].Status == Runing)
+	return s.curConfig.Buckets[bucketId] == s.gid_ && (s.stm[bucketId].Status == Running)
 }
 
 func (s *ShardKV) getNotifyChan(index int) chan *pb.CommandResponse {
-	if _, ok := s.notifyChans[index]; !ok {
-		s.notifyChans[index] = make(chan *pb.CommandResponse, 1)
+	if _, ok := s.notifyChs[index]; !ok {
+		s.notifyChs[index] = make(chan *pb.CommandResponse, 1)
 	}
-	return s.notifyChans[index]
+	return s.notifyChs[index]
 }
 
 func (s *ShardKV) IsKilled() bool {
@@ -221,12 +221,12 @@ func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.Co
 		cmdResp.ErrCode = common.ErrCodeWrongGroup
 		return cmdResp, nil
 	}
-	req_bytes, err := json.Marshal(req)
+	reqBytes, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 	// propose to raft
-	idx, _, isLeader := s.rf.Propose(req_bytes)
+	idx, _, isLeader := s.rf.Propose(reqBytes)
 	if !isLeader {
 		cmdResp.ErrCode = common.ErrCodeWrongLeader
 		cmdResp.LeaderId = s.GetRf().GetLeaderId()
@@ -249,7 +249,7 @@ func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.Co
 
 	go func() {
 		s.mu.Lock()
-		delete(s.notifyChans, idx)
+		delete(s.notifyChs, idx)
 		s.mu.Unlock()
 	}()
 
@@ -280,7 +280,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 
 				req := &pb.CommandRequest{}
 				if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
-					logger.ELogger().Sugar().Errorf("Unmarshal CommandRequest err", err.Error())
+					logger.ELogger().Sugar().Error("Unmarshal CommandRequest err", err.Error())
 					s.mu.Unlock()
 					continue
 				}
@@ -325,7 +325,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 							if s.curConfig.Buckets[i] != s.gid_ && nextConfig.Buckets[i] == s.gid_ {
 								gid := s.curConfig.Buckets[i]
 								if gid != 0 {
-									s.stm[i].Status = Runing
+									s.stm[i].Status = Running
 								}
 							}
 							if s.curConfig.Buckets[i] == s.gid_ && nextConfig.Buckets[i] != s.gid_ {
@@ -337,25 +337,25 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 						}
 						s.lastConfig = s.curConfig
 						s.curConfig = *nextConfig
-						cf_bytes, _ := json.Marshal(s.curConfig)
-						logger.ELogger().Sugar().Debugf("applied config to server %s ", string(cf_bytes))
+						cfBytes, _ := json.Marshal(s.curConfig)
+						logger.ELogger().Sugar().Debugf("applied config to server %s ", string(cfBytes))
 					}
 				case pb.OpType_OpDeleteBuckets:
-					bucket_op_reqs := &pb.BucketOperationRequest{}
-					json.Unmarshal(req.Context, bucket_op_reqs)
-					for _, bid := range bucket_op_reqs.BucketIds {
+					bucketOpReqs := &pb.BucketOperationRequest{}
+					json.Unmarshal(req.Context, bucketOpReqs)
+					for _, bid := range bucketOpReqs.BucketIds {
 						s.stm[int(bid)].deleteBucketData()
-						logger.ELogger().Sugar().Debugf("del buckets data list %d", strconv.Itoa(int(bid)))
+						logger.ELogger().Sugar().Debugf("del buckets data list %d", bid)
 					}
 				case pb.OpType_OpInsertBuckets:
-					bucket_op_reqs := &pb.BucketOperationRequest{}
-					json.Unmarshal(req.Context, bucket_op_reqs)
+					bucketOpReqs := &pb.BucketOperationRequest{}
+					json.Unmarshal(req.Context, bucketOpReqs)
 					bucketDatas := &BucketDatasVo{}
-					json.Unmarshal(bucket_op_reqs.BucketsDatas, bucketDatas)
-					for bucket_id, kvs := range bucketDatas.Datas {
-						s.stm[bucket_id] = NewBucket(s.dbEng, bucket_id)
+					json.Unmarshal(bucketOpReqs.BucketsDatas, bucketDatas)
+					for bucketId, kvs := range bucketDatas.Datas {
+						s.stm[bucketId] = NewBucket(s.dbEng, bucketId)
 						for k, v := range kvs {
-							s.stm[bucket_id].Put(k, v)
+							s.stm[bucketId].Put(k, v)
 							logger.ELogger().Sugar().Debug("insert kv data to buckets k -> " + k + " v-> " + v)
 						}
 					}
@@ -381,7 +381,7 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 }
 
 // init the status machine
-func (s *ShardKV) initStm(eng storage_eng.KvStore) {
+func (s *ShardKV) initStm(eng storage.KvStore) {
 	for i := 0; i < common.NBuckets; i++ {
 		if _, ok := s.stm[i]; !ok {
 			s.stm[i] = NewBucket(eng, i)
@@ -460,8 +460,8 @@ func (s *ShardKV) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest) 
 	return resp, nil
 }
 
-// rpc interface
-// DoBucketsOperation hanlde bucket data get, delete and insert
+// DoBucketsOperation rpc interface
+// handle bucket data get, delete and insert
 func (s *ShardKV) DoBucketsOperation(ctx context.Context, req *pb.BucketOperationRequest) (*pb.BucketOperationResponse, error) {
 	opResp := &pb.BucketOperationResponse{}
 	if _, isLeader := s.rf.GetState(); !isLeader {

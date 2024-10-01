@@ -88,37 +88,37 @@ func (cli *KvClient) GetRpcClient() *raftcore.RaftClientEnd {
 
 // make a random id
 func nrand() int64 {
-	max := big.NewInt(int64(1) << 62)
-	bigx, _ := rand.Int(rand.Reader, max)
+	maxi := big.NewInt(int64(1) << 62)
+	bigx, _ := rand.Int(rand.Reader, maxi)
 	return bigx.Int64()
 }
 
-// make a kv cilent
+// make a kv client
 func MakeKvClient(csAddrs string) *KvClient {
-	meta_svr_cli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(csAddrs, ","))
-	kv_cli := &KvClient{
-		csCli:            meta_svr_cli,
+	metaSvrCli := metaserver.MakeMetaSvrClient(common.UnUsedTid, strings.Split(csAddrs, ","))
+	kvCli := &KvClient{
+		csCli:            metaSvrCli,
 		rpcCli:           nil,
 		groupLeaderAddrs: map[int64]string{},
 		connectsCache:    make(map[string]*raftcore.RaftClientEnd),
 		clientId:         nrand(),
 		commandId:        0,
 	}
-	kv_cli.config = kv_cli.csCli.Query(-1)
-	return kv_cli
+	kvCli.config = kvCli.csCli.Query(-1)
+	return kvCli
 }
 
 // get interface to client, use to get a key's data from the cluster
-func (kvCli *KvClient) Get(key string) (string, error) {
-	return kvCli.Command(&pb.CommandRequest{
+func (cli *KvClient) Get(key string) (string, error) {
+	return cli.Command(&pb.CommandRequest{
 		Key:    key,
 		OpType: pb.OpType_OpGet,
 	})
 }
 
 // put interface to client, use to put key, value data to the cluster
-func (kvCli *KvClient) Put(key, value string) error {
-	_, err := kvCli.Command(&pb.CommandRequest{
+func (cli *KvClient) Put(key, value string) error {
+	_, err := cli.Command(&pb.CommandRequest{
 		Key:    key,
 		Value:  value,
 		OpType: pb.OpType_OpPut,
@@ -129,11 +129,11 @@ func (kvCli *KvClient) Put(key, value string) error {
 // GetBucketDatas
 // get all the data in a bucket, this is not an efficient approach to data migration
 // and needs to be optimized
-func (kvCli *KvClient) GetBucketDatas(gid int, bucketIds []int64) string {
-	return kvCli.BucketOpCommand(&pb.BucketOperationRequest{
+func (cli *KvClient) GetBucketDatas(gid int, bucketIds []int64) string {
+	return cli.BucketOpCommand(&pb.BucketOperationRequest{
 		BucketOpType:  pb.BucketOpType_OpGetData,
 		Gid:           int64(gid),
-		ConfigVersion: int64(kvCli.config.Version),
+		ConfigVersion: int64(cli.config.Version),
 		BucketIds:     bucketIds,
 	})
 }
@@ -141,11 +141,11 @@ func (kvCli *KvClient) GetBucketDatas(gid int, bucketIds []int64) string {
 // DeleteBucketDatas
 // delete all the data in a bucket, this is not an efficient approach to data migration
 // and needs to be optimized
-func (kvCli *KvClient) DeleteBucketDatas(gid int, bucketIds []int64) string {
-	return kvCli.BucketOpCommand(&pb.BucketOperationRequest{
+func (cli *KvClient) DeleteBucketDatas(gid int, bucketIds []int64) string {
+	return cli.BucketOpCommand(&pb.BucketOperationRequest{
 		BucketOpType:  pb.BucketOpType_OpDeleteData,
 		Gid:           int64(gid),
-		ConfigVersion: int64(kvCli.config.Version),
+		ConfigVersion: int64(cli.config.Version),
 		BucketIds:     bucketIds,
 	})
 }
@@ -153,36 +153,36 @@ func (kvCli *KvClient) DeleteBucketDatas(gid int, bucketIds []int64) string {
 // InsertBucketDatas
 // insert all the data into a bucket, this is not an efficient approach to data migration
 // and needs to be optimized
-func (kvCli *KvClient) InsertBucketDatas(gid int, bucketIds []int64, datas []byte) string {
-	return kvCli.BucketOpCommand(&pb.BucketOperationRequest{
+func (cli *KvClient) InsertBucketDatas(gid int, bucketIds []int64, datas []byte) string {
+	return cli.BucketOpCommand(&pb.BucketOperationRequest{
 		BucketOpType:  pb.BucketOpType_OpInsertData,
 		BucketsDatas:  datas,
 		Gid:           int64(gid),
 		BucketIds:     bucketIds,
-		ConfigVersion: int64(kvCli.config.Version),
+		ConfigVersion: int64(cli.config.Version),
 	})
 }
 
 // Command
 // do user normal command
-func (kvCli *KvClient) Command(req *pb.CommandRequest) (string, error) {
-	bucket_id := common.Key2BucketID(req.Key)
-	gid := kvCli.config.Buckets[bucket_id]
+func (cli *KvClient) Command(req *pb.CommandRequest) (string, error) {
+	bucketId := common.Key2BucketID(req.Key)
+	gid := cli.config.Buckets[bucketId]
 	if gid == 0 {
 		return "", errors.New("there is no shard in charge of this bucket, please join the server group before")
 	}
-	if servers, ok := kvCli.config.Groups[gid]; ok {
+	if servers, ok := cli.config.Groups[gid]; ok {
 		for _, svrAddr := range servers {
-			if kvCli.GetConnFromCache(svrAddr) == nil {
-				kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
-				kvCli.AddConnToCache(svrAddr, kvCli.rpcCli)
+			if cli.GetConnFromCache(svrAddr) == nil {
+				cli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UnUsedTid)
+				cli.AddConnToCache(svrAddr, cli.rpcCli)
 			} else {
-				if kvCli.groupLeaderAddrs[int64(gid)] != "" {
-					svrAddr = kvCli.groupLeaderAddrs[int64(gid)]
+				if cli.groupLeaderAddrs[int64(gid)] != "" {
+					svrAddr = cli.groupLeaderAddrs[int64(gid)]
 				}
-				kvCli.rpcCli = kvCli.GetConnFromCache(svrAddr)
+				cli.rpcCli = cli.GetConnFromCache(svrAddr)
 			}
-			resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
+			resp, err := (*cli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 			if err != nil {
 				// node down
 				logger.ELogger().Sugar().Debugf("there is a node down is cluster, but we can continue with outher node")
@@ -190,41 +190,41 @@ func (kvCli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 			}
 			switch resp.ErrCode {
 			case common.ErrCodeNoErr:
-				kvCli.commandId++
+				cli.commandId++
 				return resp.Value, nil
 			case common.ErrCodeWrongGroup:
-				kvCli.config = kvCli.csCli.Query(-1)
+				cli.config = cli.csCli.Query(-1)
 				return "", errors.New("WrongGroup")
 			case common.ErrCodeWrongLeader:
-				kvCli.groupLeaderAddrs[int64(gid)] = servers[resp.LeaderId]
-				kvCli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UN_UNSED_TID)
-				kvCli.AddConnToCache(servers[resp.LeaderId], kvCli.rpcCli)
-				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
+				cli.groupLeaderAddrs[int64(gid)] = servers[resp.LeaderId]
+				cli.rpcCli = raftcore.MakeRaftClientEnd(servers[resp.LeaderId], common.UnUsedTid)
+				cli.AddConnToCache(servers[resp.LeaderId], cli.rpcCli)
+				resp, err := (*cli.rpcCli.GetRaftServiceCli()).DoCommand(context.Background(), req)
 				if err != nil {
-					logger.ELogger().Sugar().Errorf("send command to server error", err.Error())
+					logger.ELogger().Sugar().Error("send command to server error", err.Error())
 				}
 				if resp.ErrCode == common.ErrCodeNoErr {
-					kvCli.commandId++
+					cli.commandId++
 					return resp.Value, nil
 				}
 			default:
-				return "", errors.New("unknow code")
+				return "", errors.New("unknown code")
 			}
 		}
 	} else {
 		return "", errors.New("please join the server group first")
 	}
-	return "", errors.New("unknow code")
+	return "", errors.New("unknown code")
 }
 
 // BucketOpCommand
 // do user bucket operation command
-func (kvCli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
+func (cli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
 	for {
-		if servers, ok := kvCli.config.Groups[int(req.Gid)]; ok {
+		if servers, ok := cli.config.Groups[int(req.Gid)]; ok {
 			for _, svrAddr := range servers {
-				kvCli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UN_UNSED_TID)
-				resp, err := (*kvCli.rpcCli.GetRaftServiceCli()).DoBucketsOperation(context.Background(), req)
+				cli.rpcCli = raftcore.MakeRaftClientEnd(svrAddr, common.UnUsedTid)
+				resp, err := (*cli.rpcCli.GetRaftServiceCli()).DoBucketsOperation(context.Background(), req)
 				if err == nil {
 					if resp != nil {
 						return string(resp.BucketsDatas)
@@ -232,7 +232,7 @@ func (kvCli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
 						return ""
 					}
 				} else {
-					logger.ELogger().Sugar().Errorf("send command to server error", err.Error())
+					logger.ELogger().Sugar().Error("send command to server error", err.Error())
 					return ""
 				}
 			}

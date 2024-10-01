@@ -46,8 +46,8 @@ func TestMemLogGetInit(t *testing.T) {
 
 func TestMenEraseBefore1(t *testing.T) {
 	raftLog := MakeMemRaftLog()
-	fristEnt := raftLog.GetMemFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt := raftLog.GetMemFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetMemLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseMemBefore(1)
@@ -56,8 +56,8 @@ func TestMenEraseBefore1(t *testing.T) {
 
 func TestEraseAfter1(t *testing.T) {
 	raftLog := MakeMemRaftLog()
-	fristEnt := raftLog.GetMemFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt := raftLog.GetMemFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetMemLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseMemAfter(1)
@@ -66,8 +66,8 @@ func TestEraseAfter1(t *testing.T) {
 
 func TestEraseAfter0And1(t *testing.T) {
 	raftLog := MakeMemRaftLog()
-	fristEnt := raftLog.GetMemFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt := raftLog.GetMemFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetMemLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseMemAfter(0)
@@ -83,8 +83,8 @@ func TestEraseAfter0And1(t *testing.T) {
 
 func TestEraseBefore0And1(t *testing.T) {
 	raftLog := MakeMemRaftLog()
-	fristEnt := raftLog.GetMemFirst()
-	t.Logf("first log %s", fristEnt.String())
+	firstEnt := raftLog.GetMemFirst()
+	t.Logf("first log %s", firstEnt.String())
 	lastEnt := raftLog.GetMemLast()
 	t.Logf("last log %s", lastEnt.String())
 	ents := raftLog.EraseMemBefore(0)

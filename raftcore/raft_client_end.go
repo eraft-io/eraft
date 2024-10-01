@@ -27,7 +27,7 @@ package raftcore
 import (
 	"fmt"
 
-	raftpb "github.com/eraft-io/eraft/raftpb"
+	"github.com/eraft-io/eraft/raftpb"
 	"google.golang.org/grpc"
 )
 

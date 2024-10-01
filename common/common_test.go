@@ -35,6 +35,6 @@ func TestKeyToBid(t *testing.T) {
 	}
 }
 
-func TestRandon(t *testing.T) {
+func TestRandom(t *testing.T) {
 	t.Log(RandStringRunes(1024))
 }

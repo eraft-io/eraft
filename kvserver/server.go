@@ -65,7 +65,7 @@ type KvServer struct {
 	stm            StateMachine
 	lastOperations map[int64]OperationContext
 
-	notifyChans map[int]chan *pb.CommandResponse
+	notifyChs   map[int]chan *pb.CommandResponse
 	stopApplyCh chan interface{}
 
 	pb.UnimplementedRaftServiceServer
@@ -86,11 +86,11 @@ func MakeKvServer(nodeId int) *KvServer {
 	}
 
 	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDbEng, newApplyCh, 2000, 6000)
-	kvSvr := &KvServer{Rf: newRf, applyCh: newApplyCh, dead: 0, lastApplied: 0, stm: NewMemKV(), notifyChans: make(map[int]chan *pb.CommandResponse)}
+	kvSvr := &KvServer{Rf: newRf, applyCh: newApplyCh, dead: 0, lastApplied: 0, stm: NewMemKV(), notifyChs: make(map[int]chan *pb.CommandResponse)}
 	kvSvr.stopApplyCh = make(chan interface{})
 	kvSvr.restoreSnapshot(newRf.ReadSnapshot())
 
-	go kvSvr.ApplingToStm(kvSvr.stopApplyCh)
+	go kvSvr.ApplyingToStm(kvSvr.stopApplyCh)
 
 	return kvSvr
 }
@@ -143,17 +143,17 @@ func (s *KvServer) Snapshot(ctx context.Context, req *pb.InstallSnapshotRequest)
 }
 
 func (s *KvServer) getNotifyChan(index int) chan *pb.CommandResponse {
-	if _, ok := s.notifyChans[index]; !ok {
-		s.notifyChans[index] = make(chan *pb.CommandResponse, 1)
+	if _, ok := s.notifyChs[index]; !ok {
+		s.notifyChs[index] = make(chan *pb.CommandResponse, 1)
 	}
-	return s.notifyChans[index]
+	return s.notifyChs[index]
 }
 
 func (s *KvServer) IsKilled() bool {
 	return atomic.LoadInt32(&s.dead) == 1
 }
 
-func (s *KvServer) ApplingToStm(done <-chan interface{}) {
+func (s *KvServer) ApplyingToStm(done <-chan interface{}) {
 	for !s.IsKilled() {
 		select {
 		case <-done:
@@ -167,7 +167,7 @@ func (s *KvServer) ApplingToStm(done <-chan interface{}) {
 					s.mu.Unlock()
 					continue
 				}
-				// outdate checked
+				// Time-out check
 				if appliedMsg.CommandIndex <= int64(s.lastApplied) {
 					s.mu.Unlock()
 					continue
@@ -239,7 +239,7 @@ func (s *KvServer) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.C
 
 		go func() {
 			s.mu.Lock()
-			delete(s.notifyChans, idx)
+			delete(s.notifyChs, idx)
 			s.mu.Unlock()
 		}()
 

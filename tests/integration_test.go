@@ -26,7 +26,7 @@ func RunMetaServer(peerMaps map[int]string, nodeId int) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	meta_svr := metaserver.MakeMetaServer(peerMaps, nodeId)
+	metaSvr := metaserver.MakeMetaServer(peerMaps, nodeId)
 	lis, err := net.Listen("tcp", peerMaps[nodeId])
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)
@@ -34,7 +34,7 @@ func RunMetaServer(peerMaps map[int]string, nodeId int) {
 	}
 	s := grpc.NewServer()
 
-	pb.RegisterRaftServiceServer(s, meta_svr)
+	pb.RegisterRaftServiceServer(s, metaSvr)
 
 	sigChan := make(chan os.Signal, 1)
 
@@ -43,8 +43,8 @@ func RunMetaServer(peerMaps map[int]string, nodeId int) {
 	go func() {
 		sig := <-sigs
 		fmt.Println(sig)
-		meta_svr.Rf.CloseEndsConn()
-		meta_svr.StopApply()
+		metaSvr.Rf.CloseEndsConn()
+		metaSvr.StopApply()
 		os.Exit(-1)
 	}()
 
@@ -91,14 +91,14 @@ func RunShardKvServer(svrPeerMaps map[int]string, nodeId int, groupId int, metaa
 }
 
 func AddServerGroup(metaaddrs string, groupId int64, shardserveraddrs string) {
-	cfgCli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(metaaddrs, ","))
+	cfgCli := metaserver.MakeMetaSvrClient(common.UnUsedTid, strings.Split(metaaddrs, ","))
 	addrMap := make(map[int64]string)
 	addrMap[groupId] = shardserveraddrs
 	cfgCli.Join(addrMap)
 }
 
 func MoveSlotToServerGroup(metaaddrs string, startSlot int, endSlot int, groupId int) {
-	cfgCli := metaserver.MakeMetaSvrClient(common.UN_UNSED_TID, strings.Split(metaaddrs, ","))
+	cfgCli := metaserver.MakeMetaSvrClient(common.UnUsedTid, strings.Split(metaaddrs, ","))
 	for i := startSlot; i <= endSlot; i++ {
 		cfgCli.Move(i, groupId)
 	}
@@ -129,14 +129,14 @@ func TestBasicClusterRW(t *testing.T) {
 	// R-W test
 	shardkvcli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
 
-	shardkvcli.Put("testkey", "testvalue")
+	shardkvcli.Put("testKey", "testValue")
 
 	time.Sleep(time.Second * 10)
-	val, err := shardkvcli.Get("testkey")
+	val, err := shardkvcli.Get("testKey")
 	if err != nil {
 		panic(err.Error())
 	}
-	assert.Equal(t, val, "testvalue")
+	assert.Equal(t, val, "testValue")
 	time.Sleep(time.Second * 3)
 	common.RemoveDir("./data")
 }
@@ -161,43 +161,43 @@ func TestClusterSingleShardRwBench(t *testing.T) {
 	shardkvcli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
 
 	N := 120
-	KEY_SIZE := 64
-	VAL_SIZE := 64
-	bench_kvs := map[string]string{}
+	KeySize := 64
+	ValSize := 64
+	benchKvs := map[string]string{}
 	for i := 0; i < N; i++ {
-		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KEY_SIZE)
-		v := common.RandStringRunes(VAL_SIZE)
-		bench_kvs[k] = v
+		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KeySize)
+		v := common.RandStringRunes(ValSize)
+		benchKvs[k] = v
 	}
-	timecost := []int64{}
+	costTime := []int64{}
 
-	for key, val := range bench_kvs {
+	for key, val := range benchKvs {
 		start := time.Now()
 		shardkvcli.Put(key, val)
 		elapsed := time.Since(start)
-		timecost = append(timecost, elapsed.Milliseconds())
+		costTime = append(costTime, elapsed.Milliseconds())
 	}
 
 	sum := 0.0
 	avg := 0.0
-	max := 0.0
-	min := 9999999999999999.0
+	maxi := 0.0
+	mini := 9999999999999999.0
 
-	for _, cost := range timecost {
+	for _, cost := range costTime {
 		sum += float64(cost)
-		if cost > int64(max) {
-			max = float64(cost)
+		if cost > int64(maxi) {
+			maxi = float64(cost)
 		}
-		if cost < int64(min) {
-			min = float64(cost)
+		if cost < int64(mini) {
+			mini = float64(cost)
 		}
 	}
-	avg = sum / float64(len(timecost))
+	avg = sum / float64(len(costTime))
 	logger.ELogger().Sugar().Debugf("total request: %d", N)
 	logger.ELogger().Sugar().Debugf("total time cost: %f", sum)
 	logger.ELogger().Sugar().Debugf("avg time cost: %f", avg)
-	logger.ELogger().Sugar().Debugf("max time cost: %f", max)
-	logger.ELogger().Sugar().Debugf("min time cost: %f", min)
+	logger.ELogger().Sugar().Debugf("max time cost: %f", maxi)
+	logger.ELogger().Sugar().Debugf("min time cost: %f", mini)
 	time.Sleep(time.Second * 2)
 	common.RemoveDir("./data")
 }
@@ -225,46 +225,46 @@ func TestClusterRwBench(t *testing.T) {
 	time.Sleep(time.Second * 20)
 
 	// R-W test
-	shardkvcli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
+	shardKVCli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
 
 	N := 1000
-	KEY_SIZE := 64
-	VAL_SIZE := 64
-	bench_kvs := map[string]string{}
+	KeySize := 64
+	ValSize := 64
+	benchKvs := map[string]string{}
 	for i := 0; i < N; i++ {
-		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KEY_SIZE)
-		v := common.RandStringRunes(VAL_SIZE)
-		bench_kvs[k] = v
+		k := strconv.Itoa(i) + "-" + common.RandStringRunes(KeySize)
+		v := common.RandStringRunes(ValSize)
+		benchKvs[k] = v
 	}
-	timecost := []int64{}
+	costTime := []int64{}
 
-	for key, val := range bench_kvs {
+	for key, val := range benchKvs {
 		start := time.Now()
-		shardkvcli.Put(key, val)
+		shardKVCli.Put(key, val)
 		elapsed := time.Since(start)
-		timecost = append(timecost, elapsed.Milliseconds())
+		costTime = append(costTime, elapsed.Milliseconds())
 	}
 
 	sum := 0.0
 	avg := 0.0
-	max := 0.0
-	min := 9999999999999999.0
+	maxi := 0.0
+	mini := 9999999999999999.0
 
-	for _, cost := range timecost {
+	for _, cost := range costTime {
 		sum += float64(cost)
-		if cost > int64(max) {
-			max = float64(cost)
+		if cost > int64(maxi) {
+			maxi = float64(cost)
 		}
-		if cost < int64(min) {
-			min = float64(cost)
+		if cost < int64(mini) {
+			mini = float64(cost)
 		}
 	}
-	avg = sum / float64(len(timecost))
+	avg = sum / float64(len(costTime))
 	logger.ELogger().Sugar().Debugf("total request: %d", N)
 	logger.ELogger().Sugar().Debugf("total time cost: %f", sum)
 	logger.ELogger().Sugar().Debugf("avg time cost: %f", avg)
-	logger.ELogger().Sugar().Debugf("max time cost: %f", max)
-	logger.ELogger().Sugar().Debugf("min time cost: %f", min)
+	logger.ELogger().Sugar().Debugf("max time cost: %f", maxi)
+	logger.ELogger().Sugar().Debugf("min time cost: %f", mini)
 
 	time.Sleep(time.Second * 5)
 	common.RemoveDir("./data")

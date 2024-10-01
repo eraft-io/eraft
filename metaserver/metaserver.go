@@ -48,7 +48,7 @@ type MetaServer struct {
 	Rf          *raftcore.Raft
 	applyCh     chan *pb.ApplyMsg
 	stm         ConfigStm
-	notifyChans map[int]chan *pb.ConfigResponse
+	notifyChs   map[int]chan *pb.ConfigResponse
 	stopApplyCh chan interface{}
 
 	pb.UnimplementedRaftServiceServer
@@ -62,21 +62,21 @@ func MakeMetaServer(peerMaps map[int]string, nodeId int) *MetaServer {
 	}
 	newApplyCh := make(chan *pb.ApplyMsg)
 
-	newdbEng := storage.EngineFactory("leveldb", "./data/db/metanode_"+strconv.Itoa(nodeId))
-	logdbEng := storage.EngineFactory("leveldb", "./data/log/metanode_"+strconv.Itoa(nodeId))
+	newDBEng := storage.EngineFactory("leveldb", "./data/db/metanode_"+strconv.Itoa(nodeId))
+	logDBEng := storage.EngineFactory("leveldb", "./data/log/metanode_"+strconv.Itoa(nodeId))
 
-	newRf := raftcore.MakeRaft(clientEnds, int(nodeId), logdbEng, newApplyCh, 50, 150)
+	newRf := raftcore.MakeRaft(clientEnds, nodeId, logDBEng, newApplyCh, 50, 150)
 	metaServer := &MetaServer{
-		Rf:          newRf,
-		applyCh:     newApplyCh,
-		dead:        0,
-		stm:         NewMemConfigStm(newdbEng),
-		notifyChans: make(map[int]chan *pb.ConfigResponse),
+		Rf:        newRf,
+		applyCh:   newApplyCh,
+		dead:      0,
+		stm:       NewMemConfigStm(newDBEng),
+		notifyChs: make(map[int]chan *pb.ConfigResponse),
 	}
 
 	metaServer.stopApplyCh = make(chan interface{})
 
-	go metaServer.ApplingToStm(metaServer.stopApplyCh)
+	go metaServer.ApplyingToStm(metaServer.stopApplyCh)
 	return metaServer
 }
 
@@ -85,10 +85,10 @@ func (s *MetaServer) StopApply() {
 }
 
 func (s *MetaServer) getNotifyChan(index int) chan *pb.ConfigResponse {
-	if _, ok := s.notifyChans[index]; !ok {
-		s.notifyChans[index] = make(chan *pb.ConfigResponse, 1)
+	if _, ok := s.notifyChs[index]; !ok {
+		s.notifyChs[index] = make(chan *pb.ConfigResponse, 1)
 	}
-	return s.notifyChans[index]
+	return s.notifyChs[index]
 }
 
 func (s *MetaServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb.ConfigResponse, error) {
@@ -96,13 +96,13 @@ func (s *MetaServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb.C
 
 	cmdResp := &pb.ConfigResponse{}
 
-	req_bytes, err := json.Marshal(req)
+	reqBytes, err := json.Marshal(req)
 	if err != nil {
 		cmdResp.ErrMsg = err.Error()
 		return cmdResp, err
 	}
 
-	index, _, isLeader := s.Rf.Propose(req_bytes)
+	index, _, isLeader := s.Rf.Propose(reqBytes)
 	if !isLeader {
 		cmdResp.ErrMsg = "is not leader"
 		cmdResp.ErrCode = common.ErrCodeWrongLeader
@@ -127,7 +127,7 @@ func (s *MetaServer) DoConfig(ctx context.Context, req *pb.ConfigRequest) (*pb.C
 
 	go func() {
 		s.mu.Lock()
-		delete(s.notifyChans, index)
+		delete(s.notifyChs, index)
 		s.mu.Unlock()
 	}()
 
@@ -150,7 +150,7 @@ func (s *MetaServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesReq
 	return resp, nil
 }
 
-func (s *MetaServer) ApplingToStm(done <-chan interface{}) {
+func (s *MetaServer) ApplyingToStm(done <-chan interface{}) {
 	for !s.IsKilled() {
 		select {
 		case <-done:
@@ -168,8 +168,8 @@ func (s *MetaServer) ApplingToStm(done <-chan interface{}) {
 			switch req.OpType {
 			case pb.ConfigOpType_OpJoin:
 				groups := map[int][]string{}
-				for gid, serveraddrs := range req.Servers {
-					groups[int(gid)] = strings.Split(serveraddrs, ",")
+				for gid, serverAddrs := range req.Servers {
+					groups[int(gid)] = strings.Split(serverAddrs, ",")
 				}
 				err = s.stm.Join(groups)
 			case pb.ConfigOpType_OpLeave:

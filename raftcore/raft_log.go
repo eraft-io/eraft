@@ -65,7 +65,7 @@ func MakeMemRaftLog() *RaftLog {
 	empEnt := &pb.Entry{}
 	newItems := []*pb.Entry{}
 	newItems = append(newItems, empEnt)
-	return &RaftLog{items: newItems, firstIdx: INIT_LOG_INDEX, lastIdx: INIT_LOG_INDEX + 1}
+	return &RaftLog{items: newItems, firstIdx: InitLogIndex, lastIdx: InitLogIndex + 1}
 }
 
 func (rfLog *RaftLog) GetMemFirst() *pb.Entry {

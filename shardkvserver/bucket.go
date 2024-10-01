@@ -33,7 +33,7 @@ import (
 type buketStatus uint8
 
 const (
-	Runing buketStatus = iota
+	Running buketStatus = iota
 	Stopped
 )
 
@@ -56,13 +56,13 @@ type BucketDatasVo struct {
 
 // make a new bucket
 func NewBucket(eng storage.KvStore, id int) *Bucket {
-	return &Bucket{id, eng, Runing}
+	return &Bucket{id, eng, Running}
 }
 
 // get encode key data from engine
 func (bu *Bucket) Get(key string) (string, error) {
-	encode_key := strconv.Itoa(bu.ID) + SPLIT + key
-	v, err := bu.KvDB.Get(encode_key)
+	encodeKey := strconv.Itoa(bu.ID) + SPLIT + key
+	v, err := bu.KvDB.Get(encodeKey)
 	if err != nil {
 		return "", err
 	}
@@ -71,23 +71,23 @@ func (bu *Bucket) Get(key string) (string, error) {
 
 // put key, value data to db engine
 func (bu *Bucket) Put(key, value string) error {
-	encode_key := strconv.Itoa(bu.ID) + SPLIT + key
-	return bu.KvDB.Put(encode_key, value)
+	encodeKey := strconv.Itoa(bu.ID) + SPLIT + key
+	return bu.KvDB.Put(encodeKey, value)
 }
 
-// appned data to engine
+// append data to engine
 func (bu *Bucket) Append(key, value string) error {
-	old_v, err := bu.Get(key)
+	oldValue, err := bu.Get(key)
 	if err != nil {
 		return err
 	}
-	return bu.Put(key, old_v+value)
+	return bu.Put(key, oldValue+value)
 }
 
-// copy all of the data in a bucket
+// copy all the data in a bucket
 func (bu *Bucket) deepCopy(trimPrefix bool) (map[string]string, error) {
-	encode_key_prefix := strconv.Itoa(bu.ID) + SPLIT
-	kvs, err := bu.KvDB.DumpPrefixKey(encode_key_prefix, trimPrefix)
+	encodeKeyPrefix := strconv.Itoa(bu.ID) + SPLIT
+	kvs, err := bu.KvDB.DumpPrefixKey(encodeKeyPrefix, trimPrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +96,6 @@ func (bu *Bucket) deepCopy(trimPrefix bool) (map[string]string, error) {
 
 // delete all the data in a bucket
 func (bu *Bucket) deleteBucketData() error {
-	encode_key_prefix := strconv.Itoa(bu.ID) + SPLIT
-	return bu.KvDB.DelPrefixKeys(encode_key_prefix)
+	encodeKeyPrefix := strconv.Itoa(bu.ID) + SPLIT
+	return bu.KvDB.DelPrefixKeys(encodeKeyPrefix)
 }

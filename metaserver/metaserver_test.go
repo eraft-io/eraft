@@ -29,7 +29,7 @@ import (
 
 	"github.com/eraft-io/eraft/common"
 	"github.com/eraft-io/eraft/raftcore"
-	storage_eng "github.com/eraft-io/eraft/storage"
+	"github.com/eraft-io/eraft/storage"
 )
 
 func TestRangeArr(t *testing.T) {
@@ -41,7 +41,7 @@ func TestRangeArr(t *testing.T) {
 }
 
 func TestAddGroups(t *testing.T) {
-	newDbEng, err := storage_eng.MakeLevelDBKvStore("./conf_data/" + "/test")
+	newDbEng, err := storage.MakeLevelDBKvStore("./conf_data/" + "/test")
 	if err != nil {
 		raftcore.PrintDebugLog("boot storage engine err!")
 		panic(err)

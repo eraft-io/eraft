@@ -33,7 +33,7 @@ import (
 
 const NBuckets = 10
 
-const UN_UNSED_TID = 999
+const UnUsedTid = 999
 
 const (
 	ErrCodeNoErr int64 = iota
