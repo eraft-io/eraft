@@ -165,8 +165,7 @@ go version >= go 1.21
 编译
 
 ```
-git clone https://github.com/eraft-io/eraft.git -b eraftbook
-
+git clone https://github.com/eraft-io/eraft.git
 cd eraft
 make
 ```

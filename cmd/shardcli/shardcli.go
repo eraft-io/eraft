@@ -25,8 +25,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
+	"strconv"
+	"strings"
+
+	"github.com/eraft-io/eraft/shardkvserver"
 )
 
 func main() {
@@ -39,64 +45,64 @@ func main() {
 			"kvcli [configserver addr] insertbucketkv [gid] [bid] [key] [value]\n")
 		return
 	}
-	// sigs := make(chan os.Signal, 1)
+	sigs := make(chan os.Signal, 1)
 
-	// shardKvCli := shardkvserver.MakeKvClient(os.Args[1])
+	shardKvCli := shardkvserver.MakeKvClient(os.Args[1])
 
-	// sigChan := make(chan os.Signal, 1)
-	// signal.Notify(sigChan)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan)
 
-	// switch os.Args[2] {
-	// case "put":
-	// 	if err := shardKvCli.Put(os.Args[3], os.Args[4]); err != nil {
-	// 		fmt.Println("err: " + err.Error())
-	// 		return
-	// 	}
-	// case "get":
-	// 	v, err := shardKvCli.Get(os.Args[3])
-	// 	if err != nil {
-	// 		fmt.Println("err: " + err.Error())
-	// 		return
-	// 	}
-	// 	fmt.Println("got value: " + v)
-	// case "getbuckets":
-	// 	gid, _ := strconv.Atoi(os.Args[3])
-	// 	bidsStr := os.Args[4]
-	// 	bids := []int64{}
-	// 	bidsStrArr := strings.Split(bidsStr, ",")
-	// 	for _, bidStr := range bidsStrArr {
-	// 		bid, _ := strconv.Atoi(bidStr)
-	// 		bids = append(bids, int64(bid))
-	// 	}
-	// 	datas := shardKvCli.GetBucketDatas(gid, bids)
-	// 	fmt.Println("get buckets datas: " + datas)
-	// case "delbuckets":
-	// 	gid, _ := strconv.Atoi(os.Args[3])
-	// 	bidsStr := os.Args[4]
-	// 	bids := []int64{}
-	// 	bidsStrArr := strings.Split(bidsStr, ",")
-	// 	for _, bidStr := range bidsStrArr {
-	// 		bid, _ := strconv.Atoi(bidStr)
-	// 		bids = append(bids, int64(bid))
-	// 	}
-	// 	shardKvCli.DeleteBucketDatas(gid, bids)
-	// case "insertbucketkv":
-	// 	gid, _ := strconv.Atoi(os.Args[3])
-	// 	bid, _ := strconv.Atoi(os.Args[4])
-	// 	bucketDatas := &shardkvserver.BucketDatasVo{}
-	// 	bucketDatas.Datas = make(map[int]map[string]string)
-	// 	kv := map[string]string{os.Args[5]: os.Args[6]}
-	// 	bucketDatas.Datas[bid] = kv
-	// 	datas, _ := json.Marshal(bucketDatas)
-	// 	shardKvCli.InsertBucketDatas(gid, []int64{int64(bid)}, datas)
-	// }
-	// go func() {
-	// 	sig := <-sigs
-	// 	fmt.Println(sig)
-	// 	for _, cli := range shardKvCli.GetCsClient().GetRpcClis() {
-	// 		cli.CloseAllConn()
-	// 	}
-	// 	shardKvCli.GetRpcClient().CloseAllConn()
-	// 	os.Exit(-1)
-	// }()
+	switch os.Args[2] {
+	case "put":
+		if err := shardKvCli.Put(os.Args[3], os.Args[4]); err != nil {
+			fmt.Println("err: " + err.Error())
+			return
+		}
+	case "get":
+		v, err := shardKvCli.Get(os.Args[3])
+		if err != nil {
+			fmt.Println("err: " + err.Error())
+			return
+		}
+		fmt.Println("got value: " + v)
+	case "getbuckets":
+		gid, _ := strconv.Atoi(os.Args[3])
+		bidsStr := os.Args[4]
+		bids := []int64{}
+		bidsStrArr := strings.Split(bidsStr, ",")
+		for _, bidStr := range bidsStrArr {
+			bid, _ := strconv.Atoi(bidStr)
+			bids = append(bids, int64(bid))
+		}
+		datas := shardKvCli.GetBucketDatas(gid, bids)
+		fmt.Println("get buckets datas: " + datas)
+	case "delbuckets":
+		gid, _ := strconv.Atoi(os.Args[3])
+		bidsStr := os.Args[4]
+		bids := []int64{}
+		bidsStrArr := strings.Split(bidsStr, ",")
+		for _, bidStr := range bidsStrArr {
+			bid, _ := strconv.Atoi(bidStr)
+			bids = append(bids, int64(bid))
+		}
+		shardKvCli.DeleteBucketDatas(gid, bids)
+	case "insertbucketkv":
+		gid, _ := strconv.Atoi(os.Args[3])
+		bid, _ := strconv.Atoi(os.Args[4])
+		bucketDatas := &shardkvserver.BucketDatasVo{}
+		bucketDatas.Datas = make(map[int]map[string]string)
+		kv := map[string]string{os.Args[5]: os.Args[6]}
+		bucketDatas.Datas[bid] = kv
+		datas, _ := json.Marshal(bucketDatas)
+		shardKvCli.InsertBucketDatas(gid, []int64{int64(bid)}, datas)
+	}
+	go func() {
+		sig := <-sigs
+		fmt.Println(sig)
+		for _, cli := range shardKvCli.GetCsClient().GetRpcClis() {
+			cli.CloseAllConn()
+		}
+		shardKvCli.GetRpcClient().CloseAllConn()
+		os.Exit(-1)
+	}()
 }

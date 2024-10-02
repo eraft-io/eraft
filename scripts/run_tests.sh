@@ -6,7 +6,7 @@ set -xe
 /eraft/output/metacli 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 move 0-4 1
 /eraft/output/metacli 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 move 5-9 2
 
-sleep 3
+sleep 10
 
 /eraft/output/shardcli 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 put testkey testvalue
 /eraft/output/shardcli 172.18.0.2:8088,172.18.0.3:8089,172.18.0.4:8090 get testkey

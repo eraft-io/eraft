@@ -26,7 +26,17 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
+	"os/signal"
+	"strconv"
+	"strings"
+	"syscall"
+
+	pb "github.com/eraft-io/eraft/raftpb"
+
+	"github.com/eraft-io/eraft/shardkvserver"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -35,53 +45,53 @@ func main() {
 		return
 	}
 
-	// sigs := make(chan os.Signal, 1)
-	// signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	// nodeIdStr := os.Args[1]
-	// nodeID, err := strconv.Atoi(nodeIdStr)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	nodeIdStr := os.Args[1]
+	nodeID, err := strconv.Atoi(nodeIdStr)
+	if err != nil {
+		panic(err)
+	}
 
-	// gidStr := os.Args[2]
-	// gid, err := strconv.Atoi(gidStr)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	gidStr := os.Args[2]
+	gid, err := strconv.Atoi(gidStr)
+	if err != nil {
+		panic(err)
+	}
 
-	// svrAddrs := strings.Split(os.Args[4], ",")
-	// svrPeerMap := make(map[int]string)
-	// for i, addr := range svrAddrs {
-	// 	svrPeerMap[i] = addr
-	// }
+	svrAddrs := strings.Split(os.Args[4], ",")
+	svrPeerMap := make(map[int]string)
+	for i, addr := range svrAddrs {
+		svrPeerMap[i] = addr
+	}
 
-	// shardSvr := shardkvserver.MakeShardKVServer(svrPeerMap, int64(nodeID), gid, os.Args[3])
-	// lis, err := net.Listen("tcp", svrPeerMap[nodeID])
-	// if err != nil {
-	// 	fmt.Printf("failed to listen: %v", err)
-	// 	return
-	// }
-	// fmt.Printf("server listen on: %s \n", svrPeerMap[nodeID])
-	// s := grpc.NewServer()
-	// pb.RegisterRaftServiceServer(s, shardSvr)
+	shardSvr := shardkvserver.MakeShardKVServer(svrPeerMap, int64(nodeID), gid, os.Args[3])
+	lis, err := net.Listen("tcp", svrPeerMap[nodeID])
+	if err != nil {
+		fmt.Printf("failed to listen: %v", err)
+		return
+	}
+	fmt.Printf("server listen on: %s \n", svrPeerMap[nodeID])
+	s := grpc.NewServer()
+	pb.RegisterRaftServiceServer(s, shardSvr)
 
-	// sigChan := make(chan os.Signal, 1)
+	sigChan := make(chan os.Signal, 1)
 
-	// signal.Notify(sigChan)
+	signal.Notify(sigChan)
 
-	// go func() {
-	// 	sig := <-sigs
-	// 	fmt.Println(sig)
-	// 	shardSvr.GetRf().CloseEndsConn()
-	// 	shardSvr.CloseApply()
-	// 	os.Exit(-1)
-	// }()
+	go func() {
+		sig := <-sigs
+		fmt.Println(sig)
+		shardSvr.GetRf().CloseEndsConn()
+		shardSvr.CloseApply()
+		os.Exit(-1)
+	}()
 
-	// err = s.Serve(lis)
-	// if err != nil {
-	// 	fmt.Printf("failed to serve: %v", err)
-	// 	return
-	// }
+	err = s.Serve(lis)
+	if err != nil {
+		fmt.Printf("failed to serve: %v", err)
+		return
+	}
 
 }
