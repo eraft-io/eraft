@@ -233,8 +233,8 @@ func (rfLog *RaftLog) LogItemCount() int {
 //
 // append a new entry to raft logs, put it to storage engine
 func (rfLog *RaftLog) Append(newEnt *pb.Entry) {
-	// rfLog.mu.Lock()
-	// defer rfLog.mu.Unlock()
+	rfLog.mu.Lock()
+	defer rfLog.mu.Unlock()
 	logIdLast, err := rfLog.dbEng.SeekPrefixKeyIdMax(RaftLogPrefix)
 	if err != nil {
 		panic(err)
