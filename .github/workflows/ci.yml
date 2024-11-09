@@ -13,4 +13,4 @@ jobs:
       - run: go version
       - name: Run test
         run: |
-          go test -run TestClusterSingleShardRwBench tests/integration_test.go 
+          go test -run TestClusterSingleShardRwBench tests/integration_test.go -v
