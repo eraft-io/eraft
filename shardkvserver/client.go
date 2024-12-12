@@ -203,7 +203,7 @@ func (cli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 				if err != nil {
 					logger.ELogger().Sugar().Error("send command to server error", err.Error())
 				}
-				if resp.ErrCode == common.ErrCodeNoErr {
+				if resp != nil && resp.ErrCode == common.ErrCodeNoErr {
 					cli.commandId++
 					return resp.Value, nil
 				}
