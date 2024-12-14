@@ -51,4 +51,5 @@ func TestAddGroups(t *testing.T) {
 		conf, _ := memConfStm.Query(-1)
 		t.Logf("%v %d", conf, i)
 	}
+	common.RemoveDir("./conf_data")
 }

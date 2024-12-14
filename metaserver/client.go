@@ -77,7 +77,7 @@ func (metaSvrCli *MetaSvrCli) Query(ver int64) *Config {
 	}
 	resp := metaSvrCli.CallDoConfigRpc(confReq)
 	cf := &Config{}
-	if resp != nil {
+	if resp != nil && resp.Config != nil {
 		cf.Version = int(resp.Config.ConfigVersion)
 		for i := 0; i < common.NBuckets; i++ {
 			cf.Buckets[i] = int(resp.Config.Buckets[i])

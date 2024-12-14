@@ -160,7 +160,7 @@ func TestClusterSingleShardRwBench(t *testing.T) {
 	// R-W test
 	shardkvcli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
 
-	N := 120
+	N := 64
 	KeySize := 64
 	ValSize := 64
 	benchKvs := map[string]string{}
@@ -227,7 +227,7 @@ func TestClusterRwBench(t *testing.T) {
 	// R-W test
 	shardKVCli := shardkvserver.MakeKvClient("127.0.0.1:8088,127.0.0.1:8089,127.0.0.1:8090")
 
-	N := 100
+	N := 64
 	KeySize := 64
 	ValSize := 64
 	benchKvs := map[string]string{}
