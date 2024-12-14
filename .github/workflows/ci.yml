@@ -13,4 +13,7 @@ jobs:
       - run: go version
       - name: Run test
         run: |
-          go test -run TestClusterSingleShardRwBench tests/integration_test.go -v
+          go test -run TestClusterSingleShardRwBench tests/integration_test.go
+          go test -run TestClusterRwBench tests/integration_test.go -v
+          go test storage/*
+          go test raftcore/*
