@@ -1,6 +1,11 @@
 name: CI
 
-on: [ push, pull_request ]
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  push:
+    branches:
+      - main
 
 jobs:
   test-ubuntu:
@@ -14,6 +19,6 @@ jobs:
       - name: Run test
         run: |
           go test -run TestClusterSingleShardRwBench tests/integration_test.go
-          go test -run TestClusterRwBench tests/integration_test.go -v
+          go test -run TestClusterRwBench tests/integration_test.go
           go test storage/*
           go test raftcore/*
