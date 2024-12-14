@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: '0 10 * * *'
   push:
-    branches:
-      - main
-
 jobs:
   test-ubuntu:
     runs-on: ubuntu-20.04
