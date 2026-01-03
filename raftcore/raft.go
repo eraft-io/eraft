@@ -220,6 +220,12 @@ func (rf *Raft) GetLeaderId() int64 {
 	return rf.leaderId
 }
 
+func (rf *Raft) GetMyId() int {
+	rf.mu.RLock()
+	defer rf.mu.RUnlock()
+	return rf.me_
+}
+
 func (rf *Raft) HandleAppendEntries(req *pb.AppendEntriesRequest, resp *pb.AppendEntriesResponse) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()

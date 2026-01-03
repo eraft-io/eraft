@@ -442,10 +442,10 @@ func (s *ShardKV) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (
 // rpc interface
 func (s *ShardKV) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) (*pb.AppendEntriesResponse, error) {
 	resp := &pb.AppendEntriesResponse{}
-	logger.ELogger().Sugar().Debugf("handle append entry %s ", req.String())
+	logger.ELogger().Sugar().Debugf("node gid %d, raft node id %d, handle append entry %s ", s.gid_, s.rf.GetMyId(), req.String())
 
 	s.rf.HandleAppendEntries(req, resp)
-	logger.ELogger().Sugar().Debugf("append entries %s ", resp.String())
+	logger.ELogger().Sugar().Debugf("node gid %d, raft node id %d, append entries %s ", s.gid_, s.rf.GetMyId(), resp.String())
 	return resp, nil
 }
 
