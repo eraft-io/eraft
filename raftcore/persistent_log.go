@@ -337,7 +337,7 @@ func EncodeRaftLogKey(idx uint64) []byte {
 // DecodeRaftLogKey
 // decode raft log key, return log id
 func DecodeRaftLogKey(bts []byte) uint64 {
-	return binary.LittleEndian.Uint64(bts[4:])
+	return binary.LittleEndian.Uint64(bts[PrefixOffset:])
 }
 
 // EncodeEntry

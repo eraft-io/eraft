@@ -41,7 +41,7 @@ func TestMemLogGetInit(t *testing.T) {
 	t.Log(raftLog.GetMemFirst())
 	t.Log(raftLog.GetMemLast())
 	t.Log(len(raftLog.items))
-	RemoveDir("./log_data_test")
+	// RemoveDir("./log_data_test")
 }
 
 func TestMenEraseBefore1(t *testing.T) {

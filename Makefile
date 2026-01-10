@@ -76,4 +76,12 @@ run-demo:
 stop-demo:
 	docker stop kvserver-node1 kvserver-node2 kvserver-node3 kvserver-node4 kvserver-node5 kvserver-node6 metaserver-node1 metaserver-node2 metaserver-node3
 
+gen-test-coverage:
+	go test -coverprofile=raftcore/coverage.out -run Test -v ./raftcore
+	go test -coverprofile=storage/coverage.out -run Test -v ./storage
+	go test -coverprofile=shardkvserver/coverage.out -run Test -v ./shardkvserver
 
+view-test-coverage:
+	go tool cover -html=raftcore/coverage.out
+	go tool cover -html=storage/coverage.out
+	go tool cover -html=shardkvserver/coverage.out

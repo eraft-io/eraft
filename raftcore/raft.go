@@ -426,6 +426,11 @@ func (rf *Raft) Election() {
 		if int(peer.id) == rf.me_ {
 			continue
 		}
+
+		if peer.raftServiceCli == nil {
+			continue
+		}
+
 		go func(peer *RaftClientEnd) {
 			PrintDebugLog(fmt.Sprintf("send request vote to %s %s\n", peer.addr, voteReq.String()))
 

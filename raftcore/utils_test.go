@@ -24,12 +24,8 @@
 
 package raftcore
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestRandRange(t *testing.T) {
-	for i := 0; i < 20; i++ {
-		t.Logf("get rand number %d", RandIntRange(100, 200))
-	}
+	t.Logf("get rand number %d", RandIntRange(100, 200))
 }

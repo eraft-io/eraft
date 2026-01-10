@@ -5,15 +5,10 @@
 
 ### Overview
 
-
 ### Why we need build a distributed system?
 
-First, let's look at the shortcomings of traditional single-node C/S or B/S systems:
-
-A single node means that only one machine is used, the performance of the machine is limited, and the machine with
-better performance is more expensive, like IBM's mainframe, the price is very expensive. At the same time, if the
-machine hangs up or the process is abnormal due to a bug in the code written, it cannot tolerate faults, and the system
-is directly unavailable.
+Let's first look at the drawbacks of traditional single-node client-server (C/S) or browser-server (B/S) systems:
+A single-node architecture means relying on just one machine. The performance of any single machine is inherently limited, and higher-performance machines are significantly more expensive—consider IBM mainframes, for example, which come at a very high cost. Moreover, if this machine fails or the process crashes due to bugs in the code, the system has no fault tolerance and becomes completely unavailable.
 
 After we analyze the shortcomings of single-node systems, we can summarize the design goals of distributed systems
 
@@ -122,7 +117,7 @@ cd eraft
 make
 ```
 
-run basic cluster
+### run cluster
 
 ```
 go test -run TestBasicClusterRW tests/integration_test.go -v
@@ -133,6 +128,21 @@ run basic cluster bench
 ```
 go test -run TestClusterRwBench tests/integration_test.go -v
 ```
+
+### unit test
+generate unit test report
+
+```
+make gen-test-coverage 
+```
+
+view unit test report
+
+```
+make view-test-coverage
+```
+
+### Book
 
 Book title: 【Distributed Data Services: Transaction Models, Processing Language, Consistency and Architecture.】
 

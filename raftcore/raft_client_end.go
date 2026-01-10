@@ -63,7 +63,6 @@ func MakeRaftClientEnd(addr string, id uint64) *RaftClientEnd {
 }
 
 func (rfEnd *RaftClientEnd) CloseAllConn() {
-	// PrintDebugLog(fmt.Sprintf("%s close rpc connect", rfEnd.addr))
 	for _, conn := range rfEnd.conns {
 		conn.Close()
 	}
