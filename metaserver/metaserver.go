@@ -49,7 +49,7 @@ type MetaServer struct {
 	applyCh     chan *pb.ApplyMsg
 	stm         ConfigStm
 	notifyChs   map[int]chan *pb.ConfigResponse
-	stopApplyCh chan interface{}
+	stopApplyCh chan any
 
 	pb.UnimplementedRaftServiceServer
 }
@@ -74,9 +74,10 @@ func MakeMetaServer(peerMaps map[int]string, nodeId int) *MetaServer {
 		notifyChs: make(map[int]chan *pb.ConfigResponse),
 	}
 
-	metaServer.stopApplyCh = make(chan interface{})
+	metaServer.stopApplyCh = make(chan any)
 
 	go metaServer.ApplyingToStm(metaServer.stopApplyCh)
+	logger.ELogger().Sugar().Debugf("meta server started with node id %d", nodeId)
 	return metaServer
 }
 
@@ -150,63 +151,71 @@ func (s *MetaServer) AppendEntries(ctx context.Context, req *pb.AppendEntriesReq
 	return resp, nil
 }
 
-func (s *MetaServer) ApplyingToStm(done <-chan interface{}) {
+func (s *MetaServer) ApplyingToStm(done <-chan any) {
 	for !s.IsKilled() {
 		select {
 		case <-done:
 			return
 		case appliedMsg := <-s.applyCh:
-			req := &pb.ConfigRequest{}
-			if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
-				logger.ELogger().Sugar().Errorf(err.Error())
-				continue
-			}
-			logger.ELogger().Sugar().Debugf("appling msg -> " + appliedMsg.String())
-			var conf Config
-			var err error
-			resp := &pb.ConfigResponse{}
-			switch req.OpType {
-			case pb.ConfigOpType_OpJoin:
-				groups := map[int][]string{}
-				for gid, serverAddrs := range req.Servers {
-					groups[int(gid)] = strings.Split(serverAddrs, ",")
+			if appliedMsg.CommandValid {
+				req := &pb.ConfigRequest{}
+				if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
+					logger.ELogger().Sugar().Errorf(err.Error())
+					continue
 				}
-				err = s.stm.Join(groups)
-			case pb.ConfigOpType_OpLeave:
-				gids := []int{}
-				for _, id := range req.Gids {
-					gids = append(gids, int(id))
-				}
-				err = s.stm.Leave(gids)
-			case pb.ConfigOpType_OpMove:
-				err = s.stm.Move(int(req.BucketId), int(req.Gid))
-			case pb.ConfigOpType_OpQuery:
-				conf, err = s.stm.Query(int(req.ConfigVersion))
-				if err != nil {
-					resp.ErrMsg = err.Error()
-				}
-				out, err := json.Marshal(conf)
-				if err != nil {
-					resp.ErrMsg = err.Error()
-				}
-				logger.ELogger().Sugar().Debugf("query configs: " + string(out))
-				resp.Config = &pb.ServerConfig{}
-				resp.Config.ConfigVersion = int64(conf.Version)
-				for _, sd := range conf.Buckets {
-					resp.Config.Buckets = append(resp.Config.Buckets, int64(sd))
-				}
-				resp.Config.Groups = make(map[int64]string)
-				for gid, servers := range conf.Groups {
-					resp.Config.Groups[int64(gid)] = strings.Join(servers, ",")
-				}
-			}
-			logger.ELogger().Sugar().Debugf("query resp: " + resp.String())
-			if err != nil {
-				resp.ErrMsg = err.Error()
-			}
+				logger.ELogger().Sugar().Debugf("appling msg -> " + appliedMsg.String())
+				var conf Config
+				var err error
+				resp := &pb.ConfigResponse{}
+				s.mu.Lock()
 
-			ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
-			ch <- resp
+				switch req.OpType {
+				case pb.ConfigOpType_OpJoin:
+					groups := map[int][]string{}
+					for gid, serverAddrs := range req.Servers {
+						groups[int(gid)] = strings.Split(serverAddrs, ",")
+					}
+					err = s.stm.Join(groups)
+				case pb.ConfigOpType_OpLeave:
+					gids := []int{}
+					for _, id := range req.Gids {
+						gids = append(gids, int(id))
+					}
+					err = s.stm.Leave(gids)
+				case pb.ConfigOpType_OpMove:
+					err = s.stm.Move(int(req.BucketId), int(req.Gid))
+				case pb.ConfigOpType_OpQuery:
+					conf, err = s.stm.Query(int(req.ConfigVersion))
+					if err != nil {
+						resp.ErrMsg = err.Error()
+					}
+					out, err := json.Marshal(conf)
+					if err != nil {
+						resp.ErrMsg = err.Error()
+					}
+					logger.ELogger().Sugar().Debugf("query configs: " + string(out))
+					resp.Config = &pb.ServerConfig{}
+					resp.Config.ConfigVersion = int64(conf.Version)
+					for _, sd := range conf.Buckets {
+						resp.Config.Buckets = append(resp.Config.Buckets, int64(sd))
+					}
+					resp.Config.Groups = make(map[int64]string)
+					for gid, servers := range conf.Groups {
+						resp.Config.Groups[int64(gid)] = strings.Join(servers, ",")
+					}
+				}
+				logger.ELogger().Sugar().Debugf("query resp: " + resp.String())
+				if err != nil {
+					resp.ErrMsg = err.Error()
+				}
+
+				ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
+				ch <- resp
+
+				s.mu.Unlock()
+			} else {
+				logger.ELogger().Sugar().Debugf("unexpected message")
+			}
 		}
 	}
 }

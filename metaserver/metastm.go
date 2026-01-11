@@ -35,7 +35,7 @@ import (
 
 const CfPrefix = "CF_"
 
-const CurVersionKey = "CUR_CONF_VERSION"
+const CurVersionKey = "CURV"
 
 type ConfigStm interface {
 	Join(groups map[int][]string) error
@@ -44,22 +44,22 @@ type ConfigStm interface {
 	Query(num int) (Config, error)
 }
 
-type MemConfigStm struct {
+type PersistentConfigStm struct {
 	dbEng          storage.KvStore
 	curConfVersion int
 }
 
-func NewMemConfigStm(dbEng storage.KvStore) *MemConfigStm {
+func NewMemConfigStm(dbEng storage.KvStore) *PersistentConfigStm {
 	// check if it has default conf
 	_, err := dbEng.Get(CfPrefix + strconv.Itoa(0))
-	confStm := &MemConfigStm{dbEng: dbEng, curConfVersion: 0}
+	confStm := &PersistentConfigStm{dbEng: dbEng, curConfVersion: 0}
 	if err != nil {
+		//write init conf to meta db
 		defaultConfig := DefaultConfig()
 		defaultConfigBytes, err := json.Marshal(defaultConfig)
 		if err != nil {
 			panic(err)
 		}
-		// init conf
 		logger.ELogger().Sugar().Debugf("init conf -> " + string(defaultConfigBytes))
 		if err := confStm.dbEng.Put(CfPrefix+strconv.Itoa(0), string(defaultConfigBytes)); err != nil {
 			panic(err)
@@ -69,23 +69,38 @@ func NewMemConfigStm(dbEng storage.KvStore) *MemConfigStm {
 		}
 		return confStm
 	}
+	// not first init, get current config version
 	versionStr, err := dbEng.Get(CurVersionKey)
 	if err != nil {
 		panic(err)
 	}
-	versionInt, _ := strconv.Atoi(versionStr)
+	versionInt, err := strconv.Atoi(versionStr)
+	if err != nil {
+		panic(err)
+	}
 	confStm.curConfVersion = versionInt
 	return confStm
 }
 
-func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
+func (cfStm *PersistentConfigStm) GetLastConfig() (Config, error) {
+	lastConf := &Config{}
 	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
+	if err != nil {
+		return DefaultConfig(), err
+	}
+	json.Unmarshal([]byte(confBytes), lastConf)
+	return *lastConf, nil
+}
+
+func (cfStm *PersistentConfigStm) Join(groups map[int][]string) error {
+	// get last config from db
+	lastConf, err := cfStm.GetLastConfig()
 	if err != nil {
 		return err
 	}
-	lastConf := &Config{}
-	json.Unmarshal([]byte(confBytes), lastConf)
-	newConfig := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
+	// update config with new groups
+	nextConfVersion := cfStm.curConfVersion + 1
+	newConfig := Config{nextConfVersion, lastConf.Buckets, deepCopy(lastConf.Groups)}
 	for gid, servers := range groups {
 		if _, ok := newConfig.Groups[gid]; !ok {
 			newSvrs := make([]string, len(servers))
@@ -101,50 +116,57 @@ func (cfStm *MemConfigStm) Join(groups map[int][]string) error {
 		}
 	}
 	newConfig.Buckets = newBuckets
-	newConfigBytes, _ := json.Marshal(newConfig)
-	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
-	cfStm.curConfVersion += 1
-	return nil
-}
-
-func (cfStm *MemConfigStm) Leave(gids []int) error {
-	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
+	newConfigBytes, err := json.Marshal(newConfig)
 	if err != nil {
 		return err
 	}
-	lastConf := &Config{}
-	json.Unmarshal([]byte(confBytes), lastConf)
-	newConf := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
+	// write version and config to db
+	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(nextConfVersion))
+	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(nextConfVersion), string(newConfigBytes))
+	cfStm.curConfVersion = nextConfVersion
+	return nil
+}
+
+func (cfStm *PersistentConfigStm) Leave(gids []int) error {
+	// get last config from db
+	lastConf, err := cfStm.GetLastConfig()
+	if err != nil {
+		return err
+	}
+	// update config with removed groups
+	nextConfVersion := cfStm.curConfVersion + 1
+	newConf := Config{nextConfVersion, lastConf.Buckets, deepCopy(lastConf.Groups)}
 	for _, gid := range gids {
 		delete(newConf.Groups, gid)
 	}
 	var newBuckets [common.NBuckets]int
 	newConf.Buckets = newBuckets
 	newConfigBytes, _ := json.Marshal(newConf)
-	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
-	cfStm.curConfVersion += 1
+	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(nextConfVersion))
+	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(nextConfVersion), string(newConfigBytes))
+	cfStm.curConfVersion = nextConfVersion
 	return nil
 }
 
-func (cfStm *MemConfigStm) Move(bid, gid int) error {
-	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(cfStm.curConfVersion))
+func (cfStm *PersistentConfigStm) Move(bid, gid int) error {
+	// get last config from db
+	lastConf, err := cfStm.GetLastConfig()
 	if err != nil {
 		return err
 	}
-	lastConf := &Config{}
-	json.Unmarshal([]byte(confBytes), lastConf)
-	newConf := Config{cfStm.curConfVersion + 1, lastConf.Buckets, deepCopy(lastConf.Groups)}
+	// update config with moved bucket
+	nextConfVersion := cfStm.curConfVersion + 1
+	newConf := Config{nextConfVersion, lastConf.Buckets, deepCopy(lastConf.Groups)}
 	newConf.Buckets[bid] = gid
 	newConfigBytes, _ := json.Marshal(newConf)
-	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(cfStm.curConfVersion+1))
-	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(cfStm.curConfVersion+1), string(newConfigBytes))
-	cfStm.curConfVersion += 1
+	cfStm.dbEng.Put(CurVersionKey, strconv.Itoa(nextConfVersion))
+	cfStm.dbEng.Put(CfPrefix+strconv.Itoa(nextConfVersion), string(newConfigBytes))
+	cfStm.curConfVersion = nextConfVersion
 	return nil
 }
 
-func (cfStm *MemConfigStm) Query(version int) (Config, error) {
+func (cfStm *PersistentConfigStm) Query(version int) (Config, error) {
+	// if version is invalid, return latest config
 	if version < 0 || version >= cfStm.curConfVersion {
 		lastConf := &Config{}
 		logger.ELogger().Sugar().Debugf("query cur version -> " + strconv.Itoa(cfStm.curConfVersion))
@@ -155,6 +177,7 @@ func (cfStm *MemConfigStm) Query(version int) (Config, error) {
 		json.Unmarshal([]byte(confBytes), lastConf)
 		return *lastConf, nil
 	}
+	// return specified version config
 	confBytes, err := cfStm.dbEng.Get(CfPrefix + strconv.Itoa(version))
 	if err != nil {
 		return DefaultConfig(), err

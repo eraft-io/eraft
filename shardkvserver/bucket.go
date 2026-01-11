@@ -34,7 +34,9 @@ type buketStatus uint8
 
 const (
 	Running buketStatus = iota
-	Stopped
+	Pulling
+	BePulling
+	Deleting
 )
 
 const SPLIT = "$^$"

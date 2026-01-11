@@ -58,14 +58,10 @@ type ShardKV struct {
 	lastConfig  metaserver.Config
 	curConfig   metaserver.Config
 
-	stm map[int]*Bucket
-
-	dbEng storage.KvStore
-
-	notifyChs map[int]chan *pb.CommandResponse
-
-	stopApplyCh chan interface{}
-
+	stm             map[int]*Bucket
+	dbEng           storage.KvStore
+	notifyChs       map[int]chan *pb.CommandResponse
+	stopApplyCh     chan interface{}
 	lastSnapShotIdx int
 
 	pb.UnimplementedRaftServiceServer
@@ -137,8 +133,8 @@ func (s *ShardKV) ConfigAction() {
 		if _, isLeader := s.rf.GetState(); isLeader {
 			logger.ELogger().Sugar().Debugf("timeout into config action")
 
-			s.mu.RLock()
 			canPerformNextConf := true
+			s.mu.RLock()
 			for _, bucket := range s.stm {
 				if bucket.Status != Running {
 					canPerformNextConf = false
@@ -146,12 +142,10 @@ func (s *ShardKV) ConfigAction() {
 					break
 				}
 			}
-			if canPerformNextConf {
-				logger.ELogger().Sugar().Debug("can perform next conf")
-			}
 			curConfVersion := s.curConfig.Version
 			s.mu.RUnlock()
 			if canPerformNextConf {
+				logger.ELogger().Sugar().Debug("can perform next conf")
 				nextConfig := s.cvCli.Query(int64(curConfVersion) + 1)
 				if nextConfig == nil {
 					continue
@@ -195,6 +189,23 @@ func (s *ShardKV) ConfigAction() {
 		}
 		time.Sleep(time.Second * 1)
 	}
+}
+
+// getBucketIDsByStatus get bucket ids by status
+func (s *ShardKV) getBucketIDsByStatus(status buketStatus) map[int][]int {
+	g2bkids := make(map[int][]int)
+	for i, bucket := range s.stm {
+		if bucket.Status == status {
+			gid := s.lastConfig.Buckets[i]
+			if gid != 0 {
+				if _, ok := g2bkids[gid]; !ok {
+					g2bkids[gid] = make([]int, 0)
+				}
+				g2bkids[gid] = append(g2bkids[gid], i)
+			}
+		}
+	}
+	return g2bkids
 }
 
 func (s *ShardKV) CanServe(bucketId int) bool {
@@ -257,27 +268,17 @@ func (s *ShardKV) DoCommand(ctx context.Context, req *pb.CommandRequest) (*pb.Co
 }
 
 // ApplingToStm  apply the commit operation to state machine
-func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
+func (s *ShardKV) ApplingToStm(done <-chan any) {
 	for !s.IsKilled() {
 		select {
 		case <-done:
 			return
 		case appliedMsg := <-s.applyCh:
-			logger.ELogger().Sugar().Debugf("appling msg %s", appliedMsg.String())
-
-			if appliedMsg.SnapshotValid {
-				s.mu.Lock()
-				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
-					s.restoreSnapshot(appliedMsg.Snapshot)
-					s.lastApplied = int(appliedMsg.SnapshotIndex)
-				}
-				s.mu.Unlock()
-				return
-			}
-
+			logger.ELogger().Sugar().Debugf("nodeid %v, groupid %v, appling msg %s", s.rf.GetMyId(), s.gid_, appliedMsg.String())
 			if appliedMsg.CommandValid {
 				s.mu.Lock()
 
+				// decode command
 				req := &pb.CommandRequest{}
 				if err := json.Unmarshal(appliedMsg.Command, req); err != nil {
 					logger.ELogger().Sugar().Error("Unmarshal CommandRequest err", err.Error())
@@ -295,14 +296,12 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 				logger.ELogger().Sugar().Debugf("shard_kvserver last applied %d", s.lastApplied)
 
 				cmdResp := &pb.CommandResponse{}
-				value := ""
-				var err error
 				switch req.OpType {
-				// Normal Op
+				// normal operations
 				case pb.OpType_OpPut:
 					bucketID := common.Key2BucketID(req.Key)
 					if s.CanServe(bucketID) {
-						logger.ELogger().Sugar().Debug("WRITE put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucketID))
+						logger.ELogger().Sugar().Debug("put " + req.Key + " value " + req.Value + " to bucket " + strconv.Itoa(bucketID))
 						s.stm[bucketID].Put(req.Key, req.Value)
 					}
 				case pb.OpType_OpAppend:
@@ -313,25 +312,31 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 				case pb.OpType_OpGet:
 					bucketID := common.Key2BucketID(req.Key)
 					if s.CanServe(bucketID) {
-						value, err = s.stm[bucketID].Get(req.Key)
+						value, err_ := s.stm[bucketID].Get(req.Key)
+						if err_ != nil {
+							logger.ELogger().Sugar().Errorf(err_.Error())
+						}
 						logger.ELogger().Sugar().Debug("get " + req.Key + " value " + value + " from bucket " + strconv.Itoa(bucketID))
+						cmdResp.Value = value
 					}
-					cmdResp.Value = value
+				// config change operations
 				case pb.OpType_OpConfigChange:
 					nextConfig := &metaserver.Config{}
 					json.Unmarshal(req.Context, nextConfig)
 					if nextConfig.Version == s.curConfig.Version+1 {
 						for i := 0; i < common.NBuckets; i++ {
+							// bucket move to my group
 							if s.curConfig.Buckets[i] != s.gid_ && nextConfig.Buckets[i] == s.gid_ {
 								gid := s.curConfig.Buckets[i]
 								if gid != 0 {
 									s.stm[i].Status = Running
 								}
 							}
+							// bucket move to other group
 							if s.curConfig.Buckets[i] == s.gid_ && nextConfig.Buckets[i] != s.gid_ {
 								gid := nextConfig.Buckets[i]
 								if gid != 0 {
-									s.stm[i].Status = Stopped
+									s.stm[i].Status = Running
 								}
 							}
 						}
@@ -360,9 +365,6 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 						}
 					}
 				}
-				if err != nil {
-					raftcore.PrintDebugLog(err.Error())
-				}
 
 				if _, isLeader := s.rf.GetState(); isLeader {
 					ch := s.getNotifyChan(int(appliedMsg.CommandIndex))
@@ -375,6 +377,16 @@ func (s *ShardKV) ApplingToStm(done <-chan interface{}) {
 
 				s.mu.Unlock()
 
+			} else if appliedMsg.SnapshotValid {
+				s.mu.Lock()
+				if s.rf.CondInstallSnapshot(int(appliedMsg.SnapshotTerm), int(appliedMsg.SnapshotIndex), appliedMsg.Snapshot) {
+					s.restoreSnapshot(appliedMsg.Snapshot)
+					s.lastApplied = int(appliedMsg.SnapshotIndex)
+				}
+				s.mu.Unlock()
+				return
+			} else {
+				panic("appliedMsg is not valid")
 			}
 		}
 	}

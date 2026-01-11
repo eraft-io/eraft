@@ -231,9 +231,6 @@ func (cli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
 					} else {
 						return ""
 					}
-				} else {
-					logger.ELogger().Sugar().Error("send command to server error", err.Error())
-					return ""
 				}
 			}
 		}
