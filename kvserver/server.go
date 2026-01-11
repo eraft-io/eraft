@@ -44,7 +44,6 @@ import (
 	"github.com/eraft-io/eraft/storage"
 )
 
-var DnsMap = map[int]string{0: "eraft-kvserver-0.eraft-kvserver:8088", 1: "eraft-kvserver-1.eraft-kvserver:8089", 2: "eraft-kvserver-2.eraft-kvserver:8090"}
 var PeersMap = map[int]string{0: ":8088", 1: ":8089", 2: ":8090"}
 
 const ExecCmdTimeout = 1 * time.Second

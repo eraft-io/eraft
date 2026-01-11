@@ -129,7 +129,7 @@ func (cli *KvClient) Put(key, value string) error {
 // GetBucketDatas
 // get all the data in a bucket, this is not an efficient approach to data migration
 // and needs to be optimized
-func (cli *KvClient) GetBucketDatas(gid int, bucketIds []int64) string {
+func (cli *KvClient) GetBucketDatas(gid int, bucketIds []int64) []byte {
 	return cli.BucketOpCommand(&pb.BucketOperationRequest{
 		BucketOpType:  pb.BucketOpType_OpGetData,
 		Gid:           int64(gid),
@@ -141,7 +141,7 @@ func (cli *KvClient) GetBucketDatas(gid int, bucketIds []int64) string {
 // DeleteBucketDatas
 // delete all the data in a bucket, this is not an efficient approach to data migration
 // and needs to be optimized
-func (cli *KvClient) DeleteBucketDatas(gid int, bucketIds []int64) string {
+func (cli *KvClient) DeleteBucketDatas(gid int, bucketIds []int64) []byte {
 	return cli.BucketOpCommand(&pb.BucketOperationRequest{
 		BucketOpType:  pb.BucketOpType_OpDeleteData,
 		Gid:           int64(gid),
@@ -153,7 +153,7 @@ func (cli *KvClient) DeleteBucketDatas(gid int, bucketIds []int64) string {
 // InsertBucketDatas
 // insert all the data into a bucket, this is not an efficient approach to data migration
 // and needs to be optimized
-func (cli *KvClient) InsertBucketDatas(gid int, bucketIds []int64, datas []byte) string {
+func (cli *KvClient) InsertBucketDatas(gid int, bucketIds []int64, datas []byte) []byte {
 	return cli.BucketOpCommand(&pb.BucketOperationRequest{
 		BucketOpType:  pb.BucketOpType_OpInsertData,
 		BucketsDatas:  datas,
@@ -219,7 +219,7 @@ func (cli *KvClient) Command(req *pb.CommandRequest) (string, error) {
 
 // BucketOpCommand
 // do user bucket operation command
-func (cli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
+func (cli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) []byte {
 	for {
 		if servers, ok := cli.config.Groups[int(req.Gid)]; ok {
 			for _, svrAddr := range servers {
@@ -227,9 +227,9 @@ func (cli *KvClient) BucketOpCommand(req *pb.BucketOperationRequest) string {
 				resp, err := (*cli.rpcCli.GetRaftServiceCli()).DoBucketsOperation(context.Background(), req)
 				if err == nil {
 					if resp != nil {
-						return string(resp.BucketsDatas)
+						return resp.BucketsDatas
 					} else {
-						return ""
+						return []byte{}
 					}
 				}
 			}
