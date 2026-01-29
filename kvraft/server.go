@@ -16,6 +16,7 @@ type KVStateMachine interface {
 	Get(key string) (string, Err)
 	Put(key, value string) Err
 	Append(key, value string) Err
+	Close()
 }
 
 type LevelDBKV struct {
@@ -138,6 +139,7 @@ func (kv *KVServer) Kill() {
 	DPrintf("{Node %v} has been killed", kv.rf.Me())
 	atomic.StoreInt32(&kv.dead, 1)
 	kv.rf.Kill()
+	kv.stateMachine.Close()
 }
 
 func (kv *KVServer) killed() bool {

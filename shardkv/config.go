@@ -70,6 +70,7 @@ type config struct {
 	clerks       map[*Clerk][]string
 	nextClientId int
 	maxraftstate int
+	tmpDir       string
 }
 
 func (cfg *config) checkTimeout() {
@@ -87,6 +88,7 @@ func (cfg *config) cleanup() {
 		cfg.ctrlerservers[i].Kill()
 	}
 	cfg.net.Cleanup()
+	os.RemoveAll(cfg.tmpDir)
 	cfg.checkTimeout()
 }
 
@@ -246,8 +248,21 @@ func (cfg *config) StartServer(gi int, i int) {
 	}
 	cfg.mu.Unlock()
 
+	ctrlers := make([]string, cfg.nctrlers)
+	for j := 0; j < cfg.nctrlers; j++ {
+		ctrlers[j] = cfg.ctrlername(j)
+	}
+	makeEnd := func(servername string) *labrpc.ClientEnd {
+		name := randstring(20)
+		end := cfg.net.MakeEnd(name)
+		cfg.net.Connect(name, servername)
+		cfg.net.Enable(name, true)
+		return end
+	}
+
+	dbPath := fmt.Sprintf("%s/shardkv-test-%d-%d", cfg.tmpDir, gg.gid, i)
 	gg.servers[i] = StartServer(raft.CastLabrpcToRaftPeers(ends), i, gg.saved[i], cfg.maxraftstate,
-		gg.gid, raft.CastLabrpcToNames(mends), fmt.Sprintf("data/shardkv-test-%d-%d", gg.gid, i))
+		gg.gid, ctrlers, makeEnd, dbPath)
 
 	kvsvc := labrpc.MakeService(gg.servers[i])
 	rfsvc := labrpc.MakeService(gg.servers[i].rf)
@@ -275,7 +290,8 @@ func (cfg *config) StartCtrlerserver(i int) {
 
 	p := raft.MakePersister()
 
-	cfg.ctrlerservers[i] = shardctrler.StartServer(raft.CastLabrpcToRaftPeers(ends), i, p, fmt.Sprintf("data/shardctrler-test-skv-%d", i))
+	dbPath := fmt.Sprintf("%s/shardctrler-test-skv-%d", cfg.tmpDir, i)
+	cfg.ctrlerservers[i] = shardctrler.StartServer(raft.CastLabrpcToRaftPeers(ends), i, p, dbPath)
 
 	msvc := labrpc.MakeService(cfg.ctrlerservers[i])
 	rfsvc := labrpc.MakeService(cfg.ctrlerservers[i].Raft())
@@ -341,6 +357,7 @@ func make_config(t *testing.T, n int, unreliable bool, maxraftstate int) *config
 	runtime.GOMAXPROCS(4)
 	cfg := &config{}
 	cfg.t = t
+	cfg.tmpDir, _ = os.MkdirTemp("", "shardkv-test-*")
 	cfg.maxraftstate = maxraftstate
 	cfg.net = labrpc.MakeNetwork()
 	cfg.start = time.Now()

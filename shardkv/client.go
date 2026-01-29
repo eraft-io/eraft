@@ -44,6 +44,8 @@ func nrand() int64 {
 
 type ShardKVClient interface {
 	Command(ctx context.Context, in *shardkvpb.CommandRequest, opts ...grpc.CallOption) (*shardkvpb.CommandResponse, error)
+	GetShardsData(ctx context.Context, in *shardkvpb.ShardOperationRequest, opts ...grpc.CallOption) (*shardkvpb.ShardOperationResponse, error)
+	DeleteShardsData(ctx context.Context, in *shardkvpb.ShardOperationRequest, opts ...grpc.CallOption) (*shardkvpb.ShardOperationResponse, error)
 	GetStatus(ctx context.Context, in *shardkvpb.GetStatusRequest, opts ...grpc.CallOption) (*shardkvpb.GetStatusResponse, error)
 }
 
@@ -53,6 +55,14 @@ type gRPCShardKVClient struct {
 
 func (c *gRPCShardKVClient) Command(ctx context.Context, in *shardkvpb.CommandRequest, opts ...grpc.CallOption) (*shardkvpb.CommandResponse, error) {
 	return c.client.Command(ctx, in, opts...)
+}
+
+func (c *gRPCShardKVClient) GetShardsData(ctx context.Context, in *shardkvpb.ShardOperationRequest, opts ...grpc.CallOption) (*shardkvpb.ShardOperationResponse, error) {
+	return c.client.GetShardsData(ctx, in, opts...)
+}
+
+func (c *gRPCShardKVClient) DeleteShardsData(ctx context.Context, in *shardkvpb.ShardOperationRequest, opts ...grpc.CallOption) (*shardkvpb.ShardOperationResponse, error) {
+	return c.client.DeleteShardsData(ctx, in, opts...)
 }
 
 func (c *gRPCShardKVClient) GetStatus(ctx context.Context, in *shardkvpb.GetStatusRequest, opts ...grpc.CallOption) (*shardkvpb.GetStatusResponse, error) {
@@ -81,6 +91,59 @@ func (c *LabrpcShardKVClient) Command(ctx context.Context, in *shardkvpb.Command
 	return nil, fmt.Errorf("rpc failed")
 }
 
+func (c *LabrpcShardKVClient) GetShardsData(ctx context.Context, in *shardkvpb.ShardOperationRequest, opts ...grpc.CallOption) (*shardkvpb.ShardOperationResponse, error) {
+	shardIDs := make([]int, len(in.ShardIds))
+	for i, id := range in.ShardIds {
+		shardIDs[i] = int(id)
+	}
+	args := &ShardOperationRequest{
+		ConfigNum: int(in.ConfigNum),
+		ShardIDs:  shardIDs,
+	}
+	reply := &ShardOperationResponse{}
+	if ok := c.end.Call("ShardKV.GetShardsData", args, reply); ok {
+		respShards := make(map[int32]*shardkvpb.ShardData)
+		for sid, kvMap := range reply.Shards {
+			respShards[int32(sid)] = &shardkvpb.ShardData{Kv: kvMap}
+		}
+		respLastOps := make(map[int64]*shardkvpb.OperationContext)
+		for cid, opCtx := range reply.LastOperations {
+			respLastOps[cid] = &shardkvpb.OperationContext{
+				MaxAppliedCommandId: opCtx.MaxAppliedCommandId,
+				LastResponse: &shardkvpb.CommandResponse{
+					Err:   opCtx.LastResponse.Err.String(),
+					Value: opCtx.LastResponse.Value,
+				},
+			}
+		}
+		return &shardkvpb.ShardOperationResponse{
+			Err:            reply.Err.String(),
+			ConfigNum:      int32(reply.ConfigNum),
+			Shards:         respShards,
+			LastOperations: respLastOps,
+		}, nil
+	}
+	return nil, fmt.Errorf("rpc failed")
+}
+
+func (c *LabrpcShardKVClient) DeleteShardsData(ctx context.Context, in *shardkvpb.ShardOperationRequest, opts ...grpc.CallOption) (*shardkvpb.ShardOperationResponse, error) {
+	shardIDs := make([]int, len(in.ShardIds))
+	for i, id := range in.ShardIds {
+		shardIDs[i] = int(id)
+	}
+	args := &ShardOperationRequest{
+		ConfigNum: int(in.ConfigNum),
+		ShardIDs:  shardIDs,
+	}
+	reply := &ShardOperationResponse{}
+	if ok := c.end.Call("ShardKV.DeleteShardsData", args, reply); ok {
+		return &shardkvpb.ShardOperationResponse{
+			Err: reply.Err.String(),
+		}, nil
+	}
+	return nil, fmt.Errorf("rpc failed")
+}
+
 func (c *LabrpcShardKVClient) GetStatus(ctx context.Context, in *shardkvpb.GetStatusRequest, opts ...grpc.CallOption) (*shardkvpb.GetStatusResponse, error) {
 	return nil, fmt.Errorf("GetStatus not supported in labrpc mode")
 }
@@ -90,8 +153,9 @@ type Clerk struct {
 	config    shardctrler.Config
 	clients   map[int][]ShardKVClient
 	leaderIds map[int]int
-	cliendId  int64
+	clientId  int64
 	commandId int64
+	makeEnd   func(string) *labrpc.ClientEnd
 }
 
 // the tester calls MakeClerk.
@@ -103,7 +167,7 @@ func MakeClerk(ctrlers []string) *Clerk {
 		sm:        shardctrler.MakeClerk(ctrlers),
 		clients:   make(map[int][]ShardKVClient),
 		leaderIds: make(map[int]int),
-		cliendId:  nrand(),
+		clientId:  nrand(),
 		commandId: 0,
 	}
 	ck.config = ck.sm.Query(-1)
@@ -115,8 +179,9 @@ func MakeLabrpcClerk(ctrlers []*labrpc.ClientEnd, makeEnd func(string) *labrpc.C
 		sm:        shardctrler.MakeLabrpcClerk(ctrlers),
 		clients:   make(map[int][]ShardKVClient),
 		leaderIds: make(map[int]int),
-		cliendId:  nrand(),
+		clientId:  nrand(),
 		commandId: 0,
+		makeEnd:   makeEnd,
 	}
 	ck.config = ck.sm.Query(-1)
 	return ck
@@ -139,7 +204,7 @@ func (ck *Clerk) Append(key string, value string) {
 }
 
 func (ck *Clerk) Command(request *CommandRequest) string {
-	request.ClientId, request.CommandId = ck.cliendId, ck.commandId
+	request.ClientId, request.CommandId = ck.clientId, ck.commandId
 	for {
 		shard := key2shard(request.Key)
 		gid := ck.config.Shards[shard]
@@ -157,8 +222,9 @@ func (ck *Clerk) Command(request *CommandRequest) string {
 							ck.clients[gid][i] = &gRPCShardKVClient{client: shardkvpb.NewShardKVServiceClient(conn)}
 						}
 					} else {
-						// This case should not happen in our new gRPC-based standalone mode
-						// But for compatibility in tests we might need something else
+						if ck.makeEnd != nil {
+							ck.clients[gid][i] = &LabrpcShardKVClient{end: ck.makeEnd(srv)}
+						}
 					}
 				}
 			}

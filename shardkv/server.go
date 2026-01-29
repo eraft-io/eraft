@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
+	"github.com/eraft-io/eraft/labrpc"
 	"github.com/eraft-io/eraft/raft"
 	"github.com/eraft-io/eraft/shardctrler"
 	"github.com/eraft-io/eraft/shardkvpb"
@@ -76,6 +78,7 @@ type ShardKV struct {
 	shardStatus    [shardctrler.NShards]ShardStatus
 	lastOperations map[int64]OperationContext    // determine whether log is duplicated by recording the last commandId and response corresponding to the clientId
 	notifyChans    map[int]chan *CommandResponse // notify client goroutine by applier goroutine to response
+	makeEnd        func(string) *labrpc.ClientEnd
 }
 
 func (kv *ShardKV) Raft() *raft.Raft {
@@ -216,6 +219,7 @@ func (kv *ShardKV) Kill() {
 	DPrintf("{Node %v}{Group %v} has been killed", kv.rf.Me(), kv.gid)
 	atomic.StoreInt32(&kv.dead, 1)
 	kv.rf.Kill()
+	kv.store.Close()
 }
 
 func (kv *ShardKV) killed() bool {
@@ -565,13 +569,27 @@ func (kv *ShardKV) migrationAction() {
 			}
 
 			for _, server := range servers {
-				conn, err := grpc.Dial(server, grpc.WithTransportCredentials(insecure.NewCredentials()))
-				if err != nil {
-					continue
+				var client ShardKVClient
+				var conn *grpc.ClientConn
+				if strings.Contains(server, ":") || strings.HasPrefix(server, "localhost") {
+					var err error
+					conn, err = grpc.Dial(server, grpc.WithTransportCredentials(insecure.NewCredentials()))
+					if err != nil {
+						continue
+					}
+					client = &gRPCShardKVClient{client: shardkvpb.NewShardKVServiceClient(conn)}
+				} else {
+					if kv.makeEnd != nil {
+						client = &LabrpcShardKVClient{end: kv.makeEnd(server)}
+					} else {
+						continue
+					}
 				}
-				client := shardkvpb.NewShardKVServiceClient(conn)
+
 				resp, err := client.GetShardsData(context.Background(), pullTaskRequest)
-				conn.Close()
+				if conn != nil {
+					conn.Close()
+				}
 
 				if err == nil && resp.Err == OK.String() {
 					// Convert resp to ShardOperationResponse
@@ -624,13 +642,27 @@ func (kv *ShardKV) gcAction() {
 			}
 
 			for _, server := range servers {
-				conn, err := grpc.Dial(server, grpc.WithTransportCredentials(insecure.NewCredentials()))
-				if err != nil {
-					continue
+				var client ShardKVClient
+				var conn *grpc.ClientConn
+				if strings.Contains(server, ":") || strings.HasPrefix(server, "localhost") {
+					var err error
+					conn, err = grpc.Dial(server, grpc.WithTransportCredentials(insecure.NewCredentials()))
+					if err != nil {
+						continue
+					}
+					client = &gRPCShardKVClient{client: shardkvpb.NewShardKVServiceClient(conn)}
+				} else {
+					if kv.makeEnd != nil {
+						client = &LabrpcShardKVClient{end: kv.makeEnd(server)}
+					} else {
+						continue
+					}
 				}
-				client := shardkvpb.NewShardKVServiceClient(conn)
+
 				resp, err := client.DeleteShardsData(context.Background(), gcTaskRequest)
-				conn.Close()
+				if conn != nil {
+					conn.Close()
+				}
 
 				if err == nil && resp.Err == OK.String() {
 					DPrintf("{Node %v}{Group %v} deletes shards %v in remote group successfully when currentConfigNum is %v", kv.rf.Me(), kv.gid, shardIDs, configNum)
@@ -706,7 +738,7 @@ func (kv *ShardKV) Monitor(action func(), timeout time.Duration) {
 //
 // StartServer() must return quickly, so it should start goroutines
 // for any long-running work.
-func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, maxRaftState int, gid int, ctrlers []string, dbPath string) *ShardKV {
+func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, maxRaftState int, gid int, ctrlers []string, makeEnd func(string) *labrpc.ClientEnd, dbPath string) *ShardKV {
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
 	labgob.Register(Command{})
@@ -722,7 +754,7 @@ func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, maxRa
 		rf:             raft.Make(peers, me, persister, applyCh),
 		applyCh:        applyCh,
 		gid:            gid,
-		sc:             shardctrler.MakeClerk(ctrlers),
+		sc:             shardctrler.MakeClerkWithMakeEnd(ctrlers, makeEnd),
 		lastApplied:    0,
 		maxRaftState:   maxRaftState,
 		currentConfig:  shardctrler.DefaultConfig(),
@@ -730,6 +762,7 @@ func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, maxRa
 		store:          NewLevelDBShardStore(dbPath),
 		lastOperations: make(map[int64]OperationContext),
 		notifyChans:    make(map[int]chan *CommandResponse),
+		makeEnd:        makeEnd,
 	}
 	kv.restoreSnapshot(persister.ReadSnapshot())
 	// start applier goroutine to apply committed logs to stateMachine

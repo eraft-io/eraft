@@ -9,6 +9,7 @@ type ConfigStateMachine interface {
 	Leave(gids []int) Err
 	Move(shard, gid int) Err
 	Query(num int) (Config, Err)
+	Close()
 }
 
 type MemoryConfigStateMachine struct {

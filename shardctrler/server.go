@@ -212,6 +212,7 @@ func (sc *ShardCtrler) Kill() {
 	DPrintf("{ShardCtrler %v} has been killed", sc.rf.Me())
 	atomic.StoreInt32(&sc.dead, 1)
 	sc.rf.Kill()
+	sc.stateMachine.Close()
 }
 
 func (sc *ShardCtrler) killed() bool {

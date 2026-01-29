@@ -46,6 +46,7 @@ type config struct {
 	clerks       map[*Clerk][]string
 	nextClientId int
 	start        time.Time // time at which make_config() was called
+	tmpDir       string
 }
 
 func (cfg *config) checkTimeout() {
@@ -64,6 +65,7 @@ func (cfg *config) cleanup() {
 		}
 	}
 	cfg.net.Cleanup()
+	os.RemoveAll(cfg.tmpDir)
 	cfg.checkTimeout()
 }
 
@@ -290,7 +292,8 @@ func (cfg *config) StartServer(i int) {
 
 	cfg.mu.Unlock()
 
-	cfg.servers[i] = StartServer(raft.CastLabrpcToRaftPeers(ends), i, cfg.saved[i], fmt.Sprintf("data/shardctrler-test-%d", i))
+	dbPath := fmt.Sprintf("%s/shardctrler-test-%d", cfg.tmpDir, i)
+	cfg.servers[i] = StartServer(raft.CastLabrpcToRaftPeers(ends), i, cfg.saved[i], dbPath)
 
 	kvsvc := labrpc.MakeService(cfg.servers[i])
 	rfsvc := labrpc.MakeService(cfg.servers[i].rf)
@@ -337,6 +340,7 @@ func make_config(t *testing.T, n int, unreliable bool) *config {
 	runtime.GOMAXPROCS(4)
 	cfg := &config{}
 	cfg.t = t
+	cfg.tmpDir, _ = os.MkdirTemp("", "shardctrler-test-*")
 	cfg.net = labrpc.MakeNetwork()
 	cfg.n = n
 	cfg.servers = make([]*ShardCtrler, cfg.n)

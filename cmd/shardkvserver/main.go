@@ -40,7 +40,7 @@ func main() {
 	os.MkdirAll(nodeDbPath, 0755)
 
 	persister := raft.MakeFilePersister(nodeDbPath)
-	kv := shardkv.StartServer(peers, *id, persister, -1, *gid, ctrlerList, nodeDbPath)
+	kv := shardkv.StartServer(peers, *id, persister, -1, *gid, ctrlerList, nil, nodeDbPath)
 
 	lis, err := net.Listen("tcp", addrs[*id])
 	if err != nil {

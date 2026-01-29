@@ -57,6 +57,7 @@ type config struct {
 	nextClientId int
 	maxraftstate int
 	start        time.Time // time at which make_config() was called
+	tmpDir       string
 	// begin()/end() statistics
 	t0    time.Time // time at which test_test.go called cfg.begin()
 	rpcs0 int       // rpcTotal() at start of test
@@ -79,6 +80,7 @@ func (cfg *config) cleanup() {
 		}
 	}
 	cfg.net.Cleanup()
+	os.RemoveAll(cfg.tmpDir)
 	cfg.checkTimeout()
 }
 
@@ -316,7 +318,7 @@ func (cfg *config) StartServer(i int) {
 	}
 	cfg.mu.Unlock()
 
-	dbPath := fmt.Sprintf("kvserver-%d", i)
+	dbPath := fmt.Sprintf("%s/kvserver-%d", cfg.tmpDir, i)
 	cfg.kvservers[i] = StartKVServer(raft.CastLabrpcToRaftPeers(ends), i, cfg.saved[i], cfg.maxraftstate, dbPath)
 
 	kvsvc := labrpc.MakeService(cfg.kvservers[i])
@@ -372,6 +374,7 @@ func make_config(t *testing.T, n int, unreliable bool, maxraftstate int) *config
 	runtime.GOMAXPROCS(4)
 	cfg := &config{}
 	cfg.t = t
+	cfg.tmpDir, _ = os.MkdirTemp("", "kvraft-test-*")
 	cfg.net = labrpc.MakeNetwork()
 	cfg.n = n
 	cfg.kvservers = make([]*KVServer, cfg.n)
