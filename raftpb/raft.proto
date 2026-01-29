@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package raftpb;
+
+option go_package = "../raftpb";
+
+
+message RequestVoteRequest {
+  int64 term = 1;
+  int64 candidate_id = 2;
+  int64 last_log_index = 3;
+  int64 last_log_term = 4;
+}
+
+message RequestVoteResponse {
+  int64 term = 1;
+  bool  vote_granted = 2;
+}
+
+enum EntryType {
+  EntryNormal = 0;
+  EntryConfChange = 1;
+}
+
+message Entry {
+  EntryType entry_type = 1;
+  uint64    term = 2;
+  int64     index = 3;
+  bytes     data = 4;
+}
+
+message AppendEntriesRequest {
+  int64    term = 1;
+  int64    leader_id = 2;
+  int64    prev_log_index = 3;
+  int64    prev_log_term = 4;
+  int64    leader_commit = 5;
+  repeated Entry entries = 6;
+}
+
+message AppendEntriesResponse {
+  int64  term = 1;
+  bool  success = 2;
+  int64 conflict_index = 3;
+  int64 conflict_term = 4;
+}
+
+message ApplyMsg {
+  bool   CommandValid = 1;
+  bytes  Command = 2;
+  int64  CommandTerm = 3;
+  int64  CommandIndex = 4;
+  bool   SnapshotValid = 5;
+  bytes  Snapshot = 6;
+  int64  SnapshotTerm = 7;
+  int64  SnapshotIndex = 8;
+}
+
+enum OpType {
+  OpPut = 0;
+  OpAppend = 1;
+  OpGet = 2;
+}
+
+message CommandRequest {
+  OpType op_type = 1;
+  string key = 2;
+  string value = 3;
+  int64  client_id = 4;
+  int64  command_id = 5;
+  bytes  context = 6;
+}
+
+message CommandResponse {
+  string value = 1;
+  int64  leader_id = 2;
+  int64  err_code = 3;
+}
+
+enum ConfigOpType {
+  OpJoin = 0;
+  OpLeave = 1;
+  OpMove = 2;
+  OpQuery = 3;
+}
+
+message ConfigCommandRequest {
+   map<int64, string> sgroups = 1; 
+   repeated int64 gids = 2;
+   int64 shard_id = 3;
+   int64 gid = 4;
+   int64 num = 5;
+   ConfigOpType op_type = 6;
+   int64 client_id = 7;
+   int64 command_id = 8;
+}
+
+message Config {
+    int64 num = 1;
+    repeated int64 buckets = 2; // array index is bucketid and value is gid
+    map<int64, string> sgroups = 3; // gid -> servers[]
+}
+
+message ConfigCommandResponse {
+    Config config = 1;
+    int64 err_code = 2;
+}
+
+message InstallSnapshotRequest {
+  int64 term = 1;
+  int64 leader_id = 2;
+  int64 last_included_index = 3;
+  int64 last_included_term = 4;
+  bytes data = 5;
+}
+
+message InstallSnapshotResponse {
+  int64 term = 1;
+}
+
+message ShardOperationRequest {
+  int32 config_num = 1;
+  repeated int32 shard_ids = 2;
+}
+
+message OperationContext {
+  int64 max_applied_command_id = 1;
+  CommandResponse last_response = 2;
+}
+
+message StringMap {
+  map<string, string> values = 1;
+}
+
+message ShardOperationResponse {
+  int32 err_code = 1; 
+  int32 config_num = 2;
+  map<int32, StringMap> shards = 3; 
+  map<int64, OperationContext> last_operations = 4;
+}
+
+service RaftService {
+  rpc RequestVoteRPC (RequestVoteRequest) returns (RequestVoteResponse) {}
+  rpc AppendEntriesRPC (AppendEntriesRequest) returns (AppendEntriesResponse) {}
+  rpc SnapshotRPC (InstallSnapshotRequest) returns (InstallSnapshotResponse) {}
+  rpc CommandRPC (CommandRequest) returns (CommandResponse) {}
+  rpc ConfigCommandRPC (ConfigCommandRequest) returns (ConfigCommandResponse) {}
+  rpc DeleteShardsDataRPC (ShardOperationRequest) returns (ShardOperationResponse) {}
+  rpc GetShardsDataRPC (ShardOperationRequest) returns (ShardOperationResponse) {}
+}
+
