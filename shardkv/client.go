@@ -11,12 +11,16 @@ package shardkv
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/eraft-io/eraft/labrpc"
-	"github.com/eraft-io/eraft/raftpb"
 	"github.com/eraft-io/eraft/shardctrler"
+	"github.com/eraft-io/eraft/shardkvpb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // which shard is a key in?
@@ -38,10 +42,53 @@ func nrand() int64 {
 	return x
 }
 
+type ShardKVClient interface {
+	Command(ctx context.Context, in *shardkvpb.CommandRequest, opts ...grpc.CallOption) (*shardkvpb.CommandResponse, error)
+	GetStatus(ctx context.Context, in *shardkvpb.GetStatusRequest, opts ...grpc.CallOption) (*shardkvpb.GetStatusResponse, error)
+}
+
+type gRPCShardKVClient struct {
+	client shardkvpb.ShardKVServiceClient
+}
+
+func (c *gRPCShardKVClient) Command(ctx context.Context, in *shardkvpb.CommandRequest, opts ...grpc.CallOption) (*shardkvpb.CommandResponse, error) {
+	return c.client.Command(ctx, in, opts...)
+}
+
+func (c *gRPCShardKVClient) GetStatus(ctx context.Context, in *shardkvpb.GetStatusRequest, opts ...grpc.CallOption) (*shardkvpb.GetStatusResponse, error) {
+	return c.client.GetStatus(ctx, in, opts...)
+}
+
+type LabrpcShardKVClient struct {
+	end *labrpc.ClientEnd
+}
+
+func (c *LabrpcShardKVClient) Command(ctx context.Context, in *shardkvpb.CommandRequest, opts ...grpc.CallOption) (*shardkvpb.CommandResponse, error) {
+	args := &CommandRequest{
+		Key:       in.Key,
+		Value:     in.Value,
+		Op:        OperationOp(in.Op),
+		ClientId:  in.ClientId,
+		CommandId: in.CommandId,
+	}
+	reply := &CommandResponse{}
+	if ok := c.end.Call("ShardKV.Command", args, reply); ok {
+		return &shardkvpb.CommandResponse{
+			Err:   reply.Err.String(),
+			Value: reply.Value,
+		}, nil
+	}
+	return nil, fmt.Errorf("rpc failed")
+}
+
+func (c *LabrpcShardKVClient) GetStatus(ctx context.Context, in *shardkvpb.GetStatusRequest, opts ...grpc.CallOption) (*shardkvpb.GetStatusResponse, error) {
+	return nil, fmt.Errorf("GetStatus not supported in labrpc mode")
+}
+
 type Clerk struct {
 	sm        *shardctrler.Clerk
 	config    shardctrler.Config
-	makeEnd   func(string) *labrpc.ClientEnd
+	clients   map[int][]ShardKVClient
 	leaderIds map[int]int
 	cliendId  int64
 	commandId int64
@@ -51,10 +98,22 @@ type Clerk struct {
 //
 // ctrlers[] is needed to call shardctrler.MakeClerk().
 
-func MakeClerk(ctrlers []*labrpc.ClientEnd, makeEnd func(string) *labrpc.ClientEnd) *Clerk {
+func MakeClerk(ctrlers []string) *Clerk {
 	ck := &Clerk{
 		sm:        shardctrler.MakeClerk(ctrlers),
-		makeEnd:   makeEnd,
+		clients:   make(map[int][]ShardKVClient),
+		leaderIds: make(map[int]int),
+		cliendId:  nrand(),
+		commandId: 0,
+	}
+	ck.config = ck.sm.Query(-1)
+	return ck
+}
+
+func MakeLabrpcClerk(ctrlers []*labrpc.ClientEnd, makeEnd func(string) *labrpc.ClientEnd) *Clerk {
+	ck := &Clerk{
+		sm:        shardctrler.MakeLabrpcClerk(ctrlers),
+		clients:   make(map[int][]ShardKVClient),
 		leaderIds: make(map[int]int),
 		cliendId:  nrand(),
 		commandId: 0,
@@ -88,49 +147,70 @@ func (ck *Clerk) Command(request *CommandRequest) string {
 			if _, ok = ck.leaderIds[gid]; !ok {
 				ck.leaderIds[gid] = 0
 			}
+			if _, ok = ck.clients[gid]; !ok {
+				ck.clients[gid] = make([]ShardKVClient, len(servers))
+				for i, srv := range servers {
+					// Check if it's a gRPC address or labrpc
+					if strings.Contains(srv, ":") || strings.HasPrefix(srv, "localhost") {
+						conn, err := grpc.Dial(srv, grpc.WithTransportCredentials(insecure.NewCredentials()))
+						if err == nil {
+							ck.clients[gid][i] = &gRPCShardKVClient{client: shardkvpb.NewShardKVServiceClient(conn)}
+						}
+					} else {
+						// This case should not happen in our new gRPC-based standalone mode
+						// But for compatibility in tests we might need something else
+					}
+				}
+			}
+
 			oldLeaderId := ck.leaderIds[gid]
 			newLeaderId := oldLeaderId
 			for {
-				var response CommandResponse
-				if ck.makeEnd(servers[newLeaderId]).GrpcClient == nil {
-					req := &raftpb.CommandRequest{
-						OpType:    raftpb.OpType(request.Op),
-						Key:       request.Key,
-						Value:     request.Value,
-						ClientId:  request.ClientId,
-						CommandId: request.CommandId,
-					}
-					resp, err := (*ck.makeEnd(servers[newLeaderId]).GrpcClient.SvrCli).CommandRPC(context.Background(), req)
-					if err != nil && (resp.ErrCode == int64(ErrNoKey) || resp.ErrCode == int64(OK)) {
-						ck.commandId++
-						return resp.Value
-					} else if err != nil || resp.ErrCode == int64(ErrWrongGroup) {
-						break
-					} else {
-						newLeaderId = (newLeaderId + 1) % len(servers)
-						if newLeaderId == oldLeaderId {
-							break
-						}
-						continue
-					}
+				req := &shardkvpb.CommandRequest{
+					Key:       request.Key,
+					Value:     request.Value,
+					Op:        shardkvpb.Op(request.Op),
+					ClientId:  request.ClientId,
+					CommandId: request.CommandId,
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), ExecuteTimeout)
+				resp, err := ck.clients[gid][newLeaderId].Command(ctx, req)
+				cancel()
+
+				if err == nil && (resp.Err == OK.String() || resp.Err == ErrNoKey.String()) {
+					ck.commandId++
+					return resp.Value
+				} else if err == nil && resp.Err == ErrWrongGroup.String() {
+					break
 				} else {
-					ok := ck.makeEnd(servers[newLeaderId]).Call("ShardKV.Command", request, &response)
-					if ok && (response.Err == OK || response.Err == ErrNoKey) {
-						ck.commandId++
-						return response.Value
-					} else if ok && response.Err == ErrWrongGroup {
+					newLeaderId = (newLeaderId + 1) % len(servers)
+					if newLeaderId == oldLeaderId {
 						break
-					} else {
-						newLeaderId = (newLeaderId + 1) % len(servers)
-						if newLeaderId == oldLeaderId {
-							break
-						}
-						continue
 					}
+					continue
 				}
 			}
 		}
 		time.Sleep(100 * time.Millisecond)
 		ck.config = ck.sm.Query(-1)
+		// Reset clients for this gid as config might have changed
+		delete(ck.clients, gid)
 	}
+}
+
+func (ck *Clerk) GetStatus() []*shardkvpb.GetStatusResponse {
+	results := make([]*shardkvpb.GetStatusResponse, 0)
+	for gid, groupClients := range ck.clients {
+		for i, client := range groupClients {
+			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			resp, err := client.GetStatus(ctx, &shardkvpb.GetStatusRequest{})
+			cancel()
+			if err == nil {
+				results = append(results, resp)
+			} else {
+				results = append(results, &shardkvpb.GetStatusResponse{Id: int64(gid*100 + i), State: "Offline"})
+			}
+		}
+	}
+	return results
 }

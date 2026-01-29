@@ -19,24 +19,27 @@ package raft
 
 import (
 	"bytes"
-	"context"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
-	"github.com/eraft-io/eraft/labrpc"
-	"github.com/eraft-io/eraft/logger"
-	"github.com/eraft-io/eraft/raftpb"
 )
+
+// RaftPeer defines the interface for Raft peer communication.
+type RaftPeer interface {
+	RequestVote(args *RequestVoteRequest, reply *RequestVoteResponse) bool
+	AppendEntries(args *AppendEntriesRequest, reply *AppendEntriesResponse) bool
+	InstallSnapshot(args *InstallSnapshotRequest, reply *InstallSnapshotResponse) bool
+}
 
 // A Go object implementing a single Raft peer.
 type Raft struct {
-	mu        sync.RWMutex        // Lock to protect shared access to this peer's state
-	peers     []*labrpc.ClientEnd // RPC end points of all peers
-	persister *Persister          // Object to hold this peer's persisted state
-	me        int                 // this peer's index into peers[]
-	dead      int32               // set by Kill()
+	mu        sync.RWMutex // Lock to protect shared access to this peer's state
+	peers     []RaftPeer   // RPC end points of all peers
+	persister *Persister   // Object to hold this peer's persisted state
+	me        int          // this peer's index into peers[]
+	dead      int32        // set by Kill()
 
 	applyCh        chan ApplyMsg
 	applyCond      *sync.Cond   // used to wakeup applier goroutine after committing new entries
@@ -62,6 +65,12 @@ func (rf *Raft) GetState() (int, bool) {
 	rf.mu.RLock()
 	defer rf.mu.RUnlock()
 	return rf.currentTerm, rf.state == StateLeader
+}
+
+func (rf *Raft) GetStatus() (int, string, int, int, int) {
+	rf.mu.RLock()
+	defer rf.mu.RUnlock()
+	return rf.me, rf.state.String(), rf.currentTerm, rf.lastApplied, rf.commitIndex
 }
 
 func (rf *Raft) GetRaftStateSize() int {
@@ -96,6 +105,7 @@ func (rf *Raft) readPersist(data []byte) {
 	rf.lastApplied, rf.commitIndex = rf.logs[0].Index, rf.logs[0].Index
 }
 
+// Mainly logs take up space
 func (rf *Raft) encodeState() []byte {
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
@@ -138,17 +148,18 @@ func (rf *Raft) CondInstallSnapshot(lastIncludedTerm int, lastIncludedIndex int,
 // service no longer needs the log through (and including)
 // that index. Raft should now trim its log as much as possible.
 func (rf *Raft) Snapshot(index int, snapshot []byte) {
+	// Lock
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	snapshotIndex := rf.getFirstLog().Index
-	if index <= snapshotIndex {
+	if index <= snapshotIndex { // Smaller than the first log index, return directly
 		DPrintf("{Node %v} rejects replacing log with snapshotIndex %v as current snapshotIndex %v is larger in term %v", rf.me, index, snapshotIndex, rf.currentTerm)
 		return
 	}
-	// delete logs from firstIdx ~ index
+	// Delete logs in the interval (firstIdx ~ index)
 	rf.logs = shrinkEntriesArray(rf.logs[index-snapshotIndex:])
-	rf.logs[0].Command = nil
-	rf.persister.SaveStateAndSnapshot(rf.encodeState(), snapshot)
+	rf.logs[0].Command = nil                                      // Set the first operation command to nil
+	rf.persister.SaveStateAndSnapshot(rf.encodeState(), snapshot) // Save snapshot
 	DPrintf("{Node %v}'s state is {state %v,term %v,commitIndex %v,lastApplied %v,firstLog %v,lastLog %v} after replacing log with snapshotIndex %v as old snapshotIndex %v is smaller", rf.me, rf.state, rf.currentTerm, rf.commitIndex, rf.lastApplied, rf.getFirstLog(), rf.getLastLog(), index, snapshotIndex)
 }
 
@@ -291,72 +302,15 @@ func (rf *Raft) InstallSnapshot(request *InstallSnapshotRequest, response *Insta
 // that the caller passes the address of the reply struct with &, not
 // the struct itself.
 func (rf *Raft) sendRequestVote(server int, request *RequestVoteRequest, response *RequestVoteResponse) bool {
-	if rf.peers[server].GrpcClient != nil {
-		req := &raftpb.RequestVoteRequest{
-			CandidateId:  int64(request.CandidateId),
-			LastLogIndex: int64(request.LastLogIndex),
-			LastLogTerm:  int64(request.LastLogTerm),
-			Term:         int64(request.Term),
-		}
-		resp, err := (*rf.peers[server].GrpcClient.SvrCli).RequestVoteRPC(context.Background(), req)
-		if err != nil {
-			logger.ELogger().Sugar().Warnf("SendRequestVote RPC to server %d failed: %v", server, err)
-			return false
-		}
-		response.Term, response.VoteGranted = int(resp.Term), resp.VoteGranted
-		return true
-	}
-	return rf.peers[server].Call("Raft.RequestVote", request, response)
+	return rf.peers[server].RequestVote(request, response)
 }
 
 func (rf *Raft) sendAppendEntries(server int, request *AppendEntriesRequest, response *AppendEntriesResponse) bool {
-	if rf.peers[server].GrpcClient != nil {
-		entsToBeSend := make([]*raftpb.Entry, 0, len(request.Entries))
-		for _, entry := range request.Entries {
-			entsToBeSend = append(entsToBeSend, &raftpb.Entry{
-				Data:      entry.Command.([]byte),
-				Index:     int64(entry.Index),
-				Term:      uint64(entry.Term),
-				EntryType: raftpb.EntryType_EntryNormal,
-			})
-		}
-		req := &raftpb.AppendEntriesRequest{
-			LeaderCommit: int64(request.LeaderCommit),
-			LeaderId:     int64(request.LeaderId),
-			PrevLogIndex: int64(request.PrevLogIndex),
-			PrevLogTerm:  int64(request.PrevLogTerm),
-			Term:         int64(request.Term),
-			Entries:      entsToBeSend,
-		}
-		resp, err := (*rf.peers[server].GrpcClient.SvrCli).AppendEntriesRPC(context.Background(), req)
-		if err != nil {
-			logger.ELogger().Sugar().Warnf("SendAppendEntries RPC to server %d failed: %v", server, err)
-			return false
-		}
-		response.ConflictIndex, response.ConflictTerm, response.Success, response.Term = int(resp.ConflictIndex), int(resp.ConflictTerm), resp.Success, int(resp.Term)
-		return true
-	}
-	return rf.peers[server].Call("Raft.AppendEntries", request, response)
+	return rf.peers[server].AppendEntries(request, response)
 }
 
 func (rf *Raft) sendInstallSnapshot(server int, request *InstallSnapshotRequest, response *InstallSnapshotResponse) bool {
-	if rf.peers[server].GrpcClient != nil {
-		req := &raftpb.InstallSnapshotRequest{
-			Data:              request.Data,
-			LastIncludedIndex: int64(request.LastIncludedIndex),
-			LastIncludedTerm:  int64(request.LastIncludedTerm),
-			LeaderId:          int64(request.LeaderId),
-			Term:              int64(request.Term),
-		}
-		resp, err := (*rf.peers[server].GrpcClient.SvrCli).SnapshotRPC(context.Background(), req)
-		if err != nil {
-			logger.ELogger().Sugar().Warnf("SendInstallSnapshot RPC to server %d failed: %v", server, err)
-			return false
-		}
-		response.Term = int(resp.Term)
-		return true
-	}
-	return rf.peers[server].Call("Raft.InstallSnapshot", request, response)
+	return rf.peers[server].InstallSnapshot(request, response)
 }
 
 func (rf *Raft) StartElection() {
@@ -402,7 +356,6 @@ func (rf *Raft) BroadcastHeartbeat(isHeartBeat bool) {
 			continue
 		}
 		if isHeartBeat {
-			// logger.ELogger().Sugar().Debugf("{Node %v} sends heartbeat to {Node %v}", rf.me, peer)
 			// need sending at once to maintain leadership
 			go rf.replicateOneRound(peer)
 		} else {
@@ -419,7 +372,7 @@ func (rf *Raft) replicateOneRound(peer int) {
 		return
 	}
 	prevLogIndex := rf.nextIndex[peer] - 1
-	// prevLogIndex < firstLogIndex need snapshot
+	// prevLogIndex is smaller than the first log currently stored, need to catch up using snapshot
 	if prevLogIndex < rf.getFirstLog().Index {
 		// only snapshot can catch up
 		request := rf.genInstallSnapshotRequest()
@@ -546,6 +499,7 @@ func (rf *Raft) advanceCommitIndexForLeader() {
 	srt := make([]int, n)
 	copy(srt, rf.matchIndex)
 	insertionSort(srt)
+	// fmt.Printf("%v\n", srt)
 	newCommitIndex := srt[n-(n/2+1)]
 	if newCommitIndex > rf.commitIndex {
 		// only advance commitIndex for current term's log
@@ -664,7 +618,6 @@ func (rf *Raft) ticker() {
 		select {
 		case <-rf.electionTimer.C:
 			rf.mu.Lock()
-			// fmt.Printf("node %d start election\n", rf.me)
 			rf.ChangeState(StateCandidate)
 			rf.currentTerm += 1
 			rf.StartElection()
@@ -733,7 +686,7 @@ func (rf *Raft) replicator(peer int) {
 // tester or service expects Raft to send ApplyMsg messages.
 // Make() must return quickly, so it should start goroutines
 // for any long-running work.
-func Make(peers []*labrpc.ClientEnd, me int,
+func Make(peers []RaftPeer, me int,
 	persister *Persister, applyCh chan ApplyMsg) *Raft {
 	rf := &Raft{
 		peers:          peers,

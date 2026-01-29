@@ -1,9 +1,11 @@
 package shardkv
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
+	"github.com/eraft-io/eraft/labgob"
 	"github.com/eraft-io/eraft/shardctrler"
 )
 
@@ -65,16 +67,16 @@ func (err Err) String() string {
 	panic("unexpected Err")
 }
 
-type BucketStatus uint8
+type ShardStatus uint8
 
 const (
-	Serving BucketStatus = iota
+	Serving ShardStatus = iota
 	Pulling
 	BePulling
 	GCing
 )
 
-func (status BucketStatus) String() string {
+func (status ShardStatus) String() string {
 	switch status {
 	case Serving:
 		return "Serving"
@@ -99,7 +101,7 @@ func (context OperationContext) deepCopy() OperationContext {
 
 type Command struct {
 	Op   CommandType
-	Data interface{}
+	Data []byte
 }
 
 func (command Command) String() string {
@@ -107,19 +109,31 @@ func (command Command) String() string {
 }
 
 func NewOperationCommand(request *CommandRequest) Command {
-	return Command{Operation, *request}
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(*request)
+	return Command{Operation, w.Bytes()}
 }
 
 func NewConfigurationCommand(config *shardctrler.Config) Command {
-	return Command{Configuration, *config}
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(*config)
+	return Command{Configuration, w.Bytes()}
 }
 
 func NewInsertShardsCommand(response *ShardOperationResponse) Command {
-	return Command{InsertShards, *response}
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(*response)
+	return Command{InsertShards, w.Bytes()}
 }
 
 func NewDeleteShardsCommand(request *ShardOperationRequest) Command {
-	return Command{DeleteShards, *request}
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(*request)
+	return Command{DeleteShards, w.Bytes()}
 }
 
 func NewEmptyEntryCommand() Command {

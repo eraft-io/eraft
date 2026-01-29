@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/eraft-io/eraft/labgob"
+
 	"github.com/eraft-io/eraft/labrpc"
 
 	crand "crypto/rand"
@@ -265,7 +266,7 @@ func (cfg *config) start1(i int, applier func(int, chan ApplyMsg)) {
 	if cfg.saved[i] != nil {
 		cfg.saved[i] = cfg.saved[i].Copy()
 	} else {
-		cfg.saved[i] = MakePersister(nil)
+		cfg.saved[i] = MakePersister()
 	}
 
 	cfg.mu.Unlock()
@@ -273,7 +274,7 @@ func (cfg *config) start1(i int, applier func(int, chan ApplyMsg)) {
 	applyCh := make(chan ApplyMsg)
 	go applier(i, applyCh)
 
-	rf := Make(ends, i, cfg.saved[i], applyCh)
+	rf := Make(CastLabrpcToRaftPeers(ends), i, cfg.saved[i], applyCh)
 
 	cfg.mu.Lock()
 	cfg.rafts[i] = rf

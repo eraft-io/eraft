@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package shardkvpb;
+
+import "shardctrlerpb/shardctrler.proto";
+
+option go_package = "github.com/eraft-io/eraft/shardkvpb";
+
+enum Op {
+    PUT = 0;
+    APPEND = 1;
+    GET = 2;
+}
+
+message CommandRequest {
+    string key = 1;
+    string value = 2;
+    Op op = 3;
+    int64 client_id = 4;
+    int64 command_id = 5;
+}
+
+message CommandResponse {
+    string err = 1;
+    string value = 2;
+}
+
+message ShardOperationRequest {
+    int32 config_num = 1;
+    repeated int32 shard_ids = 2;
+}
+
+message OperationContext {
+    int64 max_applied_command_id = 1;
+    CommandResponse last_response = 2;
+}
+
+message ShardData {
+    map<string, string> kv = 1;
+}
+
+message ShardOperationResponse {
+    string err = 1;
+    int32 config_num = 2;
+    map<int32, ShardData> shards = 3;
+    map<int64, OperationContext> last_operations = 4;
+}
+
+message GetStatusRequest {}
+
+message GetStatusResponse {
+    int64 id = 1;
+    string state = 2;
+    int64 term = 3;
+    int64 last_applied = 4;
+    int64 commit_index = 5;
+}
+
+service ShardKVService {
+    rpc Command(CommandRequest) returns (CommandResponse);
+    rpc GetShardsData(ShardOperationRequest) returns (ShardOperationResponse);
+    rpc DeleteShardsData(ShardOperationRequest) returns (ShardOperationResponse);
+    rpc GetStatus(GetStatusRequest) returns (GetStatusResponse);
+}

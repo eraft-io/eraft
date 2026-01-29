@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package shardctrlerpb;
+
+option go_package = "github.com/eraft-io/eraft/shardctrlerpb";
+
+message Config {
+    int64 num = 1;
+    repeated int32 shards = 2;
+    map<int32, Servers> groups = 3;
+}
+
+message Servers {
+    repeated string servers = 1;
+}
+
+enum Op {
+    JOIN = 0;
+    LEAVE = 1;
+    MOVE = 2;
+    QUERY = 3;
+}
+
+message CommandRequest {
+    map<int32, Servers> servers = 1; // Join
+    repeated int32 gids = 2;        // Leave
+    int32 shard = 3;                // Move
+    int32 gid = 4;                  // Move
+    int32 num = 5;                  // Query
+    Op op = 6;
+    int64 client_id = 7;
+    int64 command_id = 8;
+}
+
+message CommandResponse {
+    string err = 1;
+    Config config = 2;
+}
+
+message GetStatusRequest {}
+
+message GetStatusResponse {
+    int64 id = 1;
+    string state = 2;
+    int64 term = 3;
+    int64 last_applied = 4;
+    int64 commit_index = 5;
+}
+
+service ShardCtrlerService {
+    rpc Command(CommandRequest) returns (CommandResponse);
+    rpc GetStatus(GetStatusRequest) returns (GetStatusResponse);
+}

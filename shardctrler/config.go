@@ -1,6 +1,7 @@
 package shardctrler
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -177,7 +178,7 @@ func (cfg *config) makeClient(to []int) *Clerk {
 		cfg.net.Connect(endnames[j], j)
 	}
 
-	ck := MakeClerk(random_handles(ends))
+	ck := MakeLabrpcClerk(random_handles(ends))
 	cfg.clerks[ck] = endnames
 	cfg.nextClientId++
 	cfg.ConnectClientUnlocked(ck, to)
@@ -284,12 +285,12 @@ func (cfg *config) StartServer(i int) {
 	if cfg.saved[i] != nil {
 		cfg.saved[i] = cfg.saved[i].Copy()
 	} else {
-		cfg.saved[i] = raft.MakePersister(nil)
+		cfg.saved[i] = raft.MakePersister()
 	}
 
 	cfg.mu.Unlock()
 
-	cfg.servers[i] = StartServer(ends, i, cfg.saved[i])
+	cfg.servers[i] = StartServer(raft.CastLabrpcToRaftPeers(ends), i, cfg.saved[i], fmt.Sprintf("data/shardctrler-test-%d", i))
 
 	kvsvc := labrpc.MakeService(cfg.servers[i])
 	rfsvc := labrpc.MakeService(cfg.servers[i].rf)

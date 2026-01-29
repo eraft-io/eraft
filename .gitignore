@@ -10,3 +10,7 @@ mrtmp.*
 /main/mrcoordinator
 /main/mrsequential
 /main/mrworker
+
+# eRaft binaries and data
+output/
+data/

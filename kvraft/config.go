@@ -4,8 +4,7 @@ import (
 	"os"
 	"testing"
 
-	labrpc "github.com/eraft-io/eraft/labrpc"
-	"github.com/eraft-io/eraft/raft"
+	"github.com/eraft-io/eraft/labrpc"
 
 	// import "log"
 	crand "crypto/rand"
@@ -17,6 +16,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/eraft-io/eraft/raft"
 )
 
 func randstring(n int) string {
@@ -204,7 +205,7 @@ func (cfg *config) makeClient(to []int) *Clerk {
 		cfg.net.Connect(endnames[j], j)
 	}
 
-	ck := MakeClerk(random_handles(ends))
+	ck := MakeLabrpcClerk(random_handles(ends))
 	cfg.clerks[ck] = endnames
 	cfg.nextClientId++
 	cfg.ConnectClientUnlocked(ck, to)
@@ -311,11 +312,12 @@ func (cfg *config) StartServer(i int) {
 	if cfg.saved[i] != nil {
 		cfg.saved[i] = cfg.saved[i].Copy()
 	} else {
-		cfg.saved[i] = raft.MakePersister(nil)
+		cfg.saved[i] = raft.MakePersister()
 	}
 	cfg.mu.Unlock()
 
-	cfg.kvservers[i] = StartKVServer(ends, i, cfg.saved[i], cfg.maxraftstate)
+	dbPath := fmt.Sprintf("kvserver-%d", i)
+	cfg.kvservers[i] = StartKVServer(raft.CastLabrpcToRaftPeers(ends), i, cfg.saved[i], cfg.maxraftstate, dbPath)
 
 	kvsvc := labrpc.MakeService(cfg.kvservers[i])
 	rfsvc := labrpc.MakeService(cfg.kvservers[i].rf)

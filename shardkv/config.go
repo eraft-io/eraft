@@ -1,11 +1,14 @@
 package shardkv
 
 import (
+	"os"
 	"testing"
 
 	"github.com/eraft-io/eraft/labrpc"
+	"github.com/eraft-io/eraft/raft"
 	"github.com/eraft-io/eraft/shardctrler"
 
+	// import "log"
 	crand "crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -15,8 +18,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/eraft-io/eraft/raft"
 )
 
 func randstring(n int) string {
@@ -31,6 +32,17 @@ func makeSeed() int64 {
 	bigx, _ := crand.Int(crand.Reader, max)
 	x := bigx.Int64()
 	return x
+}
+
+// Randomize server handles
+func random_handles(kvh []*labrpc.ClientEnd) []*labrpc.ClientEnd {
+	sa := make([]*labrpc.ClientEnd, len(kvh))
+	copy(sa, kvh)
+	for i := range sa {
+		j := rand.Intn(i + 1)
+		sa[i], sa[j] = sa[j], sa[i]
+	}
+	return sa
 }
 
 type group struct {
@@ -120,7 +132,7 @@ func (cfg *config) makeClient() *Clerk {
 		cfg.net.Enable(endnames[j], true)
 	}
 
-	ck := MakeClerk(ends, func(servername string) *labrpc.ClientEnd {
+	ck := MakeLabrpcClerk(ends, func(servername string) *labrpc.ClientEnd {
 		name := randstring(20)
 		end := cfg.net.MakeEnd(name)
 		cfg.net.Connect(name, servername)
@@ -130,6 +142,17 @@ func (cfg *config) makeClient() *Clerk {
 	cfg.clerks[ck] = endnames
 	cfg.nextClientId++
 	return ck
+}
+
+func (cfg *config) deleteClient(ck *Clerk) {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+
+	v := cfg.clerks[ck]
+	for i := 0; i < len(v); i++ {
+		os.Remove(v[i])
+	}
+	delete(cfg.clerks, ck)
 }
 
 // Shutdown i'th server of gi'th group, by isolating it
@@ -219,19 +242,12 @@ func (cfg *config) StartServer(gi int, i int) {
 	if gg.saved[i] != nil {
 		gg.saved[i] = gg.saved[i].Copy()
 	} else {
-		gg.saved[i] = raft.MakePersister(nil)
+		gg.saved[i] = raft.MakePersister()
 	}
 	cfg.mu.Unlock()
 
-	gg.servers[i] = StartServer(ends, i, gg.saved[i], cfg.maxraftstate,
-		gg.gid, mends,
-		func(servername string) *labrpc.ClientEnd {
-			name := randstring(20)
-			end := cfg.net.MakeEnd(name)
-			cfg.net.Connect(name, servername)
-			cfg.net.Enable(name, true)
-			return end
-		})
+	gg.servers[i] = StartServer(raft.CastLabrpcToRaftPeers(ends), i, gg.saved[i], cfg.maxraftstate,
+		gg.gid, raft.CastLabrpcToNames(mends), fmt.Sprintf("data/shardkv-test-%d-%d", gg.gid, i))
 
 	kvsvc := labrpc.MakeService(gg.servers[i])
 	rfsvc := labrpc.MakeService(gg.servers[i].rf)
@@ -257,9 +273,9 @@ func (cfg *config) StartCtrlerserver(i int) {
 		cfg.net.Enable(endname, true)
 	}
 
-	p := raft.MakePersister(nil)
+	p := raft.MakePersister()
 
-	cfg.ctrlerservers[i] = shardctrler.StartServer(ends, i, p)
+	cfg.ctrlerservers[i] = shardctrler.StartServer(raft.CastLabrpcToRaftPeers(ends), i, p, fmt.Sprintf("data/shardctrler-test-skv-%d", i))
 
 	msvc := labrpc.MakeService(cfg.ctrlerservers[i])
 	rfsvc := labrpc.MakeService(cfg.ctrlerservers[i].Raft())
@@ -279,7 +295,7 @@ func (cfg *config) shardclerk() *shardctrler.Clerk {
 		cfg.net.Enable(name, true)
 	}
 
-	return shardctrler.MakeClerk(ends)
+	return shardctrler.MakeLabrpcClerk(ends)
 }
 
 // tell the shardctrler that a group is joining.

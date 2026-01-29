@@ -60,9 +60,6 @@ import (
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
-	pb "github.com/eraft-io/eraft/raftpb"
-
-	"google.golang.org/grpc"
 )
 
 type reqMsg struct {
@@ -78,49 +75,10 @@ type replyMsg struct {
 	reply []byte
 }
 
-type RpcOptions struct {
-	UseGrpc bool
-}
-
-type GrpcClientEnd struct {
-	id      uint64
-	address string
-	conns   []*grpc.ClientConn
-	SvrCli  *pb.RaftServiceClient
-}
-
-func (raftCli *GrpcClientEnd) ID() uint64 {
-	return raftCli.id
-}
-
-func MakeGrpcClientEnd(id uint64, targetAddress string) *GrpcClientEnd {
-	conn, err := grpc.Dial(targetAddress, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("MakeGrpcClientEnd: %v\n", err)
-	}
-	conns := []*grpc.ClientConn{}
-	conns = append(conns, conn)
-	cli := pb.NewRaftServiceClient(conn)
-	return &GrpcClientEnd{
-		id:      id,
-		address: targetAddress,
-		conns:   conns,
-		SvrCli:  &cli,
-	}
-}
-
-func (raftCli *GrpcClientEnd) CloseAllConn() {
-	for _, conn := range raftCli.conns {
-		conn.Close()
-	}
-}
-
 type ClientEnd struct {
-	endname    interface{}   // this end-point's name
-	ch         chan reqMsg   // copy of Network.endCh
-	done       chan struct{} // closed when Network is cleaned up
-	opts       RpcOptions
-	GrpcClient *GrpcClientEnd
+	endname interface{}   // this end-point's name
+	ch      chan reqMsg   // copy of Network.endCh
+	done    chan struct{} // closed when Network is cleaned up
 }
 
 // send an RPC, wait for the reply.

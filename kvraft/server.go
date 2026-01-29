@@ -2,18 +2,14 @@ package kvraft
 
 import (
 	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
-	"github.com/eraft-io/eraft/labrpc"
-	"github.com/eraft-io/eraft/logger"
 	"github.com/eraft-io/eraft/raft"
-	"github.com/eraft-io/eraft/raftpb"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 type KVStateMachine interface {
@@ -22,29 +18,52 @@ type KVStateMachine interface {
 	Append(key, value string) Err
 }
 
-type MemoryKV struct {
-	KV map[string]string
+type LevelDBKV struct {
+	db *leveldb.DB
 }
 
-func NewMemoryKV() *MemoryKV {
-	return &MemoryKV{make(map[string]string)}
-}
-
-func (memoryKV *MemoryKV) Get(key string) (string, Err) {
-	if value, ok := memoryKV.KV[key]; ok {
-		return value, OK
+func NewLevelDBKV(path string) *LevelDBKV {
+	db, err := leveldb.OpenFile(path, nil)
+	if err != nil {
+		panic(err)
 	}
-	return "", ErrNoKey
+	return &LevelDBKV{db: db}
 }
 
-func (memoryKV *MemoryKV) Put(key, value string) Err {
-	memoryKV.KV[key] = value
+func (lk *LevelDBKV) Get(key string) (string, Err) {
+	value, err := lk.db.Get([]byte(key), nil)
+	if err == leveldb.ErrNotFound {
+		return "", ErrNoKey
+	}
+	if err != nil {
+		return "", ErrTimeout
+	}
+	return string(value), OK
+}
+
+func (lk *LevelDBKV) Put(key, value string) Err {
+	err := lk.db.Put([]byte(key), []byte(value), nil)
+	if err != nil {
+		return ErrTimeout
+	}
 	return OK
 }
 
-func (memoryKV *MemoryKV) Append(key, value string) Err {
-	memoryKV.KV[key] += value
+func (lk *LevelDBKV) Append(key, value string) Err {
+	oldValue, err := lk.db.Get([]byte(key), nil)
+	if err != nil && err != leveldb.ErrNotFound {
+		return ErrTimeout
+	}
+	newValue := append(oldValue, []byte(value)...)
+	err = lk.db.Put([]byte(key), newValue, nil)
+	if err != nil {
+		return ErrTimeout
+	}
 	return OK
+}
+
+func (lk *LevelDBKV) Close() {
+	lk.db.Close()
 }
 
 type KVServer struct {
@@ -59,87 +78,6 @@ type KVServer struct {
 	stateMachine   KVStateMachine                // KV stateMachine
 	lastOperations map[int64]OperationContext    // determine whether log is duplicated by recording the last commandId and response corresponding to the clientId
 	notifyChans    map[int]chan *CommandResponse // notify client goroutine by applier goroutine to response
-	raftpb.UnimplementedRaftServiceServer
-}
-
-// RequestVote for metaserver handle request vote from other metaserver node
-func (s *KVServer) RequestVoteRPC(ctx context.Context, req *raftpb.RequestVoteRequest) (*raftpb.RequestVoteResponse, error) {
-	_req := &raft.RequestVoteRequest{
-		Term:         int(req.Term),
-		CandidateId:  int(req.CandidateId),
-		LastLogIndex: int(req.LastLogIndex),
-		LastLogTerm:  int(req.LastLogTerm),
-	}
-	_resp := &raft.RequestVoteResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives RequestVoteRequest %v\n", s.rf.Me(), req)
-	s.rf.RequestVote(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} responds RequestVoteResponse %v\n", s.rf.Me(), _resp)
-	return &raftpb.RequestVoteResponse{
-		Term:        int64(_resp.Term),
-		VoteGranted: _resp.VoteGranted,
-	}, nil
-}
-
-func (s *KVServer) AppendEntriesRPC(ctx context.Context, req *raftpb.AppendEntriesRequest) (*raftpb.AppendEntriesResponse, error) {
-	entsToBeSend := make([]raft.Entry, 0, len(req.Entries))
-	for _, entry := range req.Entries {
-		entsToBeSend = append(entsToBeSend, raft.Entry{
-			Command: entry.Data,
-			Index:   int(entry.Index),
-			Term:    int(entry.Term),
-		})
-	}
-	_req := &raft.AppendEntriesRequest{
-		Term:         int(req.Term),
-		LeaderId:     int(req.LeaderId),
-		PrevLogIndex: int(req.PrevLogIndex),
-		PrevLogTerm:  int(req.PrevLogTerm),
-		LeaderCommit: int(req.LeaderCommit),
-		Entries:      entsToBeSend,
-	}
-	_resp := &raft.AppendEntriesResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives AppendEntriesRequest %v\n", s.rf.Me(), _req)
-	s.rf.AppendEntries(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} responds AppendEntriesResponse %v\n", s.rf.Me(), _resp)
-	return &raftpb.AppendEntriesResponse{
-		Term:          int64(_resp.Term),
-		Success:       _resp.Success,
-		ConflictIndex: int64(_resp.ConflictIndex),
-		ConflictTerm:  int64(_resp.ConflictTerm),
-	}, nil
-}
-
-func (s *KVServer) SnapshotRPC(ctx context.Context, req *raftpb.InstallSnapshotRequest) (*raftpb.InstallSnapshotResponse, error) {
-	_req := &raft.InstallSnapshotRequest{
-		Term:              int(req.Term),
-		LeaderId:          int(req.LeaderId),
-		LastIncludedIndex: int(req.LastIncludedIndex),
-		LastIncludedTerm:  int(req.LastIncludedTerm),
-		Data:              req.Data,
-	}
-	_resp := &raft.InstallSnapshotResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives InstallSnapshotRequest %v\n", s.rf.Me(), _req)
-	s.rf.InstallSnapshot(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} responds InstallSnapshotResponse %v\n", s.rf.Me(), _resp)
-	return &raftpb.InstallSnapshotResponse{
-		Term: int64(_resp.Term),
-	}, nil
-}
-
-func (s *KVServer) CommandRPC(ctx context.Context, req *raftpb.CommandRequest) (*raftpb.CommandResponse, error) {
-	_req := &CommandRequest{
-		Key:       req.Key,
-		Value:     req.Value,
-		Op:        OperationOp(req.OpType),
-		ClientId:  req.ClientId,
-		CommandId: req.CommandId,
-	}
-	_resp := &CommandResponse{}
-	s.Command(_req, _resp)
-	return &raftpb.CommandResponse{
-		Value:   _resp.Value,
-		ErrCode: int64(_resp.Err),
-	}, nil
 }
 
 func (kv *KVServer) Command(request *CommandRequest, response *CommandResponse) {
@@ -155,8 +93,10 @@ func (kv *KVServer) Command(request *CommandRequest, response *CommandResponse) 
 	kv.mu.RUnlock()
 	// do not hold lock to improve throughput
 	// when KVServer holds the lock to take snapshot, underlying raft can still commit raft logs
-	requestConext, _ := json.Marshal(Command{request})
-	index, _, isLeader := kv.rf.Start(requestConext)
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(Command{request})
+	index, _, isLeader := kv.rf.Start(w.Bytes())
 	if !isLeader {
 		response.Err = ErrWrongLeader
 		return
@@ -204,6 +144,14 @@ func (kv *KVServer) killed() bool {
 	return atomic.LoadInt32(&kv.dead) == 1
 }
 
+func (kv *KVServer) Raft() *raft.Raft {
+	return kv.rf
+}
+
+func (kv *KVServer) GetStatus() (int, string, int, int, int) {
+	return kv.rf.GetStatus()
+}
+
 // a dedicated applier goroutine to apply committed entries to stateMachine, take snapshot and apply snapshot from raft
 func (kv *KVServer) applier() {
 	for kv.killed() == false {
@@ -221,8 +169,15 @@ func (kv *KVServer) applier() {
 
 				var response *CommandResponse
 				var command Command
-				json.Unmarshal(message.Command.([]byte), &command)
-				// logger.ELogger().Sugar().Debugf("{Node %v} applies command %v to stateMachine", kv.rf.Me(), command)
+				commandBytes, ok := message.Command.([]byte)
+				if !ok {
+					command = message.Command.(Command)
+				} else {
+					r := bytes.NewBuffer(commandBytes)
+					d := labgob.NewDecoder(r)
+					d.Decode(&command)
+				}
+
 				if command.Op != OpGet && kv.isDuplicateRequest(command.ClientId, command.CommandId) {
 					DPrintf("{Node %v} doesn't apply duplicated message %v to stateMachine because maxAppliedCommandId is %v for client %v", kv.rf.Me(), message, kv.lastOperations[command.ClientId], command.ClientId)
 					response = kv.lastOperations[command.ClientId].LastResponse
@@ -239,7 +194,7 @@ func (kv *KVServer) applier() {
 					ch <- response
 				}
 
-				// 通过判断包括 logs 在内的状态数据的大小大于 kv.maxRaftState 来决定是不是需要打快照
+				// Determine if a snapshot is needed by checking if the size of the state data, including logs, is greater than kv.maxRaftState
 				needSnapshot := kv.needSnapshot()
 				if needSnapshot {
 					kv.takeSnapshot(message.CommandIndex)
@@ -260,15 +215,23 @@ func (kv *KVServer) applier() {
 }
 
 func (kv *KVServer) needSnapshot() bool {
-	// logger.ELogger().Sugar().Infof("GetRaftStateSize: %v", kv.rf.GetRaftStateSize())
 	return kv.maxRaftState != -1 && kv.rf.GetRaftStateSize() >= kv.maxRaftState
 }
 
 func (kv *KVServer) takeSnapshot(index int) {
-	// 打快照，状态机数，最后一个操作，左后一个操作的 INDEX
+	// Take a snapshot: state machine data, last operation, and the index of the last operation
+	kvMap := make(map[string]string)
+	if lk, ok := kv.stateMachine.(*LevelDBKV); ok {
+		iter := lk.db.NewIterator(nil, nil)
+		for iter.Next() {
+			kvMap[string(iter.Key())] = string(iter.Value())
+		}
+		iter.Release()
+	}
+
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
-	e.Encode(kv.stateMachine)
+	e.Encode(kvMap)
 	e.Encode(kv.lastOperations)
 	kv.rf.Snapshot(index, w.Bytes())
 }
@@ -279,13 +242,19 @@ func (kv *KVServer) restoreSnapshot(snapshot []byte) {
 	}
 	r := bytes.NewBuffer(snapshot)
 	d := labgob.NewDecoder(r)
-	var stateMachine MemoryKV
+	var kvMap map[string]string
 	var lastOperations map[int64]OperationContext
-	if d.Decode(&stateMachine) != nil ||
+	if d.Decode(&kvMap) != nil ||
 		d.Decode(&lastOperations) != nil {
 		DPrintf("{Node %v} restores snapshot failed", kv.rf.Me())
+		return
 	}
-	kv.stateMachine, kv.lastOperations = &stateMachine, lastOperations
+	if lk, ok := kv.stateMachine.(*LevelDBKV); ok {
+		for k, v := range kvMap {
+			lk.Put(k, v)
+		}
+	}
+	kv.lastOperations = lastOperations
 }
 
 func (kv *KVServer) getNotifyChan(index int) chan *CommandResponse {
@@ -325,7 +294,7 @@ func (kv *KVServer) applyLogToStateMachine(command Command) *CommandResponse {
 // you don't need to snapshot.
 // StartKVServer() must return quickly, so it should start goroutines
 // for any long-running work.
-func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister, maxraftstate int) *KVServer {
+func StartKVServer(peers []raft.RaftPeer, me int, persister *raft.Persister, maxraftstate int, dbPath string) *KVServer {
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
 	labgob.Register(Command{})
@@ -336,12 +305,12 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 		applyCh:        applyCh,
 		dead:           0,
 		lastApplied:    0,
-		rf:             raft.Make(servers, me, persister, applyCh),
-		stateMachine:   NewMemoryKV(),
+		rf:             raft.Make(peers, me, persister, applyCh),
+		stateMachine:   NewLevelDBKV(dbPath),
 		lastOperations: make(map[int64]OperationContext),
 		notifyChans:    make(map[int]chan *CommandResponse),
 	}
-	// 通过快照恢复自己的状态，包括状态机里面的 KV 数据以及最后一个操作
+	// Restore state from snapshot, including KV data in the state machine and the last operation
 	kv.restoreSnapshot(persister.ReadSnapshot())
 	// start applier goroutine to apply committed logs to stateMachine
 	go kv.applier()

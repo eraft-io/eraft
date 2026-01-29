@@ -2,17 +2,14 @@ package shardctrler
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
-	"github.com/eraft-io/eraft/labrpc"
-	"github.com/eraft-io/eraft/logger"
 	"github.com/eraft-io/eraft/raft"
-	"github.com/eraft-io/eraft/raftpb"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 type ShardCtrler struct {
@@ -24,119 +21,142 @@ type ShardCtrler struct {
 	stateMachine   ConfigStateMachine            // Config stateMachine
 	lastOperations map[int64]OperationContext    // determine whether log is duplicated by recording the last commandId and response corresponding to the clientId
 	notifyChans    map[int]chan *CommandResponse // notify client goroutine by applier goroutine to response
-	raftpb.UnimplementedRaftServiceServer
 }
 
-// RequestVote for metaserver handle request vote from other metaserver node
-func (sc *ShardCtrler) RequestVoteRPC(ctx context.Context, req *raftpb.RequestVoteRequest) (*raftpb.RequestVoteResponse, error) {
-	_req := &raft.RequestVoteRequest{
-		Term:         int(req.Term),
-		CandidateId:  int(req.CandidateId),
-		LastLogIndex: int(req.LastLogIndex),
-		LastLogTerm:  int(req.LastLogTerm),
-	}
-	_resp := &raft.RequestVoteResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives RequestVoteRequest %v\n", sc.rf.Me(), req)
-	sc.rf.RequestVote(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} responds RequestVoteResponse %v\n", sc.rf.Me(), _resp)
-	return &raftpb.RequestVoteResponse{
-		Term:        int64(_resp.Term),
-		VoteGranted: _resp.VoteGranted,
-	}, nil
+type LevelDBConfigStateMachine struct {
+	db *leveldb.DB
 }
 
-func (sc *ShardCtrler) AppendEntriesRPC(ctx context.Context, req *raftpb.AppendEntriesRequest) (*raftpb.AppendEntriesResponse, error) {
-	entsToBeSend := make([]raft.Entry, 0, len(req.Entries))
-	for _, entry := range req.Entries {
-		entsToBeSend = append(entsToBeSend, raft.Entry{
-			Command: entry.Data,
-			Index:   int(entry.Index),
-			Term:    int(entry.Term),
-		})
+func NewLevelDBConfigStateMachine(path string) *LevelDBConfigStateMachine {
+	db, err := leveldb.OpenFile(path, nil)
+	if err != nil {
+		panic(err)
 	}
-	_req := &raft.AppendEntriesRequest{
-		Term:         int(req.Term),
-		LeaderId:     int(req.LeaderId),
-		PrevLogIndex: int(req.PrevLogIndex),
-		PrevLogTerm:  int(req.PrevLogTerm),
-		LeaderCommit: int(req.LeaderCommit),
-		Entries:      entsToBeSend,
+	cf := &LevelDBConfigStateMachine{db: db}
+	// Init with default config if empty
+	if _, err := db.Get([]byte("config_count"), nil); err != nil {
+		cf.saveConfig(DefaultConfig())
 	}
-	_resp := &raft.AppendEntriesResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives AppendEntriesRequest %v\n", sc.rf.Me(), _req)
-	sc.rf.AppendEntries(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} responds AppendEntriesResponse %v\n", sc.rf.Me(), _resp)
-	return &raftpb.AppendEntriesResponse{
-		Term:          int64(_resp.Term),
-		Success:       _resp.Success,
-		ConflictIndex: int64(_resp.ConflictIndex),
-		ConflictTerm:  int64(_resp.ConflictTerm),
-	}, nil
+	return cf
 }
 
-func (sc *ShardCtrler) SnapshotRPC(ctx context.Context, req *raftpb.InstallSnapshotRequest) (*raftpb.InstallSnapshotResponse, error) {
-	_req := &raft.InstallSnapshotRequest{
-		Term:              int(req.Term),
-		LeaderId:          int(req.LeaderId),
-		LastIncludedIndex: int(req.LastIncludedIndex),
-		LastIncludedTerm:  int(req.LastIncludedTerm),
-		Data:              req.Data,
-	}
-	_resp := &raft.InstallSnapshotResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives InstallSnapshotRequest %v\n", sc.rf.Me(), _req)
-	sc.rf.InstallSnapshot(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} responds InstallSnapshotResponse %v\n", sc.rf.Me(), _resp)
-	return &raftpb.InstallSnapshotResponse{
-		Term: int64(_resp.Term),
-	}, nil
+func (cf *LevelDBConfigStateMachine) saveConfig(config Config) {
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(config)
+	cf.db.Put([]byte(fmt.Sprintf("config_%d", config.Num)), w.Bytes(), nil)
+	cf.db.Put([]byte("config_count"), []byte(fmt.Sprintf("%d", config.Num+1)), nil)
 }
 
-func (sc *ShardCtrler) ConfigCommandRPC(ctx context.Context, req *raftpb.ConfigCommandRequest) (*raftpb.ConfigCommandResponse, error) {
-	// Convert []int64 to []int
-	gids := make([]int, len(req.Gids))
-	for i, gid := range req.Gids {
-		gids[i] = int(gid)
+func (cf *LevelDBConfigStateMachine) getConfigCount() int {
+	val, err := cf.db.Get([]byte("config_count"), nil)
+	if err != nil {
+		return 0
 	}
-	// Convert map[int64]string to map[int][]string
-	servers := make(map[int][]string)
-	for gid, serverAddr := range req.Sgroups {
-		servers[int(gid)] = []string{serverAddr}
+	var count int
+	fmt.Sscanf(string(val), "%d", &count)
+	return count
+}
+
+func (cf *LevelDBConfigStateMachine) getLatestConfig() Config {
+	count := cf.getConfigCount()
+	if count == 0 {
+		return DefaultConfig()
 	}
-	_req := &CommandRequest{
-		Servers:   servers,
-		GIDs:      gids,
-		Shard:     int(req.ShardId),
-		GID:       int(req.Gid),
-		Num:       int(req.Num),
-		Op:        OperationOp(req.OpType),
-		ClientId:  req.ClientId,
-		CommandId: req.CommandId,
+	return cf.getConfig(count - 1)
+}
+
+func (cf *LevelDBConfigStateMachine) getConfig(num int) Config {
+	val, err := cf.db.Get([]byte(fmt.Sprintf("config_%d", num)), nil)
+	if err != nil {
+		return DefaultConfig()
 	}
-	_resp := &CommandResponse{}
-	logger.ELogger().Sugar().Debugf("{Node %v} receives ConfigCommandRPC %v\n", sc.rf.Me(), _req)
-	sc.Command(_req, _resp)
-	logger.ELogger().Sugar().Debugf("{Node %v} ConfigCommandRPC resp %v\n", sc.rf.Me(), _resp)
-	// Convert [10]int to []int64
-	buckets := make([]int64, len(_resp.Config.Shards))
-	for i, v := range _resp.Config.Shards {
-		buckets[i] = int64(v)
-	}
-	// Convert map[int][]string to map[int64]string
-	sgroups := make(map[int64]string)
-	for gid, serverList := range _resp.Config.Groups {
-		if len(serverList) > 0 {
-			sgroups[int64(gid)] = serverList[0] // Take the first server address
+	r := bytes.NewBuffer(val)
+	d := labgob.NewDecoder(r)
+	var config Config
+	d.Decode(&config)
+	return config
+}
+
+func (cf *LevelDBConfigStateMachine) Join(groups map[int][]string) Err {
+	lastConfig := cf.getLatestConfig()
+	newConfig := Config{lastConfig.Num + 1, lastConfig.Shards, deepCopy(lastConfig.Groups)}
+	for gid, servers := range groups {
+		if _, ok := newConfig.Groups[gid]; !ok {
+			newServers := make([]string, len(servers))
+			copy(newServers, servers)
+			newConfig.Groups[gid] = newServers
 		}
 	}
-	_config := &raftpb.Config{
-		Num:     int64(_resp.Config.Num),
-		Buckets: buckets,
-		Sgroups: sgroups,
+	s2g := Group2Shards(newConfig)
+	for {
+		source, target := GetGIDWithMaximumShards(s2g), GetGIDWithMinimumShards(s2g)
+		if source != 0 && len(s2g[source])-len(s2g[target]) <= 1 {
+			break
+		}
+		s2g[target] = append(s2g[target], s2g[source][0])
+		s2g[source] = s2g[source][1:]
 	}
-	return &raftpb.ConfigCommandResponse{
-		Config:  _config,
-		ErrCode: int64(_resp.Err),
-	}, nil
+	var newShards [NShards]int
+	for gid, shards := range s2g {
+		for _, shard := range shards {
+			newShards[shard] = gid
+		}
+	}
+	newConfig.Shards = newShards
+	cf.saveConfig(newConfig)
+	return OK
+}
+
+func (cf *LevelDBConfigStateMachine) Leave(gids []int) Err {
+	lastConfig := cf.getLatestConfig()
+	newConfig := Config{lastConfig.Num + 1, lastConfig.Shards, deepCopy(lastConfig.Groups)}
+	s2g := Group2Shards(newConfig)
+	orphanShards := make([]int, 0)
+	for _, gid := range gids {
+		if _, ok := newConfig.Groups[gid]; ok {
+			delete(newConfig.Groups, gid)
+		}
+		if shards, ok := s2g[gid]; ok {
+			orphanShards = append(orphanShards, shards...)
+			delete(s2g, gid)
+		}
+	}
+	var newShards [NShards]int
+	if len(newConfig.Groups) != 0 {
+		for _, shard := range orphanShards {
+			target := GetGIDWithMinimumShards(s2g)
+			s2g[target] = append(s2g[target], shard)
+		}
+		for gid, shards := range s2g {
+			for _, shard := range shards {
+				newShards[shard] = gid
+			}
+		}
+	}
+	newConfig.Shards = newShards
+	cf.saveConfig(newConfig)
+	return OK
+}
+
+func (cf *LevelDBConfigStateMachine) Move(shard, gid int) Err {
+	lastConfig := cf.getLatestConfig()
+	newConfig := Config{lastConfig.Num + 1, lastConfig.Shards, deepCopy(lastConfig.Groups)}
+	newConfig.Shards[shard] = gid
+	cf.saveConfig(newConfig)
+	return OK
+}
+
+func (cf *LevelDBConfigStateMachine) Query(num int) (Config, Err) {
+	count := cf.getConfigCount()
+	if num < 0 || num >= count {
+		return cf.getLatestConfig(), OK
+	}
+	return cf.getConfig(num), OK
+}
+
+func (cf *LevelDBConfigStateMachine) Close() {
+	cf.db.Close()
 }
 
 func (sc *ShardCtrler) Command(request *CommandRequest, response *CommandResponse) {
@@ -238,10 +258,16 @@ func (sc *ShardCtrler) applier() {
 			DPrintf("{Node %v} tries to apply message %v", sc.rf.Me(), message)
 			if message.CommandValid {
 				var response *CommandResponse
-				r := bytes.NewBuffer(message.Command.([]byte))
-				d := labgob.NewDecoder(r)
 				var command Command
-				d.Decode(&command)
+				commandBytes, ok := message.Command.([]byte)
+				if !ok {
+					command = message.Command.(Command)
+				} else {
+					r := bytes.NewBuffer(commandBytes)
+					d := labgob.NewDecoder(r)
+					d.Decode(&command)
+				}
+
 				sc.mu.Lock()
 
 				if command.Op != OpQuery && sc.isDuplicateRequest(command.ClientId, command.CommandId) {
@@ -272,7 +298,11 @@ func (sc *ShardCtrler) applier() {
 // servers that will cooperate via Paxos to
 // form the fault-tolerant shardctrler service.
 // me is the index of the current server in servers[].
-func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister) *ShardCtrler {
+func (sc *ShardCtrler) GetStatus() (int, string, int, int, int) {
+	return sc.rf.GetStatus()
+}
+
+func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, dbPath string) *ShardCtrler {
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
 	labgob.Register(Command{})
@@ -281,8 +311,8 @@ func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister)
 	sc := &ShardCtrler{
 		applyCh:        applyCh,
 		dead:           0,
-		rf:             raft.Make(servers, me, persister, applyCh),
-		stateMachine:   NewMemoryConfigStateMachine(),
+		rf:             raft.Make(peers, me, persister, applyCh),
+		stateMachine:   NewLevelDBConfigStateMachine(dbPath),
 		lastOperations: make(map[int64]OperationContext),
 		notifyChans:    make(map[int]chan *CommandResponse),
 	}
