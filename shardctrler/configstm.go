@@ -10,6 +10,7 @@ type ConfigStateMachine interface {
 	Move(shard, gid int) Err
 	Query(num int) (Config, Err)
 	Close()
+	Size() int64
 }
 
 type MemoryConfigStateMachine struct {
@@ -97,6 +98,12 @@ func (cf *MemoryConfigStateMachine) Query(num int) (Config, Err) {
 		return cf.Configs[len(cf.Configs)-1], OK
 	}
 	return cf.Configs[num], OK
+}
+
+func (cf *MemoryConfigStateMachine) Close() {}
+
+func (cf *MemoryConfigStateMachine) Size() int64 {
+	return 0
 }
 
 func Group2Shards(config Config) map[int][]int {

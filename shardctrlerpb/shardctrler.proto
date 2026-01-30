@@ -45,6 +45,7 @@ message GetStatusResponse {
     int64 term = 3;
     int64 last_applied = 4;
     int64 commit_index = 5;
+    int64 storage_size = 6;
 }
 
 service ShardCtrlerService {

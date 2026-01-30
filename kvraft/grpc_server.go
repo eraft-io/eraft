@@ -32,12 +32,13 @@ func (s *KVgRPCServer) Command(ctx context.Context, req *kvraftpb.CommandRequest
 }
 
 func (s *KVgRPCServer) GetStatus(ctx context.Context, req *kvraftpb.GetStatusRequest) (*kvraftpb.GetStatusResponse, error) {
-	id, state, term, lastApplied, commitIndex := s.kv.GetStatus()
+	id, state, term, lastApplied, commitIndex, storageSize := s.kv.GetStatus()
 	return &kvraftpb.GetStatusResponse{
 		Id:          int64(id),
 		State:       state,
 		Term:        int64(term),
 		LastApplied: int64(lastApplied),
 		CommitIndex: int64(commitIndex),
+		StorageSize: storageSize,
 	}, nil
 }

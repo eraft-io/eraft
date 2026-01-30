@@ -3,6 +3,8 @@ package shardctrler
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -24,7 +26,8 @@ type ShardCtrler struct {
 }
 
 type LevelDBConfigStateMachine struct {
-	db *leveldb.DB
+	db   *leveldb.DB
+	path string
 }
 
 func NewLevelDBConfigStateMachine(path string) *LevelDBConfigStateMachine {
@@ -32,7 +35,7 @@ func NewLevelDBConfigStateMachine(path string) *LevelDBConfigStateMachine {
 	if err != nil {
 		panic(err)
 	}
-	cf := &LevelDBConfigStateMachine{db: db}
+	cf := &LevelDBConfigStateMachine{db: db, path: path}
 	// Init with default config if empty
 	if _, err := db.Get([]byte("config_count"), nil); err != nil {
 		cf.saveConfig(DefaultConfig())
@@ -157,6 +160,20 @@ func (cf *LevelDBConfigStateMachine) Query(num int) (Config, Err) {
 
 func (cf *LevelDBConfigStateMachine) Close() {
 	cf.db.Close()
+}
+
+func (cf *LevelDBConfigStateMachine) Size() int64 {
+	var size int64
+	filepath.Walk(cf.path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	return size
 }
 
 func (sc *ShardCtrler) Command(request *CommandRequest, response *CommandResponse) {
@@ -299,8 +316,9 @@ func (sc *ShardCtrler) applier() {
 // servers that will cooperate via Paxos to
 // form the fault-tolerant shardctrler service.
 // me is the index of the current server in servers[].
-func (sc *ShardCtrler) GetStatus() (int, string, int, int, int) {
-	return sc.rf.GetStatus()
+func (sc *ShardCtrler) GetStatus() (int, string, int, int, int, int64) {
+	id, state, term, applied, commit := sc.rf.GetStatus()
+	return id, state, term, applied, commit, sc.stateMachine.Size() + int64(sc.rf.GetRaftStateSize())
 }
 
 func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, dbPath string) *ShardCtrler {

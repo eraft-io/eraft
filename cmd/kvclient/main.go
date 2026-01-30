@@ -30,13 +30,14 @@ func main() {
 		fmt.Printf("Append(%s, %s) success\n", *key, *value)
 	case "status":
 		stats := ck.GetStatus()
-		fmt.Printf("%-5s | %-10s | %-5s | %-12s | %-12s\n", "ID", "State", "Term", "LastApplied", "CommitIndex")
-		fmt.Println(strings.Repeat("-", 60))
-		for _, s := range stats {
+		fmt.Printf("%-5s %-25s %-15s %-10s %-10s %-15s %-15s\n", "ID", "Address", "Role", "Term", "Applied", "Commit", "Storage(B)")
+		fmt.Println(strings.Repeat("-", 100))
+		for i, s := range stats {
+			addr := addrList[i]
 			if s.State == "Offline" {
-				fmt.Printf("%-5d | %-10s | %-5s | %-12s | %-12s\n", s.Id, s.State, "-", "-", "-")
+				fmt.Printf("%-5d %-25s %-15s %-10s %-10s %-15s %-15s\n", s.Id, addr, s.State, "-", "-", "-", "-")
 			} else {
-				fmt.Printf("%-5d | %-10s | %-5d | %-12d | %-12d\n", s.Id, s.State, s.Term, s.LastApplied, s.CommitIndex)
+				fmt.Printf("%-5d %-25s %-15s %-10d %-10d %-15d %-15d\n", s.Id, addr, s.State, s.Term, s.LastApplied, s.CommitIndex, s.StorageSize)
 			}
 		}
 	default:

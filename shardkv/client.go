@@ -264,19 +264,46 @@ func (ck *Clerk) Command(request *CommandRequest) string {
 	}
 }
 
-func (ck *Clerk) GetStatus() []*shardkvpb.GetStatusResponse {
+func (ck *Clerk) GetStatus() ([]*shardkvpb.GetStatusResponse, error) {
+	ck.config = ck.sm.Query(-1)
 	results := make([]*shardkvpb.GetStatusResponse, 0)
-	for gid, groupClients := range ck.clients {
-		for i, client := range groupClients {
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	for gid, servers := range ck.config.Groups {
+		if _, ok := ck.clients[gid]; !ok || len(ck.clients[gid]) != len(servers) {
+			ck.clients[gid] = make([]ShardKVClient, len(servers))
+			for i, srv := range servers {
+				if strings.Contains(srv, ":") || strings.HasPrefix(srv, "localhost") {
+					conn, err := grpc.Dial(srv, grpc.WithTransportCredentials(insecure.NewCredentials()))
+					if err == nil {
+						ck.clients[gid][i] = &gRPCShardKVClient{client: shardkvpb.NewShardKVServiceClient(conn)}
+					}
+				} else if ck.makeEnd != nil {
+					ck.clients[gid][i] = &LabrpcShardKVClient{end: ck.makeEnd(srv)}
+				}
+			}
+		}
+
+		for i, client := range ck.clients[gid] {
+			if client == nil && ck.makeEnd != nil {
+				client = &LabrpcShardKVClient{end: ck.makeEnd(ck.config.Groups[gid][i])}
+			}
+			if client == nil {
+				continue
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 			resp, err := client.GetStatus(ctx, &shardkvpb.GetStatusRequest{})
 			cancel()
 			if err == nil {
+				resp.Address = ck.config.Groups[gid][i]
 				results = append(results, resp)
 			} else {
-				results = append(results, &shardkvpb.GetStatusResponse{Id: int64(gid*100 + i), State: "Offline"})
+				results = append(results, &shardkvpb.GetStatusResponse{
+					Id:      int64(i),
+					Gid:     int64(gid),
+					State:   "Offline",
+					Address: ck.config.Groups[gid][i],
+				})
 			}
 		}
 	}
-	return results
+	return results, nil
 }

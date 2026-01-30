@@ -3,6 +3,8 @@ package kvraft
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -17,10 +19,12 @@ type KVStateMachine interface {
 	Put(key, value string) Err
 	Append(key, value string) Err
 	Close()
+	Size() int64
 }
 
 type LevelDBKV struct {
-	db *leveldb.DB
+	db   *leveldb.DB
+	path string
 }
 
 func NewLevelDBKV(path string) *LevelDBKV {
@@ -28,7 +32,7 @@ func NewLevelDBKV(path string) *LevelDBKV {
 	if err != nil {
 		panic(err)
 	}
-	return &LevelDBKV{db: db}
+	return &LevelDBKV{db: db, path: path}
 }
 
 func (lk *LevelDBKV) Get(key string) (string, Err) {
@@ -65,6 +69,20 @@ func (lk *LevelDBKV) Append(key, value string) Err {
 
 func (lk *LevelDBKV) Close() {
 	lk.db.Close()
+}
+
+func (lk *LevelDBKV) Size() int64 {
+	var size int64
+	filepath.Walk(lk.path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	return size
 }
 
 type KVServer struct {
@@ -150,8 +168,9 @@ func (kv *KVServer) Raft() *raft.Raft {
 	return kv.rf
 }
 
-func (kv *KVServer) GetStatus() (int, string, int, int, int) {
-	return kv.rf.GetStatus()
+func (kv *KVServer) GetStatus() (int, string, int, int, int, int64) {
+	id, state, term, applied, commit := kv.rf.GetStatus()
+	return id, state, term, applied, commit, kv.stateMachine.Size() + int64(kv.rf.GetRaftStateSize())
 }
 
 // a dedicated applier goroutine to apply committed entries to stateMachine, take snapshot and apply snapshot from raft

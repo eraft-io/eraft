@@ -84,12 +84,14 @@ func (s *ShardKVgRPCServer) DeleteShardsData(ctx context.Context, req *shardkvpb
 }
 
 func (s *ShardKVgRPCServer) GetStatus(ctx context.Context, req *shardkvpb.GetStatusRequest) (*shardkvpb.GetStatusResponse, error) {
-	id, state, term, lastApplied, commitIndex := s.kv.rf.GetStatus()
+	gid, id, state, term, lastApplied, commitIndex, storageSize := s.kv.GetStatus()
 	return &shardkvpb.GetStatusResponse{
 		Id:          int64(id),
 		State:       state,
 		Term:        int64(term),
 		LastApplied: int64(lastApplied),
 		CommitIndex: int64(commitIndex),
+		StorageSize: storageSize,
+		Gid:         int64(gid),
 	}, nil
 }

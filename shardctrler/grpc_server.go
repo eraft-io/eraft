@@ -58,12 +58,13 @@ func (s *ShardCtrlergRPCServer) Command(ctx context.Context, req *shardctrlerpb.
 }
 
 func (s *ShardCtrlergRPCServer) GetStatus(ctx context.Context, req *shardctrlerpb.GetStatusRequest) (*shardctrlerpb.GetStatusResponse, error) {
-	id, state, term, lastApplied, commitIndex := s.sc.GetStatus()
+	id, state, term, lastApplied, commitIndex, storageSize := s.sc.GetStatus()
 	return &shardctrlerpb.GetStatusResponse{
 		Id:          int64(id),
 		State:       state,
 		Term:        int64(term),
 		LastApplied: int64(lastApplied),
 		CommitIndex: int64(commitIndex),
+		StorageSize: storageSize,
 	}, nil
 }

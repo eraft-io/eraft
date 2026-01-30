@@ -74,17 +74,18 @@ func main() {
 			fmt.Printf("    %d: %v\n", gid, servers)
 		}
 	case "status":
-		resp, err := ck.GetStatus()
+		resps, err := ck.GetStatus()
 		if err != nil {
 			fmt.Printf("Error getting status: %v\n", err)
 			return
 		}
-		fmt.Printf("Node Status:\n")
-		fmt.Printf("  ID: %d\n", resp.Id)
-		fmt.Printf("  State: %s\n", resp.State)
-		fmt.Printf("  Term: %d\n", resp.Term)
-		fmt.Printf("  LastApplied: %d\n", resp.LastApplied)
-		fmt.Printf("  CommitIndex: %d\n", resp.CommitIndex)
+		fmt.Printf("%-5s %-25s %-15s %-10s %-10s %-15s %-15s\n", "ID", "Address", "Role", "Term", "Applied", "Commit", "Storage(B)")
+		fmt.Println(strings.Repeat("-", 100))
+		for i, resp := range resps {
+			addr := addrs[i]
+			fmt.Printf("%-5d %-25s %-15s %-10d %-10d %-15d %-15d\n",
+				resp.Id, addr, resp.State, resp.Term, resp.LastApplied, resp.CommitIndex, resp.StorageSize)
+		}
 	default:
 		usage()
 	}

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/eraft-io/eraft/labrpc"
 	"github.com/eraft-io/eraft/shardctrlerpb"
@@ -137,8 +138,22 @@ func (ck *Clerk) Move(shard int, gid int) {
 	ck.Command(&CommandRequest{Shard: shard, GID: gid, Op: OpMove})
 }
 
-func (ck *Clerk) GetStatus() (*shardctrlerpb.GetStatusResponse, error) {
-	return ck.clients[ck.leaderId].GetStatus(context.Background(), &shardctrlerpb.GetStatusRequest{})
+func (ck *Clerk) GetStatus() ([]*shardctrlerpb.GetStatusResponse, error) {
+	results := make([]*shardctrlerpb.GetStatusResponse, len(ck.clients))
+	for i, client := range ck.clients {
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		if client == nil && ck.makeEnd != nil {
+			client = &LabrpcShardCtrlerClient{end: ck.makeEnd(ck.servers[i])}
+		}
+		resp, err := client.GetStatus(ctx, &shardctrlerpb.GetStatusRequest{})
+		cancel()
+		if err == nil {
+			results[i] = resp
+		} else {
+			results[i] = &shardctrlerpb.GetStatusResponse{Id: int64(i), State: "Offline"}
+		}
+	}
+	return results, nil
 }
 
 func (ck *Clerk) Command(request *CommandRequest) Config {

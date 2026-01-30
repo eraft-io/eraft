@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package shardkvpb;
 
-import "shardctrlerpb/shardctrler.proto";
-
 option go_package = "github.com/eraft-io/eraft/shardkvpb";
 
 enum Op {
@@ -54,6 +52,9 @@ message GetStatusResponse {
     int64 term = 3;
     int64 last_applied = 4;
     int64 commit_index = 5;
+    int64 storage_size = 6;
+    string address = 7;
+    int64 gid = 8;
 }
 
 service ShardKVService {

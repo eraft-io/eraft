@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -21,7 +23,8 @@ import (
 )
 
 type LevelDBShardStore struct {
-	db *leveldb.DB
+	db   *leveldb.DB
+	path string
 }
 
 func NewLevelDBShardStore(path string) *LevelDBShardStore {
@@ -29,7 +32,7 @@ func NewLevelDBShardStore(path string) *LevelDBShardStore {
 	if err != nil {
 		panic(err)
 	}
-	return &LevelDBShardStore{db: db}
+	return &LevelDBShardStore{db: db, path: path}
 }
 
 func (ls *LevelDBShardStore) Get(shardID int, key string) (string, Err) {
@@ -54,6 +57,20 @@ func (ls *LevelDBShardStore) Append(shardID int, key, value string) Err {
 
 func (ls *LevelDBShardStore) Close() {
 	ls.db.Close()
+}
+
+func (ls *LevelDBShardStore) Size() int64 {
+	var size int64
+	filepath.Walk(ls.path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return nil
+	})
+	return size
 }
 
 type ShardKV struct {
@@ -85,8 +102,9 @@ func (kv *ShardKV) Raft() *raft.Raft {
 	return kv.rf
 }
 
-func (kv *ShardKV) GetStatus() (int, string, int, int, int) {
-	return kv.rf.GetStatus()
+func (kv *ShardKV) GetStatus() (int, int, string, int, int, int, int64) {
+	id, state, term, lastApplied, commitIndex := kv.rf.GetStatus()
+	return kv.gid, id, state, term, lastApplied, commitIndex, kv.store.Size() + int64(kv.rf.GetRaftStateSize())
 }
 
 func (kv *ShardKV) Command(request *CommandRequest, response *CommandResponse) {
