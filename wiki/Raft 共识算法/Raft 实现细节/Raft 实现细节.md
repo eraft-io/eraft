@@ -71,7 +71,7 @@ Raft 结构体是整个实现的核心，包含了所有必要的状态信息和
 classDiagram
 class Raft {
 +mu : RWMutex
-+peers : []RaftPeer
++peers : RaftPeer[]
 +persister : *Persister
 +me : int
 +dead : int32
@@ -81,26 +81,26 @@ class Raft {
 +state : NodeState
 +currentTerm : int
 +votedFor : int
-+logs : []Entry
++logs : Entry[]
 +commitIndex : int
 +lastApplied : int
-+nextIndex : []int
-+matchIndex : []int
++nextIndex : int[]
++matchIndex : int[]
 +electionTimer : *time.Timer
 +heartbeatTimer : *time.Timer
 }
 class Entry {
 +Index : int
 +Term : int
-+Command : interface{}
++Command : any
 }
 class ApplyMsg {
 +CommandValid : bool
-+Command : interface{}
++Command : any
 +CommandIndex : int
 +CommandTerm : int
 +SnapshotValid : bool
-+Snapshot : []byte
++Snapshot : byte[]
 +SnapshotTerm : int
 +SnapshotIndex : int
 }
@@ -308,7 +308,7 @@ class AppendEntriesRequest {
 +PrevLogIndex : int
 +PrevLogTerm : int
 +LeaderCommit : int
-+Entries : []Entry
++Entries : Entry[]
 }
 class AppendEntriesResponse {
 +Term : int
@@ -321,7 +321,7 @@ class InstallSnapshotRequest {
 +LeaderId : int
 +LastIncludedIndex : int
 +LastIncludedTerm : int
-+Data : []byte
++Data : byte[]
 }
 class InstallSnapshotResponse {
 +Term : int

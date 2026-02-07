@@ -226,7 +226,7 @@ class AppendEntriesRequest {
 +int PrevLogIndex
 +int PrevLogTerm
 +int LeaderCommit
-+[]Entry Entries
++Entry[] Entries
 }
 class AppendEntriesResponse {
 +int Term
@@ -239,7 +239,7 @@ class InstallSnapshotRequest {
 +int LeaderId
 +int LastIncludedIndex
 +int LastIncludedTerm
-+[]byte Data
++byte[] Data
 }
 class InstallSnapshotResponse {
 +int Term

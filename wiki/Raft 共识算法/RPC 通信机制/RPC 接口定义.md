@@ -137,8 +137,8 @@ TermGreater --> |否| CheckLog["检查日志是否较新"]
 CheckLog --> LogFresh{"日志较新？"}
 LogFresh --> |否| Reject
 LogFresh --> |是| Grant["记录 votedFor 并重置选举计时器"]
-Grant --> Reply["返回 {Term: 当前任期, VoteGranted: true}"]
-Reject --> Reply
+Grant --> ReplyGrant["返回 {Term: 当前任期, VoteGranted: true}"]
+Reject --> ReplyReject["返回拒绝响应"]
 ```
 
 图表来源
@@ -274,7 +274,7 @@ class AppendEntriesRequest {
 +int PrevLogIndex
 +int PrevLogTerm
 +int LeaderCommit
-+[]Entry Entries
++Entry[] Entries
 }
 class AppendEntriesResponse {
 +int Term
@@ -287,7 +287,7 @@ class InstallSnapshotRequest {
 +int LeaderId
 +int LastIncludedIndex
 +int LastIncludedTerm
-+[]byte Data
++byte[] Data
 }
 class InstallSnapshotResponse {
 +int Term
@@ -295,12 +295,12 @@ class InstallSnapshotResponse {
 class Entry {
 +int Index
 +int Term
-+interface{} Command
++any Command
 }
-RequestVoteRequest --> RequestVoteResponse : "返回"
-AppendEntriesRequest --> AppendEntriesResponse : "返回"
-InstallSnapshotRequest --> InstallSnapshotResponse : "返回"
-AppendEntriesRequest --> Entry : "包含"
+RequestVoteRequest --> RequestVoteResponse : returns
+AppendEntriesRequest --> AppendEntriesResponse : returns
+InstallSnapshotRequest --> InstallSnapshotResponse : returns
+AppendEntriesRequest --> Entry : contains
 ```
 
 图表来源

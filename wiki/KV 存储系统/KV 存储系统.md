@@ -129,15 +129,15 @@ KVServer --> KVStateMachine : "使用"
 ```mermaid
 classDiagram
 class Clerk {
--servers []string
--clients []KVServiceClient
+-servers string[]
+-clients KVServiceClient[]
 -leaderId int64
 -clientId int64
 -commandId int64
 +Get(key string) string
 +Put(key string, value string) void
 +Append(key string, value string) void
-+GetStatus() []*GetStatusResponse
++GetStatus() GetStatusResponse[]
 +Command(request *CommandRequest) string
 }
 class CommandRequest {
@@ -395,12 +395,12 @@ Note over Raft,Disk : 原子性写入确保一致性
 flowchart TD
 CreateClerk[创建客户端] --> MakeClerk[初始化连接]
 MakeClerk --> Operations[执行操作]
-Operations --> Get[Get(key)]
-Operations --> Put[Put(key, value)]
-Operations --> Append[Append(key, value)]
-Get --> HandleResult[处理结果]
-Put --> HandleResult
-Append --> HandleResult
+Operations --> GetOp[Get(key)]
+Operations --> PutOp[Put(key, value)]
+Operations --> AppendOp[Append(key, value)]
+GetOp --> HandleResult[处理结果]
+PutOp --> HandleResult
+AppendOp --> HandleResult
 HandleResult --> Retry{需要重试?}
 Retry --> |是| SwitchLeader[切换领导者]
 Retry --> |否| End([完成])

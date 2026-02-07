@@ -123,11 +123,11 @@ classDiagram
 class Raft {
 +int currentTerm
 +int votedFor
-+[]Entry logs
++Entry[] logs
 +int commitIndex
 +int lastApplied
-+[]int nextIndex
-+[]int matchIndex
++int[] nextIndex
++int[] matchIndex
 +NodeState state
 +Start(command) (int,int,bool)
 +GetState() (int,bool)
@@ -137,7 +137,7 @@ class Raft {
 class Entry {
 +int Index
 +int Term
-+interface{} Command
++any Command
 }
 class NodeState {
 <<enumeration>>

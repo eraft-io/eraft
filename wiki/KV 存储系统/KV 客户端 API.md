@@ -188,8 +188,8 @@ CK-->>App : 返回值或错误
 ```mermaid
 classDiagram
 class Clerk {
-+servers []string
-+clients []KVServiceClient
++servers string[]
++clients KVServiceClient[]
 +leaderId int64
 +clientId int64
 +commandId int64
@@ -197,7 +197,7 @@ class Clerk {
 +Put(key, value) void
 +Append(key, value) void
 +Command(req) string
-+GetStatus() []*GetStatusResponse
++GetStatus() GetStatusResponse[]
 }
 class KVServiceClient {
 +Command(ctx, req) CommandResponse

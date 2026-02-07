@@ -209,15 +209,15 @@ end
 ```mermaid
 classDiagram
 class Clerk {
-+servers []string
-+clients []KVServiceClient
++servers string[]
++clients KVServiceClient[]
 +leaderId int64
 +clientId int64
 +commandId int64
 +Get(key) string
 +Put(key, value) void
 +Append(key, value) void
-+GetStatus() []*GetStatusResponse
++GetStatus() GetStatusResponse[]
 -Command(request) string
 }
 class KVServer {

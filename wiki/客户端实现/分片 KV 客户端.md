@@ -128,7 +128,7 @@ classDiagram
 class Clerk {
 -sm : shardctrler.Clerk
 -config : shardctrler.Config
--clients : map[int][]ShardKVClient
+-clients : map[int]ShardKVClient[]
 -leaderIds : map[int]int
 -clientId : int64
 -commandId : int64
@@ -136,7 +136,7 @@ class Clerk {
 +Put(key, value) void
 +Append(key, value) void
 +Command(req) string
-+GetStatus() []*GetStatusResponse
++GetStatus() GetStatusResponse[]
 }
 class ShardKVClient {
 <<interface>>

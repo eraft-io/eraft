@@ -149,8 +149,8 @@ classDiagram
 class LevelDBConfigStateMachine {
 -db : *leveldb.DB
 -path : string
-+Join(groups map[int][]string) Err
-+Leave(gids []int) Err
++Join(groups map[int]string[]) Err
++Leave(gids int[]) Err
 +Move(shard int, gid int) Err
 +Query(num int) (Config, Err)
 +Close() void
@@ -534,8 +534,8 @@ class KVStateMachine {
 }
 class ConfigStateMachine {
 <<interface>>
-+Join(groups map[int][]string) Err
-+Leave(gids []int) Err
++Join(groups map[int]string[]) Err
++Leave(gids int[]) Err
 +Move(shard int, gid int) Err
 +Query(num int) (Config, Err)
 +Close() void
@@ -562,8 +562,8 @@ class LevelDBShardStore {
 class LevelDBConfigStateMachine {
 -db : *leveldb.DB
 -path : string
-+Join(groups map[int][]string) Err
-+Leave(gids []int) Err
++Join(groups map[int]string[]) Err
++Leave(gids int[]) Err
 +Move(shard int, gid int) Err
 +Query(num int) (Config, Err)
 +Close() void
