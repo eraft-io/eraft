@@ -1,20 +1,5 @@
 # gRPC 服务器实现
 
-<cite>
-**本文引用的文件**
-- [grpc_server.go](file://raft/grpc_server.go)
-- [raft.go](file://raft/raft.go)
-- [rpc.go](file://raft/rpc.go)
-- [persister.go](file://raft/persister.go)
-- [util.go](file://raft/util.go)
-- [labrpc_adapter.go](file://raft/labrpc_adapter.go)
-- [raft.proto](file://raftpb/raft.proto)
-- [raft_grpc.pb.go](file://raftpb/raft_grpc.pb.go)
-- [grpc_client.go](file://raft/grpc_client.go)
-- [main.go](file://cmd/kvserver/main.go)
-- [labrpc.go](file://labrpc/labrpc.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

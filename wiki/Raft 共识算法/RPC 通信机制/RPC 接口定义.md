@@ -1,16 +1,5 @@
 # RPC 接口定义
 
-<cite>
-**本文引用的文件**
-- [raftpb/raft.proto](file://raftpb/raft.proto)
-- [raft/rpc.go](file://raft/rpc.go)
-- [raft/grpc_server.go](file://raft/grpc_server.go)
-- [raft/grpc_client.go](file://raft/grpc_client.go)
-- [raft/raft.go](file://raft/raft.go)
-- [raft/util.go](file://raft/util.go)
-- [raft/persister.go](file://raft/persister.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

@@ -1,6 +1,5 @@
 # 分片 KV 客户端
 
-<cite>
 **本文引用的文件**
 - [shardkv/client.go](file://shardkv/client.go)
 - [shardkv/common.go](file://shardkv/common.go)
@@ -12,7 +11,6 @@
 - [cmd/shardkvclient/main.go](file://cmd/shardkvclient/main.go)
 - [wiki/Sharding-Mechanism.md](file://wiki/Sharding-Mechanism.md)
 - [README.md](file://README.md)
-</cite>
 
 ## 目录
 1. [简介](#简介)

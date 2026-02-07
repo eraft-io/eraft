@@ -1,22 +1,5 @@
 # 分片 KV 服务器
 
-<cite>
-**本文引用的文件列表**
-- [cmd/shardkvserver/main.go](file://cmd/shardkvserver/main.go)
-- [shardkv/server.go](file://shardkv/server.go)
-- [shardkv/config.go](file://shardkv/config.go)
-- [shardkv/common.go](file://shardkv/common.go)
-- [shardkv/grpc_server.go](file://shardkv/grpc_server.go)
-- [shardkv/client.go](file://shardkv/client.go)
-- [shardkv/shard.go](file://shardkv/shard.go)
-- [shardctrler/server.go](file://shardctrler/server.go)
-- [shardctrler/common.go](file://shardctrler/common.go)
-- [shardctrler/config.go](file://shardctrler/config.go)
-- [raft/raft.go](file://raft/raft.go)
-- [raft/persister.go](file://raft/persister.go)
-- [shardkvpb/shardkv.proto](file://shardkvpb/shardkv.proto)
-- [README.md](file://README.md)
-</cite>
 
 ## 目录
 1. [简介](#简介)

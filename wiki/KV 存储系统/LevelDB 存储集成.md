@@ -1,17 +1,5 @@
 # LevelDB 存储集成
 
-<cite>
-**本文档引用的文件**
-- [kvraft/server.go](file://kvraft/server.go)
-- [shardkv/server.go](file://shardkv/server.go)
-- [kvraft/common.go](file://kvraft/common.go)
-- [shardkv/common.go](file://shardkv/common.go)
-- [raft/persister.go](file://raft/persister.go)
-- [cmd/kvserver/main.go](file://cmd/kvserver/main.go)
-- [cmd/shardkvserver/main.go](file://cmd/shardkvserver/main.go)
-- [models/kv.go](file://models/kv.go)
-- [README.md](file://README.md)
-</cite>
 
 ## 目录
 1. [简介](#简介)

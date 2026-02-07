@@ -1,21 +1,5 @@
 # Raft 共识算法
 
-<cite>
-**本文引用的文件**
-- [raft/raft.go](file://raft/raft.go)
-- [raft/rpc.go](file://raft/rpc.go)
-- [raft/util.go](file://raft/util.go)
-- [raft/persister.go](file://raft/persister.go)
-- [raft/grpc_server.go](file://raft/grpc_server.go)
-- [raft/grpc_client.go](file://raft/grpc_client.go)
-- [raft/labrpc_adapter.go](file://raft/labrpc_adapter.go)
-- [raft/config.go](file://raft/config.go)
-- [raft/test_test.go](file://raft/test_test.go)
-- [raftpb/raft.proto](file://raftpb/raft.proto)
-- [kvraft/server.go](file://kvraft/server.go)
-- [README.md](file://README.md)
-- [wiki/Raft-Consensus.md](file://wiki/Raft-Consensus.md)
-</cite>
 
 ## 目录
 1. [引言](#引言)

@@ -1,19 +1,5 @@
 # Raft 实现细节
 
-<cite>
-**本文档引用的文件**
-- [raft.go](file://raft/raft.go)
-- [rpc.go](file://raft/rpc.go)
-- [persister.go](file://raft/persister.go)
-- [util.go](file://raft/util.go)
-- [grpc_server.go](file://raft/grpc_server.go)
-- [grpc_client.go](file://raft/grpc_client.go)
-- [labrpc_adapter.go](file://raft/labrpc_adapter.go)
-- [config.go](file://raft/config.go)
-- [raft.proto](file://raftpb/raft.proto)
-- [test_test.go](file://raft/test_test.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

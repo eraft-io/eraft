@@ -1,20 +1,6 @@
 # KV 存储系统
 
-<cite>
-**本文档引用的文件**
-- [kvraft/server.go](file://kvraft/server.go)
-- [kvraft/client.go](file://kvraft/client.go)
-- [kvraft/common.go](file://kvraft/common.go)
-- [kvraft/grpc_server.go](file://kvraft/grpc_server.go)
-- [raft/raft.go](file://raft/raft.go)
-- [raft/persister.go](file://raft/persister.go)
-- [raft/rpc.go](file://raft/rpc.go)
-- [cmd/kvserver/main.go](file://cmd/kvserver/main.go)
-- [cmd/kvclient/main.go](file://cmd/kvclient/main.go)
-- [kvraftpb/kvraft.proto](file://kvraftpb/kvraft.proto)
-- [models/kv.go](file://models/kv.go)
-- [kvraft/test_test.go](file://kvraft/test_test.go)
-</cite>
+
 
 ## 目录
 1. [简介](#简介)

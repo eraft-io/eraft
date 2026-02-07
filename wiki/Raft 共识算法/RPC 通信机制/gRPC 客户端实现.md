@@ -1,20 +1,5 @@
 # gRPC 客户端实现
 
-<cite>
-**本文档引用的文件**
-- [grpc_client.go](file://raft/grpc_client.go)
-- [grpc_server.go](file://raft/grpc_server.go)
-- [rpc.go](file://raft/rpc.go)
-- [raft.go](file://raft/raft.go)
-- [labrpc_adapter.go](file://raft/labrpc_adapter.go)
-- [util.go](file://raft/util.go)
-- [persister.go](file://raft/persister.go)
-- [raft_grpc.pb.go](file://raftpb/raft_grpc.pb.go)
-- [raft.pb.go](file://raftpb/raft.pb.go)
-- [labrpc.go](file://labrpc/labrpc.go)
-- [main.go](file://cmd/kvclient/main.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

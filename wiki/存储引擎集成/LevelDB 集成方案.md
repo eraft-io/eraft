@@ -1,6 +1,5 @@
 # LevelDB 集成方案
 
-<cite>
 **本文档引用的文件**
 - [kvraft/server.go](file://kvraft/server.go)
 - [shardkv/server.go](file://shardkv/server.go)
@@ -13,7 +12,6 @@
 - [shardkv/common.go](file://shardkv/common.go)
 - [shardctrler/common.go](file://shardctrler/common.go)
 - [wiki/Storage-and-RPC.md](file://wiki/Storage-and-RPC.md)
-</cite>
 
 ## 目录
 1. [简介](#简介)

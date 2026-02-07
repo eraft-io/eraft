@@ -1,24 +1,5 @@
 # RPC 通信层
 
-<cite>
-**本文引用的文件**
-- [raft.proto](file://raftpb/raft.proto)
-- [kvraft.proto](file://kvraftpb/kvraft.proto)
-- [shardctrler.proto](file://shardctrlerpb/shardctrler.proto)
-- [shardkv.proto](file://shardkvpb/shardkv.proto)
-- [raft/grpc_client.go](file://raft/grpc_client.go)
-- [raft/grpc_server.go](file://raft/grpc_server.go)
-- [raft/rpc.go](file://raft/rpc.go)
-- [kvraft/grpc_server.go](file://kvraft/grpc_server.go)
-- [shardctrler/grpc_server.go](file://shardctrler/grpc_server.go)
-- [shardkv/grpc_server.go](file://shardkv/grpc_server.go)
-- [kvraft/client.go](file://kvraft/client.go)
-- [shardctrler/client.go](file://shardctrler/client.go)
-- [shardkv/client.go](file://shardkv/client.go)
-- [labrpc/labrpc.go](file://labrpc/labrpc.go)
-- [raft/config.go](file://raft/config.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

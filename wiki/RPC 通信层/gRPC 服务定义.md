@@ -1,23 +1,5 @@
 # gRPC 服务定义
 
-<cite>
-**本文引用的文件**
-- [kvraft.proto](file://kvraftpb/kvraft.proto)
-- [shardkv.proto](file://shardkvpb/shardkv.proto)
-- [shardctrler.proto](file://shardctrlerpb/shardctrler.proto)
-- [proto_gen.sh](file://proto_gen.sh)
-- [grpc_server.go（KV）](file://kvraft/grpc_server.go)
-- [grpc_server.go（ShardKV）](file://shardkv/grpc_server.go)
-- [grpc_server.go（ShardCtrler）](file://shardctrler/grpc_server.go)
-- [common.go（KV）](file://kvraft/common.go)
-- [common.go（ShardKV）](file://shardkv/common.go)
-- [common.go（ShardCtrler）](file://shardctrler/common.go)
-- [main.go（KV 客户端）](file://cmd/kvclient/main.go)
-- [main.go（ShardKV 客户端）](file://cmd/shardkvclient/main.go)
-- [main.go（ShardCtrler 客户端）](file://cmd/shardctrlerclient/main.go)
-- [README.md](file://README.md)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

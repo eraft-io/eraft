@@ -1,22 +1,5 @@
 # 单机 KV 服务器
 
-<cite>
-**本文引用的文件**
-- [cmd/kvserver/main.go](file://cmd/kvserver/main.go)
-- [cmd/kvclient/main.go](file://cmd/kvclient/main.go)
-- [kvraft/server.go](file://kvraft/server.go)
-- [kvraft/grpc_server.go](file://kvraft/grpc_server.go)
-- [kvraft/client.go](file://kvraft/client.go)
-- [kvraft/common.go](file://kvraft/common.go)
-- [kvraftpb/kvraft.proto](file://kvraftpb/kvraft.proto)
-- [raft/raft.go](file://raft/raft.go)
-- [raft/persister.go](file://raft/persister.go)
-- [models/kv.go](file://models/kv.go)
-- [README.md](file://README.md)
-- [wiki/Architecture.md](file://wiki/Architecture.md)
-- [wiki/Raft-Consensus.md](file://wiki/Raft-Consensus.md)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

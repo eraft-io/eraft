@@ -1,18 +1,5 @@
 # RPC 通信机制
 
-<cite>
-**本文档引用的文件**
-- [raft/rpc.go](file://raft/rpc.go)
-- [raft/grpc_server.go](file://raft/grpc_server.go)
-- [raft/grpc_client.go](file://raft/grpc_client.go)
-- [raftpb/raft.proto](file://raftpb/raft.proto)
-- [raft/raft.go](file://raft/raft.go)
-- [raft/util.go](file://raft/util.go)
-- [labrpc/labrpc.go](file://labrpc/labrpc.go)
-- [raft/labrpc_adapter.go](file://raft/labrpc_adapter.go)
-- [raft/config.go](file://raft/config.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

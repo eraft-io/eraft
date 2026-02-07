@@ -1,23 +1,5 @@
 # gRPC 服务器实现
 
-<cite>
-**本文引用的文件**
-- [cmd/kvserver/main.go](file://cmd/kvserver/main.go)
-- [cmd/shardkvserver/main.go](file://cmd/shardkvserver/main.go)
-- [cmd/shardctrler/main.go](file://cmd/shardctrler/main.go)
-- [kvraft/grpc_server.go](file://kvraft/grpc_server.go)
-- [raft/grpc_server.go](file://raft/grpc_server.go)
-- [shardctrler/grpc_server.go](file://shardctrler/grpc_server.go)
-- [shardkv/grpc_server.go](file://shardkv/grpc_server.go)
-- [kvraftpb/kvraft.proto](file://kvraftpb/kvraft.proto)
-- [raftpb/raft.proto](file://raftpb/raft.proto)
-- [shardkvpb/shardkv.proto](file://shardkvpb/shardkv.proto)
-- [shardctrlerpb/shardctrler.proto](file://shardctrlerpb/shardctrler.proto)
-- [raft/persister.go](file://raft/persister.go)
-- [raft/util.go](file://raft/util.go)
-- [go.mod](file://go.mod)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

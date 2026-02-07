@@ -1,22 +1,5 @@
 # 单机 KV 客户端
 
-<cite>
-**本文引用的文件**
-- [cmd/kvclient/main.go](file://cmd/kvclient/main.go)
-- [kvraft/client.go](file://kvraft/client.go)
-- [kvraft/common.go](file://kvraft/common.go)
-- [kvraft/server.go](file://kvraft/server.go)
-- [kvraft/grpc_server.go](file://kvraft/grpc_server.go)
-- [kvraftpb/kvraft.proto](file://kvraftpb/kvraft.proto)
-- [cmd/kvserver/main.go](file://cmd/kvserver/main.go)
-- [models/kv.go](file://models/kv.go)
-- [kvraft/config.go](file://kvraft/config.go)
-- [labrpc/labrpc.go](file://labrpc/labrpc.go)
-- [README.md](file://README.md)
-- [wiki/Storage-and-RPC.md](file://wiki/Storage-and-RPC.md)
-- [kvraft/test_test.go](file://kvraft/test_test.go)
-</cite>
-
 ## 目录
 1. [简介](#简介)
 2. [项目结构](#项目结构)

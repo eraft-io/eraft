@@ -1,6 +1,5 @@
 # KV 客户端
 
-<cite>
 **本文引用的文件**
 - [kvraft/client.go](file://kvraft/client.go)
 - [cmd/kvclient/main.go](file://cmd/kvclient/main.go)
@@ -11,7 +10,6 @@
 - [kvraftpb/kvraft.pb.go](file://kvraftpb/kvraft.pb.go)
 - [models/kv.go](file://models/kv.go)
 - [kvraft/test_test.go](file://kvraft/test_test.go)
-</cite>
 
 ## 目录
 1. [简介](#简介)

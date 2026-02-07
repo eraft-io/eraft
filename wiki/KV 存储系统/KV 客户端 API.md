@@ -1,16 +1,5 @@
 # KV 客户端 API
 
-<cite>
-**本文引用的文件**
-- [kvraft/client.go](file://kvraft/client.go)
-- [kvraft/common.go](file://kvraft/common.go)
-- [kvraft/config.go](file://kvraft/config.go)
-- [cmd/kvclient/main.go](file://cmd/kvclient/main.go)
-- [kvraftpb/kvraft.pb.go](file://kvraftpb/kvraft.pb.go)
-- [kvraft/server.go](file://kvraft/server.go)
-- [kvraft/test_test.go](file://kvraft/test_test.go)
-- [models/kv.go](file://models/kv.go)
-</cite>
 
 ## 目录
 1. [简介](#简介)
