@@ -32,29 +32,29 @@ eRaft 项目采用模块化的组织方式，主要包含以下核心目录：
 ```mermaid
 graph TB
 subgraph "KV 存储层"
-KV[kvraft/] KV 存储核心
-KVCommon[kvraft/common.go] 基础类型定义
-KVServer[kvraft/server.go] KV 服务器实现
-KVClient[kvraft/client.go] 客户端实现
-KVGrpc[kvraft/grpc_server.go] gRPC 服务端
+KV["kvraft/ KV 存储核心"]
+KVCommon["kvraft/common.go 基础类型定义"]
+KVServer["kvraft/server.go KV 服务器实现"]
+KVClient["kvraft/client.go 客户端实现"]
+KVGrpc["kvraft/grpc_server.go gRPC 服务端"]
 end
 subgraph "共识算法层"
-Raft[raft/] Raft 实现
-RaftGo[raft/raft.go] 核心共识逻辑
-RaftPersister[raft/persister.go] 持久化管理
-RaftRPC[raft/rpc.go] RPC 接口定义
+Raft["raft/ Raft 实现"]
+RaftGo["raft/raft.go 核心共识逻辑"]
+RaftPersister["raft/persister.go 持久化管理"]
+RaftRPC["raft/rpc.go RPC 接口定义"]
 end
 subgraph "客户端工具"
-CmdKVServer[cmd/kvserver/] KV 服务器命令行
-CmdKVClient[cmd/kvclient/] KV 客户端命令行
+CmdKVServer["cmd/kvserver/ KV 服务器命令行"]
+CmdKVClient["cmd/kvclient/ KV 客户端命令行"]
 end
 subgraph "协议定义"
-Proto[kvraftpb/] 协议定义
-KVProto[kvraftpb/kvraft.proto] KV 协议
+Proto["kvraftpb/ 协议定义"]
+KVProto["kvraftpb/kvraft.proto KV 协议"]
 end
 subgraph "模型验证"
-Models[models/] 线性化模型
-KVModel[models/kv.go] KV 模型
+Models["models/ 线性化模型"]
+KVModel["models/kv.go KV 模型"]
 end
 KV --> Raft
 KVClient --> KVProto
