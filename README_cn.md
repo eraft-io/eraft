@@ -1,189 +1,138 @@
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
-中文 | [English](README_en.md)
+中文 | [English](README.md)
 
-### 概述
+# eRaft: 分布式分片 KV 存储系统
 
-书籍名称：《分布式数据服务：事务模型、处理语言、一致性与体系结构》ISBN：978-7-111-73737-7
+eRaft 是一个使用 Go 实现的高性能分布式键值存储系统。其特性包括：
+- **一致性**：使用 Raft 算法保证一致性和高可用性。
+- **传输层**：使用 gRPC 进行高效的节点间及客户端与服务器通信。
+- **存储引擎**：使用 LevelDB 作为持久化存储引擎。
+- **分片**：通过专门的配置集群实现动态分片。
 
-本书详细地介绍了分布式数据服务协议库的 eRaft 原型系统实现原理和代码解剖。
+## 项目文档 (Wiki)
 
-eraft 项目的是将 mit6.824 lab 大作业工业化成一个分布式存储系统，我们会用全网最简单，直白的语言介绍分布式系统的原理，并带着你设计和实现一个工业化的分布式存储系统。
+有关系统设计和实现的详细信息，请参阅我们的项目 Wiki：
+- [系统架构概览](wiki/Architecture.md)
+- [Raft 共识算法实现](wiki/Raft-Consensus.md)
+- [分片与迁移机制](wiki/Sharding-Mechanism.md)
+- [存储与 RPC 层](wiki/Storage-and-RPC.md)
+- [性能测试与压测](wiki/Benchmark.md)
 
-### 最新的文档
+## AI 驱动的开发
 
-如果你想查看最新的文档，请访问 [eraft 官网](https://eraft.cn)
+本项目在 AI 的辅助下构建，代表了软件工程效率的范式转移：
 
-### 书籍配套视频教程
-
-[bilibili](https://space.bilibili.com/389476201/channel/collectiondetail?sid=481263&spm_id_from=333.788.0.0)
-
-### 书籍信息
-
-[官方购买链接](https://3.cn/1W-jAWMR)
-
-### 为什么需要分布式？
-
-首先我们看传统的单节点 C/S 或者 B/S 系统有啥缺点：
-单节点意味着只用一台机器，机器的性能是有上限的，而且性能越好的机器价格越贵，想 IBM 的大型机，价格是很贵的。同时，这台机器如果挂掉或者因为写的代码有
-bug 导致进程异常，就无法容错，系统直接不可用。
-
-我们分析完单节点系统的缺点后，可以总结一下分布式系统的设计目标
-
-#### 1.可扩展性（Scalability）
-
-我们设计的分布式系统要具有可扩展性，这里的可扩展其实就是我们可以通过使用更多的机器来获取更高的系统总吞吐以及更好的性能，当然也不是机器越多性能越好，针对一些复杂的计算场景，节点越多性能并不一定会更好。
-
-#### 2.可用性（Availability）
-
-分布式系统不会因为系统中的某台机器故障而直接停止服务，某台机器故障后，系统可以快速切换流量到正常的机器上，继续提供服务。
-
-#### 3.一致性 (Consistency)
-
-我们要实现这一点，最重要的一个算法就是复制算法（replication），我们需要一种复制算法来保证挂掉的机器和切上去顶替它的机器数据是一致的，通常在分布式系统领域有专门一致性算法去保证复制的顺利进行。
-
-### 一致性算法
-
-建议先看 [raft 小论文](https://raft.github.io/raft.pdf)
-
-带着下面的问题去看：
-
-##### 什么是分布式系统中的脑裂？
-
-##### 面对脑裂，我们的解决办法是什么？
-
-##### 为什么多数派选举协议可以避免脑裂？
-
-##### 为什么 raft 需要使用日志？
-
-##### 为什么 raft 协议中只允许一个 leader?
-
-##### 怎么保证在一个任期内只有一个 leader 的？
-
-##### 集群中的节点怎么知道一个新的 leader 节点被选出了？
-
-##### 如果选举失败了，会发生什么？
-
-##### 如果两个节点都拿到了同样的票数，怎么选 leader？
-
-##### 如果老任期的 leader 不知道集群中新 leader 出现了怎么办？
-
-##### 随机的选举超时时间的作用，如何去选取它的值？
-
-##### 节点中的日志什么时候会出现不一致？Raft 怎么去保证最终日志会一致的？
-
-##### 为什么不选择日志最长的服务器作为 leader？
-
-##### 在服务器突然崩溃的时候，会发生什么事情？
-
-##### 如果 raft 服务崩溃后重启了，raft 会记住哪些东西？
-
-##### 什么是 raft 系统中常见的性能瓶颈？
-
-##### 基于 raft 的服务崩溃重启后，是如何恢复的？
-
-##### 哪些日志条目 raft 节点不能删除？
-
-##### raft 日志是无限制增长的吗？如果不是，那么大规模的日志是怎么存储的？
-
-再看 [大论文](https://github.com/ongardie/dissertation)
-
-### 数据分片
-
-好的，通过 Raft 基本算法，我们可以实现一个高可用的 raft 服务器组。我们已经解决了前面可用性和一致性的问题，但是问题还是存在的。一个
-raft 服务器组中只有一个 leader 来接收读写流量，当然你可以用 follower 分担部分读流量提高性能（这里会涉及到事务的一些问题，我们会在后面讨论）。
-但是系统能提供的能力还是有上限的。
-
-这时候我们就要思考，将客户端写入过来的请求进行分片处理，就像 map reduce，map 的阶段一下，先把超大的数据集切割成一个个小的去处理。
-
-eraft 中使用了 hash 分片的方法，我们将数据通过哈希算法映射到一个个桶 (bucket) 里面，然后不同的 raft 组负责一部分桶，一个
-raft 组可以负责多少个桶，是可以调整的。
-
-### 集群架构
-
-#### 概念介绍
-
-##### bucket
-
-它是集群做数据管理的逻辑单元，一个分组的服务可以负责多个 bucket 的数据
-
-##### config table
-
-集群配置表，它主要维护了集群服务分组与 bucket 的映射关系，客户端访问集群数据之前需要先到这个表查询要访问 bucket 所在的服务分组列表
-
-#### 服务模块
-
-##### metaserver
-
-它主要负责集群配置表版本管理，它内部维护了一个集群配置表的版本链，可以记录集群配置的变更。
-
-##### shardkvserver
-
-它主要负责集群数据存储，一般有三台机器组成一个 raft 组，对外提供高可用的服务。
-
-### 在容器里面运行
-
-构建镜像
-
-```
-make image
+```mermaid
+graph LR
+    A[传统编程] --> B[马车时代]
+    B --> C[手动样板代码]
+    B --> D[痛苦的调试]
+    
+    E[AI 辅助编程] --> F[蒸汽机时代]
+    F --> G[智能生成]
+    F --> H[自动化测试]
+    
+    C -.-> I[低效率]
+    D -.-> I
+    G -.-> J[高效率]
+    H -.-> J
 ```
 
-编译代码
+## 构建
 
+执行以下命令构建所有组件：
+```bash
+make build
 ```
-make build-dev
-```
+二进制文件将生成在 `output/` directory 中。
 
-运行 demo 集群
+## 快速入门指南
 
-```
-make run-demo
-```
+### 步骤 1：启动配置集群 (ShardCtrler)
 
-运行读写测试
+配置集群管理分片分配。启动 3 个节点：
 
-```
-make run-test
-```
+```bash
+# 终端 1
+./output/shardctrlerserver -id 0 -cluster "localhost:50051,localhost:50052,localhost:50053" -db "data/sc0"
 
-停止集群
+# 终端 2
+./output/shardctrlerserver -id 1 -cluster "localhost:50051,localhost:50052,localhost:50053" -db "data/sc1"
 
-```
-make stop-demo
-```
-
-### 项目构建
-
-构建依赖
-
-```
-go version >= go 1.21
+# 终端 3
+./output/shardctrlerserver -id 2 -cluster "localhost:50051,localhost:50052,localhost:50053" -db "data/sc2"
 ```
 
-编译
+### 步骤 2：启动 ShardKV 分片组
 
-```
-git clone https://github.com/eraft-io/eraft.git
-cd eraft
-make
-```
+ShardKV 组存储实际数据。我们将启动两个组（GID 100 和 GID 101）来演示分片功能。
 
-运行集群基本读写测试
-
-```
-go test -run TestBasicClusterRW tests/integration_test.go -v
+#### 分片组 100 (3 个节点):
+```bash
+# 终端 4, 5, 6
+./output/shardkvserver -id 0 -gid 100 -cluster "localhost:6001,localhost:6002,localhost:6003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv100_0"
+./output/shardkvserver -id 1 -gid 100 -cluster "localhost:6001,localhost:6002,localhost:6003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv100_1"
+./output/shardkvserver -id 2 -gid 100 -cluster "localhost:6001,localhost:6002,localhost:6003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv100_2"
 ```
 
-运行集群读写基准测试
+#### 分片组 101 (3 个节点):
+```bash
+# 终端 7, 8, 9
+./output/shardkvserver -id 0 -gid 101 -cluster "localhost:7001,localhost:7002,localhost:7003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv101_0"
+./output/shardkvserver -id 1 -gid 101 -cluster "localhost:7001,localhost:7002,localhost:7003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv101_1"
+./output/shardkvserver -id 2 -gid 101 -cluster "localhost:7001,localhost:7002,localhost:7003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv101_2"
+```
 
-```
-go test -run TestClusterRwBench tests/integration_test.go -v
+### 步骤 3：注册 ShardKV 分片组
+
+使用 `shardctrlerclient` 将两个分片组注册到配置集群：
+
+```bash
+# 注册分片组 100
+./output/shardctrlerclient join 100=localhost:6001,localhost:6002,localhost:6003
+
+# 注册分片组 101
+./output/shardctrlerclient join 101=localhost:7001,localhost:7002,localhost:7003
 ```
 
-运行单分片集群读写基准测试
+### 步骤 4：数据操作
 
+现在你可以使用 `shardkvclient` 进行读写操作：
+
+```bash
+# 写入数据
+./output/shardkvclient put mykey myvalue
+
+# 读取数据
+./output/shardkvclient get mykey
+
+# 追加数据
+./output/shardkvclient append mykey " extra"
+
+# 运行性能压测
+./output/shardkvclient bench 1000
 ```
-go test -run TestClusterSingleShardRwBench tests/integration_test.go -v
+
+### 集群监控
+
+检查集群中所有节点的状态：
+
+```bash
+# 查看 ShardKV 状态
+./output/shardkvclient status
+
+# 查看 ShardCtrler 状态
+./output/shardctrlerclient status
 ```
+
+## 分片迁移流程
+
+当你使用 `move` 指令或由于 `join`/`leave` 导致配置变更时，系统会自动执行数据迁移：
+
+1.  **配置更新**：`shardctrler` 更新分片到分片组的映射关系。
+2.  **变更检测**：每个 `shardkv` 组的 Leader 会定期轮询配置集群以获取最新配置。
+3.  **数据拉取 (Pulling)**：如果一个组发现自己成了某个分片的新负责人，它会将该分片状态设为 `Pulling`，并开始从原持有组拉取数据。
+4.  **数据集成**：数据拉取完成后，会通过 Raft 日志同步到组内所有节点，并应用到 LevelDB 存储中。
+5.  **垃圾回收 (GC)**：迁移确认完成后，新持有组会通知原持有组删除过期数据，以保证数据一致性并释放空间。

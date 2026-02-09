@@ -3,166 +3,136 @@
 
 [中文](README_cn.md) | English
 
-### Overview
+# eRaft: A Distributed Sharded KV Storage System
 
-### Why we need build a distributed system?
+eRaft is a high-performance distributed key-value storage system implemented in Go. It features:
+- **Consensus**: Raft algorithm for consistency and high availability.
+- **Transport**: gRPC for efficient inter-node and client-server communication.
+- **Storage**: LevelDB as the persistent storage engine.
+- **Sharding**: Dynamic sharding with a dedicated configuration cluster.
 
-Let's first look at the drawbacks of traditional single-node client-server (C/S) or browser-server (B/S) systems:
-A single-node architecture means relying on just one machine. The performance of any single machine is inherently limited, and higher-performance machines are significantly more expensive—consider IBM mainframes, for example, which come at a very high cost. Moreover, if this machine fails or the process crashes due to bugs in the code, the system has no fault tolerance and becomes completely unavailable.
+## Documentation (Wiki)
 
-After we analyze the shortcomings of single-node systems, we can summarize the design goals of distributed systems
+Detailed information about the system design and implementation can be found in our project Wiki:
+- [Architecture Overview](wiki/Architecture.md)
+- [Raft Consensus Implementation](wiki/Raft-Consensus.md)
+- [Sharding & Migration Mechanism](wiki/Sharding-Mechanism.md)
+- [Storage & RPC Layer](wiki/Storage-and-RPC.md)
+- [Benchmark & Performance](wiki/Benchmark.md)
 
-#### 1. Scalability
+## AI-Powered Development
 
-The distributed system we design must be scalable. The scalability here is that we can obtain higher total system
-throughput and better performance by using more machines. Of course, it is not that the more machines, the better the
-performance. For some complex computing scenarios, more nodes are not necessarily better performance.
+This project was built with the assistance of AI, representing a paradigm shift in software engineering efficiency:
 
-#### 2. Availability
-
-The distributed system will not stop services directly if a machine in the system fails. After a machine fails, the
-system can quickly switch traffic to a normal machine and continue to provide services.
-
-#### 3. Consistency
-
-To achieve this, the most important algorithm is the replication algorithm. We need a replication algorithm to ensure
-that the data of the dead machine and the machine that is cut to replace it are consistent, usually in the field of
-distributed systems. Consistency algorithm to ensure the smooth progress of replication.
-
-### Consistency Algorithm
-
-It is recommended to read [raft small paper](https://raft.github.io/raft.pdf)
-
-Take a look with the following questions:
-
-- what is split brain?
-
-- What is our solution to the split brain?
-
-- why does majority help avoid split brain?
-
-- why the logs?
-
-- why a leader?
-
-- how to ensure at most one leader in a term?
-
-- how does a server learn about a newly elected leader?
-
-- what happens if an election doesn't succeed?
-
-- how does Raft avoid split votes?
-
-- how to choose the election timeout?
-
-- what if old leader isn't aware a new leader is elected?
-
-- how can logs disagree?
-
-- what would we like to happen after a server crashes?
-
-### data sharding
-
-Well, through the basic Raft algorithm, we can achieve a highly available raft server group. We have solved the previous
-issues of availability and consistency, but the problem still exists. There is only one leader in a raft server group to
-receive read and write traffic. Of course, you can use followers to share part of the read traffic to improve
-performance (there will be some issues related to transactions, which we will discuss later). But there is a limit to
-what the system can provide.
-
-At this time, we need to think about slicing the requests written by the client, just like map reduce, in the first
-stage of map, first cut the huge data set into small ones for processing.
-
-The hash sharding method is used in eraft. We map data into buckets through a hash algorithm, and then different raft
-groups are responsible for some of the buckets. How many buckets a raft group can be responsible for can be adjusted.
-
-### System Architecture
-
-#### Concept introduction
-
-##### bucket
-
-It is the logical unit of data management in the cluster, and a grouped service can be responsible for the data of
-multiple buckets
-
-##### config table
-
-Cluster configuration table, which mainly maintains the mapping relationship between cluster service groups and buckets.
-Before clients access cluster data, they need to go to this table to query the list of service groups where the bucket
-is located.
-
-#### service module
-
-##### metaserver
-
-It is mainly responsible for the version management of the cluster configuration table. It internally maintains a
-version chain of the cluster configuration table, which can record changes to the cluster configuration.
-
-##### shardkvserver
-
-It is mainly responsible for cluster data storage. Generally, three machines form a raft group to provide
-high-availability services to the outside world.
-
-### Build
-
-pre-dependencies
-
-go version >= go 1.21
-
-download code and make it
-
-```
-git clone https://github.com/eraft-io/eraft.git
-
-cd eraft
-make
+```mermaid
+graph LR
+    A[Traditional Coding] --> B[Horse Carriage Era]
+    B --> C[Manual Boilerplate]
+    B --> D[Painful Debugging]
+    
+    E[AI-Assisted Coding] --> F[Steam Engine Era]
+    F --> G[Intelligent Generation]
+    F --> H[Automated Testing]
+    
+    C -.-> I[Low Efficiency]
+    D -.-> I
+    G -.-> J[High Efficiency]
+    H -.-> J
 ```
 
-### run cluster
+## Build
 
+To build all components, run:
+```bash
+make build
 ```
-go test -run TestBasicClusterRW tests/integration_test.go -v
+Binaries will be generated in the `output/` directory.
+
+## Quick Start Guide
+
+### Step 1: Start the Configuration Cluster (ShardCtrler)
+
+The configuration cluster manages shard assignments. Start 3 nodes:
+
+```bash
+# Terminal 1
+./output/shardctrlerserver -id 0 -cluster "localhost:50051,localhost:50052,localhost:50053" -db "data/sc0"
+
+# Terminal 2
+./output/shardctrlerserver -id 1 -cluster "localhost:50051,localhost:50052,localhost:50053" -db "data/sc1"
+
+# Terminal 3
+./output/shardctrlerserver -id 2 -cluster "localhost:50051,localhost:50052,localhost:50053" -db "data/sc2"
 ```
 
-run basic cluster bench
+### Step 2: Start ShardKV Groups
 
-```
-go test -run TestClusterRwBench tests/integration_test.go -v
-```
+A ShardKV group stores the actual data. We will start two groups (GID 100 and GID 101) to demonstrate sharding.
 
-### unit test
-generate unit test report
-
-```
-make gen-test-coverage 
-```
-
-view unit test report
-
-```
-make view-test-coverage
+#### Group 100 (3 nodes):
+```bash
+# Terminal 4, 5, 6
+./output/shardkvserver -id 0 -gid 100 -cluster "localhost:6001,localhost:6002,localhost:6003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv100_0"
+./output/shardkvserver -id 1 -gid 100 -cluster "localhost:6001,localhost:6002,localhost:6003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv100_1"
+./output/shardkvserver -id 2 -gid 100 -cluster "localhost:6001,localhost:6002,localhost:6003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv100_2"
 ```
 
-### Book
+#### Group 101 (3 nodes):
+```bash
+# Terminal 7, 8, 9
+./output/shardkvserver -id 0 -gid 101 -cluster "localhost:7001,localhost:7002,localhost:7003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv101_0"
+./output/shardkvserver -id 1 -gid 101 -cluster "localhost:7001,localhost:7002,localhost:7003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv101_1"
+./output/shardkvserver -id 2 -gid 101 -cluster "localhost:7001,localhost:7002,localhost:7003" -ctrlers "localhost:50051,localhost:50052,localhost:50053" -db "data/skv101_2"
+```
 
-Book title: 【Distributed Data Services: Transaction Models, Processing Language, Consistency and Architecture.】
+### Step 3: Register the ShardKV Groups
 
-ISBN：978-7-111-73737-7
+Use the `shardctrlerclient` to register both groups to the configuration cluster:
 
-This book provides a detailed introduction to the implementation principles and code analysis of the eRaft prototype
-system in the distributed data services protocol library.
+```bash
+# Register Group 100
+./output/shardctrlerclient join 100=localhost:6001,localhost:6002,localhost:6003
 
-The eraft t project is to industrialize the mit6.824 lab operation into a distributed storage system. We will introduce
-the principles of distributed systems in the simplest and straightforward way, and guide you to design and implement an
-industrialized distributed storage system.
+# Register Group 101
+./output/shardctrlerclient join 101=localhost:7001,localhost:7002,localhost:7003
+```
 
-### Newest document
+### Step 4: Data Operations
 
-If you want to check the latest documents, please visit [eraft official website](https://eraft.cn)
+Now you can read and write data using the `shardkvclient`:
 
-### Video tutorials
+```bash
+# Write data
+./output/shardkvclient put mykey myvalue
 
-[bilibili](https://space.bilibili.com/389476201/channel/collectiondetail?sid=481263&spm_id_from=333.788.0.0)
+# Read data
+./output/shardkvclient get mykey
 
-### Ebook for this project
+# Append data
+./output/shardkvclient append mykey " extra"
 
-[Shopping link](https://3.cn/1W-jAWMR)
+# Run benchmark
+./output/shardkvclient bench 1000
+```
+
+### Cluster Monitoring
+
+Check the status of all nodes in the cluster:
+
+```bash
+# ShardKV status
+./output/shardkvclient status
+
+# ShardCtrler status
+./output/shardctrlerclient status
+```
+
+## Shard Migration Process
+
+When you use the `move` command or when the configuration changes (due to `join`/`leave`), the system performs an automatic data migration:
+
+1.  **Config Update**: The `shardctrler` updates the shard-to-group mapping.
+2.  **Detection**: Each `shardkv` group leader periodically polls the controller for configuration changes.
+3.  **Pulling**: If a group finds it is now responsible for a shard it didn't own before, it switches that shard's status to `Pulling` and starts fetching data from the previous owner.
+4.  **Integration**: Once the data is received, it is appended to the new group's Raft log and applied to its LevelDB storage.
+5.  **Garbage Collection**: After the migration is confirmed, the new owner notifies the previous owner to delete the stale data (GC), ensuring data consistency and freeing up space.

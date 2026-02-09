@@ -24,7 +24,16 @@ IMAGE_VERSION := v0.0.1
 
 BUILDER_IMAGE := $(or $(BUILDER_IMAGE),eraft/eraftbook:$(IMAGE_VERSION))
 
-default: meta_cli shard_server shard_cli meta_server kv_server kv_cli
+default: build
+
+build:
+	mkdir -p output
+	go build -o output/shardkvserver cmd/shardkvserver/main.go
+	go build -o output/shardkvclient cmd/shardkvclient/main.go
+	go build -o output/shardctrlerserver cmd/shardctrler/main.go
+	go build -o output/shardctrlerclient cmd/shardctrlerclient/main.go
+	go build -o output/kvserver cmd/kvserver/main.go
+	go build -o output/kvclient cmd/kvclient/main.go
 
 image:
 	docker build -f Dockerfile --network=host -t $(BUILDER_IMAGE) .
@@ -33,27 +42,15 @@ build-dev:
 	chmod +x scripts/build_dev.sh
 	docker run -it --rm -v  $(realpath .):/eraft eraft/eraftbook:$(IMAGE_VERSION) /eraft/scripts/build_dev.sh
 
+all-test:
+	go test raft/*.go -v
+	go test kvraft/*.go -v
+	go test shardctrler/*.go -v
+	go test shardkv/*.go -v
+
 run-test:
 	chmod +x scripts/run_tests.sh
 	docker run --name test-cli-node --network mytestnetwork --ip 172.18.0.5 -it --rm -v  $(realpath .):/eraft eraft/eraftbook:$(IMAGE_VERSION) /eraft/scripts/run_tests.sh
-
-meta_cli:
-	go build -o output/metacli cmd/metacli/metacli.go
-
-meta_server:
-	go build -o output/metaserver cmd/metasvr/metasvr.go
-
-shard_server:
-	go build -o output/shardserver cmd/shardsvr/shardsvr.go
-
-shard_cli:
-	go build -o output/shardcli cmd/shardcli/shardcli.go
-
-kv_server:
-	go build -o output/kvserver cmd/kvraft/kvserver.go
-
-kv_cli:
-	go build -o output/kvcli cmd/kvcli/kvcli.go
 
 clean:
 	rm -rf output/*
