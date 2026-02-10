@@ -120,6 +120,8 @@ go build -o dashboard-server *.go
 
 ![性能指标](images/dashboard002.png)
 
+![分片状态](images/dashboard003.png)
+
 性能监控面板展示了：
 - **关键指标**：总节点数、健康节点数、总存储容量、总键值对数
 - **存储分布**：ECharts 饼图展示存储容量分布

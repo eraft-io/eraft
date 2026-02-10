@@ -57,12 +57,24 @@ func main() {
 			fmt.Printf("Error getting status: %v\n", err)
 			return
 		}
+
+		// 打印节点信息
 		fmt.Printf("%-10s %-25s %-15s %-10s %-10s %-15s %-15s\n", "GID-ID", "Address", "Role", "Term", "Applied", "Commit", "Storage(B)")
 		fmt.Println(strings.Repeat("-", 105))
 		for _, resp := range results {
 			nodeInfo := fmt.Sprintf("%d-%d", resp.Gid, resp.Id)
 			fmt.Printf("%-10s %-25s %-15s %-10d %-10d %-15d %-15d\n",
 				nodeInfo, resp.Address, resp.State, resp.Term, resp.LastApplied, resp.CommitIndex, resp.StorageSize)
+
+			// 打印该节点的shard统计信息
+			if len(resp.Shards) > 0 {
+				fmt.Printf("  Shards:\n")
+				fmt.Printf("  %-10s %-15s %-15s %-15s\n", "ShardID", "Status", "Keys", "Bytes")
+				for _, shard := range resp.Shards {
+					fmt.Printf("  %-10d %-15s %-15d %-15d\n", shard.ShardId, shard.Status, shard.Keys, shard.Bytes)
+				}
+				fmt.Println()
+			}
 		}
 	case "bench":
 		if len(flag.Args()) < 2 {

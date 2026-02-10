@@ -85,6 +85,19 @@ func (s *ShardKVgRPCServer) DeleteShardsData(ctx context.Context, req *shardkvpb
 
 func (s *ShardKVgRPCServer) GetStatus(ctx context.Context, req *shardkvpb.GetStatusRequest) (*shardkvpb.GetStatusResponse, error) {
 	gid, id, state, term, lastApplied, commitIndex, storageSize := s.kv.GetStatus()
+
+	// 获取shard统计信息
+	shardStats := s.kv.GetShardStats()
+	shardInfos := make([]*shardkvpb.ShardInfo, len(shardStats))
+	for i, stat := range shardStats {
+		shardInfos[i] = &shardkvpb.ShardInfo{
+			ShardId: int32(stat.ShardID),
+			Status:  stat.Status,
+			Keys:    stat.Keys,
+			Bytes:   stat.Bytes,
+		}
+	}
+
 	return &shardkvpb.GetStatusResponse{
 		Id:          int64(id),
 		State:       state,
@@ -93,5 +106,6 @@ func (s *ShardKVgRPCServer) GetStatus(ctx context.Context, req *shardkvpb.GetSta
 		CommitIndex: int64(commitIndex),
 		StorageSize: storageSize,
 		Gid:         int64(gid),
+		Shards:      shardInfos,
 	}, nil
 }

@@ -46,6 +46,13 @@ message ShardOperationResponse {
 
 message GetStatusRequest {}
 
+message ShardInfo {
+    int32 shard_id = 1;
+    string status = 2;
+    int64 keys = 3;
+    int64 bytes = 4;
+}
+
 message GetStatusResponse {
     int64 id = 1;
     string state = 2;
@@ -55,6 +62,7 @@ message GetStatusResponse {
     int64 storage_size = 6;
     string address = 7;
     int64 gid = 8;
+    repeated ShardInfo shards = 9;
 }
 
 service ShardKVService {

@@ -191,6 +191,7 @@ func (c *Collector) collectShardGroupsStatusFromConfig(config *ctrlpb.Config) ([
 		var leaderID int
 		var totalStorage int64
 		var groupShards []int
+		var leaderShardInfo map[int]*pb.ShardInfo // 保存Leader节点的shard信息
 
 		// Find which shards belong to this group
 		for shardID, assignedGID := range shardMap {
@@ -230,6 +231,13 @@ func (c *Collector) collectShardGroupsStatusFromConfig(config *ctrlpb.Config) ([
 			if resp.State == "Leader" {
 				role = RoleLeader
 				leaderID = i
+				// 从Leader节点保存shard信息
+				if len(resp.Shards) > 0 {
+					leaderShardInfo = make(map[int]*pb.ShardInfo)
+					for _, shardInfo := range resp.Shards {
+						leaderShardInfo[int(shardInfo.ShardId)] = shardInfo
+					}
+				}
 			}
 
 			node := NodeStatus{
@@ -252,10 +260,20 @@ func (c *Collector) collectShardGroupsStatusFromConfig(config *ctrlpb.Config) ([
 			shard := ShardStatus{
 				ShardID: shardID,
 				GroupID: groupID,
-				State:   "Serving", // Default state, can be enhanced later
-				Keys:    0,         // TODO: get from actual data
-				Bytes:   0,         // TODO: get from actual data
+				State:   "Serving", // Default state
+				Keys:    0,
+				Bytes:   0,
 			}
+
+			// 如果有Leader的shard信息，使用实际数据
+			if leaderShardInfo != nil {
+				if info, ok := leaderShardInfo[shardID]; ok {
+					shard.State = info.Status
+					shard.Keys = int(info.Keys)
+					shard.Bytes = info.Bytes
+				}
+			}
+
 			allShards = append(allShards, shard)
 		}
 

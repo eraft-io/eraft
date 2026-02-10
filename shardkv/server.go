@@ -107,6 +107,47 @@ func (kv *ShardKV) GetStatus() (int, int, string, int, int, int, int64) {
 	return kv.gid, id, state, term, lastApplied, commitIndex, kv.store.Size() + int64(kv.rf.GetRaftStateSize())
 }
 
+func (kv *ShardKV) GetShardStats() []ShardStats {
+	kv.mu.RLock()
+	defer kv.mu.RUnlock()
+
+	stats := make([]ShardStats, 0)
+	// 遍历所有分片
+	for shardId := 0; shardId < shardctrler.NShards; shardId++ {
+		// 只统计当前group负责的分片
+		if kv.currentConfig.Shards[shardId] != kv.gid {
+			continue
+		}
+
+		var keys int64
+		var bytes int64
+
+		// 扫描该分片的所有key
+		prefix := []byte(fmt.Sprintf("s_%d_", shardId))
+		iter := kv.store.db.NewIterator(util.BytesPrefix(prefix), nil)
+		for iter.Next() {
+			keys++
+			bytes += int64(len(iter.Key()) + len(iter.Value()))
+		}
+		iter.Release()
+
+		stats = append(stats, ShardStats{
+			ShardID: shardId,
+			Status:  kv.shardStatus[shardId].String(),
+			Keys:    keys,
+			Bytes:   bytes,
+		})
+	}
+	return stats
+}
+
+type ShardStats struct {
+	ShardID int
+	Status  string
+	Keys    int64
+	Bytes   int64
+}
+
 func (kv *ShardKV) Command(request *CommandRequest, response *CommandResponse) {
 	kv.mu.RLock()
 	// return result directly without raft layer's participation if request is duplicated
