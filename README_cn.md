@@ -127,6 +127,41 @@ ShardKV 组存储实际数据。我们将启动两个组（GID 100 和 GID 101�
 ./output/shardctrlerclient status
 ```
 
+### Dashboard 可视化监控
+
+Dashboard 提供了 Web 界面来实时监控集群状态、拓扑结构和性能指标。
+
+#### 构建 Dashboard
+
+```bash
+# 构建后端服务器
+make builddashboard
+
+# 构建前端（首次需要安装依赖）
+cd dashboard/frontend
+npm install  # 已配置淘宝镜像源，国内用户无需额外配置
+npm run build
+```
+
+#### 启动 Dashboard
+
+```bash
+# 启动 Dashboard 服务器（在完成步骤 1-3 后运行）
+./output/dashboard-server \
+  -port=8080 \
+  -config-addrs="localhost:50051,localhost:50052,localhost:50053" \
+  -update-interval=5s
+```
+
+然后在浏览器中访问：`http://localhost:8080`
+
+Dashboard 提供以下功能：
+- **集群拓扑**：可视化展示配置集群和分片组的节点状态、角色（Leader/Follower）
+- **分片状态**：实时显示各分片的健康状态、所属分片组、键值对数量
+- **性能指标**：监控总节点数、健康节点数、存储容量、平均负载等关键指标
+- **自动刷新**：每 5 秒自动更新集群状态
+- **动态发现**：自动从 ShardCtrler 查询最新配置，无需手动指定分片组
+
 ## 分片迁移流程
 
 当你使用 `move` 指令或由于 `join`/`leave` 导致配置变更时，系统会自动执行数据迁移：

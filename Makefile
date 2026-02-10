@@ -35,6 +35,13 @@ build:
 	go build -o output/kvserver cmd/kvserver/main.go
 	go build -o output/kvclient cmd/kvclient/main.go
 
+builddashboard:
+	@echo "Building dashboard backend..."
+	cd dashboard/backend && go build -o ../../output/dashboard-server *.go
+	@echo "Dashboard backend built successfully: output/dashboard-server"
+	@echo "To build frontend, run: cd dashboard/frontend && npm install && npm run build"
+	@echo "Note: Using Taobao npm mirror (https://registry.npmmirror.com)"
+
 image:
 	docker build -f Dockerfile --network=host -t $(BUILDER_IMAGE) .
 

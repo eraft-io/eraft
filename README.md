@@ -127,6 +127,41 @@ Check the status of all nodes in the cluster:
 ./output/shardctrlerclient status
 ```
 
+### Dashboard Visualization
+
+The Dashboard provides a web interface for real-time monitoring of cluster status, topology, and performance metrics.
+
+#### Building the Dashboard
+
+```bash
+# Build backend server
+make builddashboard
+
+# Build frontend (first time requires dependency installation)
+cd dashboard/frontend
+npm install  # Pre-configured with Taobao mirror for users in China
+npm run build
+```
+
+#### Starting the Dashboard
+
+```bash
+# Start the Dashboard server (run after completing Steps 1-3)
+./output/dashboard-server \
+  -port=8080 \
+  -config-addrs="localhost:50051,localhost:50052,localhost:50053" \
+  -update-interval=5s
+```
+
+Then access in your browser: `http://localhost:8080`
+
+The Dashboard provides the following features:
+- **Cluster Topology**: Visualize config cluster and shard group node status, roles (Leader/Follower)
+- **Shard Status**: Real-time display of each shard's health status, assigned group, and key count
+- **Performance Metrics**: Monitor total nodes, healthy nodes, storage capacity, average load, and other key metrics
+- **Auto Refresh**: Automatically updates cluster status every 5 seconds
+- **Dynamic Discovery**: Automatically queries the latest configuration from ShardCtrler, no manual shard group specification needed
+
 ## Shard Migration Process
 
 When you use the `move` command or when the configuration changes (due to `join`/`leave`), the system performs an automatic data migration:

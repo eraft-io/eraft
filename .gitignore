@@ -14,3 +14,7 @@ mrtmp.*
 # eRaft binaries and data
 output/
 data/
+
+# Frontend dependencies and build
+node_modules/
+dashboard/frontend/build/
