@@ -3,15 +3,13 @@ package shardctrler
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
 	"github.com/eraft-io/eraft/raft"
-	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/eraft-io/eraft/storage"
 )
 
 type ShardCtrler struct {
@@ -25,35 +23,35 @@ type ShardCtrler struct {
 	notifyChans    map[int]chan *CommandResponse // notify client goroutine by applier goroutine to response
 }
 
-type LevelDBConfigStateMachine struct {
-	db   *leveldb.DB
-	path string
+type RocksDBConfigStateMachine struct {
+	storage.Storage
 }
 
-func NewLevelDBConfigStateMachine(path string) *LevelDBConfigStateMachine {
-	db, err := leveldb.OpenFile(path, nil)
+func NewRocksDBConfigStateMachine(path string) *RocksDBConfigStateMachine {
+	db, err := storage.NewRocksDBStorage(path, nil)
 	if err != nil {
 		panic(err)
 	}
-	cf := &LevelDBConfigStateMachine{db: db, path: path}
+	cf := &RocksDBConfigStateMachine{Storage: db}
 	// Init with default config if empty
-	if _, err := db.Get([]byte("config_count"), nil); err != nil {
+	val, err := db.Get([]byte("config_count"))
+	if err != nil || val == nil || len(val) == 0 {
 		cf.saveConfig(DefaultConfig())
 	}
 	return cf
 }
 
-func (cf *LevelDBConfigStateMachine) saveConfig(config Config) {
+func (cf *RocksDBConfigStateMachine) saveConfig(config Config) {
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
 	e.Encode(config)
-	cf.db.Put([]byte(fmt.Sprintf("config_%d", config.Num)), w.Bytes(), nil)
-	cf.db.Put([]byte("config_count"), []byte(fmt.Sprintf("%d", config.Num+1)), nil)
+	cf.Storage.Put([]byte(fmt.Sprintf("config_%d", config.Num)), w.Bytes())
+	cf.Storage.Put([]byte("config_count"), []byte(fmt.Sprintf("%d", config.Num+1)))
 }
 
-func (cf *LevelDBConfigStateMachine) getConfigCount() int {
-	val, err := cf.db.Get([]byte("config_count"), nil)
-	if err != nil {
+func (cf *RocksDBConfigStateMachine) getConfigCount() int {
+	val, err := cf.Storage.Get([]byte("config_count"))
+	if err != nil || val == nil {
 		return 0
 	}
 	var count int
@@ -61,7 +59,7 @@ func (cf *LevelDBConfigStateMachine) getConfigCount() int {
 	return count
 }
 
-func (cf *LevelDBConfigStateMachine) getLatestConfig() Config {
+func (cf *RocksDBConfigStateMachine) getLatestConfig() Config {
 	count := cf.getConfigCount()
 	if count == 0 {
 		return DefaultConfig()
@@ -69,9 +67,9 @@ func (cf *LevelDBConfigStateMachine) getLatestConfig() Config {
 	return cf.getConfig(count - 1)
 }
 
-func (cf *LevelDBConfigStateMachine) getConfig(num int) Config {
-	val, err := cf.db.Get([]byte(fmt.Sprintf("config_%d", num)), nil)
-	if err != nil {
+func (cf *RocksDBConfigStateMachine) getConfig(num int) Config {
+	val, err := cf.Storage.Get([]byte(fmt.Sprintf("config_%d", num)))
+	if err != nil || val == nil {
 		return DefaultConfig()
 	}
 	r := bytes.NewBuffer(val)
@@ -81,7 +79,7 @@ func (cf *LevelDBConfigStateMachine) getConfig(num int) Config {
 	return config
 }
 
-func (cf *LevelDBConfigStateMachine) Join(groups map[int][]string) Err {
+func (cf *RocksDBConfigStateMachine) Join(groups map[int][]string) Err {
 	lastConfig := cf.getLatestConfig()
 	newConfig := Config{lastConfig.Num + 1, lastConfig.Shards, deepCopy(lastConfig.Groups)}
 	for gid, servers := range groups {
@@ -111,7 +109,7 @@ func (cf *LevelDBConfigStateMachine) Join(groups map[int][]string) Err {
 	return OK
 }
 
-func (cf *LevelDBConfigStateMachine) Leave(gids []int) Err {
+func (cf *RocksDBConfigStateMachine) Leave(gids []int) Err {
 	lastConfig := cf.getLatestConfig()
 	newConfig := Config{lastConfig.Num + 1, lastConfig.Shards, deepCopy(lastConfig.Groups)}
 	s2g := Group2Shards(newConfig)
@@ -142,7 +140,7 @@ func (cf *LevelDBConfigStateMachine) Leave(gids []int) Err {
 	return OK
 }
 
-func (cf *LevelDBConfigStateMachine) Move(shard, gid int) Err {
+func (cf *RocksDBConfigStateMachine) Move(shard, gid int) Err {
 	lastConfig := cf.getLatestConfig()
 	newConfig := Config{lastConfig.Num + 1, lastConfig.Shards, deepCopy(lastConfig.Groups)}
 	newConfig.Shards[shard] = gid
@@ -150,7 +148,7 @@ func (cf *LevelDBConfigStateMachine) Move(shard, gid int) Err {
 	return OK
 }
 
-func (cf *LevelDBConfigStateMachine) Query(num int) (Config, Err) {
+func (cf *RocksDBConfigStateMachine) Query(num int) (Config, Err) {
 	count := cf.getConfigCount()
 	if num < 0 || num >= count {
 		return cf.getLatestConfig(), OK
@@ -158,22 +156,12 @@ func (cf *LevelDBConfigStateMachine) Query(num int) (Config, Err) {
 	return cf.getConfig(num), OK
 }
 
-func (cf *LevelDBConfigStateMachine) Close() {
-	cf.db.Close()
+func (cf *RocksDBConfigStateMachine) Close() {
+	cf.Storage.Close()
 }
 
-func (cf *LevelDBConfigStateMachine) Size() int64 {
-	var size int64
-	filepath.Walk(cf.path, func(_ string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			size += info.Size()
-		}
-		return nil
-	})
-	return size
+func (cf *RocksDBConfigStateMachine) Size() int64 {
+	return cf.Storage.Size()
 }
 
 func (sc *ShardCtrler) Command(request *CommandRequest, response *CommandResponse) {
@@ -331,7 +319,7 @@ func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, dbPat
 		applyCh:        applyCh,
 		dead:           0,
 		rf:             raft.Make(peers, me, persister, applyCh),
-		stateMachine:   NewLevelDBConfigStateMachine(dbPath),
+		stateMachine:   NewRocksDBConfigStateMachine(dbPath),
 		lastOperations: make(map[int64]OperationContext),
 		notifyChans:    make(map[int]chan *CommandResponse),
 	}

@@ -8,8 +8,12 @@
 eRaft is a high-performance distributed key-value storage system implemented in Go. It features:
 - **Consensus**: Raft algorithm for consistency and high availability.
 - **Transport**: gRPC for efficient inter-node and client-server communication.
-- **Storage**: LevelDB as the persistent storage engine.
+- **Storage**: RocksDB as the persistent storage engine.
 - **Sharding**: Dynamic sharding with a dedicated configuration cluster.
+
+## Installation
+
+See [INSTALL.md](INSTALL.md) for detailed installation and build instructions for macOS and Linux.
 
 ## Documentation (Wiki)
 
@@ -42,11 +46,15 @@ graph LR
 
 ## Build
 
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
+
 To build all components, run:
 ```bash
 make build
 ```
 Binaries will be generated in the `output/` directory.
+
+**Note**: eRaft uses RocksDB as the storage engine. Please ensure RocksDB is installed on your system before building. See [INSTALL.md](INSTALL.md) for platform-specific instructions.
 
 ## Quick Start Guide
 

@@ -8,8 +8,12 @@
 eRaft 是一个使用 Go 实现的高性能分布式键值存储系统。其特性包括：
 - **一致性**：使用 Raft 算法保证一致性和高可用性。
 - **传输层**：使用 gRPC 进行高效的节点间及客户端与服务器通信。
-- **存储引擎**：使用 LevelDB 作为持久化存储引擎。
+- **存储引擎**：使用 RocksDB 作为持久化存储引擎。
 - **分片**：通过专门的配置集群实现动态分片。
+
+## 安装指南
+
+请参阅 [INSTALL.md](INSTALL.md) 获取 macOS 和 Linux 的详细安装和编译说明。
 
 ## 项目文档 (Wiki)
 
@@ -42,11 +46,15 @@ graph LR
 
 ## 构建
 
+详细安装说明请参考 [INSTALL.md](INSTALL.md)。
+
 执行以下命令构建所有组件：
 ```bash
 make build
 ```
-二进制文件将生成在 `output/` directory 中。
+二进制文件将生成在 `output/` 目录中。
+
+**注意**：eRaft 使用 RocksDB 作为存储引擎。请在构建前确保系统已安装 RocksDB。详见 [INSTALL.md](INSTALL.md) 中的平台特定说明。
 
 ## 快速入门指南
 

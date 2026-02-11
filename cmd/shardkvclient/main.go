@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/shardkv"
@@ -78,7 +80,9 @@ func main() {
 		}
 	case "bench":
 		if len(flag.Args()) < 2 {
-			fmt.Println("Usage: bench <num_requests>")
+			fmt.Println("Usage: bench <num_requests> [num_clients]")
+			fmt.Println("  num_requests: Total number of requests to execute")
+			fmt.Println("  num_clients:  Number of concurrent clients (default: 1)")
 			return
 		}
 		num, err := strconv.Atoi(flag.Arg(1))
@@ -86,21 +90,76 @@ func main() {
 			fmt.Printf("Invalid number of requests: %v\n", err)
 			return
 		}
-		fmt.Printf("Starting benchmark with %d requests...\n", num)
-		start := time.Now()
-		for i := 0; i < num; i++ {
-			// Generate random key with random first letter to distribute across shards
-			firstLetter := byte('a' + rand.Intn(26))
-			key := fmt.Sprintf("%c-key-%d-%d", firstLetter, i, rand.Int63())
-			value := fmt.Sprintf("value-%d-%d", i, rand.Int63())
-			ck.Put(key, value)
-			if (i+1)%100 == 0 {
-				fmt.Printf("Finished %d requests...\n", i+1)
+
+		// Parse number of concurrent clients
+		numClients := 1
+		if len(flag.Args()) >= 3 {
+			numClients, err = strconv.Atoi(flag.Arg(2))
+			if err != nil || numClients < 1 {
+				fmt.Printf("Invalid number of clients, using default: 1\n")
+				numClients = 1
 			}
 		}
+
+		fmt.Printf("Starting benchmark with %d requests using %d concurrent clients...\n", num, numClients)
+
+		// Calculate requests per client
+		requestsPerClient := num / numClients
+		remainingRequests := num % numClients
+
+		var wg sync.WaitGroup
+		var totalSuccess int64
+		var totalFailed int64
+		start := time.Now()
+
+		// Launch concurrent clients
+		for clientID := 0; clientID < numClients; clientID++ {
+			wg.Add(1)
+			go func(id int) {
+				defer wg.Done()
+
+				// Create a new clerk for each client
+				clientCk := shardkv.MakeClerk(ctrlerList)
+
+				// Calculate requests for this client
+				clientRequests := requestsPerClient
+				if id < remainingRequests {
+					clientRequests++ // Distribute remaining requests
+				}
+
+				// Seed random with client ID for different sequences
+				clientRand := rand.New(rand.NewSource(time.Now().UnixNano() + int64(id)))
+
+				for i := 0; i < clientRequests; i++ {
+					// Generate random key with random first letter to distribute across shards
+					firstLetter := byte('a' + clientRand.Intn(26))
+					key := fmt.Sprintf("%c-key-%d-%d-%d", firstLetter, id, i, clientRand.Int63())
+					value := fmt.Sprintf("value-%d-%d-%d", id, i, clientRand.Int63())
+
+					clientCk.Put(key, value)
+					atomic.AddInt64(&totalSuccess, 1)
+
+					// Progress report from first client
+					if id == 0 && (i+1)%100 == 0 {
+						fmt.Printf("Progress: %d requests completed...\n", i+1)
+					}
+				}
+			}(clientID)
+		}
+
+		// Wait for all clients to complete
+		wg.Wait()
 		duration := time.Since(start)
-		fmt.Printf("Benchmark finished: %d requests in %v (%.2f req/s)\n",
-			num, duration, float64(num)/duration.Seconds())
+
+		fmt.Printf("\nBenchmark Results:\n")
+		fmt.Printf("==================\n")
+		fmt.Printf("Total Requests:    %d\n", num)
+		fmt.Printf("Concurrent Clients: %d\n", numClients)
+		fmt.Printf("Successful:        %d\n", totalSuccess)
+		fmt.Printf("Failed:            %d\n", totalFailed)
+		fmt.Printf("Duration:          %v\n", duration)
+		fmt.Printf("Throughput:        %.2f req/s\n", float64(totalSuccess)/duration.Seconds())
+		fmt.Printf("Avg Latency:       %.2f ms\n", float64(duration.Milliseconds())/float64(totalSuccess))
 	default:
 		usage()
 	}
@@ -109,9 +168,11 @@ func main() {
 func usage() {
 	fmt.Println("Usage: shardkvclient [options] <command> [args]")
 	fmt.Println("Commands:")
-	fmt.Println("  get <key>            Get value for key")
-	fmt.Println("  put <key> <value>    Put value for key")
-	fmt.Println("  append <key> <value> Append value to key")
-	fmt.Println("  status               Get cluster status")
-	fmt.Println("  bench <num>          Run benchmark with random KV pairs")
+	fmt.Println("  get <key>                    Get value for key")
+	fmt.Println("  put <key> <value>            Put value for key")
+	fmt.Println("  append <key> <value>         Append value to key")
+	fmt.Println("  status                       Get cluster status")
+	fmt.Println("  bench <num> [clients]        Run benchmark with random KV pairs")
+	fmt.Println("                               num: total requests")
+	fmt.Println("                               clients: concurrent clients (default: 1)")
 }

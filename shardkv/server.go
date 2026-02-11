@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -16,61 +14,61 @@ import (
 	"github.com/eraft-io/eraft/raft"
 	"github.com/eraft-io/eraft/shardctrler"
 	"github.com/eraft-io/eraft/shardkvpb"
-	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/util"
+	"github.com/eraft-io/eraft/storage"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type LevelDBShardStore struct {
-	db   *leveldb.DB
-	path string
+type RocksDBShardStore struct {
+	storage.Storage
 }
 
-func NewLevelDBShardStore(path string) *LevelDBShardStore {
-	db, err := leveldb.OpenFile(path, nil)
+func NewRocksDBShardStore(path string) *RocksDBShardStore {
+	db, err := storage.NewRocksDBStorage(path, nil)
 	if err != nil {
 		panic(err)
 	}
-	return &LevelDBShardStore{db: db, path: path}
+	return &RocksDBShardStore{Storage: db}
 }
 
-func (ls *LevelDBShardStore) Get(shardID int, key string) (string, Err) {
-	val, err := ls.db.Get([]byte(fmt.Sprintf("s_%d_%s", shardID, key)), nil)
-	if err == leveldb.ErrNotFound {
+func (rs *RocksDBShardStore) Get(shardID int, key string) (string, Err) {
+	val, err := rs.Storage.Get([]byte(fmt.Sprintf("s_%d_%s", shardID, key)))
+	if err != nil {
+		return "", ErrTimeout
+	}
+	if val == nil {
 		return "", ErrNoKey
 	}
 	return string(val), OK
 }
 
-func (ls *LevelDBShardStore) Put(shardID int, key, value string) Err {
-	ls.db.Put([]byte(fmt.Sprintf("s_%d_%s", shardID, key)), []byte(value), nil)
+func (rs *RocksDBShardStore) Put(shardID int, key, value string) Err {
+	err := rs.Storage.Put([]byte(fmt.Sprintf("s_%d_%s", shardID, key)), []byte(value))
+	if err != nil {
+		return ErrTimeout
+	}
 	return OK
 }
 
-func (ls *LevelDBShardStore) Append(shardID int, key, value string) Err {
-	oldVal, _ := ls.db.Get([]byte(fmt.Sprintf("s_%d_%s", shardID, key)), nil)
+func (rs *RocksDBShardStore) Append(shardID int, key, value string) Err {
+	oldVal, err := rs.Storage.Get([]byte(fmt.Sprintf("s_%d_%s", shardID, key)))
+	if err != nil {
+		return ErrTimeout
+	}
 	newVal := append(oldVal, []byte(value)...)
-	ls.db.Put([]byte(fmt.Sprintf("s_%d_%s", shardID, key)), newVal, nil)
+	err = rs.Storage.Put([]byte(fmt.Sprintf("s_%d_%s", shardID, key)), newVal)
+	if err != nil {
+		return ErrTimeout
+	}
 	return OK
 }
 
-func (ls *LevelDBShardStore) Close() {
-	ls.db.Close()
+func (rs *RocksDBShardStore) Close() {
+	rs.Storage.Close()
 }
 
-func (ls *LevelDBShardStore) Size() int64 {
-	var size int64
-	filepath.Walk(ls.path, func(_ string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			size += info.Size()
-		}
-		return nil
-	})
-	return size
+func (rs *RocksDBShardStore) Size() int64 {
+	return rs.Storage.Size()
 }
 
 type ShardKV struct {
@@ -89,7 +87,7 @@ type ShardKV struct {
 	currentConfig shardctrler.Config
 
 	// Data storage
-	store *LevelDBShardStore
+	store *RocksDBShardStore
 
 	// Memory state for non-persistent or easily restorable data
 	shardStatus    [shardctrler.NShards]ShardStatus
@@ -124,12 +122,13 @@ func (kv *ShardKV) GetShardStats() []ShardStats {
 
 		// 扫描该分片的所有key
 		prefix := []byte(fmt.Sprintf("s_%d_", shardId))
-		iter := kv.store.db.NewIterator(util.BytesPrefix(prefix), nil)
-		for iter.Next() {
+		iter := kv.store.NewIterator(prefix)
+		for iter.Valid() {
 			keys++
 			bytes += int64(len(iter.Key()) + len(iter.Value()))
+			iter.Next()
 		}
-		iter.Release()
+		iter.Close()
 
 		stats = append(stats, ShardStats{
 			ShardID: shardId,
@@ -216,12 +215,13 @@ func (kv *ShardKV) GetShardsData(request *ShardOperationRequest, response *Shard
 	for _, shardID := range request.ShardIDs {
 		shardData := make(map[string]string)
 		prefix := []byte(fmt.Sprintf("s_%d_", shardID))
-		iter := kv.store.db.NewIterator(util.BytesPrefix(prefix), nil)
-		for iter.Next() {
+		iter := kv.store.NewIterator(prefix)
+		for iter.Valid() {
 			key := string(iter.Key())[len(prefix):]
 			shardData[key] = string(iter.Value())
+			iter.Next()
 		}
-		iter.Release()
+		iter.Close()
 		response.Shards[shardID] = shardData
 	}
 
@@ -447,13 +447,12 @@ func (kv *ShardKV) applyDeleteShards(shardsInfo *ShardOperationRequest) *Command
 
 func (kv *ShardKV) clearShardData(shardID int) {
 	prefix := []byte(fmt.Sprintf("s_%d_", shardID))
-	iter := kv.store.db.NewIterator(util.BytesPrefix(prefix), nil)
-	batch := new(leveldb.Batch)
-	for iter.Next() {
-		batch.Delete(iter.Key())
+	iter := kv.store.NewIterator(prefix)
+	for iter.Valid() {
+		kv.store.Storage.Delete(iter.Key())
+		iter.Next()
 	}
-	iter.Release()
-	kv.store.db.Write(batch, nil)
+	iter.Close()
 }
 
 func (kv *ShardKV) applyEmptyEntry() *CommandResponse {
@@ -506,14 +505,14 @@ func (kv *ShardKV) needSnapshot() bool {
 }
 
 func (kv *ShardKV) takeSnapshot(index int) {
-	// For ShardKV with LevelDB, we iterate over the entire DB to create a snapshot
-	// This is not the most efficient way but it's consistent with how we handled kvraft
+	// For ShardKV with RocksDB, we iterate over the entire DB to create a snapshot
 	allData := make(map[string]string)
-	iter := kv.store.db.NewIterator(nil, nil)
-	for iter.Next() {
+	iter := kv.store.NewIterator(nil)
+	for iter.Valid() {
 		allData[string(iter.Key())] = string(iter.Value())
+		iter.Next()
 	}
-	iter.Release()
+	iter.Close()
 
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
@@ -546,12 +545,10 @@ func (kv *ShardKV) restoreSnapshot(snapshot []byte) {
 		return
 	}
 
-	// Restore LevelDB
-	batch := new(leveldb.Batch)
+	// Restore RocksDB
 	for k, v := range allData {
-		batch.Put([]byte(k), []byte(v))
+		kv.store.Storage.Put([]byte(k), []byte(v))
 	}
-	kv.store.db.Write(batch, nil)
 
 	kv.shardStatus, kv.lastOperations, kv.currentConfig, kv.lastConfig = shardStatus, lastOperations, currentConfig, lastConfig
 }
@@ -818,7 +815,7 @@ func StartServer(peers []raft.RaftPeer, me int, persister *raft.Persister, maxRa
 		maxRaftState:   maxRaftState,
 		currentConfig:  shardctrler.DefaultConfig(),
 		lastConfig:     shardctrler.DefaultConfig(),
-		store:          NewLevelDBShardStore(dbPath),
+		store:          NewRocksDBShardStore(dbPath),
 		lastOperations: make(map[int64]OperationContext),
 		notifyChans:    make(map[int]chan *CommandResponse),
 		makeEnd:        makeEnd,

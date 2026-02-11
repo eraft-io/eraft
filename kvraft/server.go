@@ -3,15 +3,13 @@ package kvraft
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/eraft-io/eraft/labgob"
 	"github.com/eraft-io/eraft/raft"
-	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/eraft-io/eraft/storage"
 )
 
 type KVStateMachine interface {
@@ -22,67 +20,56 @@ type KVStateMachine interface {
 	Size() int64
 }
 
-type LevelDBKV struct {
-	db   *leveldb.DB
-	path string
+type RocksDBKV struct {
+	storage.Storage
 }
 
-func NewLevelDBKV(path string) *LevelDBKV {
-	db, err := leveldb.OpenFile(path, nil)
+func NewRocksDBKV(path string) *RocksDBKV {
+	db, err := storage.NewRocksDBStorage(path, nil)
 	if err != nil {
 		panic(err)
 	}
-	return &LevelDBKV{db: db, path: path}
+	return &RocksDBKV{Storage: db}
 }
 
-func (lk *LevelDBKV) Get(key string) (string, Err) {
-	value, err := lk.db.Get([]byte(key), nil)
-	if err == leveldb.ErrNotFound {
-		return "", ErrNoKey
-	}
+func (rk *RocksDBKV) Get(key string) (string, Err) {
+	value, err := rk.Storage.Get([]byte(key))
 	if err != nil {
 		return "", ErrTimeout
+	}
+	if value == nil {
+		return "", ErrNoKey
 	}
 	return string(value), OK
 }
 
-func (lk *LevelDBKV) Put(key, value string) Err {
-	err := lk.db.Put([]byte(key), []byte(value), nil)
+func (rk *RocksDBKV) Put(key, value string) Err {
+	err := rk.Storage.Put([]byte(key), []byte(value))
 	if err != nil {
 		return ErrTimeout
 	}
 	return OK
 }
 
-func (lk *LevelDBKV) Append(key, value string) Err {
-	oldValue, err := lk.db.Get([]byte(key), nil)
-	if err != nil && err != leveldb.ErrNotFound {
+func (rk *RocksDBKV) Append(key, value string) Err {
+	oldValue, err := rk.Storage.Get([]byte(key))
+	if err != nil {
 		return ErrTimeout
 	}
 	newValue := append(oldValue, []byte(value)...)
-	err = lk.db.Put([]byte(key), newValue, nil)
+	err = rk.Storage.Put([]byte(key), newValue)
 	if err != nil {
 		return ErrTimeout
 	}
 	return OK
 }
 
-func (lk *LevelDBKV) Close() {
-	lk.db.Close()
+func (rk *RocksDBKV) Close() {
+	rk.Storage.Close()
 }
 
-func (lk *LevelDBKV) Size() int64 {
-	var size int64
-	filepath.Walk(lk.path, func(_ string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			size += info.Size()
-		}
-		return nil
-	})
-	return size
+func (rk *RocksDBKV) Size() int64 {
+	return rk.Storage.Size()
 }
 
 type KVServer struct {
@@ -242,12 +229,13 @@ func (kv *KVServer) needSnapshot() bool {
 func (kv *KVServer) takeSnapshot(index int) {
 	// Take a snapshot: state machine data, last operation, and the index of the last operation
 	kvMap := make(map[string]string)
-	if lk, ok := kv.stateMachine.(*LevelDBKV); ok {
-		iter := lk.db.NewIterator(nil, nil)
-		for iter.Next() {
+	if rk, ok := kv.stateMachine.(*RocksDBKV); ok {
+		iter := rk.Storage.NewIterator(nil)
+		for iter.Valid() {
 			kvMap[string(iter.Key())] = string(iter.Value())
+			iter.Next()
 		}
-		iter.Release()
+		iter.Close()
 	}
 
 	w := new(bytes.Buffer)
@@ -270,9 +258,9 @@ func (kv *KVServer) restoreSnapshot(snapshot []byte) {
 		DPrintf("{Node %v} restores snapshot failed", kv.rf.Me())
 		return
 	}
-	if lk, ok := kv.stateMachine.(*LevelDBKV); ok {
+	if rk, ok := kv.stateMachine.(*RocksDBKV); ok {
 		for k, v := range kvMap {
-			lk.Put(k, v)
+			rk.Put(k, v)
 		}
 	}
 	kv.lastOperations = lastOperations
@@ -327,7 +315,7 @@ func StartKVServer(peers []raft.RaftPeer, me int, persister *raft.Persister, max
 		dead:           0,
 		lastApplied:    0,
 		rf:             raft.Make(peers, me, persister, applyCh),
-		stateMachine:   NewLevelDBKV(dbPath),
+		stateMachine:   NewRocksDBKV(dbPath),
 		lastOperations: make(map[int64]OperationContext),
 		notifyChans:    make(map[int]chan *CommandResponse),
 	}
