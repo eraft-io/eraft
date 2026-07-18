@@ -24,26 +24,6 @@ Detailed information about the system design and implementation can be found in 
 - [Storage & RPC Layer](wiki/Storage-and-RPC.md)
 - [Benchmark & Performance](wiki/Benchmark.md)
 
-## AI-Powered Development
-
-This project was built with the assistance of AI, representing a paradigm shift in software engineering efficiency:
-
-```mermaid
-graph LR
-    A[Traditional Coding] --> B[Horse Carriage Era]
-    B --> C[Manual Boilerplate]
-    B --> D[Painful Debugging]
-    
-    E[AI-Assisted Coding] --> F[Steam Engine Era]
-    F --> G[Intelligent Generation]
-    F --> H[Automated Testing]
-    
-    C -.-> I[Low Efficiency]
-    D -.-> I
-    G -.-> J[High Efficiency]
-    H -.-> J
-```
-
 ## Build
 
 For detailed installation instructions, see [INSTALL.md](INSTALL.md).
