@@ -1,20 +1,26 @@
-*.*/
-main/mr-tmp/
-mrtmp.*
-824-mrinput-*.txt
-/main/diff.out
-/mapreduce/x.txt
-/pbservice/x.txt
-/kvpaxos/x.txt
+# C++ build directory
+raft_cpp/build/
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+
+# Compiled output
+*.o
+*.obj
+*.a
 *.so
-/main/mrcoordinator
-/main/mrsequential
-/main/mrworker
+*.dylib
+*.dll
+*.exe
 
-# eRaft binaries and data
-output/
-data/
-
-# Frontend dependencies and build
-node_modules/
-dashboard/frontend/build/
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
