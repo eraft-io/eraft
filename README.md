@@ -15,19 +15,7 @@ A C++17 library implementing the Raft consensus algorithm and a sharded key-valu
 
 ## Architecture
 
-```
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│  ShardKVClerk │  │  KVClerk     │  │  SCClerk     │  ← Client
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-┌──────▼───────┐  ┌──────▼───────┐  ┌──────▼───────┐
-│   ShardKV    │  │   KVServer   │  │ ShardCtrler  │  ← Service
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-┌──────▼─────────────────▼─────────────────▼───────┐
-│                     Raft                          │  ← Consensus
-└───────────────────────────────────────────────────┘
-```
+![](eraftarch.svg)
 
 ## Key Features
 
